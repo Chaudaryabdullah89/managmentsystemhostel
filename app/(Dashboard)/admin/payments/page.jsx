@@ -527,6 +527,9 @@ const PaymentManagementPage = () => {
                                             <div className="flex items-center gap-3">
                                                 <h4 className="text-lg font-bold text-gray-900 uppercase tracking-tight">{payment.User?.name}</h4>
                                                 <Badge className="bg-amber-50 text-amber-600 border-amber-100 font-bold uppercase text-[9px] tracking-widest px-3">New Payment sent</Badge>
+                                                <Link href={`/admin/payment-approvals/${payment.id}`} className="ml-auto lg:hidden">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-500"><ExternalLink className="h-4 w-4" /></Button>
+                                                </Link>
                                             </div>
                                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                                 <div>
@@ -550,6 +553,15 @@ const PaymentManagementPage = () => {
                                     </div>
 
                                     <div className="flex items-center gap-3 w-full lg:w-auto">
+                                        <Button
+                                            asChild
+                                            variant="ghost"
+                                            className="h-12 w-12 rounded-xl hover:bg-gray-100 text-gray-400 order-3 hidden lg:flex items-center justify-center p-0"
+                                        >
+                                            <Link href={`/admin/payment-approvals/${payment.id}`}>
+                                                <ChevronRight className="h-5 w-5" />
+                                            </Link>
+                                        </Button>
                                         <Button
                                             variant="outline"
                                             className="flex-1 h-12 rounded-xl border-rose-100 bg-rose-50 text-rose-600 font-bold text-[10px] uppercase tracking-wider hover:bg-rose-600 hover:text-white transition-all order-2 lg:order-1"

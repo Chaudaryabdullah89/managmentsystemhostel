@@ -30,10 +30,12 @@ import {
     ImageIcon,
     CheckCircle,
     Upload,
+    Badge,
     X,
     Receipt,
     Wallet,
-    AlertCircle
+    AlertCircle,
+    UserCheck
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -46,13 +48,17 @@ export default function PaymentNotificationModal({ booking, children }) {
         const payments = booking.Payment || [];
         const paid = payments.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + curr.amount, 0);
         const pending = payments.filter(p => p.status === 'PENDING' || p.status === 'PARTIAL').reduce((acc, curr) => acc + curr.amount, 0);
-        const total = (booking.totalAmount || 0) + (booking.securityDeposit || 0);
+
+        // Robust Total Calculation: Use Room Rent if Booking Total is 0
+        const roomRent = booking.Room?.monthlyrent || booking.Room?.price || 0;
+        const bookingTotal = (booking.totalAmount || 0) + (booking.securityDeposit || 0);
+        const total = bookingTotal > 0 ? bookingTotal : roomRent;
 
         return {
             total,
             paid,
             pending,
-            verifiedBalance: total - paid,
+            verifiedBalance: Math.max(0, total - paid),
             availableToNotify: Math.max(0, total - paid - pending)
         };
     }, [booking]);
@@ -89,11 +95,12 @@ export default function PaymentNotificationModal({ booking, children }) {
         const toastId = toast.loading("Processing Proof...");
 
         try {
-            // Simplified Mock Upload Logic (using a reliable dummy image for demo)
             const reader = new FileReader();
             reader.onloadend = () => {
-                // In production, upload to file storage here
-                setReceiptUrl("https://images.unsplash.com/photo-1554224155-169641357599?auto=format");
+                // For demo/testing, we use the Base64 data as the URL.
+                // In production, you would upload this to S3/Cloudinary and store the response URL.
+                const base64String = reader.result;
+                setReceiptUrl(base64String);
                 setIsUploading(false);
                 toast.success("Payment Proof Ready", { id: toastId });
             };
@@ -113,7 +120,7 @@ export default function PaymentNotificationModal({ booking, children }) {
             return;
         }
 
-        if (numericAmount > stats.availableToNotify) {
+        if (numericAmount > stats.availableToNotify + 0.01) { // small buffer
             toast.error(`Amount exceeds remaining fee.`, {
                 description: `Max PKR ${stats.availableToNotify.toLocaleString()} allowed.`
             });
@@ -126,15 +133,18 @@ export default function PaymentNotificationModal({ booking, children }) {
             return;
         }
 
+        // Add explicit Guest Notification marker in notes
+        const finalNotes = `[GUEST_NOTIFICATION] ${notes}`.trim();
+
         const paymentData = {
             userId: booking.userId,
             bookingId: booking.id,
             amount: numericAmount,
             date: new Date(date),
             method,
-            notes,
+            notes: finalNotes,
             receiptUrl: receiptUrl || null,
-            status: "PENDING", // Default status as requested
+            status: "PENDING",
             type: "RENT"
         };
 
@@ -144,8 +154,8 @@ export default function PaymentNotificationModal({ booking, children }) {
                 setAmount("");
                 setNotes("");
                 setReceiptUrl("");
-                toast.success("Warden has been notified.", {
-                    description: "Your payment is now pending verification."
+                toast.success("Warden Notified", {
+                    description: "Your proof has been submitted for verification."
                 });
             },
             onError: (error) => {
@@ -176,12 +186,15 @@ export default function PaymentNotificationModal({ booking, children }) {
                 {/* Slim Design Header */}
                 <DialogHeader className="p-6 bg-slate-900 text-white flex flex-row items-center gap-4 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-full bg-white/[0.03] skew-x-[30deg] translate-x-10" />
-                    <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0">
+                    <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
                         <Wallet className="h-5 w-5 text-white" />
                     </div>
                     <div className="flex flex-col text-left">
-                        <DialogTitle className="text-sm font-bold uppercase tracking-widest">Notify Warden</DialogTitle>
-                        <p className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1">Submit payment for verification</p>
+                        <DialogTitle className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                            Notify Warden
+                            <Badge className="bg-emerald-500/20 text-emerald-400 border-none text-[8px] px-1.5 py-0">Guest Mode</Badge>
+                        </DialogTitle>
+                        <p className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1">Directly Alart management</p>
                     </div>
                 </DialogHeader>
 
@@ -189,24 +202,24 @@ export default function PaymentNotificationModal({ booking, children }) {
                     {/* Compact Balance Cards */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex flex-col gap-1">
-                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Remaining</span>
+                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Amount Due</span>
                             <span className="text-xs font-bold text-slate-900">PKR {stats.verifiedBalance.toLocaleString()}</span>
                         </div>
-                        <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-3 flex flex-col gap-1">
-                            <span className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">Available to Pay</span>
-                            <span className="text-xs font-bold text-blue-600">PKR {stats.availableToNotify.toLocaleString()}</span>
+                        <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 flex flex-col gap-1">
+                            <span className="text-[8px] font-bold text-indigo-400 uppercase tracking-widest">Net Payable</span>
+                            <span className="text-xs font-bold text-indigo-600">PKR {stats.availableToNotify.toLocaleString()}</span>
                         </div>
                     </div>
 
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Amount</Label>
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Paid Amount</Label>
                                 <div className="relative">
                                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">Rs</span>
                                     <Input
                                         type="number"
-                                        className="h-10 pl-8 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-xs focus:ring-1 focus:ring-blue-600"
+                                        className="h-10 pl-8 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-xs focus:ring-1 focus:ring-indigo-600"
                                         value={amount}
                                         onChange={(e) => setAmount(e.target.value)}
                                         placeholder="0"
@@ -215,7 +228,7 @@ export default function PaymentNotificationModal({ booking, children }) {
                                 </div>
                             </div>
                             <div className="space-y-1.5">
-                                <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Date</Label>
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Transfer Date</Label>
                                 <Input
                                     type="date"
                                     className="h-10 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-xs px-3"
@@ -227,7 +240,7 @@ export default function PaymentNotificationModal({ booking, children }) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Method</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Payment Method</Label>
                             <Select value={method} onValueChange={setMethod}>
                                 <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-[10px] px-4">
                                     <SelectValue />
@@ -242,14 +255,14 @@ export default function PaymentNotificationModal({ booking, children }) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Payment Proof (Screenshot)</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Attach Transfer Proof</Label>
                             {receiptUrl ? (
                                 <div className="relative h-12 flex items-center justify-between px-3 bg-emerald-50 border border-emerald-100 rounded-xl">
                                     <div className="flex items-center gap-2">
                                         <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center border border-emerald-100">
                                             <ImageIcon className="h-3.5 w-3.5 text-emerald-500" />
                                         </div>
-                                        <span className="text-[9px] font-bold text-emerald-800 uppercase tracking-tighter">Proof Attached</span>
+                                        <span className="text-[9px] font-bold text-emerald-800 uppercase tracking-tighter">Receipt Attached</span>
                                     </div>
                                     <Button
                                         type="button"
@@ -262,7 +275,7 @@ export default function PaymentNotificationModal({ booking, children }) {
                                 </div>
                             ) : (
                                 <div
-                                    className={`h-12 border border-dashed rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all ${isUploading ? 'bg-slate-50' : 'hover:bg-slate-50 border-slate-200 hover:border-blue-400 group'}`}
+                                    className={`h-12 border border-dashed rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all ${isUploading ? 'bg-slate-50' : 'hover:bg-slate-50 border-slate-200 hover:border-indigo-400 group'}`}
                                     onClick={() => !isUploading && fileInputRef.current?.click()}
                                 >
                                     <input
@@ -273,23 +286,23 @@ export default function PaymentNotificationModal({ booking, children }) {
                                         onChange={handleFileUpload}
                                     />
                                     {isUploading ? (
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-500" />
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-500" />
                                     ) : (
-                                        <Upload className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-500" />
+                                        <Upload className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-500" />
                                     )}
-                                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 group-hover:text-blue-600">
-                                        {isUploading ? 'Processing...' : 'Upload Image'}
+                                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 group-hover:text-indigo-600">
+                                        {isUploading ? 'Uploading...' : 'Upload Image Receipt'}
                                     </span>
                                 </div>
                             )}
-                            {method !== 'CASH' && <p className="text-[7px] font-black text-blue-600/50 uppercase tracking-[0.2em] px-1 text-center">Required for proof verification</p>}
+                            <p className="text-[7px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1 text-center">Auto-tagged as "Notified by Guest"</p>
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Optional Notes</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Additional Notes</Label>
                             <Textarea
-                                className="rounded-xl border-slate-100 bg-slate-50/50 min-h-[60px] font-medium p-3 text-xs resize-none focus:ring-1 focus:ring-blue-600"
-                                placeholder="..."
+                                className="rounded-xl border-slate-100 bg-slate-50/50 min-h-[60px] font-medium p-3 text-xs resize-none focus:ring-1 focus:ring-indigo-600"
+                                placeholder="Describe the payment..."
                                 value={notes}
                                 onChange={(e) => setNotes(e.target.value)}
                             />
@@ -300,14 +313,14 @@ export default function PaymentNotificationModal({ booking, children }) {
                         <Button
                             type="submit"
                             disabled={isPending || isUploading || stats.availableToNotify <= 0}
-                            className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                            className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                         >
                             {isPending ? (
                                 <Loader2 className="h-4 w-4 animate-spin text-white" />
                             ) : (
                                 <>
                                     <Send className="h-3.5 w-3.5" />
-                                    Submit for Verification
+                                    Notify Warden Now
                                 </>
                             )}
                         </Button>
