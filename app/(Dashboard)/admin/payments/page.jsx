@@ -27,27 +27,22 @@ import {
     LayoutGrid,
     Table as TableIcon,
     ArrowUpRight,
-    Plus,
-    ShieldCheck,
-    PieChart,
-    Wallet,
-    History,
-    Zap,
-    Scale,
-    Cpu,
-    Fingerprint,
-    Boxes,
-    Scan,
     ArrowRight,
-    Send,
+    CheckCircle,
     Loader2,
     ExternalLink,
     Building,
-    CheckCircle,
     Settings2,
     Trash2,
     Save,
-    MoreVertical
+    MoreVertical,
+    Activity,
+    ShieldCheck,
+    Zap,
+    Boxes,
+    Scan,
+    Plus,
+    Wallet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -152,9 +147,9 @@ const PaymentManagementPage = () => {
                 id: paymentId,
                 status: 'PAID'
             });
-            toast.success("Payment authorized successfully");
+            toast.success("Payment approved");
         } catch (error) {
-            toast.error("Failed to authorize payment");
+            toast.error("Failed to approve payment");
         }
     };
 
@@ -193,8 +188,9 @@ const PaymentManagementPage = () => {
                 ...editFormData
             });
             setIsEditDialogOpen(false);
+            toast.success("Changes saved");
         } catch (error) {
-            // Error toast handled by hook
+            // Error handled by hook
         }
     };
 
@@ -208,8 +204,9 @@ const PaymentManagementPage = () => {
             await deletePayment.mutateAsync(selectedPaymentId);
             setIsDeleteDialogOpen(false);
             setSelectedPaymentId(null);
+            toast.success("Payment deleted");
         } catch (error) {
-            // Error toast handled by hook
+            // Error handled by hook
         }
     };
 
@@ -243,8 +240,8 @@ const PaymentManagementPage = () => {
                     <Wallet className="h-8 w-8 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                 </div>
                 <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 tracking-tight">Loading Records...</p>
-                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Searching payments...</p>
+                    <p className="text-lg font-bold text-gray-900 tracking-tight">Loading Payments...</p>
+                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Searching records...</p>
                 </div>
             </div>
         </div>
@@ -252,7 +249,7 @@ const PaymentManagementPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
-            {/* Minimal Premium Header */}
+            {/* Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -260,9 +257,9 @@ const PaymentManagementPage = () => {
                         <div className="flex flex-col">
                             <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Payments</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Records</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">All Records</span>
+                                <div className="h-1 w-1 rounded-full bg-blue-500 animate-pulse" />
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Updated Live</span>
                             </div>
                         </div>
                     </div>
@@ -282,15 +279,15 @@ const PaymentManagementPage = () => {
             </div>
 
             <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
-                {/* Statistics Overview */}
+                {/* Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Total Money', value: `PKR ${(stats?.totalRevenue / 1000).toFixed(1)}k`, icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Total Money', value: `PKR ${(stats?.totalRevenue / 1000).toFixed(1)}k`, icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-50' },
                         { label: 'Collection %', value: `${((stats?.monthlyRevenue / (stats?.monthlyRevenue + stats?.pendingReceivables)) * 100 || 0).toFixed(0)}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Pending Approvals', value: paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Unpaid Fees', value: `PKR ${(stats?.overdueLiability / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' }
+                        { label: 'Unpaid Payments', value: paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Late Fees', value: `PKR ${(stats?.overdueLiability / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default">
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
@@ -305,13 +302,18 @@ const PaymentManagementPage = () => {
                 {/* Search and Filters */}
                 <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm">
                     <div className="flex-1 relative w-full group px-2">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
                         <Input
-                            placeholder="Search by Student, Room or ID..."
-                            className="w-full h-12 pl-10 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
+                            placeholder="Search by student, room or ID..."
+                            className="w-full h-12 pl-12 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
+                        {searchQuery && (
+                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase animate-in fade-in zoom-in">
+                                {filteredPayments.length} results
+                            </span>
+                        )}
                     </div>
 
                     <div className="h-8 w-px bg-gray-100 mx-2 hidden md:block" />
@@ -325,7 +327,7 @@ const PaymentManagementPage = () => {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[220px] rounded-xl border-gray-100 shadow-xl p-2">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Filter by Status</DropdownMenuLabel>
+                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Search Status</DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-gray-50 mb-1" />
                                 {["All", "PAID", "PENDING", "PARTIAL", "OVERDUE", "REJECTED"].map(status => (
                                     <DropdownMenuItem key={status} onClick={() => setFilterStatus(status)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer">
@@ -356,7 +358,6 @@ const PaymentManagementPage = () => {
                     </div>
                 </div>
 
-                {/* Payment View */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
                     <div className="flex items-center justify-between px-2">
                         <TabsList className="bg-white border border-gray-100 p-1 rounded-xl h-11 w-full lg:w-auto shadow-sm">
@@ -370,7 +371,7 @@ const PaymentManagementPage = () => {
                                 value="verification"
                                 className="h-full px-8 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all relative"
                             >
-                                <CheckCircle className="h-3.5 w-3.5 mr-2" /> Guest Notifications
+                                <CheckCircle className="h-3.5 w-3.5 mr-2" /> Pending Approval
                                 {(paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length > 0) && (
                                     <span className="absolute -top-1 -right-1 h-2 w-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                 )}
@@ -378,8 +379,13 @@ const PaymentManagementPage = () => {
                         </TabsList>
 
                         <div className="hidden lg:flex items-center gap-3">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Results:</span>
-                            <span className="text-xs font-bold text-gray-900 uppercase tracking-tight">{filteredPayments.length} Entries found</span>
+                            <div className="flex items-center -space-x-1">
+                                <div className="h-5 w-5 rounded-full border-2 border-white bg-blue-50 flex items-center justify-center">
+                                    <Activity className="h-2 w-2 text-blue-600" />
+                                </div>
+                            </div>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Record Count:</span>
+                            <span className="text-[10px] font-black text-gray-900 uppercase tracking-tight">{filteredPayments.length} Payments Found</span>
                         </div>
                     </div>
 
@@ -392,7 +398,6 @@ const PaymentManagementPage = () => {
                                 <div className={`absolute top-0 left-0 w-1.5 h-full ${getRibbonColor(payment.status)} opacity-70`} />
 
                                 <div className="flex items-center gap-6 flex-1 min-w-0">
-                                    {/* Entity Info */}
                                     <div className="flex items-center gap-5 min-w-[280px]">
                                         <div className="h-14 w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm shrink-0 group-hover:bg-blue-600 transition-colors">
                                             <User className="h-6 w-6 text-gray-400 group-hover:text-white transition-colors" />
@@ -416,38 +421,29 @@ const PaymentManagementPage = () => {
                                                     </span>
                                                 </div>
                                             )}
-                                            {payment.receiptUrl && payment.status === 'PENDING' && (
-                                                <div className="flex items-center gap-1 mt-2 px-2 py-0.5 bg-emerald-50 rounded-md border border-emerald-100 w-fit">
-                                                    <Zap className="h-2.5 w-2.5 text-emerald-500 animate-pulse" />
-                                                    <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">New Notification</span>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
 
-                                    {/* Payment Amount */}
                                     <div className="hidden md:flex flex-col gap-1 min-w-[160px]">
                                         <div className="flex items-center gap-2">
                                             <CreditCard className="h-3.5 w-3.5 text-blue-500" />
                                             <span className="text-xs font-bold text-gray-900 uppercase">PKR {payment.amount.toLocaleString()}</span>
                                         </div>
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5">{payment.method} Payment</span>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5">{payment.method}</span>
                                     </div>
 
-                                    {/* Date Received */}
                                     <div className="hidden xl:flex items-center gap-8 min-w-[220px]">
                                         <div className="flex items-center gap-3">
                                             <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100">
                                                 <Calendar className="h-3.5 w-3.5" />
                                             </div>
                                             <div className="flex flex-col gap-0.5">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Received</span>
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Date</span>
                                                 <span className="text-xs font-bold text-gray-900 uppercase">{format(new Date(payment.date), 'MMM dd, yyyy')}</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Status Badge */}
                                     <div className="min-w-[140px] flex justify-center">
                                         <Badge variant="outline" className={`${getStatusStyle(payment.status)} px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest border shadow-sm`}>
                                             {payment.status}
@@ -455,15 +451,10 @@ const PaymentManagementPage = () => {
                                     </div>
                                 </div>
 
-                                {/* Actions */}
                                 <div className="flex items-center gap-2 lg:ml-auto">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="h-10 w-10 rounded-full hover:bg-gray-50 text-gray-400 transition-colors"
-                                            >
+                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full hover:bg-gray-50 text-gray-400 transition-colors">
                                                 <MoreVertical className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
@@ -474,33 +465,22 @@ const PaymentManagementPage = () => {
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
-                                                <div className="w-full">
-                                                    <UnifiedReceipt data={payment} type="payment">
-                                                        <div className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer flex items-center gap-2 hover:bg-slate-100">
-                                                            <Receipt className="h-3.5 w-3.5" /> View Receipt
-                                                        </div>
-                                                    </UnifiedReceipt>
-                                                </div>
+                                                <UnifiedReceipt data={payment} type="payment">
+                                                    <div className="w-full p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer flex items-center gap-2 hover:bg-slate-50 transition-colors">
+                                                        <Receipt className="h-3.5 w-3.5" /> View Receipt
+                                                    </div>
+                                                </UnifiedReceipt>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() => handleEditOpen(payment)}
-                                                className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer flex items-center gap-2"
-                                            >
-                                                <Settings2 className="h-3.5 w-3.5" /> Edit Payment
+                                            <DropdownMenuItem onClick={() => handleEditOpen(payment)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer flex items-center gap-2">
+                                                <Settings2 className="h-3.5 w-3.5" /> Edit
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator className="bg-gray-50" />
-                                            <DropdownMenuItem
-                                                onClick={() => handleDeleteClick(payment.id)}
-                                                className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer flex items-center gap-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5" /> Delete Payment
+                                            <DropdownMenuItem onClick={() => handleDeleteClick(payment.id)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer flex items-center gap-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50">
+                                                <Trash2 className="h-3.5 w-3.5" /> Delete
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                    <Button
-                                        asChild
-                                        className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn"
-                                    >
+                                    <Button asChild className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn">
                                         <Link href={`/admin/payments/${payment.id}`}>
                                             View
                                             <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
@@ -514,12 +494,8 @@ const PaymentManagementPage = () => {
                     <TabsContent value="verification" className="space-y-6 outline-none">
                         {filteredPayments.length > 0 ? (
                             filteredPayments.map((payment) => (
-                                <div
-                                    key={payment.id}
-                                    className="bg-white border border-gray-100 rounded-3xl p-6 flex flex-col lg:flex-row items-center justify-between gap-8 hover:shadow-md transition-shadow group relative overflow-hidden"
-                                >
+                                <div key={payment.id} className="bg-white border border-gray-100 rounded-3xl p-6 flex flex-col lg:flex-row items-center justify-between gap-8 hover:shadow-md transition-shadow group relative overflow-hidden">
                                     <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500 opacity-70" />
-
                                     <div className="flex items-center gap-8 flex-1 w-full">
                                         <div className="h-24 w-20 rounded-2xl bg-gray-50 border border-gray-200 flex flex-col items-center justify-center gap-3 shrink-0 overflow-hidden relative group/img">
                                             {payment.receiptUrl ? (
@@ -547,16 +523,10 @@ const PaymentManagementPage = () => {
                                                 <XCircle className="h-6 w-6 text-gray-300" />
                                             )}
                                         </div>
-
                                         <div className="flex flex-col gap-4 flex-1">
                                             <div className="flex items-center gap-3">
                                                 <h4 className="text-lg font-bold text-gray-900 uppercase tracking-tight">{payment.User?.name}</h4>
-                                                <Badge className="bg-amber-50 text-amber-600 border-amber-100 font-bold uppercase text-[9px] tracking-widest px-3">Sent Notification</Badge>
-                                                {payment.receiptUrl && (
-                                                    <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 font-bold uppercase text-[9px] tracking-widest px-3 flex items-center gap-1">
-                                                        <Scan className="h-3 w-3" /> Proof Attached
-                                                    </Badge>
-                                                )}
+                                                <Badge className="bg-amber-50 text-amber-600 border-amber-100 font-bold uppercase text-[9px] tracking-widest px-3">New Payment sent</Badge>
                                             </div>
                                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                                 <div>
@@ -572,21 +542,10 @@ const PaymentManagementPage = () => {
                                                     <p className="text-xs font-bold text-gray-900 uppercase tracking-widest truncate">{payment.Booking?.Room?.Hostel?.name}</p>
                                                 </div>
                                                 <div>
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Received At</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Date Sent</span>
                                                     <p className="text-xs font-bold text-gray-900 uppercase tracking-tight">{format(new Date(payment.date), 'dd/MM/yy HH:mm')}</p>
                                                 </div>
                                             </div>
-                                            {payment.notes && (
-                                                <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-2.5">
-                                                    <Info className="h-3.5 w-3.5 text-blue-400 mt-0.5 shrink-0" />
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">Payment Note</span>
-                                                        <p className="text-[10px] font-medium text-gray-600 uppercase tracking-wide leading-relaxed">
-                                                            {payment.notes}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
 
@@ -605,14 +564,9 @@ const PaymentManagementPage = () => {
                                             className="flex-1 h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700 border-none font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 order-1 lg:order-2 active:scale-95"
                                             onClick={() => handleApprove(payment.id)}
                                         >
-                                            <ShieldCheck className="h-4 w-4" />
+                                            <CheckCircle className="h-4 w-4" />
                                             Approve
                                         </Button>
-                                        <Link href={`/admin/payments/${payment.id}`} className="order-3">
-                                            <Button variant="ghost" className="h-10 w-10 rounded-full hover:bg-gray-50 flex items-center justify-center">
-                                                <ChevronRight className="h-4 w-4 text-gray-400" />
-                                            </Button>
-                                        </Link>
                                     </div>
                                 </div>
                             ))
@@ -622,13 +576,12 @@ const PaymentManagementPage = () => {
                                     <CheckCircle className="h-8 w-8 text-emerald-600" />
                                 </div>
                                 <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">All caught up!</h3>
-                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1 max-w-[320px] mx-auto leading-relaxed">All pending transactions have been approved. There are no payments waiting.</p>
+                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1 max-w-[320px] mx-auto leading-relaxed">No payments waiting for approval.</p>
                             </div>
                         )}
                     </TabsContent>
                 </Tabs>
 
-                {/* System Status - Synced with Booking page */}
                 <div className="pt-10">
                     <div className="bg-blue-600 text-white rounded-[2rem] p-4 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-full bg-white/5 skew-x-12 translate-x-20" />
@@ -638,7 +591,7 @@ const PaymentManagementPage = () => {
                             </div>
                             <div className="flex flex-col">
                                 <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-100">System Status</h4>
-                                <p className="text-[11px] font-bold mt-0.5">All payments are up to date</p>
+                                <p className="text-[11px] font-bold mt-0.5">Ready</p>
                             </div>
                         </div>
 
@@ -646,12 +599,12 @@ const PaymentManagementPage = () => {
 
                         <div className="flex-1 flex items-center gap-12 px-8">
                             <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Last Check</span>
+                                <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Today</span>
                                 <span className="text-[10px] font-bold text-gray-200 uppercase mt-1">{new Date().toLocaleDateString()}</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Total Money Collected</span>
-                                <span className="text-[10px] font-bold text-white uppercase mt-1">PKR {stats?.totalRevenue?.toLocaleString()} Managed</span>
+                                <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Total Collected</span>
+                                <span className="text-[10px] font-bold text-white uppercase mt-1">PKR {stats?.totalRevenue?.toLocaleString()} Collected</span>
                             </div>
                         </div>
 
@@ -663,7 +616,7 @@ const PaymentManagementPage = () => {
                 </div>
             </main>
 
-            {/* Reject Payment */}
+            {/* Modals */}
             <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white ring-1 ring-gray-100">
                     <div className="bg-rose-600 p-10 text-white text-center relative overflow-hidden">
@@ -672,33 +625,32 @@ const PaymentManagementPage = () => {
                             <XCircle className="h-8 w-8" />
                         </div>
                         <h2 className="text-2xl font-bold uppercase tracking-tight">Reject Payment</h2>
-                        <p className="text-[10px] text-white/70 font-bold tracking-widest mt-2 uppercase">Cancel this payment</p>
+                        <p className="text-[10px] text-white/70 font-bold tracking-widest mt-2 uppercase">Stop this payment</p>
                     </div>
                     <div className="p-10 space-y-8">
                         <div className="space-y-3">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Reason for rejection</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Why reject this?</Label>
                             <Textarea
-                                placeholder="Specify why this payment is being rejected..."
+                                placeholder="Write reason..."
                                 className="rounded-2xl border-gray-100 bg-gray-50 p-6 font-medium text-sm min-h-[120px] focus:ring-rose-500 text-gray-900 resize-none pt-4 placeholder:text-gray-300"
                                 value={rejectionReason}
                                 onChange={(e) => setRejectionReason(e.target.value)}
                             />
                         </div>
                         <div className="flex gap-4">
-                            <Button variant="ghost" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400 hover:text-gray-900" onClick={() => setIsRejectDialogOpen(false)}>Cancel</Button>
+                            <Button variant="ghost" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400" onClick={() => setIsRejectDialogOpen(false)}>Cancel</Button>
                             <Button
                                 className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-wider rounded-xl shadow-lg transition-all"
                                 onClick={handleReject}
                                 disabled={updatePayment.isPending || !rejectionReason}
                             >
-                                {updatePayment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Rejection'}
+                                {updatePayment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Reject Now'}
                             </Button>
                         </div>
                     </div>
                 </DialogContent>
             </Dialog>
 
-            {/* Edit Payment */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white ring-1 ring-gray-100">
                     <div className="bg-blue-600 p-10 text-white text-center relative overflow-hidden">
@@ -707,7 +659,7 @@ const PaymentManagementPage = () => {
                             <Settings2 className="h-8 w-8 text-white" />
                         </div>
                         <h2 className="text-2xl font-bold uppercase tracking-tight">Edit Payment</h2>
-                        <p className="text-[10px] text-blue-100 font-bold tracking-widest mt-2 uppercase">Modify Payment Details</p>
+                        <p className="text-[10px] text-blue-100 font-bold tracking-widest mt-2 uppercase">Update payment details</p>
                     </div>
                     <div className="p-10 space-y-6">
                         <div className="grid grid-cols-2 gap-4">
@@ -742,12 +694,12 @@ const PaymentManagementPage = () => {
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Staff Notes</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Notes</Label>
                             <Textarea
                                 value={editFormData.notes}
                                 onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
                                 className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24"
-                                placeholder="Reason for update..."
+                                placeholder="..."
                             />
                         </div>
                         <div className="flex gap-4 pt-4">
@@ -764,16 +716,15 @@ const PaymentManagementPage = () => {
                 </DialogContent>
             </Dialog>
 
-            {/* Delete Alert Dialog */}
             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent className="rounded-[2rem] border-none p-10 max-w-md">
+                <AlertDialogContent className="rounded-[2.5rem] border-none p-10 max-w-md">
                     <AlertDialogHeader>
                         <div className="h-16 w-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 border border-rose-100">
                             <Trash2 className="h-8 w-8 text-rose-600" />
                         </div>
-                        <AlertDialogTitle className="text-xl font-bold uppercase tracking-tight">Delete Payment Record?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-sm font-medium text-gray-500 leading-relaxed mt-2 uppercase tracking-wide text-[10px]">
-                            This action is permanent. Are you sure? This will remove the record forever from the database and updated financial totals.
+                        <AlertDialogTitle className="text-xl font-bold uppercase tracking-tight">Delete Payment?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed mt-2">
+                            Are you sure you want to permanently delete this payment record?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="mt-10 gap-3">
@@ -782,7 +733,7 @@ const PaymentManagementPage = () => {
                             onClick={handleDeleteConfirm}
                             className="h-12 px-8 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-rose-600/20"
                         >
-                            Delete Now
+                            Confirm Delete
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
