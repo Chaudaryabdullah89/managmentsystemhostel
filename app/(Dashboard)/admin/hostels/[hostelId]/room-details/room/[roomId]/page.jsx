@@ -1,5 +1,5 @@
 "use client"
-import React from "react";
+import React, { Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -40,7 +40,7 @@ import {
 import { useSingleRoomByHostelId } from "@/hooks/useRoom";
 import { format } from "date-fns";
 
-const RoomDetailsPage = () => {
+const RoomDetailsContent = () => {
     const params = useParams();
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -319,4 +319,18 @@ const RoomDetailsPage = () => {
     );
 };
 
-export default RoomDetailsPage;
+export default function RoomDetailsPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center bg-white font-sans">
+                <div className="flex flex-col items-center gap-6">
+                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-black rounded-full animate-spin" />
+                    <BedDouble className="h-8 w-8 text-black absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                    <p className="text-lg font-bold text-gray-900 tracking-tight">Accessing Room Registry...</p>
+                </div>
+            </div>
+        }>
+            <RoomDetailsContent />
+        </Suspense>
+    );
+}

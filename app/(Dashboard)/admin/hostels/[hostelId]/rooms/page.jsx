@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect, use } from 'react'
+import React, { useState, useEffect, use, Suspense } from 'react'
 import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -77,7 +77,7 @@ const useSyncAutomation = () => {
     });
 };
 
-const RoomsPage = ({ params: paramsPromise }) => {
+const RoomsContent = ({ params: paramsPromise }) => {
     const params = use(paramsPromise);
     const searchParams = useSearchParams()
     const router = useRouter()
@@ -411,4 +411,17 @@ const RoomsPage = ({ params: paramsPromise }) => {
     );
 };
 
-export default RoomsPage;
+export default function RoomsPage(props) {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center bg-white font-sans">
+                <div className="flex flex-col items-center gap-6">
+                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-black rounded-full animate-spin" />
+                    <p className="text-lg font-bold text-gray-900 tracking-tight">Accessing Property Registry...</p>
+                </div>
+            </div>
+        }>
+            <RoomsContent {...props} />
+        </Suspense>
+    );
+}

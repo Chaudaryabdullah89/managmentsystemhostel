@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useState, Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Trash } from "lucide-react"
 
-const ResidentsPage = () => {
+const ResidentsContent = () => {
     const params = useParams()
     const searchParams = useSearchParams()
     const router = useRouter()
@@ -304,4 +304,17 @@ const ResidentsPage = () => {
     )
 }
 
-export default ResidentsPage
+export default function ResidentsPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center bg-white">
+                <div className="flex flex-col items-center gap-6">
+                    <div className="h-24 w-24 border-[3px] border-gray-100 border-t-blue-500 rounded-full animate-spin" />
+                    <p className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">Loading Residents</p>
+                </div>
+            </div>
+        }>
+            <ResidentsContent />
+        </Suspense>
+    );
+}

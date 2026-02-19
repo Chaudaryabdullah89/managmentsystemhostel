@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -21,7 +21,7 @@ import { UpdateHostel } from '../../../../../../hooks/usehostel'
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 
-const EditHostelPage = () => {
+const EditHostelForm = () => {
     const router = useRouter();
     const params = useParams();
     const searchParams = useSearchParams();
@@ -512,4 +512,14 @@ const EditHostelPage = () => {
     );
 }
 
-export default EditHostelPage;
+export default function EditHostelPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center bg-white">
+                <RefreshCw className="h-10 w-10 text-blue-600 animate-spin" />
+            </div>
+        }>
+            <EditHostelForm />
+        </Suspense>
+    );
+}

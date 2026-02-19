@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Suspense } from 'react'
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -18,7 +18,7 @@ import { toast } from 'sonner'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Badge } from "@/components/ui/badge"
 
-const CreateRoomPage = () => {
+const CreateRoomForm = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const preSelectedHostelId = searchParams.get('hostelId');
@@ -368,4 +368,17 @@ const CreateRoomPage = () => {
     )
 }
 
-export default CreateRoomPage
+export default function CreateRoomPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="h-10 w-10 border-[3px] border-gray-200 border-t-black rounded-full animate-spin" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Registry Protocol...</p>
+                </div>
+            </div>
+        }>
+            <CreateRoomForm />
+        </Suspense>
+    );
+}

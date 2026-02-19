@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -49,7 +49,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import useAuthStore from "@/hooks/Authstate";
 
-const CreateBookingPage = () => {
+const CreateBookingForm = () => {
     const router = useRouter();
     const { user } = useAuthStore();
     const createBooking = useCreateBooking();
@@ -631,4 +631,17 @@ const CreateBookingPage = () => {
     );
 };
 
-export default CreateBookingPage;
+export default function CreateBookingPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-50/30 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="h-10 w-10 border-[3px] border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Booking System...</p>
+                </div>
+            </div>
+        }>
+            <CreateBookingForm />
+        </Suspense>
+    );
+}

@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
     ChevronLeft,
@@ -41,7 +41,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useReports } from "@/hooks/useReports";
 import { format } from "date-fns";
 
-const HostelReportPage = () => {
+const ReportContent = () => {
     const params = useParams();
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -281,4 +281,18 @@ const HostelReportPage = () => {
     );
 };
 
-export default HostelReportPage;
+export default function HostelReportPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center bg-white font-sans">
+                <div className="flex flex-col items-center gap-6">
+                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-black rounded-full animate-spin" />
+                    <BarChart3 className="h-8 w-8 text-black absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                    <p className="text-lg font-bold text-gray-900 tracking-tight">Compiling Property Analytics...</p>
+                </div>
+            </div>
+        }>
+            <ReportContent />
+        </Suspense>
+    );
+}

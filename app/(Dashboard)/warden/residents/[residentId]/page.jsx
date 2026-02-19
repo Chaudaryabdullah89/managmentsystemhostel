@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, use, useEffect } from 'react'
+import React, { useState, use, useEffect, Suspense } from 'react'
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -77,7 +77,7 @@ import {
 } from "@/components/ui/select"
 import useAuthStore from '@/hooks/Authstate'
 
-const WardenResidentDetailPage = () => {
+const ResidentDetailContent = () => {
     const params = useParams()
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -778,4 +778,17 @@ const WardenResidentDetailPage = () => {
     )
 }
 
-export default WardenResidentDetailPage
+export default function WardenResidentDetailPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center bg-white">
+                <div className="flex flex-col items-center gap-4">
+                    <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
+                    <p className="text-sm font-medium text-gray-500 tracking-widest uppercase">Initializing Resident Dossier...</p>
+                </div>
+            </div>
+        }>
+            <ResidentDetailContent />
+        </Suspense>
+    );
+}

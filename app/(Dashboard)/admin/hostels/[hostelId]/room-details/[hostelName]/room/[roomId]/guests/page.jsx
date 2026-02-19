@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -36,7 +36,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-const RoomGuestsPage = () => {
+const RoomGuestsContent = () => {
     const params = useParams();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -424,4 +424,18 @@ const RoomGuestsPage = () => {
     );
 };
 
-export default RoomGuestsPage;
+export default function RoomGuestsPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen items-center justify-center bg-white font-sans">
+                <div className="flex flex-col items-center gap-6">
+                    <div className="h-10 w-10 border-[3px] border-gray-200 border-t-black rounded-full animate-spin" />
+                    <User className="h-8 w-8 text-black absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                    <p className="text-lg font-bold text-gray-900 tracking-tight">Accessing Guest Registry...</p>
+                </div>
+            </div>
+        }>
+            <RoomGuestsContent />
+        </Suspense>
+    );
+}
