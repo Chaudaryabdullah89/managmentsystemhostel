@@ -18,6 +18,7 @@ import {
     ShieldCheck,
     Calendar,
     Hash,
+    Send,
     Receipt,
     ExternalLink,
     Building2,
@@ -88,19 +89,23 @@ const UnifiedReceipt = ({ data, type, children }) => {
                 break;
 
             case 'payment':
-                mapped.title = "Payment Receipt";
-                mapped.id = `TXN-${data.id?.slice(-8).toUpperCase()}`;
-                mapped.date = data.date || data.createdAt;
-                mapped.status = data.status;
-                mapped.customerName = data.User?.name || data.Booking?.User?.name;
-                mapped.customerDetail = data.User?.email || data.Booking?.User?.email;
-                mapped.contextLabel = "Reference";
-                mapped.contextValue = `${data.Booking?.Room?.Hostel?.name || 'Service Payment'}`;
-                mapped.items = [
-                    { label: `${data.type?.replace('_', ' ')} Settlement`, value: data.amount }
+                mapped.title = data.payments ? "Account Statement" : "Payment Receipt";
+                mapped.id = data.payments ? `STMT-${Date.now().toString().slice(-6)}` : `TXN-${data.id?.slice(-8).toUpperCase()}`;
+                mapped.date = data.date || data.createdAt || new Date();
+                mapped.status = data.status || (data.payments ? 'SETTLED' : 'PENDING');
+                mapped.customerName = data.User?.name || data.Booking?.User?.name || data.user?.name || 'N/A';
+                mapped.customerDetail = data.User?.email || data.Booking?.User?.email || data.user?.email || '';
+                mapped.contextLabel = data.payments ? "Statement Period" : "Reference";
+                mapped.contextValue = data.payments ? "Lifetime Records" : `${data.Booking?.Room?.Hostel?.name || 'Service Payment'}`;
+                mapped.items = data.payments ? [
+                    { label: "Total Bill (Verifiable)", value: data.totalDue || 0 },
+                    { label: "Amount Verified/Paid", value: data.paidAmount || 0 },
+                    { label: "Pending Verification", value: data.pendingAmount || 0 }
+                ] : [
+                    { label: `${data.type?.replace('_', ' ') || 'Payment'} Settlement`, value: data.amount || 0 }
                 ];
-                mapped.totalLabel = "Amount Paid";
-                mapped.totalAmount = data.amount;
+                mapped.totalLabel = data.payments ? "Total Balance" : "Amount Paid";
+                mapped.totalAmount = data.payments ? (data.netBalance || 0) : (data.amount || 0);
                 mapped.colorClass = "bg-emerald-600";
                 mapped.icon = CreditCard;
                 break;
@@ -141,6 +146,11 @@ const UnifiedReceipt = ({ data, type, children }) => {
                 mapped.colorClass = "bg-slate-800";
                 mapped.icon = Receipt;
                 break;
+        }
+
+        // Ensure a valid date fallback
+        if (!mapped.date || isNaN(new Date(mapped.date).getTime())) {
+            mapped.date = new Date();
         }
 
         return mapped;
@@ -191,7 +201,7 @@ const UnifiedReceipt = ({ data, type, children }) => {
                     <div class="header">
                         <div class="brand">${rd.brand}</div>
                         <h1 class="title">${rd.title}</h1>
-                        <div class="meta">${rd.id} • ${format(new Date(rd.date), 'MMM dd, yyyy')}</div>
+                        <div class="meta">${rd.id} • ${rd.date ? format(new Date(rd.date), 'MMM dd, yyyy') : format(new Date(), 'MMM dd, yyyy')}</div>
                         <div class="status">${rd.status}</div>
                     </div>
 
@@ -213,7 +223,7 @@ const UnifiedReceipt = ({ data, type, children }) => {
                             ${rd.items.map(item => `
                                 <div class="item-row">
                                     <span class="item-label">${item.label}</span>
-                                    <span class="item-value">PKR ${Number(item.value).toLocaleString()}</span>
+                                    <span class="item-value">PKR ${(Number(item.value) || 0).toLocaleString()}</span>
                                 </div>
                             `).join('')}
                         </div>
@@ -221,7 +231,7 @@ const UnifiedReceipt = ({ data, type, children }) => {
 
                     <div class="total-box">
                         <div class="total-label">${rd.totalLabel}</div>
-                        <div class="total-amount">PKR ${Number(rd.totalAmount).toLocaleString()}</div>
+                        <div class="total-amount">PKR ${(Number(rd.totalAmount) || 0).toLocaleString()}</div>
                     </div>
 
                     <div class="footer">
@@ -284,7 +294,9 @@ const UnifiedReceipt = ({ data, type, children }) => {
                         <div className="space-y-1 text-right">
                             <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{rd.contextLabel}</span>
                             <p className="text-xs font-bold text-slate-900 truncate">{rd.contextValue}</p>
-                            <p className="text-[9px] font-medium text-slate-400 uppercase">{format(new Date(rd.date), 'MMM dd, yyyy')}</p>
+                            <p className="text-[9px] font-medium text-slate-400 uppercase">
+                                {isNaN(new Date(rd.date).getTime()) ? 'N/A' : format(new Date(rd.date), 'MMM dd, yyyy')}
+                            </p>
                         </div>
                     </div>
 
@@ -295,7 +307,7 @@ const UnifiedReceipt = ({ data, type, children }) => {
                             {rd.items.map((item, i) => (
                                 <div key={i} className="flex justify-between items-center py-2 border-b border-slate-50 last:border-none">
                                     <span className="text-xs font-semibold text-slate-500">{item.label}</span>
-                                    <span className="text-xs font-bold text-slate-900">PKR {Number(item.value).toLocaleString()}</span>
+                                    <span className="text-xs font-bold text-slate-900">PKR {(Number(item.value) || 0).toLocaleString()}</span>
                                 </div>
                             ))}
                         </div>
@@ -305,7 +317,7 @@ const UnifiedReceipt = ({ data, type, children }) => {
                     <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex flex-col items-center justify-center gap-1">
                         <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{rd.totalLabel}</span>
                         <div className="text-2xl font-black text-slate-900 tracking-tighter">
-                            PKR {Number(rd.totalAmount).toLocaleString()}
+                            PKR {(Number(rd.totalAmount) || 0).toLocaleString()}
                         </div>
                     </div>
 

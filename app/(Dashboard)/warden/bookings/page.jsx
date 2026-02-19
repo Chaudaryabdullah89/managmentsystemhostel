@@ -152,11 +152,11 @@ const GlobalBookingsPage = () => {
                     <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-indigo-600 rounded-full" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">All Bookings</h1>
+                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Booking Registry</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Booking Management</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Inventory Management</span>
+                                <div className="h-1 w-1 rounded-full bg-indigo-500 animate-pulse" />
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">Active Ledger</span>
                             </div>
                         </div>
                     </div>
@@ -204,13 +204,18 @@ const GlobalBookingsPage = () => {
                 {/* Operations Command Bar */}
                 <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm">
                     <div className="flex-1 relative w-full group px-2">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                         <Input
                             placeholder="Search by Guest, Room or Hostel..."
                             className="w-full h-12 pl-10 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
+                        {searchQuery && (
+                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full uppercase">
+                                {filteredBookings.length} Results
+                            </span>
+                        )}
                     </div>
 
                     <div className="h-8 w-px bg-gray-100 mx-2 hidden md:block" />
@@ -297,16 +302,25 @@ const GlobalBookingsPage = () => {
                                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5">{booking.Room?.type} Unit</span>
                                     </div>
 
-                                    {/* Dates */}
-                                    <div className="hidden xl:flex items-center gap-8 min-w-[280px]">
+                                    {/* Dates: Horizontal Timeline Style */}
+                                    <div className="hidden xl:flex items-center gap-6 min-w-[340px] bg-gray-50/50 p-3 rounded-2xl border border-gray-100">
                                         <div className="flex flex-col gap-0.5">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Start</span>
-                                            <span className="text-xs font-bold text-gray-900 uppercase">{format(new Date(booking.checkIn), 'MMM dd, yyyy')}</span>
+                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5 pl-0.5">
+                                                <Calendar className="h-2.5 w-2.5" /> Check-in
+                                            </span>
+                                            <span className="text-[11px] font-bold text-gray-900 uppercase">{format(new Date(booking.checkIn), 'MMM dd, yyyy')}</span>
                                         </div>
-                                        <div className="h-4 w-px bg-gray-100" />
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">End</span>
-                                            <span className="text-xs font-bold text-gray-900 uppercase">{booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'Stay'}</span>
+                                        <div className="flex-1 flex items-center px-4">
+                                            <div className="h-[2px] w-full bg-gray-200 relative">
+                                                <div className="absolute -top-1 left-0 h-2 w-2 rounded-full bg-gray-300" />
+                                                <div className="absolute -top-1 right-0 h-2 w-2 rounded-full bg-gray-300" />
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col gap-0.5 text-right">
+                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest flex items-center justify-end gap-1.5 pr-0.5">
+                                                Check-out <History className="h-2.5 w-2.5" />
+                                            </span>
+                                            <span className="text-[11px] font-bold text-gray-900 uppercase">{booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'Staying'}</span>
                                         </div>
                                     </div>
 

@@ -64,8 +64,8 @@ const BookingDetailsPage = () => {
                         <ShieldCheck className="h-8 w-8 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                     </div>
                     <div className="text-center">
-                        <p className="text-lg font-bold text-gray-900 tracking-tight">Synchronizing Registry...</p>
-                        <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Accessing Node Metadata & Payload</p>
+                        <p className="text-lg font-bold text-gray-900 tracking-tight">Loading Booking Details...</p>
+                        <p className="text-sm text-gray-500 font-medium mt-1">Getting your records...</p>
                     </div>
                 </div>
             </div>
@@ -77,9 +77,9 @@ const BookingDetailsPage = () => {
             <div className="min-h-screen flex items-center justify-center bg-gray-50/30">
                 <div className="text-center space-y-4">
                     <AlertCircle className="h-10 w-10 text-red-500 mx-auto" />
-                    <h2 className="text-xl font-bold text-gray-900">Registry Missing</h2>
+                    <h2 className="text-xl font-bold text-gray-900">Booking Not Found</h2>
                     <Button onClick={() => router.push('/admin/bookings')} variant="outline" className="rounded-xl">
-                        Return to Matrix
+                        Back to All Bookings
                     </Button>
                 </div>
             </div>
@@ -142,7 +142,7 @@ const BookingDetailsPage = () => {
                 </style>
             </head>
             <body>
-                <button class="print-button no-print" onclick="window.print()">Establish Hard Copy</button>
+                <button class="print-button no-print" onclick="window.print()">Print Receipt</button>
                 <div class="container">
                     <div class="header">
                         <div class="brand">
@@ -150,8 +150,8 @@ const BookingDetailsPage = () => {
                             <p>Residency Agreement Summary</p>
                         </div>
                             <div class="invoice-meta">
-                                <h2>RECORD ARCHIVE</h2>
-                                <p>NODE ID: ${booking.uid || booking.id?.toUpperCase().slice(-8) || 'N/A'}</p>
+                                <h2>BOOKING RECORD</h2>
+                                <p>ID: ${booking.uid || booking.id?.toUpperCase().slice(-8) || 'N/A'}</p>
                                 <p>ISSUED: ${format(new Date(), 'MMM dd, yyyy')}</p>
                             </div>
                     </div>
@@ -159,12 +159,12 @@ const BookingDetailsPage = () => {
                     <div class="summary-card">
                         <div class="grid">
                             <div>
-                                <div class="label">Primary Occupant</div>
+                                <div class="label">Student Name</div>
                                 <div class="value">${user.name || 'N/A'}</div>
                                 <div style="font-size: 12px; color: #64748b; margin-top: 2px;">${user.email || ''}</div>
                             </div>
                             <div style="text-align: right;">
-                                <div class="label">Property Allocation</div>
+                                <div class="label">Hostel & Room</div>
                                 <div class="value">${hostel.name || 'N/A'}</div>
                                 <div style="font-size: 12px; color: #4338ca; font-weight: 700; margin-top: 2px;">Room ${room.roomNumber || 'N/A'}</div>
                             </div>
@@ -172,33 +172,33 @@ const BookingDetailsPage = () => {
                     </div>
                     
                     <div class="terms-block">
-                        <div class="label" style="margin-bottom: 16px;">Financial Commitment Structure</div>
+                        <div class="label" style="margin-bottom: 16px;">Payment Summary</div>
                         <div class="term-row">
-                            <span class="term-label">Monthly Residency Fee (Rent)</span>
+                            <span class="term-label">Monthly Rent</span>
                             <span class="term-value">PKR ${Number(booking.totalAmount || 0).toLocaleString()}</span>
                         </div>
                         <div class="term-row">
-                            <span class="term-label">Security Maintenance Bond (Refundable)</span>
+                            <span class="term-label">Security Deposit (Refundable)</span>
                             <span class="term-value">PKR ${Number(booking.securityDeposit || 0).toLocaleString()}</span>
                         </div>
                         <div class="term-row" style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-top: 10px;">
-                            <span class="term-label" style="font-weight: 600; color: #1e293b;">1st Month Advance Status</span>
+                            <span class="term-label" style="font-weight: 600; color: #1e293b;">1st Month Payment</span>
                             <span class="status-badge ${isAdvancePaid ? 'status-paid' : 'status-pending'}">
-                                ${isAdvancePaid ? 'Successfully Authorized' : 'Pending Authorization'}
+                                ${isAdvancePaid ? 'Paid' : 'Pending'}
                             </span>
                         </div>
                     </div>
                     
                     <div class="terms-block" style="border-top: none; padding-top: 0;">
-                        <div class="label" style="margin-bottom: 16px;">Temporal Window</div>
+                        <div class="label" style="margin-bottom: 16px;">Stay Dates</div>
                         <div class="grid">
                             <div>
-                                <div class="label">Check-In Node</div>
+                                <div class="label">Check-In Date</div>
                                 <div class="value">${booking.checkIn ? format(new Date(booking.checkIn), 'MMM dd, yyyy') : 'N/A'}</div>
                             </div>
                             <div style="text-align: right;">
-                                <div class="label">Contract Termination</div>
-                                <div class="value">${booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'Open Connectivity'}</div>
+                                <div class="label">Check-Out Date</div>
+                                <div class="value">${booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'No Check-Out Date'}</div>
                             </div>
                         </div>
                     </div>
@@ -248,7 +248,7 @@ const BookingDetailsPage = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight">Registry Detail Viewer</h1>
+                            <h1 className="text-lg font-bold text-gray-900 tracking-tight">Booking Details</h1>
                             <div className="flex items-center gap-2">
                                 {booking.uid ? (
                                     <Badge className="bg-indigo-50 text-indigo-600 border-none text-[10px] font-mono font-bold px-2 py-0.5">
@@ -257,7 +257,7 @@ const BookingDetailsPage = () => {
                                 ) : (
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                                         <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                                        NODE-AUTH: #{booking.id.slice(0, 8).toUpperCase()}
+                                        BOOKING ID: #{booking.id.slice(0, 8).toUpperCase()}
                                     </p>
                                 )}
                             </div>
@@ -283,12 +283,12 @@ const BookingDetailsPage = () => {
                                                     <Receipt className="h-5 w-5 text-white" />
                                                 </div>
                                                 <div>
-                                                    <h2 className="text-base font-bold uppercase tracking-tight">Booking Invoice</h2>
-                                                    <p className="text-[10px] font-medium text-indigo-100 uppercase tracking-widest">Official Registry Record</p>
+                                                    <h2 className="text-base font-bold uppercase tracking-tight">Payment Receipt</h2>
+                                                    <p className="text-[10px] font-medium text-indigo-100 uppercase tracking-widest">Official Record</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-[10px] font-bold uppercase text-indigo-200 tracking-wider">Registry ID</p>
+                                                <p className="text-[10px] font-bold uppercase text-indigo-200 tracking-wider">ID</p>
                                                 <p className="font-mono text-sm font-bold">{booking.uid || `#${booking.id.slice(0, 8).toUpperCase()}`}</p>
                                             </div>
                                         </div>
@@ -298,12 +298,12 @@ const BookingDetailsPage = () => {
                                         {/* Primary Entities */}
                                         <div className="grid grid-cols-2 gap-8">
                                             <div>
-                                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Resident Identity</h3>
+                                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Student Info</h3>
                                                 <p className="text-sm font-bold text-slate-900">{booking.User.name}</p>
                                                 <p className="text-xs text-slate-500 mt-1">{booking.User.email}</p>
                                             </div>
                                             <div className="text-right">
-                                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Temporal Window</h3>
+                                                <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Stay Dates</h3>
                                                 <p className="text-sm font-bold text-slate-900">{format(new Date(booking.checkIn), 'MMM dd, yyyy')}</p>
                                                 <p className="text-xs text-slate-500 mt-1">{booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'Open Continuity'}</p>
                                             </div>
@@ -316,30 +316,30 @@ const BookingDetailsPage = () => {
                                                     <Building className="h-4 w-4 text-indigo-500" />
                                                 </div>
                                                 <div>
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Unit Allocation</span>
+                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Room Details</span>
                                                     <p className="text-xs font-bold text-slate-800 uppercase">{booking.Room.Hostel.name}</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Vector</span>
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Location</span>
                                                 <p className="text-xs font-bold text-indigo-600">Room {booking.Room.roomNumber}</p>
                                             </div>
                                         </div>
 
                                         {/* Ledger Itemization */}
                                         <div className="space-y-4">
-                                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Fiscal Itemization</h3>
+                                            <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Payment Details</h3>
                                             <div className="space-y-3">
                                                 <div className="flex justify-between text-xs font-semibold">
-                                                    <span className="text-slate-500 capitalize">Monthly housing assessment</span>
+                                                    <span className="text-slate-500 capitalize">Monthly Rent</span>
                                                     <span className="text-slate-900">PKR {booking.totalAmount.toLocaleString()}</span>
                                                 </div>
                                                 <div className="flex justify-between text-xs font-semibold">
-                                                    <span className="text-slate-500 capitalize">Security maintenance bond</span>
+                                                    <span className="text-slate-500 capitalize">Security Deposit</span>
                                                     <span className="text-slate-900">PKR {booking.securityDeposit?.toLocaleString() || '0'}</span>
                                                 </div>
                                                 <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
-                                                    <span className="text-[10px] font-bold uppercase text-indigo-500">Net Contract Assessment</span>
+                                                    <span className="text-[10px] font-bold uppercase text-indigo-500">Total Amount</span>
                                                     <span className="text-2xl font-bold text-slate-900 tracking-tight">PKR {(booking.totalAmount + (booking.securityDeposit || 0)).toLocaleString()}</span>
                                                 </div>
                                             </div>
@@ -349,17 +349,17 @@ const BookingDetailsPage = () => {
                                         <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4 flex items-start gap-3">
                                             <Info className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
                                             <p className="text-[10px] font-medium text-amber-800 leading-relaxed">
-                                                This document reflects the comprehensive ledger state for the stated residency Period. Digitally authenticated by GreenView Central Registry.
+                                                This receipt is an official record of your stay and payments.
                                             </p>
                                         </div>
                                     </div>
 
                                     <div className="p-8 pt-0 flex gap-4">
                                         <Button variant="outline" className="flex-1 h-12 rounded-xl border-slate-200 font-bold text-[10px] uppercase tracking-wider text-slate-600 hover:bg-slate-50" onClick={handlePrint}>
-                                            Establish Copy
+                                            Print Receipt
                                         </Button>
                                         <Button onClick={handleViewInvoice} className="flex-1 h-12 rounded-xl bg-indigo-600 text-white font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">
-                                            Generate Document
+                                            View Full Receipt
                                         </Button>
                                     </div>
                                     <p className="pb-6 text-center text-[8px] font-bold text-slate-300 uppercase tracking-widest">© 2024 Global Registry Systems • GreenView Node</p>
@@ -385,8 +385,8 @@ const BookingDetailsPage = () => {
                                         <UserIcon className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <div>
-                                        <h2 className="text-base font-bold text-gray-900 uppercase">Resident Identity</h2>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Primary Occupancy Details</p>
+                                        <h2 className="text-base font-bold text-gray-900 uppercase">Student Information</h2>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Personal & Contact Details</p>
                                     </div>
                                 </div>
                                 <Button variant="ghost" size="icon" className="rounded-lg h-8 w-8" onClick={() => router.push(`/admin/bookings/${bookingId}/edit`)}>
@@ -401,7 +401,7 @@ const BookingDetailsPage = () => {
                                             <UserIcon className="h-4 w-4 text-gray-400" />
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1.5">Legal Name</p>
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1.5">Full Name</p>
                                             <p className="text-sm font-bold text-gray-900">{booking.User.name}</p>
                                             {booking.User.uid && (
                                                 <Badge className="mt-2 bg-gray-100 text-gray-600 border-none text-[9px] font-mono font-bold px-2 py-0.5">
@@ -415,7 +415,7 @@ const BookingDetailsPage = () => {
                                             <Mail className="h-4 w-4 text-gray-400" />
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1.5">Email Node</p>
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1.5">Email</p>
                                             <p className="text-sm font-bold text-gray-900">{booking.User.email}</p>
                                         </div>
                                     </div>
@@ -424,7 +424,7 @@ const BookingDetailsPage = () => {
                                             <Phone className="h-4 w-4 text-gray-400" />
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1.5">Phone Vector</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1.5">Phone</p>
                                             <p className="text-sm font-bold text-gray-900">{booking.User.phone || "UNREGISTERED"}</p>
                                         </div>
                                     </div>
@@ -436,7 +436,7 @@ const BookingDetailsPage = () => {
                                             <FileText className="h-4 w-4 text-gray-400" />
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1.5">CNIC Registry</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1.5">CNIC Number</p>
                                             <p className="text-sm font-bold text-gray-900">{booking.User.cnic || "PENDING"}</p>
                                         </div>
                                     </div>
@@ -445,7 +445,7 @@ const BookingDetailsPage = () => {
                                             <MapPin className="h-4 w-4 text-gray-400" />
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1.5">Residential root</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1.5">Permanent Address</p>
                                             <p className="text-sm font-bold text-gray-900 truncate max-w-[200px]">{booking.User.ResidentProfile?.address || "NOT PROVIDED"}</p>
                                         </div>
                                     </div>
@@ -467,8 +467,8 @@ const BookingDetailsPage = () => {
                                     <Building className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <div>
-                                    <h2 className="text-base font-bold text-gray-900 uppercase">Housing Asset</h2>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Physical residency configuration</p>
+                                    <h2 className="text-base font-bold text-gray-900 uppercase">Room Details</h2>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hostel and room information</p>
                                 </div>
                             </div>
 
@@ -481,12 +481,12 @@ const BookingDetailsPage = () => {
                                     </div>
                                 </div>
                                 <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100 hover:border-blue-200 transition-all cursor-pointer" onClick={() => router.push(`/admin/hostels/${booking.Room.Hostel.id}/room-details/room/${booking.Room.id}`)}>
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Housing Unit</p>
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Room</p>
                                     <p className="text-sm font-bold text-gray-900 uppercase">Room {booking.Room.roomNumber}</p>
                                     <p className="text-[10px] font-medium text-gray-400 mt-1 uppercase tracking-wider">{booking.Room.type}</p>
                                 </div>
                                 <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100 hover:border-blue-200 transition-all cursor-pointer">
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Unit Status</p>
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Room Status</p>
                                     <div className="flex items-center gap-2">
                                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                         <p className="text-sm font-bold text-emerald-600 uppercase">Operational</p>
@@ -498,12 +498,12 @@ const BookingDetailsPage = () => {
                             </div>
 
                             <div className="space-y-4 pt-4 border-t border-gray-50">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 italic">Service Lifecycle portal</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Room Services</p>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     {[
-                                        { icon: Shirt, label: 'Fabric Care', sub: `${booking.Room.LaundryLog?.length || 0} cycles`, color: 'text-purple-500', bg: 'bg-purple-50', link: `/admin/hostels/${booking.Room.Hostel.id}/room-details/room/${booking.Room.id}/laundry?hostelId=${booking.Room.Hostel.id}` },
+                                        { icon: Shirt, label: 'Laundry', sub: `${booking.Room.LaundryLog?.length || 0} cycles`, color: 'text-purple-500', bg: 'bg-purple-50', link: `/admin/hostels/${booking.Room.Hostel.id}/room-details/room/${booking.Room.id}/laundry?hostelId=${booking.Room.Hostel.id}` },
                                         { icon: Wrench, label: 'Maintenance', sub: `${booking.Room.maintanance?.length || 0} tracks`, color: 'text-amber-500', bg: 'bg-amber-50', link: `/admin/hostels/${booking.Room.Hostel.id}/room-details/room/${booking.Room.id}/maintenance?hostelId=${booking.Room.Hostel.id}` },
-                                        { icon: Sparkle, label: 'Cleaning Audit', sub: `${booking.Room.CleaningLog?.length || 0} status`, color: 'text-blue-500', bg: 'bg-blue-50', link: `/admin/hostels/${booking.Room.Hostel.id}/room-details/room/${booking.Room.id}/cleaning?hostelId=${booking.Room.Hostel.id}` }
+                                        { icon: Sparkle, label: 'Cleaning Status', sub: `${booking.Room.CleaningLog?.length || 0} records`, color: 'text-blue-500', bg: 'bg-blue-50', link: `/admin/hostels/${booking.Room.Hostel.id}/room-details/room/${booking.Room.id}/cleaning?hostelId=${booking.Room.Hostel.id}` }
                                     ].map((tool, i) => (
                                         <div key={i} className="flex items-center gap-3 bg-gray-50/50 border border-gray-100 rounded-xl p-3.5 hover:bg-white hover:border-gray-200 hover:shadow-sm transition-all cursor-pointer group" onClick={() => router.push(tool.link)}>
                                             <div className={`h-8 w-8 rounded-lg ${tool.bg} flex items-center justify-center`}>
@@ -530,27 +530,27 @@ const BookingDetailsPage = () => {
                                     <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100">
                                         <DollarSign className="h-5 w-5 text-emerald-600" />
                                     </div>
-                                    <h2 className="text-base font-bold text-gray-900 uppercase italic">Fiscal Ledger</h2>
+                                    <h2 className="text-base font-bold text-gray-900 uppercase italic">Payment Information</h2>
                                 </div>
                                 <Button variant="outline" className="h-8 px-4 rounded-lg bg-gray-50 border-gray-100 text-[9px] font-bold uppercase tracking-widest" onClick={() => router.push(`/admin/bookings/${bookingId}/payments`)}>
-                                    Portal
+                                    View All
                                 </Button>
                             </div>
 
                             <div className="space-y-5">
                                 <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
-                                    <span className="text-gray-400">Net Liability</span>
+                                    <span className="text-gray-400">Total Fees</span>
                                     <span className="text-gray-900 font-black">PKR {(booking.totalAmount + (booking.securityDeposit || 0)).toLocaleString()}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
-                                    <span className="text-gray-400">Settled Funds</span>
+                                    <span className="text-gray-400">Total Paid</span>
                                     <span className="text-emerald-600 font-black">PKR {totalPaid.toLocaleString()}</span>
                                 </div>
                                 <div className="h-px bg-gray-50 my-2" />
                                 <div className="space-y-2">
                                     <div className="flex justify-between items-end">
                                         <div>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Residual Node</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Remaining Balance</p>
                                             <p className="text-2xl font-black text-rose-500 tracking-tight italic">PKR {balance.toLocaleString()}</p>
                                         </div>
                                         <div className="text-right">
@@ -570,31 +570,31 @@ const BookingDetailsPage = () => {
                                 <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100">
                                     <Hash className="h-5 w-5 text-gray-400" />
                                 </div>
-                                <h2 className="text-base font-bold text-gray-900 uppercase">Registry Control</h2>
+                                <h2 className="text-base font-bold text-gray-900 uppercase">Manage Status</h2>
                             </div>
 
                             <div className="space-y-2">
                                 {booking.status === 'PENDING' && (
                                     <Button className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] uppercase tracking-widest shadow-sm active:scale-95 transition-all" onClick={() => handleStatusUpdate('CONFIRMED')}>
-                                        Authorize Registry
+                                        Confirm Booking
                                     </Button>
                                 )}
                                 {booking.status === 'CONFIRMED' && (
                                     <Button className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase tracking-widest shadow-sm active:scale-95" onClick={() => handleStatusUpdate('CHECKED_IN')}>
-                                        Confirm Arrival
+                                        Mark as Arrived
                                     </Button>
                                 )}
                                 {booking.status === 'CHECKED_IN' && (
                                     <Button className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] uppercase tracking-widest shadow-sm active:scale-95" onClick={() => handleStatusUpdate('CHECKED_OUT')}>
-                                        Initiate Checkout
+                                        Check-Out
                                     </Button>
                                 )}
                                 <div className="grid grid-cols-2 gap-3 pt-2">
                                     <Button variant="outline" className="h-11 rounded-xl border-gray-100 font-bold text-[10px] uppercase tracking-widest text-gray-500 hover:bg-gray-50" onClick={() => router.push(`/admin/bookings/${bookingId}/payments`)}>
-                                        Audit Ledger
+                                        View Payments
                                     </Button>
                                     <Button variant="outline" className="h-11 rounded-xl border-red-50 text-red-500 hover:bg-red-50 font-bold text-[10px] uppercase tracking-widest" onClick={() => handleStatusUpdate('CANCELLED')} disabled={booking.status === 'CANCELLED' || booking.status === 'CHECKED_OUT'}>
-                                        Cancel Node
+                                        Cancel Booking
                                     </Button>
                                 </div>
                             </div>

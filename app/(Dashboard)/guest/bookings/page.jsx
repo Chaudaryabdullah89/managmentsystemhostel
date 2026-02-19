@@ -105,12 +105,17 @@ const BookingDetailCard = ({ booking }) => {
                         <Building2 className="h-6 w-6 text-gray-400 group-hover:text-white transition-colors" />
                     </div>
                     <div className="flex flex-col min-w-0 text-left">
-                        <h4 className="text-base font-bold text-gray-900 uppercase tracking-tight truncate">{booking.Room?.Hostel?.name}</h4>
+                        <div className="flex items-center gap-2">
+                            <h4 className="text-base font-bold text-gray-900 uppercase tracking-tight truncate">{booking.Room?.Hostel?.name}</h4>
+                            {(booking.status === 'Active' || booking.status === 'CHECKED_IN') && (
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
+                            )}
+                        </div>
                         <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">UNIT {booking.Room?.roomNumber}</span>
                             <span className="h-1 w-1 rounded-full bg-gray-200" />
                             {booking.uid ? (
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">ID: {booking.uid}</span>
+                                <span className="text-[10px] font-bold text-indigo-600/60 font-mono tracking-tight leading-none bg-indigo-50/50 px-1.5 py-0.5 rounded">REF: {booking.uid}</span>
                             ) : (
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">ID: {booking.id.slice(0, 8).toUpperCase()}</span>
                             )}
@@ -118,16 +123,29 @@ const BookingDetailCard = ({ booking }) => {
                     </div>
                 </div>
 
-                {/* Booking Dates */}
-                <div className="hidden xl:flex items-center gap-8 min-w-[280px]">
+                {/* Booking Lifecycle: Timeline Style */}
+                <div className="hidden xl:flex items-center gap-6 min-w-[320px] bg-slate-50/50 p-3 rounded-2xl border border-slate-100">
                     <div className="flex flex-col gap-0.5">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Check-in</span>
-                        <span className="text-xs font-bold text-gray-900 uppercase">{format(new Date(booking.checkIn), 'MMM dd, yyyy')}</span>
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <Calendar className="h-2.5 w-2.5" /> Booked On
+                        </span>
+                        <span className="text-[11px] font-bold text-slate-900 uppercase">{format(new Date(booking.checkIn), 'MMM dd, yyyy')}</span>
                     </div>
-                    <div className="h-4 w-px bg-gray-100" />
-                    <div className="flex flex-col gap-0.5">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Check-out</span>
-                        <span className="text-xs font-bold text-gray-900 uppercase">{booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'Ongoing'}</span>
+                    <div className="flex-1 flex items-center px-4">
+                        <div className="h-[2px] w-full bg-slate-200 relative">
+                            <div className="absolute -top-1 left-0 h-2 w-2 rounded-full bg-slate-300" />
+                            {(booking.status === 'Active' || booking.status === 'CHECKED_IN') ? (
+                                <div className="absolute -top-1 left-1/2 h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            ) : (
+                                <div className="absolute -top-1 right-0 h-2 w-2 rounded-full bg-slate-300" />
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex flex-col gap-0.5 text-right">
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest flex items-center justify-end gap-1.5">
+                            Check-out <Clock className="h-2.5 w-2.5" />
+                        </span>
+                        <span className="text-[11px] font-bold text-slate-900 uppercase">{booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'Stay Active'}</span>
                     </div>
                 </div>
 
@@ -136,10 +154,9 @@ const BookingDetailCard = ({ booking }) => {
                     <BookingStatusBadge status={booking.status} />
                 </div>
 
-                {/* 4. Actions */}
                 <div className="flex items-center gap-2 lg:ml-auto">
                     <UnifiedReceipt data={booking} type="booking">
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-gray-50 text-gray-400 transition-colors">
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-slate-50 text-slate-400 transition-colors">
                             <Printer className="h-4 w-4" />
                         </Button>
                     </UnifiedReceipt>
@@ -147,8 +164,8 @@ const BookingDetailCard = ({ booking }) => {
                     {['Active', 'CONFIRMED', 'CHECKED_IN'].includes(booking.status) && (
                         <PaymentNotificationModal booking={booking}>
                             <Button className="h-10 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn">
-                                <Zap className="h-3.5 w-3.5 text-white" />
-                                Notify Payment
+                                <Send className="h-3.5 w-3.5 text-white group-hover/btn:-translate-y-0.5 group-hover/btn:translate-x-0.5 transition-transform" />
+                                Notify Warden
                             </Button>
                         </PaymentNotificationModal>
                     )}
@@ -156,7 +173,7 @@ const BookingDetailCard = ({ booking }) => {
                     <Button
                         variant="ghost"
                         size="icon"
-                        className={`h-10 w-10 rounded-full transition-all ${isExpanded ? 'bg-indigo-600 text-white' : 'hover:bg-gray-100 text-gray-300'}`}
+                        className={`h-10 w-10 rounded-full transition-all ${isExpanded ? 'bg-indigo-600 text-white' : 'hover:bg-slate-100 text-slate-300'}`}
                         onClick={() => setIsExpanded(!isExpanded)}
                     >
                         {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}

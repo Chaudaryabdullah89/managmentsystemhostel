@@ -375,7 +375,7 @@ const PaymentManagementPage = () => {
                                 value="verification"
                                 className="h-full px-8 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all relative"
                             >
-                                <CheckCircle className="h-3.5 w-3.5 mr-2" /> Pending Approvals
+                                <CheckCircle className="h-3.5 w-3.5 mr-2" /> Guest Notifications
                                 {(paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length > 0) && (
                                     <span className="absolute -top-1 -right-1 h-2 w-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                 )}
@@ -419,6 +419,12 @@ const PaymentManagementPage = () => {
                                                     <span className="text-[9px] font-bold text-indigo-600/60 uppercase tracking-widest truncate max-w-[200px]">
                                                         {payment.notes}
                                                     </span>
+                                                </div>
+                                            )}
+                                            {payment.receiptUrl && payment.status === 'PENDING' && (
+                                                <div className="flex items-center gap-1 mt-2 px-2 py-0.5 bg-emerald-50 rounded-md border border-emerald-100 w-fit">
+                                                    <Zap className="h-2.5 w-2.5 text-emerald-500 animate-pulse" />
+                                                    <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">New Notification</span>
                                                 </div>
                                             )}
                                         </div>
@@ -550,7 +556,12 @@ const PaymentManagementPage = () => {
                                         <div className="flex flex-col gap-4 flex-1">
                                             <div className="flex items-center gap-3">
                                                 <h4 className="text-lg font-bold text-gray-900 uppercase tracking-tight">{payment.User?.name}</h4>
-                                                <Badge className="bg-amber-50 text-amber-600 border-amber-100 font-bold uppercase text-[9px] tracking-widest px-3">Pending Approval</Badge>
+                                                <Badge className="bg-amber-50 text-amber-600 border-amber-100 font-bold uppercase text-[9px] tracking-widest px-3">Sent Notification</Badge>
+                                                {payment.receiptUrl && (
+                                                    <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 font-bold uppercase text-[9px] tracking-widest px-3 flex items-center gap-1">
+                                                        <Scan className="h-3 w-3" /> Proof Attached
+                                                    </Badge>
+                                                )}
                                             </div>
                                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                                 <div>

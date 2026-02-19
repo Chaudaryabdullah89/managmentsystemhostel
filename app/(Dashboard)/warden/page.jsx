@@ -321,14 +321,26 @@ const WardenDashboard = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 {[
                                     { label: 'Bookings', icon: ClipboardList, href: '/warden/bookings', color: 'text-orange-600', bg: 'bg-orange-50' },
-                                    { label: 'Payments', icon: DollarSign, href: '/warden/payments', color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                                    {
+                                        label: 'Payments',
+                                        icon: DollarSign,
+                                        href: '/warden/payments',
+                                        color: 'text-emerald-600',
+                                        bg: 'bg-emerald-50',
+                                        badge: recentPayments?.payments?.filter(p => p.status === 'PENDING').length || 0
+                                    },
                                     { label: 'Complaints', icon: MessageSquare, href: '/warden/complaints', color: 'text-rose-600', bg: 'bg-rose-50' },
                                     { label: 'Residents', icon: Users, href: '/warden/residents', color: 'text-blue-600', bg: 'bg-blue-50' },
                                     { label: 'Rooms', icon: Bed, href: '/warden/rooms', color: 'text-amber-600', bg: 'bg-amber-50' },
                                     { label: 'Service Hub', icon: History, href: '/warden/services', color: 'text-purple-600', bg: 'bg-purple-50' },
                                 ].map((item, i) => (
                                     <Link key={i} href={item.href}>
-                                        <div className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-md hover:border-blue-600/20 transition-all text-center">
+                                        <div className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-md hover:border-blue-600/20 transition-all text-center relative group">
+                                            {item.badge > 0 && (
+                                                <span className="absolute -top-1 -right-1 h-5 w-5 bg-rose-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white animate-bounce shadow-lg">
+                                                    {item.badge}
+                                                </span>
+                                            )}
                                             <div className={`h-10 w-10 rounded-xl ${item.bg} ${item.color} flex items-center justify-center`}>
                                                 <item.icon className="h-5 w-5" />
                                             </div>
@@ -346,20 +358,27 @@ const WardenDashboard = () => {
                             </div>
                             <div className="bg-white border border-gray-100 rounded-[2.5rem] p-6 shadow-sm space-y-6">
                                 {recentPayments?.payments?.length > 0 ? recentPayments.payments.slice(0, 4).map((pmt) => (
-                                    <div key={pmt.id} className="flex items-center justify-between group cursor-pointer">
+                                    <div key={pmt.id} className="flex items-center justify-between group cursor-pointer relative">
                                         <div className="flex items-center gap-4">
-                                            <div className={`h-10 w-10 rounded-xl ${pmt.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-400'} flex items-center justify-center border border-gray-100 group-hover:bg-blue-600 group-hover:text-white transition-all`}>
-                                                <DollarSign className="h-4 w-4" />
+                                            <div className={`h-10 w-10 rounded-xl ${pmt.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'} flex items-center justify-center border border-gray-100 group-hover:bg-blue-600 group-hover:text-white transition-all`}>
+                                                {pmt.receiptUrl && pmt.status === 'PENDING' ? <ShieldCheck className="h-4 w-4 animate-pulse" /> : <DollarSign className="h-4 w-4" />}
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="text-[11px] font-bold text-gray-900 uppercase tracking-tight">{pmt.User?.name || 'Guest'}</span>
-                                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{format(new Date(pmt.date), 'MMM dd, HH:mm')}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[11px] font-bold text-gray-900 uppercase tracking-tight">{pmt.User?.name || 'Guest'}</span>
+                                                    {pmt.receiptUrl && pmt.status === 'PENDING' && (
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                    )}
+                                                </div>
+                                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">
+                                                    {pmt.receiptUrl && pmt.status === 'PENDING' ? 'New Notification' : format(new Date(pmt.date), 'MMM dd, HH:mm')}
+                                                </span>
                                             </div>
                                         </div>
                                         <div className="text-right flex flex-col items-end">
                                             <span className="text-[11px] font-bold text-gray-900">PKR {pmt.amount.toLocaleString()}</span>
-                                            <Badge variant="outline" className={`text-[7px] font-bold rounded-full px-2 py-0 border-none ${pmt.status === 'PAID' ? 'text-emerald-500' : 'text-amber-500'}`}>
-                                                {pmt.status}
+                                            <Badge variant="outline" className={`text-[7px] font-bold rounded-full px-2 py-0 border-none ${pmt.status === 'PAID' ? 'text-emerald-500 bg-emerald-50' : 'text-amber-500 bg-amber-50'}`}>
+                                                {pmt.status === 'PENDING' && pmt.receiptUrl ? 'NOTIFIED' : pmt.status}
                                             </Badge>
                                         </div>
                                     </div>

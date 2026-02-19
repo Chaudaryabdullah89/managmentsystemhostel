@@ -27,6 +27,7 @@ import {
     CreditCard,
     Calendar,
     ShieldCheck,
+    Send,
     Zap,
     Image as ImageIcon,
     CheckCircle,
@@ -133,7 +134,7 @@ export default function PaymentNotificationModal({ booking, children }) {
                 setNotes("");
                 setTransactionId("");
                 setReceiptUrl("");
-                toast.success("Payment Sent for Approval.");
+                toast.success("Warden Notified Successfully.");
             },
             onError: (error) => {
                 toast.error(error.message || "Failed to send payment.");
@@ -181,8 +182,8 @@ export default function PaymentNotificationModal({ booking, children }) {
                             <Zap className="h-6 w-6 text-white" />
                         </div>
                         <div className="text-left">
-                            <DialogTitle className="text-lg font-bold text-slate-900 leading-none uppercase">Payment Form</DialogTitle>
-                            <DialogDescription className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">Send your payment details</DialogDescription>
+                            <DialogTitle className="text-lg font-bold text-slate-900 leading-none uppercase">Notify Warden</DialogTitle>
+                            <DialogDescription className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">Alert management about your payment</DialogDescription>
                         </div>
                     </div>
                 </DialogHeader>
@@ -320,8 +321,8 @@ export default function PaymentNotificationModal({ booking, children }) {
                                 <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
                                 <>
-                                    <Zap className="h-4 w-4 text-white" />
-                                    Submit Payment
+                                    <Send className="h-4 w-4 text-white" />
+                                    Notify Warden
                                 </>
                             )}
                         </Button>

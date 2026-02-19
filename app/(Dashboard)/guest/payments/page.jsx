@@ -13,6 +13,7 @@ import {
     ExternalLink,
     Zap,
     TrendingUp,
+    Send,
     FileText,
     ArrowUpRight
 } from 'lucide-react';
@@ -90,7 +91,7 @@ const GuestPayments = () => {
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Payment History</span>
                                 <div className={`h-1.5 w-1.5 rounded-full ${isSettled ? 'bg-emerald-500' : 'bg-amber-500'}`} />
                                 <span className={`text-[10px] font-bold uppercase tracking-wider ${isSettled ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                    {isSettled ? 'Fully Paid' : 'Active Payments'}
+                                    {isSettled ? 'Settled' : 'Unpaid Dues'}
                                 </span>
                             </div>
                         </div>
@@ -100,8 +101,8 @@ const GuestPayments = () => {
                         {activeBooking && (
                             <PaymentNotificationModal booking={activeBooking}>
                                 <Button className="h-9 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm flex items-center gap-2">
-                                    <Zap className="h-3.5 w-3.5 text-white" />
-                                    Initiate Payment
+                                    <Send className="h-3.5 w-3.5 text-white" />
+                                    Notify Warden
                                 </Button>
                             </PaymentNotificationModal>
                         )}
@@ -111,7 +112,7 @@ const GuestPayments = () => {
                                 className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all shadow-sm"
                             >
                                 <Download className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                Statement
+                                Get Receipt
                             </Button>
                         </UnifiedReceipt>
                     </div>
@@ -127,8 +128,8 @@ const GuestPayments = () => {
                                 <AlertCircle className="h-6 w-6 text-white" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-bold text-rose-900 uppercase tracking-tight">Payment Action Required</h3>
-                                <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-1">One or more of your payments were rejected. Please check the history and resubmit.</p>
+                                <h3 className="text-sm font-bold text-rose-900 uppercase tracking-tight">Action Needed</h3>
+                                <p className="text-[10px] font-bold text-rose-500 uppercase tracking-widest mt-1">One of your payments was rejected. Please re-upload your receipt.</p>
                             </div>
                         </div>
                         <PaymentNotificationModal booking={activeBooking}>
@@ -153,7 +154,7 @@ const GuestPayments = () => {
                                     <h2 className="text-3xl font-bold text-slate-900 uppercase">Payment Summary</h2>
                                 </div>
                                 <div className="text-right">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Due Amount</span>
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-1">Total Balance</span>
                                     <div className="text-4xl font-bold text-slate-900 tracking-tighter">
                                         PKR {netBalance > 0 ? netBalance.toLocaleString() : "0"}
                                     </div>
@@ -164,21 +165,21 @@ const GuestPayments = () => {
                                 <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100/50 group hover:bg-white hover:border-indigo-600 transition-all cursor-default">
                                     <div className="flex items-center gap-2 mb-2">
                                         <TrendingUp className="h-3.5 w-3.5 text-indigo-600" />
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest tracking-tighter">Total Bill</span>
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Bill</span>
                                     </div>
                                     <p className="text-lg font-bold text-slate-800 tracking-tight">PKR {totalDue.toLocaleString()}</p>
                                 </div>
                                 <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100/50 group hover:bg-white hover:border-emerald-100 transition-all cursor-default">
                                     <div className="flex items-center gap-2 mb-2">
                                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Verified Paid</span>
+                                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Paid</span>
                                     </div>
                                     <p className="text-lg font-bold text-slate-800 tracking-tight">PKR {paidAmount.toLocaleString()}</p>
                                 </div>
                                 <div className="bg-gray-50 rounded-3xl p-6 border border-gray-100/50 group hover:bg-white hover:border-amber-100 transition-all cursor-default relative overflow-hidden">
                                     <div className="flex items-center gap-2 mb-2">
                                         <Clock className="h-3.5 w-3.5 text-amber-500" />
-                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Under Review</span>
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Pending</span>
                                     </div>
                                     <p className="text-lg font-bold text-slate-800 tracking-tight">PKR {pendingAmount.toLocaleString()}</p>
                                     <div className="absolute top-0 right-0 p-2 opacity-10">
@@ -190,7 +191,7 @@ const GuestPayments = () => {
                             <div className="mt-8 flex items-center justify-between px-2">
                                 <div className="flex items-center gap-3">
                                     <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                    <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Payments are updated twice daily after admin verification.</p>
+                                    <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Payments are usually updated within 12-24 hours after verification.</p>
                                 </div>
                                 <Button variant="ghost" className="text-[10px] font-bold uppercase text-indigo-600 hover:bg-slate-50 gap-2">
                                     View Payment History <ArrowUpRight className="h-3 w-3" />

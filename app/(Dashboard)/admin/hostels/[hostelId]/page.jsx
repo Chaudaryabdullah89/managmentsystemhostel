@@ -100,7 +100,7 @@ const HostelOverviewPage = () => {
                             <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">{hostel.name}</h1>
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                                 <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                                Hostel Overview • {hostel.type}
+                                Details • {hostel.type}
                             </p>
                         </div>
                     </div>
@@ -137,10 +137,10 @@ const HostelOverviewPage = () => {
                 {/* Quick Statistics */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Occupancy Rate', value: `${occupancyRate}%`, icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'How Full', value: `${occupancyRate}%`, icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50' },
                         { label: 'Total Rooms', value: roomStats.total, icon: BedDouble, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Location', value: hostel.city, icon: MapPin, color: 'text-purple-600', bg: 'bg-purple-50' },
-                        { label: 'Manager', value: hostel.User_Hostel_managerIdToUser?.name?.split(' ')[0] || 'Unassigned', icon: ShieldCheck, color: 'text-amber-600', bg: 'bg-amber-50' }
+                        { label: 'City', value: hostel.city, icon: MapPin, color: 'text-purple-600', bg: 'bg-purple-50' },
+                        { label: 'In Charge', value: hostel.User_Hostel_managerIdToUser?.name?.split(' ')[0] || 'Unassigned', icon: ShieldCheck, color: 'text-amber-600', bg: 'bg-amber-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -209,9 +209,9 @@ const HostelOverviewPage = () => {
                                         <div className="relative z-10 space-y-3">
                                             <div className="flex items-center gap-2">
                                                 <Zap className="h-3.5 w-3.5 text-blue-200" />
-                                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-100">Quick Actions</span>
+                                                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-100">Quick Links</span>
                                             </div>
-                                            <h4 className="text-xs font-bold uppercase tracking-tight italic">Management</h4>
+                                            <h4 className="text-xs font-bold uppercase tracking-tight italic">Options</h4>
                                             <div className="grid grid-cols-2 gap-2 mt-4">
                                                 <Button size="sm" className="h-8 bg-white/10 hover:bg-white/20 text-[8px] font-black uppercase tracking-widest rounded-lg" onClick={() => router.push(`/admin/hostels/${encodeURIComponent(hostel.name)}/residents?hostelId=${hostelId}`)}>
                                                     Residents
@@ -326,7 +326,7 @@ const HostelOverviewPage = () => {
                             <div className="absolute top-0 right-0 p-6 opacity-5">
                                 <ShieldCheck className="h-20 w-20 text-blue-600" />
                             </div>
-                            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-6">Hostel Details</h3>
+                            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-6">More Info</h3>
                             <div className="space-y-5">
                                 <div className="flex flex-col">
                                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Created On</span>
@@ -337,13 +337,13 @@ const HostelOverviewPage = () => {
                                 <div className="flex flex-col">
                                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">System Status</span>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-[11px] font-bold text-gray-600 uppercase italic">Online / Active</span>
+                                        <span className="text-[11px] font-bold text-gray-600 uppercase italic">Online</span>
                                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                     </div>
                                 </div>
                                 <div className="pt-4 border-t border-gray-100">
                                     <p className="text-[9px] font-bold text-gray-400 leading-relaxed uppercase">
-                                        All hostel data is securely managed and monitored for administrative purposes.
+                                        All records are securely managed for hostel staff.
                                     </p>
                                 </div>
                             </div>

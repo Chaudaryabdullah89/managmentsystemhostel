@@ -109,8 +109,8 @@ const CreateHostelPage = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
-                            <h1 className="text-xl font-bold tracking-tight text-primary">Add New Property</h1>
-                            <p className="text-sm text-muted-foreground">New hostel form</p>
+                            <h1 className="text-xl font-bold tracking-tight text-primary">Add New Hostel</h1>
+                            <p className="text-sm text-muted-foreground">Fill in the details below</p>
                         </div>
                     </div>
                     <Button
@@ -138,7 +138,7 @@ const CreateHostelPage = () => {
                             <CardContent className="px-8 pb-8 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Property Name *</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Hostel Name *</Label>
                                         <Input
                                             placeholder="e.g. Paramount Manor"
                                             className="h-11 bg-white border-gray-100 rounded-xl font-bold text-gray-900 placeholder:text-gray-300 focus:ring-1 focus:ring-black"
@@ -272,7 +272,7 @@ const CreateHostelPage = () => {
                             </CardHeader>
                             <div className="p-6 space-y-5">
                                 <div className="space-y-1.5 flex flex-col">
-                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Monthly Payment (PKR)</Label>
+                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Monthly Rent (PKR)</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400">PKR</span>
                                         <Input type="number" className="pl-14 h-12 bg-gray-50 border-gray-100 rounded-2xl font-black text-lg text-center" value={montlypayment} onChange={(e) => setmontlypayment(e.target.value)} />
@@ -296,13 +296,13 @@ const CreateHostelPage = () => {
                             <div className="absolute top-0 right-0 p-4 opacity-10">
                                 <ShieldCheck className="h-12 w-12 text-white" />
                             </div>
-                            <p className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-6">Additional Info</p>
+                            <p className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-6">More Details</p>
                             <div className="space-y-4">
                                 <div className="space-y-2">
                                     <p className="text-[10px] font-bold text-white uppercase">Description</p>
                                     <Textarea
                                         className="bg-black/40 border-white/5 text-white/90 text-xs font-medium min-h-[140px] rounded-xl focus:border-white/20"
-                                        placeholder="Internal property notes..."
+                                        placeholder="Add any notes here..."
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
                                     />

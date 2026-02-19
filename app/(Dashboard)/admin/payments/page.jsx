@@ -244,7 +244,7 @@ const PaymentManagementPage = () => {
                 </div>
                 <div className="text-center">
                     <p className="text-lg font-bold text-gray-900 tracking-tight">Loading Records...</p>
-                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Checking transaction history</p>
+                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Searching payments...</p>
                 </div>
             </div>
         </div>
@@ -260,7 +260,7 @@ const PaymentManagementPage = () => {
                         <div className="flex flex-col">
                             <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Payments</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Hostel Records</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Records</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
                             </div>
@@ -285,10 +285,10 @@ const PaymentManagementPage = () => {
                 {/* Statistics Overview */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Total Revenue', value: `PKR ${(stats?.totalRevenue / 1000).toFixed(1)}k`, icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Paid Ratio', value: `${((stats?.monthlyRevenue / (stats?.monthlyRevenue + stats?.pendingReceivables)) * 100 || 0).toFixed(0)}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Total Money', value: `PKR ${(stats?.totalRevenue / 1000).toFixed(1)}k`, icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Collection %', value: `${((stats?.monthlyRevenue / (stats?.monthlyRevenue + stats?.pendingReceivables)) * 100 || 0).toFixed(0)}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                         { label: 'Pending Approvals', value: paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Overdue Amount', value: `PKR ${(stats?.overdueLiability / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' }
+                        { label: 'Unpaid Fees', value: `PKR ${(stats?.overdueLiability / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -307,7 +307,7 @@ const PaymentManagementPage = () => {
                     <div className="flex-1 relative w-full group px-2">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
-                            placeholder="Search by Resident, Room or Transaction ID..."
+                            placeholder="Search by Student, Room or ID..."
                             className="w-full h-12 pl-10 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -370,7 +370,7 @@ const PaymentManagementPage = () => {
                                 value="verification"
                                 className="h-full px-8 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all relative"
                             >
-                                <CheckCircle className="h-3.5 w-3.5 mr-2" /> Pending Approvals
+                                <CheckCircle className="h-3.5 w-3.5 mr-2" /> Guest Notifications
                                 {(paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length > 0) && (
                                     <span className="absolute -top-1 -right-1 h-2 w-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                 )}
@@ -414,6 +414,12 @@ const PaymentManagementPage = () => {
                                                     <span className="text-[9px] font-bold text-blue-600/60 uppercase tracking-widest truncate max-w-[200px]">
                                                         {payment.notes}
                                                     </span>
+                                                </div>
+                                            )}
+                                            {payment.receiptUrl && payment.status === 'PENDING' && (
+                                                <div className="flex items-center gap-1 mt-2 px-2 py-0.5 bg-emerald-50 rounded-md border border-emerald-100 w-fit">
+                                                    <Zap className="h-2.5 w-2.5 text-emerald-500 animate-pulse" />
+                                                    <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">New Notification</span>
                                                 </div>
                                             )}
                                         </div>
@@ -545,7 +551,12 @@ const PaymentManagementPage = () => {
                                         <div className="flex flex-col gap-4 flex-1">
                                             <div className="flex items-center gap-3">
                                                 <h4 className="text-lg font-bold text-gray-900 uppercase tracking-tight">{payment.User?.name}</h4>
-                                                <Badge className="bg-amber-50 text-amber-600 border-amber-100 font-bold uppercase text-[9px] tracking-widest px-3">Pending Approval</Badge>
+                                                <Badge className="bg-amber-50 text-amber-600 border-amber-100 font-bold uppercase text-[9px] tracking-widest px-3">Sent Notification</Badge>
+                                                {payment.receiptUrl && (
+                                                    <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 font-bold uppercase text-[9px] tracking-widest px-3 flex items-center gap-1">
+                                                        <Scan className="h-3 w-3" /> Proof Attached
+                                                    </Badge>
+                                                )}
                                             </div>
                                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                                                 <div>
@@ -569,7 +580,7 @@ const PaymentManagementPage = () => {
                                                 <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-2.5">
                                                     <Info className="h-3.5 w-3.5 text-blue-400 mt-0.5 shrink-0" />
                                                     <div className="flex flex-col gap-0.5">
-                                                        <span className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">Transaction Comment</span>
+                                                        <span className="text-[8px] font-bold text-blue-400 uppercase tracking-widest">Payment Note</span>
                                                         <p className="text-[10px] font-medium text-gray-600 uppercase tracking-wide leading-relaxed">
                                                             {payment.notes}
                                                         </p>
@@ -639,7 +650,7 @@ const PaymentManagementPage = () => {
                                 <span className="text-[10px] font-bold text-gray-200 uppercase mt-1">{new Date().toLocaleDateString()}</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Total Collection</span>
+                                <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Total Money Collected</span>
                                 <span className="text-[10px] font-bold text-white uppercase mt-1">PKR {stats?.totalRevenue?.toLocaleString()} Managed</span>
                             </div>
                         </div>
@@ -661,7 +672,7 @@ const PaymentManagementPage = () => {
                             <XCircle className="h-8 w-8" />
                         </div>
                         <h2 className="text-2xl font-bold uppercase tracking-tight">Reject Payment</h2>
-                        <p className="text-[10px] text-white/70 font-bold tracking-widest mt-2 uppercase">Cancel this payment record</p>
+                        <p className="text-[10px] text-white/70 font-bold tracking-widest mt-2 uppercase">Cancel this payment</p>
                     </div>
                     <div className="p-10 space-y-8">
                         <div className="space-y-3">

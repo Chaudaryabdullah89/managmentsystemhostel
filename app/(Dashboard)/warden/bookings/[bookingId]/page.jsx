@@ -271,16 +271,16 @@ const BookingDetailsPage = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight">Registry Detail Viewer</h1>
+                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Registry Node Detail</h1>
                             <div className="flex items-center gap-2">
                                 {booking.uid ? (
-                                    <Badge className="bg-indigo-50 text-indigo-600 border-none text-[10px] font-mono font-bold px-2 py-0.5">
-                                        {booking.uid}
+                                    <Badge className="bg-indigo-50 text-indigo-600 border-none text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg">
+                                        REF: {booking.uid}
                                     </Badge>
                                 ) : (
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                        <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                                        NODE-AUTH: #{booking.id.slice(0, 8).toUpperCase()}
+                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                        AUTHID: #{booking.id.slice(0, 8).toUpperCase()}
                                     </p>
                                 )}
                             </div>
@@ -598,17 +598,20 @@ const BookingDetailsPage = () => {
 
                             <div className="space-y-2">
                                 {booking.status === 'PENDING' && (
-                                    <Button className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] uppercase tracking-widest shadow-sm active:scale-95 transition-all" onClick={() => handleStatusUpdate('CONFIRMED')}>
+                                    <Button className="w-full h-12 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] uppercase tracking-widest shadow-lg shadow-indigo-100 active:scale-95 transition-all flex items-center gap-2" onClick={() => handleStatusUpdate('CONFIRMED')}>
+                                        <CheckCircle2 className="h-4 w-4" />
                                         Authorize Registry
                                     </Button>
                                 )}
                                 {booking.status === 'CONFIRMED' && (
-                                    <Button className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase tracking-widest shadow-sm active:scale-95" onClick={() => handleStatusUpdate('CHECKED_IN')}>
+                                    <Button className="w-full h-12 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] uppercase tracking-widest shadow-lg shadow-blue-100 active:scale-95 flex items-center gap-2" onClick={() => handleStatusUpdate('CHECKED_IN')}>
+                                        <DoorOpen className="h-4 w-4" />
                                         Confirm Arrival
                                     </Button>
                                 )}
                                 {booking.status === 'CHECKED_IN' && (
-                                    <Button className="w-full h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] uppercase tracking-widest shadow-sm active:scale-95" onClick={() => handleStatusUpdate('CHECKED_OUT')}>
+                                    <Button className="w-full h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] uppercase tracking-widest shadow-lg shadow-emerald-100 active:scale-95 flex items-center gap-2" onClick={() => handleStatusUpdate('CHECKED_OUT')}>
+                                        <ArrowRightLeft className="h-4 w-4" />
                                         Initiate Checkout
                                     </Button>
                                 )}

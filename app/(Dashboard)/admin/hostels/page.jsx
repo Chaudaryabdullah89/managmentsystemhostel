@@ -140,7 +140,7 @@ const HostelsPage = () => {
                 </div>
                 <div className="text-center">
                     <p className="text-xl font-bold text-gray-900 tracking-tight">Loading Hostels...</p>
-                    <p className="text-sm text-gray-500 font-medium mt-1">Fetching your hostel data</p>
+                    <p className="text-sm text-gray-500 font-medium mt-1">Getting your records...</p>
                 </div>
             </div>
         </div>
@@ -156,9 +156,9 @@ const HostelsPage = () => {
                         <div className="flex flex-col">
                             <h1 className="text-lg font-bold text-gray-900 tracking-tight">All Hostels</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Management</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Settings</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Live</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active</span>
                             </div>
                         </div>
                     </div>
@@ -167,7 +167,7 @@ const HostelsPage = () => {
                         <div className="hidden md:flex items-center gap-8 mr-4">
                             <div className="flex flex-col items-end">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</span>
-                                <span className="text-sm font-bold text-emerald-600 uppercase">All Good</span>
+                                <span className="text-sm font-bold text-emerald-600 uppercase">System OK</span>
                             </div>
                             <div className="flex flex-col items-end">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total</span>
@@ -197,10 +197,10 @@ const HostelsPage = () => {
                 {/* Statistics Overview */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Properties', value: hostelsToDisplay.length, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Buildings', value: hostelsToDisplay.length, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
                         { label: 'Total BEDS', value: hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 0), icon: Bed, color: 'text-purple-600', bg: 'bg-purple-50' },
                         { label: 'Available', value: hostelsToDisplay.reduce((t, h) => t + h.roomStats.availableRooms, 0), icon: DoorOpen, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Occupancy', value: `${Math.round((hostelsToDisplay.reduce((t, h) => t + h.roomStats.occupiedRooms, 0) / hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 1)) * 100)}%`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'How Full', value: `${Math.round((hostelsToDisplay.reduce((t, h) => t + h.roomStats.occupiedRooms, 0) / hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 1)) * 100)}%`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
                     ].map((s, i) => (
                         <Card key={i} className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white">
                             <CardContent className="p-5 flex items-center gap-4">
@@ -216,7 +216,7 @@ const HostelsPage = () => {
                     ))}
                 </div>
 
-                {/* Command Bar: Unified Search & Type Selection */}
+                {/* Search & Filter */}
                 <div className="bg-white border border-gray-100 p-2 rounded-2xl flex flex-col md:flex-row gap-4 items-center shadow-sm">
                     <div className="relative flex-1 group w-full px-2">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -277,7 +277,7 @@ const HostelsPage = () => {
                                         {/* Occupancy Status */}
                                         <div className="flex-1 w-full max-w-sm lg:max-w-md hidden md:block px-4">
                                             <div className="flex justify-between items-end mb-1.5">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Occupancy</span>
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">How Full</span>
                                                 <span className="text-xs font-bold text-gray-900">{Math.round((hostel.roomStats.occupiedRooms / hostel.roomStats.totalRooms) * 100 || 0)}%</span>
                                             </div>
                                             <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100">
@@ -291,13 +291,13 @@ const HostelsPage = () => {
                                         {/* Management Info */}
                                         <div className="flex items-center gap-10 min-w-[220px]">
                                             <div className="flex flex-col">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Management</span>
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Managers</span>
                                                 <div className="text-[11px] font-bold text-gray-700 truncate max-w-[120px]">
                                                     <WardenNames wardenIds={hostel.basicInfo.wardens} />
                                                 </div>
                                             </div>
                                             <div className="flex flex-col text-right">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Quick Link</span>
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Link</span>
                                                 <Button
                                                     variant="ghost"
                                                     className="h-6 p-0 hover:bg-transparent text-emerald-600 text-[9px] font-black uppercase tracking-widest"
@@ -364,7 +364,7 @@ const HostelsPage = () => {
                                     <div className="bg-gray-50/50 border-t border-gray-100 px-6 py-3.5 flex items-center gap-6">
                                         <div className="flex items-center gap-2">
                                             <LayoutGrid className="h-3 w-3 text-gray-400" />
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Room Preview</span>
+                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Rooms</span>
                                         </div>
                                         <div className="h-4 w-px bg-gray-200" />
                                         <div className="flex flex-wrap gap-2.5">

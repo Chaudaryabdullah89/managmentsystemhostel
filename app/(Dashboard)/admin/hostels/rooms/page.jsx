@@ -169,10 +169,10 @@ const GlobalRoomsPage = () => {
                     <div className="flex items-center gap-4">
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight">Global Inventory</h1>
+                            <h1 className="text-lg font-bold text-gray-900 tracking-tight">All Rooms</h1>
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                                 <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                                UNIT LEDGER • SYNC ACTIVE
+                                ROOMS LIST • UPDATING
                             </p>
                         </div>
                     </div>
@@ -190,7 +190,7 @@ const GlobalRoomsPage = () => {
                         <Link href="/admin/hostels/createroom?role=admin">
                             <Button className="bg-black hover:bg-gray-800 text-white h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-wider shadow-sm gap-2">
                                 <Plus className="h-3.5 w-3.5" />
-                                Provision Unit
+                                Add New Room
                             </Button>
                         </Link>
                     </div>
@@ -201,7 +201,7 @@ const GlobalRoomsPage = () => {
                 {/* Minimal Metrics Matrix */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Total Suites', value: stats.total, icon: Building2, color: 'text-gray-900', bg: 'bg-gray-100' },
+                        { label: 'Total Rooms', value: stats.total, icon: Building2, color: 'text-gray-900', bg: 'bg-gray-100' },
                         { label: 'Total Capacity', value: rooms.reduce((acc, r) => acc + r.capacity, 0), icon: Bed, color: 'text-purple-600', bg: 'bg-purple-50' },
                         { label: 'Available', value: stats.available, icon: DoorOpen, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                         { label: 'Occupancy', value: `${Math.round((stats.occupied / (stats.total || 1)) * 100)}%`, icon: UserCheck, color: 'text-amber-600', bg: 'bg-amber-50' },
@@ -223,7 +223,7 @@ const GlobalRoomsPage = () => {
                     <div className="flex-1 relative w-full group px-2">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
-                            placeholder="Locate unit by number, property or type..."
+                            placeholder="Find room by number, hostel or type..."
                             className="w-full h-12 pl-10 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -237,14 +237,14 @@ const GlobalRoomsPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 px-4 rounded-xl border-gray-100 font-bold gap-3 hover:bg-gray-50 text-[10px] uppercase tracking-wider text-gray-500 min-w-[160px]">
                                     <Building2 className="h-3.5 w-3.5" />
-                                    {hostelFilter === 'All' ? 'Portfolio Hierarchy' : hostelFilter}
+                                    {hostelFilter === 'All' ? 'All Hostels' : hostelFilter}
                                     <ChevronRight className="h-3 w-3 opacity-30 rotate-90" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-64 rounded-2xl p-1 border-gray-100">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 px-3 py-2">Asset Portfolio</DropdownMenuLabel>
+                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 px-3 py-2">Hostels</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => setHostelFilter('All')} className="rounded-xl font-bold text-xs p-3">ALL ASSETS</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setHostelFilter('All')} className="rounded-xl font-bold text-xs p-3">ALL HOSTELS</DropdownMenuItem>
                                 {hostels.map(h => (
                                     <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="rounded-xl font-bold text-xs p-3 flex items-center gap-2 uppercase">
                                         <MapPin className="h-3 w-3 text-blue-500" /> {h.name}
@@ -299,7 +299,7 @@ const GlobalRoomsPage = () => {
                                     {/* Section 2: Infrastructure */}
                                     <div className="flex items-center gap-8 min-w-[160px]">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Classification</span>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Room Type</span>
                                             <span className="text-[10px] font-bold text-gray-700 uppercase">{room.type}</span>
                                         </div>
                                         <div className="flex flex-col">
@@ -317,7 +317,7 @@ const GlobalRoomsPage = () => {
                                         <div className="flex flex-col flex-1">
                                             <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
                                                 <UserCircle2 className="h-3 w-3" />
-                                                Active Occupancy
+                                                Students
                                             </span>
                                             <div className="mt-1 flex flex-wrap gap-1">
                                                 {room.Booking?.length > 0 ? (
@@ -327,7 +327,7 @@ const GlobalRoomsPage = () => {
                                                         </Badge>
                                                     ))
                                                 ) : (
-                                                    <span className="text-[10px] font-bold text-gray-300 italic uppercase">Vacant Unit</span>
+                                                    <span className="text-[10px] font-bold text-gray-300 italic uppercase">Empty Room</span>
                                                 )}
                                             </div>
                                         </div>
@@ -336,11 +336,11 @@ const GlobalRoomsPage = () => {
                                     {/* Section 4: Commercial */}
                                     <div className="flex items-center gap-10 min-w-[200px]">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Asset Value</span>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Price</span>
                                             <span className="text-[11px] font-bold text-gray-900 italic tracking-tight">Rs. {room.price?.toLocaleString()}</span>
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Monthly Yield</span>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Rent</span>
                                             <span className="text-[11px] font-bold text-emerald-600 italic">Rs. {room.monthlyrent?.toLocaleString()}</span>
                                         </div>
                                     </div>
@@ -355,7 +355,7 @@ const GlobalRoomsPage = () => {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" className="w-56 p-1 rounded-xl border-gray-100 shadow-xl">
                                                 <DropdownMenuItem className="p-2.5 gap-2.5 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/admin/hostels/${room.hostelId}/room-details/room/${room.id}/edit-room?hostelId=${room.hostelId}`)}>
-                                                    <Edit className="h-3.5 w-3.5" /> Modify Config
+                                                    <Edit className="h-3.5 w-3.5" /> Edit Room
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem className="p-2.5 gap-2.5 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/admin/hostels/${room.hostelId}/room-details/room/${room.id}/maintenance`)}>
                                                     <Wrench className="h-3.5 w-3.5" /> Maintenance Logs
@@ -364,14 +364,14 @@ const GlobalRoomsPage = () => {
                                                 <DropdownMenuItem className="p-2.5 gap-2.5 rounded-lg font-bold text-[10px] uppercase tracking-wider text-rose-500 focus:bg-rose-50 focus:text-rose-600 cursor-pointer" onSelect={(e) => e.preventDefault()}>
                                                     <AlertDialog>
                                                         <AlertDialogTrigger className="w-full text-left flex items-center gap-2.5">
-                                                            <Trash className="h-3.5 w-3.5" /> Decommission
+                                                            <Trash className="h-3.5 w-3.5" /> Delete
                                                         </AlertDialogTrigger>
                                                         <AlertDialogContent className="rounded-3xl border-0 shadow-2xl overflow-hidden p-0 max-w-lg">
                                                             <div className="bg-gray-950 p-8 text-white">
                                                                 <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center mb-4"><Trash size={20} className="text-rose-500" /></div>
-                                                                <AlertDialogTitle className="text-xl font-bold tracking-tight mb-2 uppercase">Decommission Unit?</AlertDialogTitle>
+                                                                <AlertDialogTitle className="text-xl font-bold tracking-tight mb-2 uppercase">Delete Room?</AlertDialogTitle>
                                                                 <AlertDialogDescription className="text-gray-400 font-bold text-xs uppercase tracking-widest">
-                                                                    Archiving <span className="text-white">Suite {room.roomNumber}</span> is a permanent registry procedure.
+                                                                    Deleting <span className="text-white">Room {room.roomNumber}</span> is permanent.
                                                                 </AlertDialogDescription>
                                                             </div>
                                                             <div className="p-6 flex items-center justify-end gap-3 bg-white">
@@ -388,7 +388,7 @@ const GlobalRoomsPage = () => {
                                             className="h-11 px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wider text-[10px] shadow-sm flex items-center gap-2 group/btn active:scale-95 transition-all"
                                             onClick={() => router.push(`/admin/hostels/${encodeURIComponent(room.Hostel?.name || 'asset')}/room-details/room/${room.id}?hostelId=${room.hostelId}`)}
                                         >
-                                            Access Registry
+                                            View Room
                                             <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
                                         </Button>
                                     </div>

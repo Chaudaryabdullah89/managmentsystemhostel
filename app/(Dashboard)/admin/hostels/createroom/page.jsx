@@ -118,8 +118,8 @@ const CreateRoomForm = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-none">Register New Unit</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mt-1">Inventory Management Protocol</p>
+                            <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-none">Add New Room</h1>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mt-1">Room Records</p>
                         </div>
                     </div>
                     <Button
@@ -127,7 +127,7 @@ const CreateRoomForm = () => {
                         onClick={handleCreateRoom}
                         disabled={isSubmitting}
                     >
-                        {isSubmitting ? "Processing..." : "Commit Registry"}
+                        {isSubmitting ? "Processing..." : "Save Room"}
                         {!isSubmitting && <Save className="h-4 w-4" />}
                     </Button>
                 </div>
@@ -147,11 +147,11 @@ const CreateRoomForm = () => {
                             </CardHeader>
                             <CardContent className="px-8 pb-8">
                                 <div className="space-y-2">
-                                    <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Parent Hostel *</Label>
+                                    <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Select Hostel *</Label>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 bg-white font-bold text-gray-900">
-                                                <span>{selectedHostel ? selectedHostel.name : 'Select Primary Property'}</span>
+                                                <span>{selectedHostel ? selectedHostel.name : 'Choose Building'}</span>
                                                 <ChevronDown className="h-4 w-4 opacity-40" />
                                             </Button>
                                         </DropdownMenuTrigger>
@@ -172,7 +172,7 @@ const CreateRoomForm = () => {
                             <CardHeader className="px-8 pt-8 pb-4">
                                 <CardTitle className="text-[11px] font-bold flex items-center gap-2 uppercase tracking-widest text-gray-400">
                                     <LayoutGrid className="h-4 w-4 text-purple-500" />
-                                    Unit Specification
+                                    Room Details
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="px-8 pb-8 space-y-6">
@@ -199,7 +199,7 @@ const CreateRoomForm = () => {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Classification *</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Room Type *</Label>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 bg-white font-bold text-gray-900">
@@ -225,7 +225,7 @@ const CreateRoomForm = () => {
                                     </div>
                                 </div>
                                 <div className="space-y-2 pt-4 border-t border-gray-50">
-                                    <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Lifecycle Status *</Label>
+                                    <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Status *</Label>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 bg-white font-bold text-gray-900 transition-colors hover:bg-gray-50">
@@ -251,7 +251,7 @@ const CreateRoomForm = () => {
                             <CardHeader className="px-8 pt-8 pb-4">
                                 <CardTitle className="text-[11px] font-bold flex items-center gap-2 uppercase tracking-widest text-gray-400">
                                     <Sparkle className="h-4 w-4 text-emerald-500" />
-                                    Service Schedule (Auto-Log)
+                                    Cleaning & Laundry Plan
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="px-8 pb-8 space-y-6">
@@ -288,7 +288,7 @@ const CreateRoomForm = () => {
                         {/* Financial Ledger */}
                         <Card className="border border-gray-100 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] bg-white overflow-hidden">
                             <CardHeader className="bg-gray-50/50 border-b border-gray-100 px-6 py-5 text-center">
-                                <CardTitle className="text-[10px] font-black text-gray-900 tracking-widest uppercase">Asset Commercials</CardTitle>
+                                <CardTitle className="text-[10px] font-black text-gray-900 tracking-widest uppercase">Rent & Price</CardTitle>
                             </CardHeader>
                             <div className="p-6 space-y-5">
                                 <div className="space-y-1.5 flex flex-col">
@@ -320,7 +320,7 @@ const CreateRoomForm = () => {
                             <div className="absolute top-0 right-0 p-4 opacity-10">
                                 <ShieldCheck className="h-12 w-12 text-white" />
                             </div>
-                            <p className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-6 border-b border-white/5 pb-3">Lifecycle Registry</p>
+                            <p className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-6 border-b border-white/5 pb-3">Room History</p>
                             <div className="space-y-5">
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center justify-between">

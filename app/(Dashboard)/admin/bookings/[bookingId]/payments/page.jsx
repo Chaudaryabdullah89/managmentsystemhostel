@@ -132,14 +132,14 @@ const PaymentHistoryPage = () => {
                     <Wallet className="h-8 w-8 text-black absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                 </div>
                 <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 tracking-tight">Syncing Fiscal Ledger...</p>
-                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest text-center">Retrieving Resident Manifest</p>
+                    <p className="text-lg font-bold text-gray-900 tracking-tight">Loading Payments...</p>
+                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest text-center">Getting your records</p>
                 </div>
             </div>
         </div>
     );
 
-    if (!booking) return <div className="p-8 text-center text-gray-400 font-bold uppercase tracking-widest">Registry Node Missing</div>;
+    if (!booking) return <div className="p-8 text-center text-gray-400 font-bold uppercase tracking-widest">Booking Not Found</div>;
 
     const payments = booking.Payment || [];
     const totalContractValue = booking.totalAmount + (booking.securityDeposit || 0);
@@ -164,7 +164,7 @@ const PaymentHistoryPage = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Registry Node</h1>
+                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Payment History</h1>
                             <div className="flex items-center gap-2">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{booking.User.name}</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
@@ -182,20 +182,20 @@ const PaymentHistoryPage = () => {
                             <DialogTrigger asChild>
                                 <Button variant="outline" className="h-9 px-4 rounded-xl border-emerald-200 bg-emerald-50 text-emerald-700 font-bold text-[10px] uppercase tracking-wider hover:bg-emerald-100 transition-all shadow-sm">
                                     <Zap className="h-4 w-4 mr-2" />
-                                    Bulk Settle
+                                    Quick Pay
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-0 shadow-2xl">
                                 <div className="bg-emerald-950 p-8 text-white text-center">
-                                    <h2 className="text-lg font-bold uppercase tracking-widest mb-1">Waterfall Sync</h2>
-                                    <p className="text-[10px] text-emerald-500 uppercase font-black tracking-widest">Autonomous Bulk Reconciliation</p>
+                                    <h2 className="text-lg font-bold uppercase tracking-widest mb-1">Quick Pay</h2>
+                                    <p className="text-[10px] text-emerald-500 uppercase font-black tracking-widest">Pay Multiple Dues at Once</p>
                                 </div>
                                 <div className="p-8 bg-white space-y-6">
                                     <div className="space-y-1.5 text-center">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Total Settlement PKR</Label>
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Total Amount PKR</Label>
                                         <Input type="number" className="h-14 rounded-2xl font-black text-2xl text-center border-gray-100 bg-gray-50/50" value={reconcileForm.amount} onChange={(e) => setReconcileForm({ ...reconcileForm, amount: e.target.value })} />
                                     </div>
-                                    <Button className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl" onClick={handleReconcile}>Initiate Sync</Button>
+                                    <Button className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl" onClick={handleReconcile}>Pay Now</Button>
                                 </div>
                             </DialogContent>
                         </Dialog>
@@ -204,13 +204,13 @@ const PaymentHistoryPage = () => {
                             <DialogTrigger asChild>
                                 <Button className="h-9 px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95">
                                     <Plus className="h-4 w-4 mr-2" />
-                                    New Entry
+                                    Add Payment
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-0 shadow-2xl">
                                 <div className="bg-gray-950 p-8 text-white text-center">
-                                    <h2 className="text-lg font-bold uppercase tracking-widest mb-1">Fiscal Entry</h2>
-                                    <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Manual Transaction Protocol</p>
+                                    <h2 className="text-lg font-bold uppercase tracking-widest mb-1">Add Payment</h2>
+                                    <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">Record a New Payment</p>
                                 </div>
                                 <div className="p-8 bg-white space-y-6">
                                     <div className="grid grid-cols-2 gap-4">
@@ -230,7 +230,7 @@ const PaymentHistoryPage = () => {
                                             <Input className="h-10 rounded-xl" type="number" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
                                         </div>
                                     </div>
-                                    <Button className="w-full h-12 bg-black text-white font-black text-[10px] uppercase tracking-widest rounded-xl" onClick={handleCreatePayment}>Commit to Ledger</Button>
+                                    <Button className="w-full h-12 bg-black text-white font-black text-[10px] uppercase tracking-widest rounded-xl" onClick={handleCreatePayment}>Save Payment</Button>
                                 </div>
                             </DialogContent>
                         </Dialog>
@@ -242,10 +242,10 @@ const PaymentHistoryPage = () => {
                 {/* Minimal Metrics Matrix */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Total Liability', value: `PKR ${totalContractValue.toLocaleString()}`, icon: FileText, color: 'text-black', bg: 'bg-gray-100' },
-                        { label: 'Settled Funds', value: `PKR ${totalPaid.toLocaleString()}`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Residual Node', value: `PKR ${outstanding.toLocaleString()}`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' },
-                        { label: 'Settlement Factor', value: `${completionRate}%`, icon: History, color: 'text-blue-600', bg: 'bg-blue-50' }
+                        { label: 'Total Amount', value: `PKR ${totalContractValue.toLocaleString()}`, icon: FileText, color: 'text-black', bg: 'bg-gray-100' },
+                        { label: 'Total Paid', value: `PKR ${totalPaid.toLocaleString()}`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Balance', value: `PKR ${outstanding.toLocaleString()}`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' },
+                        { label: 'Paid Percentage', value: `${completionRate}%`, icon: History, color: 'text-blue-600', bg: 'bg-blue-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -262,7 +262,7 @@ const PaymentHistoryPage = () => {
                 {/* Operations bar */}
                 <div className="bg-white border border-gray-100 rounded-2xl p-2 flex items-center gap-4 shadow-sm">
                     <Search className="h-4 w-4 text-gray-400 ml-4" />
-                    <Input placeholder="Identify transaction node..." className="border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    <Input placeholder="Search payments..." className="border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                     <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-xl mr-2">
                         {['ALL', 'PENDING', 'PAID', 'PARTIAL'].map(s => (
                             <Button key={s} variant="ghost" onClick={() => setFilterStatus(s)} className={`h-8 px-4 rounded-lg text-[10px] font-bold uppercase transition-all ${filterStatus === s ? 'bg-white text-black shadow-sm' : 'text-gray-400'}`}>{s}</Button>
@@ -305,7 +305,7 @@ const PaymentHistoryPage = () => {
                     ) : (
                         <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center border-dashed shadow-sm">
                             <Wallet className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Ledger Node Empty</h3>
+                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">No Payments Found</h3>
                         </div>
                     )}
                 </div>
