@@ -60,6 +60,7 @@ const items: Record<string, NavItem[]> = {
         { title: "Bookings", url: "/warden/bookings", icon: Calendar, role: "warden" },
         { title: "Payments", url: "/warden/payments", icon: CreditCard, role: "warden" },
         { title: "Residents", url: "/warden/residents", icon: Users, role: "warden" },
+        { title: "Staff Tasks", url: "/warden/tasks", icon: ClipboardList, role: "warden" },
         { title: "Complaints", url: "/warden/complaints", icon: MessageSquare, role: "warden" },
         { title: "My Profile", url: "/warden/profile", icon: User, role: "warden" },
     ],
@@ -72,7 +73,7 @@ const items: Record<string, NavItem[]> = {
     ],
     staff: [
         { title: "Dashboard", url: "/staff/dashboard", icon: LayoutDashboard, role: "staff" },
-        { title: "Assigned Tasks", url: "/staff/complaints", icon: ClipboardList, role: "staff" },
+        { title: "Assigned Tasks", url: "/staff/tasks", icon: ClipboardList, role: "staff" },
         { title: "Salary Records", url: "/staff/salary", icon: DollarSign, role: "staff" },
         { title: "Payments", url: "/staff/payments", icon: CreditCard, role: "staff" },
         { title: "My Profile", url: "/staff/profile", icon: User, role: "staff" },

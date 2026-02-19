@@ -9,6 +9,7 @@ datasource db {
 
 model Booking {
   id              String        @id @default(cuid())
+  uid             String?       @unique
   userId          String
   roomId          String
   checkIn         DateTime
@@ -18,7 +19,6 @@ model Booking {
   securityDeposit Float         @default(0)
   createdAt       DateTime      @default(now())
   updatedAt       DateTime
-  uid             String?       @unique
   Room            Room          @relation(fields: [roomId], references: [id])
   User            User          @relation(fields: [userId], references: [id])
   Payment         Payment[]
@@ -26,6 +26,7 @@ model Booking {
 
 model Complaint {
   id                                String             @id @default(cuid())
+  uid                               String?            @unique
   userId                            String
   hostelId                          String
   roomNumber                        String?
@@ -40,7 +41,6 @@ model Complaint {
   images                            String[]
   createdAt                         DateTime           @default(now())
   updatedAt                         DateTime
-  uid                               String?            @unique
   User_Complaint_assignedToIdToUser User?              @relation("Complaint_assignedToIdToUser", fields: [assignedToId], references: [id])
   Hostel                            Hostel             @relation(fields: [hostelId], references: [id])
   User_Complaint_userIdToUser       User               @relation("Complaint_userIdToUser", fields: [userId], references: [id])
@@ -48,13 +48,14 @@ model Complaint {
 }
 
 model ComplaintComment {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   complaintId String
   userId      String
   message     String
-  createdAt   DateTime  @default(now())
-  Complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
-  User        User      @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+
+  Complaint Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  User      User      @relation(fields: [userId], references: [id])
 }
 
 model Expense {
@@ -106,17 +107,17 @@ model Hostel {
   totalRooms                  Int?          @default(0)
   wardens                     String[]
   zip                         String?
-  cleaningInterval            Int?          @default(24)
-  laundryInterval             Int?          @default(48)
-  CleaningLog                 CleaningLog[]
+  cleaningInterval            Int?          @default(24) // in hours
+  laundryInterval             Int?          @default(48) // in hours
   Complaint                   Complaint[]
   Expense                     Expense[]
   User_Hostel_managerIdToUser User?         @relation("Hostel_managerIdToUser", fields: [managerId], references: [id])
-  LaundryLog                  LaundryLog[]
   Room                        Room[]
-  staffTasks                  StaffTask[]
   User_User_hostelIdToHostel  User[]        @relation("User_hostelIdToHostel")
   maintanance                 maintanance[]
+  CleaningLog                 CleaningLog[]
+  LaundryLog                  LaundryLog[]
+  staffTasks                  StaffTask[]
 }
 
 model OtpVerification {
@@ -130,6 +131,7 @@ model OtpVerification {
 
 model Payment {
   id            String        @id @default(cuid())
+  uid           String?       @unique
   userId        String
   bookingId     String?
   amount        Float
@@ -143,7 +145,6 @@ model Payment {
   notes         String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime
-  uid           String?       @unique
   Booking       Booking?      @relation(fields: [bookingId], references: [id])
   User          User          @relation(fields: [userId], references: [id])
 }
@@ -170,22 +171,22 @@ model Room {
   type             RoomType      @default(TRIPLE)
   capacity         Int           @default(3)
   price            Float
+  pricepernight    Float
+  monthlyrent      Float
   status           RoomStatus    @default(AVAILABLE)
   amenities        String[]
   images           String[]
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
-  monthlyrent      Float
-  pricepernight    Float
   lastCleaningAt   DateTime?
   lastLaundryAt    DateTime?
-  cleaningInterval Int?          @default(24)
-  laundryInterval  Int?          @default(48)
+  cleaningInterval Int?          @default(24) // in hours
+  laundryInterval  Int?          @default(48) // in hours
   Booking          Booking[]
-  CleaningLog      CleaningLog[]
-  LaundryLog       LaundryLog[]
   Hostel           Hostel        @relation(fields: [hostelId], references: [id], onDelete: Cascade)
   maintanance      maintanance[]
+  CleaningLog      CleaningLog[]
+  LaundryLog       LaundryLog[]
 
   @@unique([hostelId, roomNumber])
 }
@@ -194,29 +195,29 @@ model CleaningLog {
   id          String   @id @default(cuid())
   roomId      String
   staffId     String?
-  status      String   @default("COMPLETED")
+  status      String   @default("COMPLETED") // COMPLETED, PENDING, SKIPPED
   notes       String?
   performedAt DateTime @default(now())
   createdAt   DateTime @default(now())
-  hostelId    String?
-  hostel      Hostel?  @relation(fields: [hostelId], references: [id])
   Room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  hostel      Hostel?  @relation(fields: [hostelId], references: [id])
+  hostelId    String?
 }
 
 model LaundryLog {
   id          String    @id @default(cuid())
   roomId      String
   residentId  String?
-  status      String    @default("PENDING")
+  status      String    @default("PENDING") // PENDING, PROCESSING, READY, DELIVERED
   itemsCount  Int       @default(0)
   weight      Float?
   notes       String?
   receivedAt  DateTime  @default(now())
   deliveredAt DateTime?
   createdAt   DateTime  @default(now())
-  hostelId    String?
-  hostel      Hostel?   @relation(fields: [hostelId], references: [id])
   Room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  hostel      Hostel?   @relation(fields: [hostelId], references: [id])
+  hostelId    String?
 }
 
 model Salary {
@@ -232,11 +233,11 @@ model Salary {
   paymentDate    DateTime?
   paymentMethod  PaymentMethod?
   notes          String?
+  appealText     String?
+  appealStatus   String?        @default("NONE") // NONE, PENDING, RESOLVED, REJECTED
+  appealResponse String?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime
-  appealResponse String?
-  appealStatus   String?        @default("NONE")
-  appealText     String?
   StaffProfile   StaffProfile   @relation(fields: [staffId], references: [id])
 }
 
@@ -269,6 +270,7 @@ model StaffProfile {
 
 model User {
   id                                         String             @id @default(cuid())
+  uid                                        String?            @unique
   name                                       String
   email                                      String             @unique
   password                                   String
@@ -284,11 +286,9 @@ model User {
   city                                       String?
   hostelId                                   String?
   wardens                                    String[]
-  uid                                        String?            @unique
   Booking                                    Booking[]
   Complaint_Complaint_assignedToIdToUser     Complaint[]        @relation("Complaint_assignedToIdToUser")
   Complaint_Complaint_userIdToUser           Complaint[]        @relation("Complaint_userIdToUser")
-  complaintComments                          ComplaintComment[]
   Expense_Expense_approvedByIdToUser         Expense[]          @relation("Expense_approvedByIdToUser")
   Expense_Expense_rejectedByIdToUser         Expense[]          @relation("Expense_rejectedByIdToUser")
   Expense_Expense_submittedByIdToUser        Expense[]          @relation("Expense_submittedByIdToUser")
@@ -298,51 +298,75 @@ model User {
   ResidentProfile                            ResidentProfile?
   Session                                    Session[]
   StaffProfile                               StaffProfile?
-  assignedTasks                              StaffTask[]        @relation("Task_AssignedTo")
-  createdTasks                               StaffTask[]        @relation("Task_CreatedBy")
-  taskComments                               TaskComment[]
   Hostel_User_hostelIdToHostel               Hostel?            @relation("User_hostelIdToHostel", fields: [hostelId], references: [id])
   maintanance_maintanance_assignedToIdToUser maintanance[]      @relation("maintanance_assignedToIdToUser")
   maintanance_maintanance_userIdToUser       maintanance[]      @relation("maintanance_userIdToUser")
+  complaintComments                          ComplaintComment[]
+  assignedTasks                              StaffTask[]        @relation("Task_AssignedTo")
+  createdTasks                               StaffTask[]        @relation("Task_CreatedBy")
+  taskComments                               TaskComment[]
 }
 
 model StaffTask {
-  id           String        @id @default(cuid())
-  uid          String?       @unique
-  title        String
-  description  String?
-  status       TaskStatus    @default(PENDING)
-  priority     TaskPriority  @default(MEDIUM)
-  category     String?       @default("GENERAL")
-  hostelId     String
+  id          String       @id @default(cuid())
+  uid         String?      @unique
+  title       String
+  description String?
+  status      TaskStatus   @default(PENDING)
+  priority    TaskPriority @default(MEDIUM)
+  category    String?      @default("GENERAL") // CLEANING, MAINTENANCE, SECURITY, etc.
+
+  hostelId String
+  hostel   Hostel @relation(fields: [hostelId], references: [id])
+
   assignedToId String?
-  createdById  String
-  dueDate      DateTime?
-  completedAt  DateTime?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  assignedTo   User?         @relation("Task_AssignedTo", fields: [assignedToId], references: [id])
-  createdBy    User          @relation("Task_CreatedBy", fields: [createdById], references: [id])
-  hostel       Hostel        @relation(fields: [hostelId], references: [id])
-  comments     TaskComment[]
+  assignedTo   User?   @relation("Task_AssignedTo", fields: [assignedToId], references: [id])
+
+  createdById String
+  createdBy   User   @relation("Task_CreatedBy", fields: [createdById], references: [id])
+
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  comments TaskComment[]
 }
 
 model TaskComment {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   taskId    String
   userId    String
   message   String
-  createdAt DateTime  @default(now())
-  Task      StaffTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  User      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+
+  Task StaffTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  User User      @relation(fields: [userId], references: [id])
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
 }
 
 model maintanance {
   id                                  String    @id @default(cuid())
+  uid                                 String?   @unique
   hostelId                            String
+  roomId                              String?
   title                               String
   description                         String?
   status                              String    @default("PENDING")
+  priority                            String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
   assignedToId                        String?
   resolutionNotes                     String?
   resolvedAt                          DateTime?
@@ -350,9 +374,6 @@ model maintanance {
   createdAt                           DateTime  @default(now())
   updatedAt                           DateTime  @updatedAt
   userId                              String?
-  priority                            String    @default("MEDIUM")
-  roomId                              String?
-  uid                                 String?   @unique
   User_maintanance_assignedToIdToUser User?     @relation("maintanance_assignedToIdToUser", fields: [assignedToId], references: [id])
   Hostel                              Hostel    @relation(fields: [hostelId], references: [id])
   Room                                Room?     @relation(fields: [roomId], references: [id])
@@ -368,20 +389,6 @@ model resetPassword {
   userId    String   @unique
 
   @@index([email])
-}
-
-enum TaskStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
-enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
 }
 
 enum BookingStatus {

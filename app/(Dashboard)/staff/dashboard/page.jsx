@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useComplaints, useUpdateComplaint } from "@/hooks/usecomplaints";
+import { useTasks, useUpdateTask } from "@/hooks/usetasks";
 import useAuthStore from "@/hooks/Authstate";
 
 const priorityConfig = {
@@ -23,30 +23,30 @@ const priorityConfig = {
 const statusConfig = {
     PENDING: { color: "text-gray-600", bg: "bg-gray-100", label: "Pending", icon: Clock },
     IN_PROGRESS: { color: "text-indigo-600", bg: "bg-indigo-50", label: "In Progress", icon: Zap },
-    RESOLVED: { color: "text-emerald-600", bg: "bg-emerald-50", label: "Resolved", icon: CheckCircle2 },
-    REJECTED: { color: "text-rose-600", bg: "bg-rose-50", label: "Rejected", icon: AlertCircle },
+    COMPLETED: { color: "text-emerald-600", bg: "bg-emerald-50", label: "Completed", icon: CheckCircle2 },
+    CANCELLED: { color: "text-rose-600", bg: "bg-rose-50", label: "Cancelled", icon: AlertCircle },
 };
 
 const StaffDashboard = () => {
     const user = useAuthStore((state) => state.user);
-    const { data: complaintsData, isLoading } = useComplaints(user?.id ? { assignedToId: user.id } : {});
-    const complaints = complaintsData || [];
-    const updateMutation = useUpdateComplaint();
+    const { data: tasksData, isLoading } = useTasks(user?.id ? { assignedToId: user.id } : {});
+    const tasks = tasksData || [];
+    const updateMutation = useUpdateTask();
     const [updatingId, setUpdatingId] = useState(null);
 
     const stats = useMemo(() => {
-        const total = complaints.length;
-        const pending = complaints.filter(c => c.status === "PENDING").length;
-        const inProgress = complaints.filter(c => c.status === "IN_PROGRESS").length;
-        const resolved = complaints.filter(c => c.status === "RESOLVED").length;
-        const urgent = complaints.filter(c => c.priority === "URGENT" && c.status !== "RESOLVED").length;
-        const resolutionRate = total > 0 ? Math.round((resolved / total) * 100) : 0;
-        return { total, pending, inProgress, resolved, urgent, resolutionRate };
-    }, [complaints]);
+        const total = tasks.length;
+        const pending = tasks.filter(c => c.status === "PENDING").length;
+        const inProgress = tasks.filter(c => c.status === "IN_PROGRESS").length;
+        const completed = tasks.filter(c => c.status === "COMPLETED").length;
+        const urgent = tasks.filter(c => c.priority === "URGENT" && c.status !== "COMPLETED").length;
+        const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+        return { total, pending, inProgress, completed, urgent, completionRate };
+    }, [tasks]);
 
-    const activeTasks = complaints.filter(c => c.status !== "RESOLVED" && c.status !== "REJECTED");
+    const activeTasks = tasks.filter(c => c.status !== "COMPLETED" && c.status !== "CANCELLED");
     const urgentTasks = activeTasks.filter(c => c.priority === "URGENT");
-    const recentResolved = complaints.filter(c => c.status === "RESOLVED").slice(0, 3);
+    const recentCompleted = tasks.filter(c => c.status === "COMPLETED").slice(0, 3);
 
     const handleAction = (id, status) => {
         setUpdatingId(id);
@@ -88,7 +88,7 @@ const StaffDashboard = () => {
                                     <span className="text-xs font-bold">{stats.urgent} Urgent</span>
                                 </div>
                             )}
-                            <Link href="/staff/complaints">
+                            <Link href="/staff/tasks">
                                 <Button className="h-10 px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold gap-2">
                                     View All Tasks <ArrowRight className="h-3.5 w-3.5" />
                                 </Button>
@@ -105,7 +105,7 @@ const StaffDashboard = () => {
                     {[
                         { label: "Total Assigned", value: stats.total, icon: ClipboardList, color: "text-gray-700", bg: "bg-white", iconBg: "bg-gray-100" },
                         { label: "In Progress", value: stats.inProgress, icon: Zap, color: "text-indigo-600", bg: "bg-indigo-50", iconBg: "bg-indigo-100" },
-                        { label: "Resolved", value: stats.resolved, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50", iconBg: "bg-emerald-100" },
+                        { label: "Completed", value: stats.completed, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50", iconBg: "bg-emerald-100" },
                         { label: "Urgent", value: stats.urgent, icon: AlertCircle, color: "text-rose-600", bg: "bg-rose-50", iconBg: "bg-rose-100" },
                     ].map((stat, i) => (
                         <div key={i} className={`${stat.bg} border border-gray-100 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
@@ -142,18 +142,18 @@ const StaffDashboard = () => {
                                             cx="40" cy="40" r="32" fill="none"
                                             stroke="white" strokeWidth="8"
                                             strokeDasharray={`${2 * Math.PI * 32}`}
-                                            strokeDashoffset={`${2 * Math.PI * 32 * (1 - stats.resolutionRate / 100)}`}
+                                            strokeDashoffset={`${2 * Math.PI * 32 * (1 - stats.completionRate / 100)}`}
                                             strokeLinecap="round"
                                             className="transition-all duration-1000"
                                         />
                                     </svg>
                                     <div className="absolute inset-0 flex items-center justify-center">
-                                        <span className="text-lg font-bold">{stats.resolutionRate}%</span>
+                                        <span className="text-lg font-bold">{stats.completionRate}%</span>
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold">{stats.resolved}</p>
-                                    <p className="text-xs text-indigo-300 font-medium">Tasks Resolved</p>
+                                    <p className="text-2xl font-bold">{stats.completed}</p>
+                                    <p className="text-xs text-indigo-300 font-medium">Tasks Completed</p>
                                     <p className="text-[10px] text-indigo-400 mt-1">out of {stats.total} total</p>
                                 </div>
                             </div>
@@ -161,7 +161,7 @@ const StaffDashboard = () => {
                             <div className="flex items-center gap-2">
                                 <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
                                 <span className="text-xs font-bold text-emerald-300">
-                                    {stats.resolutionRate >= 70 ? "Excellent performance!" : stats.resolutionRate >= 40 ? "Good progress" : "Keep going!"}
+                                    {stats.completionRate >= 70 ? "Excellent performance!" : stats.completionRate >= 40 ? "Good progress" : "Keep going!"}
                                 </span>
                             </div>
                         </div>
@@ -198,7 +198,7 @@ const StaffDashboard = () => {
                                             <div className="min-w-0">
                                                 <p className="text-xs font-bold text-gray-900 truncate">{task.title}</p>
                                                 <p className="text-[10px] text-gray-400 flex items-center gap-1 mt-0.5">
-                                                    <MapPin className="h-2.5 w-2.5" /> Room {task.roomNumber || "N/A"}
+                                                    <Building2 className="h-2.5 w-2.5" /> {task.category}
                                                 </p>
                                             </div>
                                         </div>
@@ -217,13 +217,13 @@ const StaffDashboard = () => {
                                                 <Button
                                                     size="sm"
                                                     className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-lg gap-1"
-                                                    onClick={() => handleAction(task.id, "RESOLVED")}
+                                                    onClick={() => handleAction(task.id, "COMPLETED")}
                                                     disabled={updatingId === task.id}
                                                 >
                                                     <CheckCircle className="h-2.5 w-2.5" /> Done
                                                 </Button>
                                             )}
-                                            <Link href={`/staff/complaints/${task.id}`}>
+                                            <Link href={`/staff/tasks`}>
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-rose-100">
                                                     <ChevronRight className="h-4 w-4 text-rose-500" />
                                                 </Button>
@@ -248,7 +248,7 @@ const StaffDashboard = () => {
                                 <p className="text-[10px] text-gray-400 font-medium mt-0.5">{activeTasks.length} tasks pending completion</p>
                             </div>
                         </div>
-                        <Link href="/staff/complaints">
+                        <Link href="/staff/tasks">
                             <Button variant="ghost" size="sm" className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 gap-1">
                                 View All <ChevronRight className="h-3 w-3" />
                             </Button>
@@ -305,14 +305,14 @@ const StaffDashboard = () => {
                                             )}
                                             {task.status === "IN_PROGRESS" && (
                                                 <Button
-                                                    onClick={() => handleAction(task.id, "RESOLVED")}
+                                                    onClick={() => handleAction(task.id, "COMPLETED")}
                                                     className="h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold rounded-xl gap-1.5"
                                                     disabled={updatingId === task.id}
                                                 >
                                                     <CheckCircle className="h-3 w-3" /> Mark Done
                                                 </Button>
                                             )}
-                                            <Link href={`/staff/complaints/${task.id}`}>
+                                            <Link href={`/staff/tasks`}>
                                                 <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 hover:border-indigo-300 hover:bg-indigo-50">
                                                     <ChevronRight className="h-4 w-4 text-gray-500" />
                                                 </Button>
@@ -333,12 +333,12 @@ const StaffDashboard = () => {
                                 <Star className="h-5 w-5 text-emerald-600" />
                             </div>
                             <div>
-                                <h2 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Recently Resolved</h2>
+                                <h2 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Recently Completed</h2>
                                 <p className="text-[10px] text-gray-400 font-medium mt-0.5">Your completed work</p>
                             </div>
                         </div>
                         <div className="divide-y divide-gray-50">
-                            {recentResolved.map(task => (
+                            {recentCompleted.map(task => (
                                 <div key={task.id} className="px-8 py-4 flex items-center justify-between gap-4 hover:bg-gray-50/30 transition-colors">
                                     <div className="flex items-center gap-4 min-w-0">
                                         <div className="h-9 w-9 bg-emerald-50 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -347,7 +347,7 @@ const StaffDashboard = () => {
                                         <div className="min-w-0">
                                             <p className="text-sm font-bold text-gray-700 truncate">{task.title}</p>
                                             <p className="text-[10px] text-gray-400 font-medium mt-0.5">
-                                                Resolved {formatDistanceToNow(new Date(task.updatedAt), { addSuffix: true })}
+                                                Completed {formatDistanceToNow(new Date(task.updatedAt), { addSuffix: true })}
                                             </p>
                                         </div>
                                     </div>
