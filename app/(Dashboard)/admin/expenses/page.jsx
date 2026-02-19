@@ -1,0 +1,666 @@
+"use client"
+import React, { useState, useMemo } from "react";
+import {
+    ChevronRight,
+    Search,
+    Download,
+    Plus,
+    DollarSign,
+    CheckCircle2,
+    Clock,
+    Building2,
+    Calendar,
+    Receipt,
+    TrendingDown,
+    FileText,
+    Filter,
+    ArrowUpRight,
+    Zap,
+    ShieldCheck,
+    Wallet,
+    History,
+    MoreVertical,
+    Trash2,
+    Eye,
+    BarChart3,
+    ArrowDownRight,
+    Info,
+    RefreshCw,
+    Loader2
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
+    DropdownMenuLabel
+} from "@/components/ui/dropdown-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import {
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+} from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import useAuthStore from "@/hooks/Authstate";
+import { useExpenses, useExpenseStats, useCreateExpense, useUpdateExpenseStatus } from "@/hooks/useExpenses";
+import { useHostel } from "@/hooks/usehostel";
+// import { useAuth } from "@/hooks/useAuth"; // Removed as we use Authstate
+import { format, startOfMonth, endOfMonth } from "date-fns";
+import { toast } from "sonner";
+import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
+
+const ExpensesPage = () => {
+    const { user } = useAuthStore();
+    const [activeTab, setActiveTab] = useState("current");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filterStatus, setFilterStatus] = useState("all");
+    const [filterCategory, setFilterCategory] = useState("all");
+    const [filterHostel, setFilterHostel] = useState("all");
+    const [selectedExpense, setSelectedExpense] = useState(null);
+    const [isDetailOpen, setIsDetailOpen] = useState(false);
+    const [isAddOpen, setIsAddOpen] = useState(false);
+
+    const currentMonthLabel = format(new Date(), 'MMMM yyyy');
+
+    // Queries
+    const { data: expenses, isLoading: expensesLoading } = useExpenses({
+        hostelId: filterHostel,
+        status: filterStatus,
+        category: filterCategory,
+        ...(activeTab === "current" && {
+            startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+            endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd')
+        })
+    });
+    const { data: statsData, isLoading: statsLoading } = useExpenseStats(filterHostel);
+    const { data: hostelsData } = useHostel();
+    const hostels = hostelsData?.data || [];
+
+    // Mutations
+    const createExpense = useCreateExpense();
+    const updateStatus = useUpdateExpenseStatus();
+
+    const [newExpenseForm, setNewExpenseForm] = useState({
+        title: "",
+        category: "",
+        amount: "",
+        hostelId: "",
+        date: format(new Date(), 'yyyy-MM-dd'),
+        description: "",
+        submittedById: user?.id || ""
+    });
+
+    const handleAddSubmit = async () => {
+        try {
+            if (!newExpenseForm.title || !newExpenseForm.amount || !newExpenseForm.hostelId || !newExpenseForm.category) {
+                toast.error("Please fill in all required fields");
+                return;
+            }
+            if (!user?.id) {
+                toast.error("User identity verification failed");
+                return;
+            }
+            await createExpense.mutateAsync({
+                ...newExpenseForm,
+                amount: parseFloat(newExpenseForm.amount),
+                date: new Date(newExpenseForm.date).toISOString(),
+                submittedById: user.id
+            });
+            setIsAddOpen(false);
+            setNewExpenseForm({
+                title: "",
+                category: "",
+                amount: "",
+                hostelId: "",
+                date: format(new Date(), 'yyyy-MM-dd'),
+                description: "",
+                submittedById: user?.id || ""
+            });
+        } catch (error) {
+            console.error("Error:", error);
+            toast.error(error.message || "Failed to save expense");
+        }
+    };
+
+    const handleStatusUpdate = async (id, newStatus) => {
+        try {
+            if (!user) {
+                toast.error("Authorization failed: No user found");
+                return;
+            }
+            await updateStatus.mutateAsync({
+                id,
+                status: newStatus,
+                approvedById: (newStatus === 'APPROVED' || newStatus === 'PAID') ? user.id : null,
+                rejectedById: newStatus === 'REJECTED' ? user.id : null
+            });
+            setIsDetailOpen(false);
+        } catch (error) {
+            console.error("Error:", error);
+            toast.error(error.message || "Failed to update status");
+        }
+    };
+
+    const filteredExpenses = useMemo(() => {
+        if (!expenses) return [];
+        return expenses.filter(exp => {
+            const matchesSearch = exp.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                exp.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                exp.Hostel?.name.toLowerCase().includes(searchQuery.toLowerCase());
+            return matchesSearch;
+        });
+    }, [expenses, searchQuery]);
+
+    const handleExport = () => {
+        const headers = ["ID", "Date", "Hostel", "Title", "Category", "Amount", "Status"];
+        const rows = filteredExpenses.map(exp => [
+            `EXP-${exp.id.slice(-8).toUpperCase()}`,
+            format(new Date(exp.date), 'yyyy-MM-dd'),
+            exp.Hostel?.name.replace(',', ''),
+            exp.title.replace(',', ''),
+            exp.category,
+            exp.amount,
+            exp.status
+        ]);
+
+        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Expenses_${format(new Date(), 'yyyyMMdd')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Expenses exported successfully");
+    };
+
+    if (expensesLoading || statsLoading) return (
+        <div className="flex h-screen items-center justify-center bg-white font-sans">
+            <div className="flex flex-col items-center gap-6">
+                <div className="h-20 w-20 border-[3px] border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
+                <Receipt className="h-8 w-8 text-indigo-600 absolute" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Expenses...</p>
+            </div>
+        </div>
+    );
+
+    const stats = statsData?.summary || { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalCount: 0 };
+
+    return (
+        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+            {/* Premium Header - Synchronized Design */}
+            <div className="bg-white border-b sticky top-0 z-50 h-16">
+                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="h-8 w-1 bg-indigo-600 rounded-full" />
+                        <div className="flex flex-col">
+                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Expense Records</h1>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Hostel Branch</span>
+                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border-gray-200 font-bold text-[10px] uppercase tracking-wider text-gray-600"
+                            onClick={handleExport}
+                        >
+                            <Download className="h-3.5 w-3.5 mr-2 text-gray-400" /> Export CSV
+                        </Button>
+                        <Button
+                            className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all"
+                            onClick={() => setIsAddOpen(true)}
+                        >
+                            <Plus className="h-3.5 w-3.5 mr-2" /> Add Expense
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
+                {/* Metrics Matrix - Standardized Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                        { label: 'Total Expenses', value: `PKR ${(stats.totalAmount / 1000).toFixed(1)}k`, icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Paid Expenses', value: `PKR ${(stats.paidAmount / 1000).toFixed(1)}k`, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Pending Expenses', value: `PKR ${(stats.pendingAmount / 1000).toFixed(1)}k`, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Total Count', value: stats.totalCount, icon: History, color: 'text-purple-600', bg: 'bg-purple-50' }
+                    ].map((stat, i) => (
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+                            <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
+                                <stat.icon className="h-5 w-5" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
+                                <span className="text-xl font-bold text-gray-900 tracking-tight">{stat.value}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Operations Bar - Unified Search & Filter */}
+                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm">
+                    <div className="flex-1 relative w-full group px-2">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                            placeholder="Search by ID or Title..."
+                            className="w-full h-12 pl-10 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="h-8 w-px bg-gray-100 mx-2 hidden md:block" />
+
+                    <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500">
+                                    <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                    {filterHostel === 'all' ? 'All Hostels' : hostels.find(h => h.id === filterHostel)?.name}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-[240px] rounded-xl">
+                                <DropdownMenuItem onClick={() => setFilterHostel('all')}>All Hostels</DropdownMenuItem>
+                                {hostels.map(h => (
+                                    <DropdownMenuItem key={h.id} onClick={() => setFilterHostel(h.id)} className="text-[10px] font-bold uppercase tracking-wider">
+                                        {h.name}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500">
+                                    <Zap className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                    {filterCategory === 'all' ? 'All Categories' : filterCategory}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-[200px] rounded-xl">
+                                {['all', 'UTILITIES', 'MAINTENANCE', 'SALARIES', 'SUPPLIES', 'GROCERIES', 'OTHER'].map(cat => (
+                                    <DropdownMenuItem key={cat} onClick={() => setFilterCategory(cat)} className="text-[10px] font-bold uppercase tracking-wider">
+                                        {cat}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500">
+                                    <ShieldCheck className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                    {filterStatus === 'all' ? 'All Statuses' : filterStatus}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-[200px] rounded-xl">
+                                {['all', 'PENDING', 'APPROVED', 'REJECTED', 'PAID'].map(st => (
+                                    <DropdownMenuItem key={st} onClick={() => setFilterStatus(st)} className="text-[10px] font-bold uppercase tracking-wider">
+                                        {st}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </div>
+
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+                    <TabsList className="bg-white border border-gray-100 p-1 rounded-xl h-11 shadow-sm">
+                        <TabsTrigger value="current" className="h-full px-8 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+                            <Zap className="h-3.5 w-3.5 mr-2" /> This Month ({currentMonthLabel})
+                        </TabsTrigger>
+                        <TabsTrigger value="history" className="h-full px-8 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+                            <History className="h-3.5 w-3.5 mr-2" /> All Time
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="current" className="space-y-4">
+                        {filteredExpenses.map((expense) => (
+                            <div
+                                key={expense.id}
+                                className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col lg:flex-row items-center gap-8 hover:shadow-md transition-shadow group relative overflow-hidden cursor-pointer"
+                                onClick={() => { setSelectedExpense(expense); setIsDetailOpen(true); }}
+                            >
+                                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${expense.status === 'PAID' ? 'bg-emerald-500' : expense.status === 'APPROVED' ? 'bg-blue-500' : expense.status === 'REJECTED' ? 'bg-rose-500' : 'bg-amber-500'} opacity-70`} />
+
+                                {/* Section 1: Expense Details */}
+                                <div className="flex items-center gap-6 flex-1 min-w-[300px]">
+                                    <div className="h-14 w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-indigo-600 transition-colors shrink-0">
+                                        <Receipt className="h-6 w-6 text-gray-400 group-hover:text-white transition-colors" />
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <h4 className="text-base font-bold text-gray-900 uppercase tracking-tight truncate">{expense.title}</h4>
+                                        <div className="flex items-center gap-3 mt-1">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{expense.category}</span>
+                                            <div className="h-1 w-1 rounded-full bg-gray-200" />
+                                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">{expense.Hostel?.name}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Section 2: Details */}
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-8 flex-[1.5]">
+                                    <div>
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Expense ID</span>
+                                        <Badge className="bg-gray-100 text-gray-700 border-none text-[10px] font-mono font-bold px-2 py-0.5 w-fit">
+                                            EXP-{expense.id.slice(-8).toUpperCase()}
+                                        </Badge>
+                                    </div>
+                                    <div>
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Date</span>
+                                        <p className="text-sm font-bold text-blue-600 uppercase">{format(new Date(expense.date), 'MMM dd, yyyy')}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Amount</span>
+                                        <p className="text-sm font-bold text-rose-600">PKR {expense.amount.toLocaleString()}</p>
+                                    </div>
+                                </div>
+
+                                {/* Section 3: Status */}
+                                <div className="flex items-center gap-3">
+                                    <Badge variant="outline" className={`px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${expense.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : expense.status === 'APPROVED' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                                        {expense.status}
+                                    </Badge>
+
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-10 w-10 rounded-full hover:bg-gray-50 border border-gray-100 text-gray-400"
+                                        >
+                                            <ChevronRight className="h-5 w-5" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+
+                        {filteredExpenses.length === 0 && (
+                            <div className="bg-white border border-dashed border-gray-200 rounded-[2rem] p-24 text-center">
+                                <BarChart3 className="h-16 w-16 text-gray-200 mx-auto mb-6" />
+                                <h3 className="text-xl font-bold text-gray-900 uppercase">No records found</h3>
+                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">No expenses found for the selected filters.</p>
+                                <Button
+                                    onClick={() => { setFilterHostel('all'); setFilterCategory('all'); setFilterStatus('all'); }}
+                                    className="mt-8 bg-indigo-600 text-white rounded-xl px-8 h-12 font-bold uppercase text-[10px] tracking-widest"
+                                >
+                                    Reset Filters
+                                </Button>
+                            </div>
+                        )}
+                    </TabsContent>
+
+                    <TabsContent value="history" className="space-y-4">
+                        {/* Same list content as current, but without month filter */}
+                        {filteredExpenses.map((expense) => (
+                            <div
+                                key={expense.id}
+                                className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col lg:flex-row items-center gap-8 hover:shadow-md transition-shadow group relative overflow-hidden cursor-pointer"
+                                onClick={() => { setSelectedExpense(expense); setIsDetailOpen(true); }}
+                            >
+                                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${expense.status === 'PAID' ? 'bg-emerald-500' : expense.status === 'APPROVED' ? 'bg-blue-500' : expense.status === 'REJECTED' ? 'bg-rose-500' : 'bg-amber-500'} opacity-70`} />
+                                <div className="flex items-center gap-6 flex-1 min-w-[300px]">
+                                    <div className="h-14 w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0 group-hover:bg-indigo-600 transition-colors">
+                                        <Receipt className="h-6 w-6 text-gray-400 group-hover:text-white transition-colors" />
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <h4 className="text-base font-bold text-gray-900 uppercase tracking-tight truncate">{expense.title}</h4>
+                                        <div className="flex items-center gap-3 mt-1">
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{expense.category}</span>
+                                            <div className="h-1 w-1 rounded-full bg-gray-200" />
+                                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">{expense.Hostel?.name}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-8 flex-[1.5]">
+                                    <div>
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Expense ID</span>
+                                        <Badge className="bg-gray-100 text-gray-700 border-none text-[10px] font-mono font-bold px-2 py-0.5 w-fit">
+                                            EXP-{expense.id.slice(-8).toUpperCase()}
+                                        </Badge>
+                                    </div>
+                                    <div>
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Date</span>
+                                        <p className="text-sm font-bold text-blue-600 uppercase">{format(new Date(expense.date), 'MMM dd, yyyy')}</p>
+                                    </div>
+                                    <div>
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Amount</span>
+                                        <p className="text-sm font-bold text-rose-600">PKR {expense.amount.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <Badge variant="outline" className={`px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${expense.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : expense.status === 'APPROVED' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                                        {expense.status}
+                                    </Badge>
+                                    <div className="flex items-center gap-2">
+                                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-gray-50 border border-gray-100 text-gray-400">
+                                            <ChevronRight className="h-5 w-5" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </TabsContent>
+                </Tabs>
+            </main>
+
+            {/* Add Expense Dialog */}
+            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+                <DialogContent className="max-w-xl p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white">
+                    <div className="bg-indigo-600 p-10 text-white text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
+                            <Plus className="h-8 w-8 text-white" />
+                        </div>
+                        <h2 className="text-2xl font-bold uppercase tracking-tight">Add New Expense</h2>
+                        <p className="text-[10px] text-indigo-100 font-bold tracking-[0.2em] mt-2 uppercase tracking-widest">Register a new expense for the hostel</p>
+                    </div>
+                    <div className="p-10 space-y-6">
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Title*</Label>
+                                <Input
+                                    placeholder="e.g., Electricity Bill"
+                                    value={newExpenseForm.title}
+                                    onChange={e => setNewExpenseForm({ ...newExpenseForm, title: e.target.value })}
+                                    className="rounded-xl border-gray-100 bg-gray-50 h-12 font-bold text-xs focus:ring-1 focus:ring-indigo-600"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Category*</Label>
+                                <select
+                                    className="w-full h-12 rounded-xl border-gray-100 bg-gray-50 px-4 text-[10px] font-bold uppercase tracking-wider focus:ring-1 focus:ring-indigo-600 outline-none"
+                                    value={newExpenseForm.category}
+                                    onChange={e => setNewExpenseForm({ ...newExpenseForm, category: e.target.value })}
+                                >
+                                    <option value="">Select Category</option>
+                                    {['UTILITIES', 'MAINTENANCE', 'SALARIES', 'SUPPLIES', 'GROCERIES', 'OTHER'].map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Amount*</Label>
+                                <Input
+                                    type="number"
+                                    placeholder="PKR 0.00"
+                                    value={newExpenseForm.amount}
+                                    onChange={e => setNewExpenseForm({ ...newExpenseForm, amount: e.target.value })}
+                                    className="rounded-xl border-gray-100 bg-gray-50 h-12 font-bold text-rose-600 focus:ring-1 focus:ring-indigo-600"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Select Hostel*</Label>
+                                <select
+                                    className="w-full h-12 rounded-xl border-gray-100 bg-gray-50 px-4 text-[10px] font-bold uppercase tracking-wider focus:ring-1 focus:ring-indigo-600 outline-none"
+                                    value={newExpenseForm.hostelId}
+                                    onChange={e => setNewExpenseForm({ ...newExpenseForm, hostelId: e.target.value })}
+                                >
+                                    <option value="">Select Hostel</option>
+                                    {hostels.map(h => (
+                                        <option key={h.id} value={h.id}>{h.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Date*</Label>
+                            <Input
+                                type="date"
+                                value={newExpenseForm.date}
+                                onChange={e => setNewExpenseForm({ ...newExpenseForm, date: e.target.value })}
+                                className="rounded-xl border-gray-100 bg-gray-50 h-12 font-bold text-xs"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Description</Label>
+                            <Textarea
+                                placeholder="Describe the expense..."
+                                value={newExpenseForm.description}
+                                onChange={e => setNewExpenseForm({ ...newExpenseForm, description: e.target.value })}
+                                className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24"
+                            />
+                        </div>
+                        <div className="flex gap-4 pt-4">
+                            <Button variant="ghost" className="flex-1 rounded-xl h-12 font-bold text-[10px] uppercase tracking-wider text-gray-400" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                            <Button
+                                className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2"
+                                onClick={handleAddSubmit}
+                                disabled={createExpense.isPending}
+                            >
+                                {createExpense.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><ShieldCheck className="h-4 w-4" /> Save Expense</>}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Expense Details Dialog */}
+            <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+                <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[2.5rem] border-none shadow-3xl bg-white">
+                    {selectedExpense && (
+                        <>
+                            <div className={`p-10 text-white relative overflow-hidden ${selectedExpense.status === 'PAID' ? 'bg-emerald-600' : selectedExpense.status === 'APPROVED' ? 'bg-indigo-600' : 'bg-slate-900'}`}>
+                                <div className="absolute top-0 right-0 w-64 h-full bg-white/10 skew-x-12 translate-x-32" />
+                                <div className="flex justify-between items-start relative z-10">
+                                    <div className="flex flex-col gap-4">
+                                        <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/10">
+                                            <Receipt className="h-6 w-6" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-bold uppercase tracking-tight">{selectedExpense.title}</h2>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <Badge className="bg-white/20 text-white border-none text-[8px] font-bold uppercase tracking-widest">{selectedExpense.category}</Badge>
+                                                <div className="h-1 w-1 rounded-full bg-white/50" />
+                                                <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">{selectedExpense.Hostel?.name}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right flex flex-col items-end gap-2">
+                                        <div>
+                                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Amount</span>
+                                            <div className="text-3xl font-bold tracking-tighter">PKR {selectedExpense.amount.toLocaleString()}</div>
+                                        </div>
+                                        <UnifiedReceipt data={selectedExpense} type="expense">
+                                            <Button variant="outline" className="h-8 bg-white/10 border-white/20 text-white hover:bg-white/20 font-bold text-[8px] uppercase tracking-widest rounded-lg">
+                                                <Download className="h-3 w-3 mr-1" /> Receipt
+                                            </Button>
+                                        </UnifiedReceipt>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-10 space-y-8">
+                                <div className="grid grid-cols-2 gap-8">
+                                    <div className="space-y-6">
+                                        <div className="space-y-1">
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Expense ID</span>
+                                            <Badge className="bg-gray-100 text-gray-700 border-none text-[10px] font-mono font-bold px-2 py-0.5 w-fit">
+                                                EXP-{selectedExpense.id.slice(-8).toUpperCase()}
+                                            </Badge>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Date Added</span>
+                                            <p className="text-sm font-bold text-gray-900">{format(new Date(selectedExpense.date), 'PPPP')}</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-6">
+                                        <div className="space-y-1">
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Submitted By</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedExpense.User_Expense_submittedByIdToUser?.name} ({selectedExpense.User_Expense_submittedByIdToUser?.role})</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Hostel Branch</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedExpense.Hostel?.city} Network</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-3">Description</span>
+                                    <p className="text-sm font-medium text-gray-700 leading-relaxed">
+                                        "{selectedExpense.description || 'No description provided.'}"
+                                    </p>
+                                </div>
+
+                                <div className="flex gap-4 pt-4">
+                                    {selectedExpense.status === 'PENDING' ? (
+                                        <>
+                                            <Button
+                                                className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-600/20"
+                                                onClick={() => handleStatusUpdate(selectedExpense.id, 'APPROVED')}
+                                            >
+                                                Approve Expense
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                className="flex-1 h-12 border-rose-100 text-rose-600 hover:bg-rose-50 font-bold text-[10px] uppercase tracking-widest rounded-xl"
+                                                onClick={() => handleStatusUpdate(selectedExpense.id, 'REJECTED')}
+                                            >
+                                                Reject Expense
+                                            </Button>
+                                        </>
+                                    ) : (selectedExpense.status === 'APPROVED' || selectedExpense.status === 'PARTIAL') ? (
+                                        <Button
+                                            className="w-full h-12 bg-indigo-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg"
+                                            onClick={() => handleStatusUpdate(selectedExpense.id, 'PAID')}
+                                        >
+                                            Mark as Paid
+                                        </Button>
+                                    ) : (
+                                        <div className="w-full h-12 bg-gray-100 rounded-xl flex items-center justify-center gap-3">
+                                            <ShieldCheck className={`h-4 w-4 ${selectedExpense.status === 'PAID' ? 'text-emerald-500' : 'text-gray-400'}`} />
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status: {selectedExpense.status}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
+};
+
+export default ExpensesPage;
