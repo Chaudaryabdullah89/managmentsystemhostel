@@ -482,22 +482,6 @@ const ProfilePage = () => {
                                     </div>
                                 </Card>
 
-                                <div className="bg-black text-white rounded-3xl p-6 flex items-center justify-between shadow-xl shadow-black/10 relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 h-full w-48 bg-white/5 skew-x-12 translate-x-20" />
-                                    <div className="flex items-center gap-6 relative z-10">
-                                        <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center border border-white/10 backdrop-blur-md">
-                                            <ShieldCheck className="h-6 w-6 text-emerald-400" />
-                                        </div>
-                                        <div>
-                                            <h4 className="text-lg font-bold uppercase tracking-tight italic leading-none">Record Integrity: SECURE</h4>
-                                            <p className="text-[8px] font-bold uppercase tracking-widest text-gray-400 mt-1.5">All personal data is encrypted and cross-verified</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 relative z-10 px-2">
-                                        <span className="text-[8px] font-black uppercase text-emerald-400 tracking-widest">Active Protect</span>
-                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                    </div>
-                                </div>
                             </TabsContent>
 
                             <TabsContent value="sessions" className="m-0 space-y-4 animate-in fade-in duration-500">
@@ -562,39 +546,7 @@ const ProfilePage = () => {
                     </div>
                 </div>
             </main>
-            {/* Audit Registry Bar - Payments Style */}
-            <div className="max-w-[1600px] mx-auto px-6 pb-10">
-                <div className="bg-black text-white rounded-[2rem] p-4 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-full bg-white/5 skew-x-12 translate-x-20" />
-                    <div className="flex items-center gap-6 relative z-10 px-4">
-                        <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
-                            <ShieldCheck className="h-5 w-5 text-emerald-400" />
-                        </div>
-                        <div className="flex flex-col">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Profile Ledger</h4>
-                            <p className="text-[11px] font-bold mt-0.5 uppercase tracking-tighter">Verified Node Member</p>
-                        </div>
-                    </div>
 
-                    <div className="h-6 w-px bg-white/10 hidden md:block" />
-
-                    <div className="flex-1 flex items-center gap-12 px-8">
-                        <div className="flex flex-col">
-                            <span className="text-[8px] font-black uppercase text-gray-500 tracking-widest">Audit Time</span>
-                            <span className="text-[10px] font-bold text-gray-200 uppercase mt-1">{new Date().toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[8px] font-black uppercase text-gray-500 tracking-widest">Integrity Pulse</span>
-                            <span className="text-[10px] font-bold text-emerald-400 uppercase mt-1">100% HEALTHY</span>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 pr-6 relative z-10">
-                        <span className="text-[9px] font-black uppercase text-emerald-400 tracking-widest">System Core Online</span>
-                        <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.4)]" />
-                    </div>
-                </div>
-            </div>
         </div>
     );
 };
