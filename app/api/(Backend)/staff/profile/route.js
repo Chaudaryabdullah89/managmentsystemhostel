@@ -4,21 +4,17 @@ import prisma from "@/lib/prisma";
 export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
-        const hostelId = searchParams.get("hostelId");
+        const userId = searchParams.get("userId");
 
-        const where = {};
-        if (hostelId) {
-            where.User = {
-                hostelId: hostelId
-            };
+        if (!userId) {
+            return NextResponse.json({ success: false, error: "User ID is required" }, { status: 400 });
         }
 
-        const staff = await prisma.staffProfile.findMany({
-            where,
+        const staff = await prisma.staffProfile.findUnique({
+            where: { userId },
             include: {
                 User: {
                     select: {
-                        id: true,
                         name: true,
                         email: true,
                         role: true,
@@ -31,10 +27,14 @@ export async function GET(request) {
                 },
                 attendance: {
                     orderBy: { checkIn: 'desc' },
-                    take: 1
+                    take: 7
                 }
             }
         });
+
+        if (!staff) {
+            return NextResponse.json({ success: false, error: "Staff profile not found" }, { status: 404 });
+        }
 
         return NextResponse.json({
             success: true,

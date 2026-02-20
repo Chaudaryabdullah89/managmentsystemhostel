@@ -32,36 +32,6 @@ export async function POST(request) {
         const body = await request.json();
         const booking = await new BookingServices().createBooking(body);
 
-        // Send booking confirmation email
-        try {
-            const fullBooking = await prisma.booking.findUnique({
-                where: { id: booking.id || booking.data?.id },
-                include: {
-                    user: { select: { name: true, email: true } },
-                    room: { select: { roomNumber: true } },
-                    hostel: { select: { name: true } },
-                },
-            });
-
-            if (fullBooking?.user?.email) {
-                sendEmail({
-                    to: fullBooking.user.email,
-                    subject: "Booking Confirmed — GreenView Hostels",
-                    html: bookingCreatedEmail({
-                        name: fullBooking.user.name,
-                        bookingId: fullBooking.uid || fullBooking.id,
-                        roomNumber: fullBooking.room?.roomNumber,
-                        hostelName: fullBooking.hostel?.name,
-                        checkIn: fullBooking.checkIn,
-                        checkOut: fullBooking.checkOut,
-                        amount: fullBooking.amount,
-                    }),
-                }).catch(err => console.error("[Email] Booking created email failed:", err));
-            }
-        } catch (emailErr) {
-            console.error("[Email] Error fetching booking details for email:", emailErr);
-        }
-
         return NextResponse.json({
             message: "Booking created successfully",
             data: booking,

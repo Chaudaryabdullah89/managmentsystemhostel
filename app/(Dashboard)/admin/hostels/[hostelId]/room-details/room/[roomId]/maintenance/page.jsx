@@ -329,23 +329,7 @@ const MaintenancePage = () => {
                 </div>
             </div>
 
-            {/* Architecture Bar */}
-            <div className="fixed bottom-0 w-full z-40 px-6 pb-4 pointer-events-none left-0">
-                <div className="max-w-[1600px] mx-auto bg-black/90 backdrop-blur-xl text-white h-12 rounded-2xl shadow-2xl flex items-center justify-between px-6 pointer-events-auto">
-                    <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-2">
-                            <Wrench className="w-3.5 h-3.5 text-blue-400" />
-                            <span className="text-[10px] font-black tracking-widest uppercase text-blue-400">Maintenance Ops</span>
-                        </div>
-                        <div className="h-3 w-px bg-white/20"></div>
-                        <div className="flex items-center gap-2">
-                            <div className={`h-2 w-2 rounded-full ${stats.urgent > 0 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
-                            <span className="text-[10px] font-black uppercase text-gray-300 tracking-widest">{stats.urgent > 0 ? 'CRITICAL ALERTS' : 'SYSTEM NOMINAL'}</span>
-                        </div>
-                    </div>
-                    <span className="text-[10px] font-black tracking-widest uppercase text-gray-500 hidden sm:block">Node: ROOM-{roomData?.data?.roomNumber}</span>
-                </div>
-            </div>
+
 
             {/* RESOLUTION DIALOG - Updated Style */}
             <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>

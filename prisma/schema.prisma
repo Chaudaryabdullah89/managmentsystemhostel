@@ -254,17 +254,33 @@ model Session {
 }
 
 model StaffProfile {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  designation String
-  department  String?
-  shift       String?
-  basicSalary Float    @default(0)
-  allowances  Float    @default(0)
-  joiningDate DateTime @default(now())
-  documents   Json?
-  Salary      Salary[]
-  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String            @id @default(cuid())
+  userId            String            @unique
+  designation       String
+  department        String?
+  shift             String?
+  basicSalary       Float             @default(0)
+  allowances        Float             @default(0)
+  joiningDate       DateTime          @default(now())
+  documents         Json?
+  totalTasksHandled Int               @default(0)
+  performanceRating Float             @default(5.0)
+  Salary            Salary[]
+  User              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attendance        StaffAttendance[]
+}
+
+model StaffAttendance {
+  id             String       @id @default(cuid())
+  staffProfileId String
+  checkIn        DateTime     @default(now())
+  checkOut       DateTime?
+  status         String       @default("PRESENT") // PRESENT, LATE, ABSENT, LEAVE
+  notes          String?
+  StaffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
+
+  @@index([staffProfileId])
+  @@index([checkIn])
 }
 
 model User {
@@ -443,6 +459,8 @@ enum PaymentMethod {
   CASH
   BANK_TRANSFER
   ONLINE
+  EASYPAISA
+  JAZZCASH
   CHEQUE
   OTHER
 }

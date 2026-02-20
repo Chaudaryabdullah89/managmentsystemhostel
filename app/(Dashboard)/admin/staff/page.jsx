@@ -201,14 +201,28 @@ const AdminStaffPage = () => {
                                                     {staff.User?.name?.charAt(0) || "S"}
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-sm font-bold text-gray-900">{staff.User?.name}</h3>
+                                                    <div className="flex items-center gap-2">
+                                                        <h3 className="text-sm font-bold text-gray-900">{staff.User?.name}</h3>
+                                                        {staff.attendance?.[0] && !staff.attendance[0].checkOut && (
+                                                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" title="On Duty" />
+                                                        )}
+                                                    </div>
                                                     <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">{staff.designation}</p>
-                                                    {staff.department && (
-                                                        <p className="text-[9px] text-gray-400 font-medium mt-0.5">{staff.department}</p>
-                                                    )}
+                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                        {staff.department && (
+                                                            <p className="text-[9px] text-gray-400 font-medium">{staff.department}</p>
+                                                        )}
+                                                        <div className="h-1 w-1 rounded-full bg-gray-200" />
+                                                        <div className="flex items-center gap-0.5">
+                                                            <Star className="h-2.5 w-2.5 text-amber-400 fill-amber-400" />
+                                                            <span className="text-[9px] font-bold text-gray-600">{staff.performanceRating?.toFixed(1) || "5.0"}</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className={`h-2.5 w-2.5 rounded-full flex-shrink-0 mt-1 ${staff.stats.urgent > 0 ? "bg-rose-500 animate-pulse" : "bg-emerald-500"}`} />
+                                            <Badge className={`${staff.attendance?.[0] && !staff.attendance[0].checkOut ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-gray-50 text-gray-400 border-gray-200'} text-[8px] font-black uppercase border`}>
+                                                {staff.attendance?.[0] && !staff.attendance[0].checkOut ? 'On Duty' : 'Off Duty'}
+                                            </Badge>
                                         </div>
 
                                         {staff.User?.Hostel_User_hostelIdToHostel && (
@@ -226,8 +240,8 @@ const AdminStaffPage = () => {
                                             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Active</p>
                                         </div>
                                         <div className="text-center border-x border-gray-100">
-                                            <p className="text-xl font-bold text-emerald-600">{staff.stats.resolved}</p>
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Resolved</p>
+                                            <p className="text-xl font-bold text-emerald-600">{staff.totalTasksHandled || 0}</p>
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Total Units</p>
                                         </div>
                                         <div className="text-center">
                                             <p className={`text-xl font-bold ${staff.stats.urgent > 0 ? "text-rose-600" : "text-gray-300"}`}>{staff.stats.urgent}</p>
@@ -235,16 +249,16 @@ const AdminStaffPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Resolution Rate Bar */}
+                                    {/* Efficiency Profile Bar */}
                                     <div className="px-6 pb-4">
                                         <div className="flex items-center justify-between mb-1.5">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Resolution Rate</span>
-                                            <span className="text-[10px] font-bold text-gray-700">{staff.stats.rate}%</span>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Efficiency Profile</span>
+                                            <span className="text-[10px] font-bold text-gray-700">{staff.totalTasksHandled > 0 ? staff.stats.rate : 0}%</span>
                                         </div>
                                         <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                             <div
                                                 className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-700"
-                                                style={{ width: `${staff.stats.rate}%` }}
+                                                style={{ width: `${staff.totalTasksHandled > 0 ? staff.stats.rate : 0}%` }}
                                             />
                                         </div>
                                     </div>

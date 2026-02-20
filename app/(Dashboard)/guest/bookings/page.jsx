@@ -324,7 +324,7 @@ const BookingDetailCard = ({ booking }) => {
 
 const GuestBookings = () => {
     const user = useAuthStore((state) => state.user);
-    const { data: bookings, isLoading } = useBookings(user?.id);
+    const { data: bookings, isLoading } = useBookings({ userId: user?.id });
 
     if (isLoading) return (
         <div className="flex h-screen items-center justify-center bg-white font-sans">

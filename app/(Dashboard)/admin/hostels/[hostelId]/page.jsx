@@ -352,39 +352,7 @@ const HostelOverviewPage = () => {
                 </div>
 
                 {/* Status Summary Bar */}
-                <div className="pt-10">
-                    <div className="bg-blue-600 text-white rounded-[2rem] p-4 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-full bg-white/10 skew-x-12 translate-x-20" />
-                        <div className="flex items-center gap-6 relative z-10 px-4">
-                            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
-                                <ShieldCheck className="h-5 w-5 text-white" />
-                            </div>
-                            <div className="flex flex-col">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-100">Admin Panel</h4>
-                                <p className="text-[11px] font-bold mt-0.5 whitespace-nowrap">All data is up to date</p>
-                            </div>
-                        </div>
 
-                        <div className="h-6 w-px bg-white/10 hidden md:block" />
-
-                        <div className="flex-1 flex items-center gap-12 px-8">
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-black uppercase text-blue-200 tracking-widest">Hostel ID</span>
-                                <span className="text-[10px] font-bold text-white uppercase mt-1">#HST-{hostelId?.slice(-8).toUpperCase()}</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-black uppercase text-blue-200 tracking-widest">Occupancy</span>
-                                <span className="text-[10px] font-bold text-white uppercase mt-1 italic">{roomStats.occupied}/{roomStats.total} Beds Occupied</span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 pr-6 relative z-10">
-                            <div className="h-4 w-px bg-white/10" />
-                            <span className="text-[9px] font-black uppercase text-blue-100 tracking-widest whitespace-nowrap">System Secure</span>
-                            <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.4)]" />
-                        </div>
-                    </div>
-                </div>
             </main>
         </div>
     );
