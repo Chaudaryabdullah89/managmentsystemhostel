@@ -82,6 +82,7 @@ const CreateBookingForm = () => {
         checkIn: "",
         checkOut: "",
         status: "PENDING",
+        paymentStatus: "PENDING",
         totalAmount: 0,
         securityDeposit: 0,
         advanceMonths: 1
@@ -160,12 +161,11 @@ const CreateBookingForm = () => {
     const calculateTotals = () => {
         if (!selectedRoom) return;
         const rent = selectedRoom.monthlyrent || 0;
-        const deposit = selectedRoom.monthlyrent * 1; // Default 1 month deposit
+        const deposit = parseFloat(formData.securityDeposit) || 0;
         const total = deposit + (rent * (parseInt(formData.advanceMonths) || 1));
 
         setFormData(prev => ({
             ...prev,
-            securityDeposit: deposit,
             totalAmount: total
         }));
     };
@@ -175,7 +175,7 @@ const CreateBookingForm = () => {
 
     useEffect(() => {
         calculateTotals();
-    }, [selectedRoom, formData.advanceMonths]);
+    }, [selectedRoom, formData.advanceMonths, formData.securityDeposit]);
 
     // Auto-select room from URL
     useEffect(() => {
@@ -468,7 +468,7 @@ const CreateBookingForm = () => {
                                             </div>
                                         </div>
                                         <div className="space-y-2.5">
-                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Advance Rent (Months)</Label>
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Rent Paid Upfront (Months)</Label>
                                             <Select value={formData.advanceMonths.toString()} onValueChange={(v) => setFormData(p => ({ ...p, advanceMonths: parseInt(v) }))}>
                                                 <SelectTrigger className="h-14 rounded-xl border-gray-100 font-bold">
                                                     <SelectValue />
@@ -477,6 +477,32 @@ const CreateBookingForm = () => {
                                                     {[1, 2, 3, 6, 12].map(m => <SelectItem key={m} value={m.toString()}>{m} Month{m > 1 ? 's' : ''}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2.5">
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Booking Status</Label>
+                                                <Select value={formData.status} onValueChange={(v) => setFormData(p => ({ ...p, status: v }))}>
+                                                    <SelectTrigger className="h-14 rounded-xl border-gray-100 font-bold">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-xl border-gray-100">
+                                                        <SelectItem value="PENDING">Pending</SelectItem>
+                                                        <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                            <div className="space-y-2.5">
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Payment Status</Label>
+                                                <Select value={formData.paymentStatus} onValueChange={(v) => setFormData(p => ({ ...p, paymentStatus: v }))}>
+                                                    <SelectTrigger className="h-14 rounded-xl border-gray-100 font-bold">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-xl border-gray-100">
+                                                        <SelectItem value="PENDING">Pending</SelectItem>
+                                                        <SelectItem value="PAID">Paid</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -489,25 +515,43 @@ const CreateBookingForm = () => {
                                         </div>
 
                                         <div className="space-y-4">
-                                            <div className="flex justify-between items-center text-gray-400">
-                                                <span className="text-[10px] font-bold uppercase tracking-widest">Rent</span>
-                                                <span className="font-bold text-white">PKR {selectedRoom?.monthlyrent || 0}</span>
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex justify-between items-center text-gray-400">
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest">Security Deposit (Edit)</span>
+                                                </div>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">PKR</span>
+                                                    <Input
+                                                        type="number"
+                                                        name="securityDeposit"
+                                                        value={formData.securityDeposit}
+                                                        onChange={(e) => {
+                                                            handleInputChange(e);
+                                                        }}
+                                                        className="h-10 pl-10 bg-white/10 border-white/20 text-white font-bold rounded-xl"
+                                                    />
+                                                </div>
                                             </div>
                                             <div className="flex justify-between items-center text-gray-400">
-                                                <span className="text-[10px] font-bold uppercase tracking-widest">Security Deposit</span>
-                                                <span className="font-bold text-white">PKR {formData.securityDeposit}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center text-gray-400">
-                                                <span className="text-[10px] font-bold uppercase tracking-widest">Advance ({formData.advanceMonths}m)</span>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest">Rent ({formData.advanceMonths} Months)</span>
                                                 <span className="font-bold text-white">PKR {(selectedRoom?.monthlyrent || 0) * formData.advanceMonths}</span>
                                             </div>
                                             <div className="h-px bg-white/10 my-4" />
-                                            <div className="flex justify-between items-end">
-                                                <div>
-                                                    <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] mb-1">Total Amount</p>
-                                                    <h3 className="text-3xl font-bold tracking-tighter">PKR {formData.totalAmount}</h3>
+                                            <div className="flex justify-between items-end gap-4">
+                                                <div className="flex-1">
+                                                    <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] mb-1">Total Override</p>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-300 font-bold text-lg">PKR</span>
+                                                        <Input
+                                                            type="number"
+                                                            name="totalAmount"
+                                                            value={formData.totalAmount}
+                                                            onChange={handleInputChange}
+                                                            className="h-14 pl-14 bg-white/20 border-white/30 text-white font-bold text-2xl tracking-tighter rounded-2xl"
+                                                        />
+                                                    </div>
                                                 </div>
-                                                <DollarSign className="h-8 w-8 text-white/10 mb-1" />
+                                                <DollarSign className="h-8 w-8 text-white/10 mb-3 shrink-0" />
                                             </div>
                                         </div>
                                     </div>
@@ -610,22 +654,7 @@ const CreateBookingForm = () => {
                 </div>
 
                 {/* Footer Status */}
-                <div className="fixed bottom-0 w-full z-40 px-6 pb-4 pointer-events-none left-0">
-                    <div className="max-w-[1000px] mx-auto bg-indigo-600/90 backdrop-blur-xl text-white h-12 rounded-2xl shadow-2xl flex items-center justify-between px-6 pointer-events-auto">
-                        <div className="flex items-center gap-6">
-                            <div className="flex items-center gap-2">
-                                <ShieldCheck className="w-3.5 h-3.5 text-white" />
-                                <span className="text-[10px] font-bold tracking-widest uppercase text-white">Secure System</span>
-                            </div>
-                            <div className="h-3 w-px bg-white/20"></div>
-                            <div className="flex items-center gap-2">
-                                <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
-                                <span className="text-[10px] font-bold uppercase text-gray-100 tracking-widest">Saving Data</span>
-                            </div>
-                        </div>
-                        <span className="text-[10px] font-bold tracking-widest uppercase text-gray-300">Create Booking Page</span>
-                    </div>
-                </div>
+
             </div>
         </div>
     );

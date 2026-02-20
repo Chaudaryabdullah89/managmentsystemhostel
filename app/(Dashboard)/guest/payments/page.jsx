@@ -34,13 +34,14 @@ const PaymentStatusBadge = ({ status }) => {
         switch (s) {
             case 'PAID': return "bg-emerald-50 text-emerald-700 border-emerald-100";
             case 'PENDING': return "bg-amber-50 text-amber-700 border-amber-100";
+            case 'REFUNDED': return "bg-blue-50 text-blue-700 border-blue-100";
             case 'REJECTED': return "bg-rose-50 text-rose-700 border-rose-100";
             default: return "bg-slate-50 text-slate-600 border-slate-100";
         }
     };
     return (
         <Badge variant="outline" className={`${getStyle(status)} px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider border group-hover:bg-white transition-colors`}>
-            {status === 'PAID' ? 'Verified' : status === 'PENDING' ? 'Processing' : status}
+            {status === 'PAID' ? 'Verified' : status === 'PENDING' ? 'Processing' : status === 'REFUNDED' ? 'Refunded' : status}
         </Badge>
     );
 };
@@ -61,15 +62,30 @@ const GuestPayments = () => {
     const payments = paymentsData?.payments || [];
 
     const stats = useMemo(() => {
+        // Total Liability: Rent + Security + Late Fees
         const total = activeBooking ? (activeBooking.totalAmount || 0) + (activeBooking.securityDeposit || 0) : 0;
-        const paid = payments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0);
+
+        // Verified Paid: Payments actually cleared (excluding security refunds)
+        const paid = payments.filter(p => p.status === 'PAID' && p.type !== 'SECURITY_REFUND').reduce((sum, p) => sum + p.amount, 0);
+
+        // Refunded: Payments reversed or security deposit returned
+        const refunded = payments.filter(p => p.status === 'REFUNDED' || p.type === 'SECURITY_REFUND').reduce((sum, p) => sum + p.amount, 0);
+
+        // Pending: Payments in review
         const pending = payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0);
-        return { total, paid, balance: Math.max(0, total - paid), pending };
+
+        // Balance: Total Liability - (Effective Payment)
+        // Effective Payment = Paid - Refunded
+        const balance = Math.max(0, total - (paid - refunded));
+
+        return { total, paid, refunded, balance, pending };
     }, [activeBooking, payments]);
 
-    const filteredPayments = filter === "all"
-        ? payments
-        : payments.filter(p => p.status.toLowerCase() === filter.toLowerCase());
+    const filteredPayments = useMemo(() => {
+        if (filter === "all") return payments;
+        if (filter === "refunded") return payments.filter(p => p.status === 'REFUNDED' || p.type === 'SECURITY_REFUND');
+        return payments.filter(p => p.status.toLowerCase() === filter.toLowerCase());
+    }, [payments, filter]);
 
     if (isPaymentsLoading || isBookingsLoading) return (
         <div className="flex h-screen items-center justify-center bg-white">
@@ -87,7 +103,7 @@ const GuestPayments = () => {
                     <div className="flex items-center gap-3">
                         <Wallet className="h-5 w-5 text-slate-900" />
                         <h1 className="text-base font-bold text-slate-900 uppercase tracking-tight">
-                            {isCheckedOut ? 'Archived Ledger' : 'Payments Ledger'}
+                            {isCheckedOut ? 'Old Payment History' : 'Payment History'}
                         </h1>
                     </div>
                     <div className="flex gap-2">
@@ -114,31 +130,31 @@ const GuestPayments = () => {
                         <div className="p-10">
                             <div className="flex justify-between items-start mb-10">
                                 <div>
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Net Outstanding</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Total Remaining</p>
                                     <h2 className="text-5xl font-bold text-slate-900 tracking-tighter">PKR {stats.balance.toLocaleString()}</h2>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Total Invoice</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Total Amount</p>
                                     <p className="text-xl font-bold text-slate-600 tracking-tight">PKR {stats.total.toLocaleString()}</p>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-4">
                                 <div className="bg-emerald-50/50 rounded-2xl p-5 flex items-center gap-4 border border-emerald-100/50">
-                                    <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                        <CheckCircle2 className="h-5 w-5" />
-                                    </div>
                                     <div>
-                                        <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Total Paid</p>
-                                        <p className="text-lg font-bold text-emerald-900 tracking-tight">PKR {stats.paid.toLocaleString()}</p>
+                                        <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">Net Paid</p>
+                                        <p className="text-base font-bold text-emerald-900 tracking-tight">PKR {stats.paid.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                                <div className="bg-blue-50/50 rounded-2xl p-5 flex items-center gap-4 border border-blue-100/50">
+                                    <div>
+                                        <p className="text-[9px] font-bold text-blue-600 uppercase tracking-wider">Refunded</p>
+                                        <p className="text-base font-bold text-blue-900 tracking-tight">PKR {stats.refunded.toLocaleString()}</p>
                                     </div>
                                 </div>
                                 <div className="bg-amber-50/50 rounded-2xl p-5 flex items-center gap-4 border border-amber-100/50">
-                                    <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
-                                        <Clock className="h-5 w-5" />
-                                    </div>
                                     <div>
-                                        <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">In Review</p>
-                                        <p className="text-lg font-bold text-amber-900 tracking-tight">PKR {stats.pending.toLocaleString()}</p>
+                                        <p className="text-[9px] font-bold text-amber-600 uppercase tracking-wider">In Review</p>
+                                        <p className="text-base font-bold text-amber-900 tracking-tight">PKR {stats.pending.toLocaleString()}</p>
                                     </div>
                                 </div>
                             </div>
@@ -166,17 +182,17 @@ const GuestPayments = () => {
                     <div className="flex items-center justify-between px-2">
                         <div className="flex items-center gap-3">
                             <History className="h-5 w-5 text-slate-400" />
-                            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-[0.2em]">Transaction History</h2>
+                            <h2 className="text-xs font-bold text-slate-900 uppercase tracking-[0.2em]">All Payments</h2>
                         </div>
                         <Tabs defaultValue="all" className="bg-slate-100/80 p-1 rounded-2xl" onValueChange={setFilter}>
                             <TabsList className="bg-transparent h-9 gap-1">
-                                {['all', 'pending', 'paid'].map((val) => (
+                                {['all', 'pending', 'paid', 'refunded'].map((val) => (
                                     <TabsTrigger
                                         key={val}
                                         value={val}
                                         className="text-[10px] font-bold px-5 h-full uppercase tracking-wider rounded-xl data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm transition-all"
                                     >
-                                        {val === 'all' ? 'All' : val === 'pending' ? 'Processing' : 'Verified'}
+                                        {val === 'all' ? 'All' : val === 'pending' ? 'In Review' : val === 'paid' ? 'Verified' : 'Refunds'}
                                     </TabsTrigger>
                                 ))}
                             </TabsList>

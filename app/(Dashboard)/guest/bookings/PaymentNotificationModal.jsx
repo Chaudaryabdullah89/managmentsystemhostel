@@ -221,11 +221,11 @@ export default function PaymentNotificationModal({ booking, children }) {
                     {/* Compact Balance Cards */}
                     <div className="grid grid-cols-2 gap-3">
                         <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex flex-col gap-1">
-                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Amount Due</span>
+                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Total Unpaid</span>
                             <span className="text-xs font-bold text-slate-900">PKR {stats.verifiedBalance.toLocaleString()}</span>
                         </div>
                         <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 flex flex-col gap-1">
-                            <span className="text-[8px] font-bold text-indigo-400 uppercase tracking-widest">Net Payable</span>
+                            <span className="text-[8px] font-bold text-indigo-400 uppercase tracking-widest">Remaining to Pay</span>
                             <span className="text-xs font-bold text-indigo-600">PKR {stats.availableToNotify.toLocaleString()}</span>
                         </div>
                     </div>

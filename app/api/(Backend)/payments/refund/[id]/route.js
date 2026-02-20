@@ -3,7 +3,8 @@ import { prisma } from "@/lib/prisma";
 
 export async function PATCH(request, { params }) {
     try {
-        const { id } = params;
+        // Await params object for Next.js 15+ compatibility
+        const { id } = await params;
         const data = await request.json();
 
         const refundRequest = await prisma.$transaction(async (tx) => {

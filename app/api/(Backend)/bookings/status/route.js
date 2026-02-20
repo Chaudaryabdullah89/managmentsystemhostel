@@ -22,22 +22,25 @@ export async function PUT(request) {
             const fullBooking = await prisma.booking.findUnique({
                 where: { id },
                 include: {
-                    user: { select: { name: true, email: true } },
-                    room: { select: { roomNumber: true } },
-                    hostel: { select: { name: true } },
+                    User: { select: { name: true, email: true } },
+                    Room: {
+                        include: {
+                            Hostel: { select: { name: true } }
+                        }
+                    },
                 },
             });
 
-            if (fullBooking?.user?.email) {
+            if (fullBooking?.User?.email) {
                 sendEmail({
-                    to: fullBooking.user.email,
+                    to: fullBooking.User.email,
                     subject: `Booking ${status.charAt(0) + status.slice(1).toLowerCase()} — GreenView Hostels`,
                     html: bookingStatusEmail({
-                        name: fullBooking.user.name,
+                        name: fullBooking.User.name,
                         bookingId: fullBooking.uid || fullBooking.id,
                         status,
-                        roomNumber: fullBooking.room?.roomNumber,
-                        hostelName: fullBooking.hostel?.name,
+                        roomNumber: fullBooking.Room?.roomNumber,
+                        hostelName: fullBooking.Room?.Hostel?.name,
                         notes: notes || null,
                     }),
                 }).catch(err => console.error("[Email] Booking status email failed:", err));
