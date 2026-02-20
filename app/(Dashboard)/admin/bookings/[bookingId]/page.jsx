@@ -57,11 +57,16 @@ import {
 import { useBookingById, useUpdateBookingStatus } from "@/hooks/useBooking";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import useAuthStore from "@/hooks/Authstate";
+import CheckoutModal from "../CheckoutModal";
+
 
 const BookingDetailsPage = () => {
     const { bookingId } = useParams();
     const router = useRouter();
+    const user = useAuthStore((state) => state.user);
     const { data: booking, isLoading } = useBookingById(bookingId);
+
     const updateStatus = useUpdateBookingStatus();
 
     const handleStatusUpdate = async (newStatus) => {
@@ -388,10 +393,17 @@ const BookingDetailsPage = () => {
                                 </Button>
                             )}
                             {booking.status === 'CHECKED_IN' && (
-                                <Button className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2" onClick={() => handleStatusUpdate('CHECKED_OUT')}>
-                                    <LogOut className="h-4 w-4" /> Check Out
-                                </Button>
+                                <CheckoutModal
+                                    booking={booking}
+                                    wardenId={user?.id}
+                                    onComplete={() => router.refresh()}
+                                >
+                                    <Button className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+                                        <LogOut className="h-4 w-4" /> Check Out
+                                    </Button>
+                                </CheckoutModal>
                             )}
+
 
                             <Button variant="outline" className="w-full h-11 border-rose-100 text-rose-600 hover:bg-rose-50 font-bold text-[10px] uppercase tracking-widest rounded-xl flex items-center gap-2" onClick={() => handleStatusUpdate('CANCELLED')} disabled={booking.status === 'CANCELLED' || booking.status === 'CHECKED_OUT'}>
                                 <XCircle className="h-4 w-4" /> Cancel Booking

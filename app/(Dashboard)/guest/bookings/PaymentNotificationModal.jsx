@@ -63,7 +63,20 @@ export default function PaymentNotificationModal({ booking, children }) {
         };
     }, [booking]);
 
+    const [selectedMonth, setSelectedMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
+    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+    const duplicateWarning = useMemo(() => {
+        const payments = booking.Payment || [];
+        const existing = payments.find(p =>
+            p.month === selectedMonth &&
+            p.year === parseInt(selectedYear) &&
+            p.status !== "REJECTED"
+        );
+        return existing ? `A notification for ${selectedMonth} ${selectedYear} is already ${existing.status.toLowerCase()}.` : null;
+    }, [booking.Payment, selectedMonth, selectedYear]);
+
     const isSettled = stats.verifiedBalance <= 0;
+
 
     // Form State
     const [amount, setAmount] = useState("");
@@ -72,6 +85,16 @@ export default function PaymentNotificationModal({ booking, children }) {
     const [notes, setNotes] = useState("");
     const [receiptUrl, setReceiptUrl] = useState("");
     const [isUploading, setIsUploading] = useState(false);
+
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    const years = [
+        (new Date().getFullYear() - 1).toString(),
+        new Date().getFullYear().toString(),
+        (new Date().getFullYear() + 1).toString()
+    ];
 
     // Initialize amount when modal opens
     useEffect(() => {
@@ -120,13 +143,6 @@ export default function PaymentNotificationModal({ booking, children }) {
             return;
         }
 
-        if (numericAmount > stats.availableToNotify + 0.01) { // small buffer
-            toast.error(`Amount exceeds remaining fee.`, {
-                description: `Max PKR ${stats.availableToNotify.toLocaleString()} allowed.`
-            });
-            return;
-        }
-
         // Method validation
         if (method !== 'CASH' && !receiptUrl) {
             toast.error("Proof of payment required.");
@@ -141,6 +157,8 @@ export default function PaymentNotificationModal({ booking, children }) {
             bookingId: booking.id,
             amount: numericAmount,
             date: new Date(date),
+            month: selectedMonth,
+            year: parseInt(selectedYear),
             method,
             notes: finalNotes,
             receiptUrl: receiptUrl || null,
@@ -155,7 +173,7 @@ export default function PaymentNotificationModal({ booking, children }) {
                 setNotes("");
                 setReceiptUrl("");
                 toast.success("Warden Notified", {
-                    description: "Your proof has been submitted for verification."
+                    description: `Proof for ${selectedMonth} ${selectedYear} submitted.`
                 });
             },
             onError: (error) => {
@@ -163,6 +181,7 @@ export default function PaymentNotificationModal({ booking, children }) {
             }
         });
     };
+
 
     if (isSettled && !open) {
         return (
@@ -212,6 +231,35 @@ export default function PaymentNotificationModal({ booking, children }) {
                     </div>
 
                     <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Fee Month</Label>
+                                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                                    <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-[10px] px-3">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl p-1 shadow-2xl border-slate-100">
+                                        {months.map(m => (
+                                            <SelectItem key={m} value={m} className="rounded-lg text-[10px] font-bold py-2">{m}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Fee Year</Label>
+                                <Select value={selectedYear} onValueChange={setSelectedYear}>
+                                    <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-[10px] px-3">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl p-1 shadow-2xl border-slate-100">
+                                        {years.map(y => (
+                                            <SelectItem key={y} value={y} className="rounded-lg text-[10px] font-bold py-2">{y}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Paid Amount</Label>
@@ -309,22 +357,30 @@ export default function PaymentNotificationModal({ booking, children }) {
                         </div>
                     </div>
 
+                    {duplicateWarning && (
+                        <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex items-center gap-3">
+                            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+                            <p className="text-[10px] font-bold text-amber-900 uppercase leading-snug">{duplicateWarning}</p>
+                        </div>
+                    )}
+
                     <DialogFooter>
                         <Button
                             type="submit"
-                            disabled={isPending || isUploading || stats.availableToNotify <= 0}
-                            className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                            disabled={isPending || isUploading || stats.availableToNotify <= 0 || !!duplicateWarning}
+                            className={`w-full h-11 ${!!duplicateWarning ? 'bg-slate-200 text-slate-400' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2`}
                         >
                             {isPending ? (
                                 <Loader2 className="h-4 w-4 animate-spin text-white" />
                             ) : (
                                 <>
                                     <Send className="h-3.5 w-3.5" />
-                                    Notify Warden Now
+                                    {!!duplicateWarning ? 'Blocked' : 'Notify Warden Now'}
                                 </>
                             )}
                         </Button>
                     </DialogFooter>
+
                 </form>
             </DialogContent>
         </Dialog>

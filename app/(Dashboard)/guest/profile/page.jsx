@@ -18,7 +18,8 @@ import {
     CreditCard,
     Fingerprint,
     CheckCircle2,
-    User
+    User,
+    History
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import useAuthStore from "@/hooks/Authstate";
 import { toast } from "sonner";
+import Link from 'next/link';
 
 const GuestProfile = () => {
     const { user, logout } = useAuthStore();
@@ -60,6 +62,10 @@ const GuestProfile = () => {
     const resident = profile?.resident || {};
     const hostel = profile?.hostel || {};
     const residency = profile?.residency || {};
+    const history = profile?.history || [];
+
+    // Logic: Only show "Checked Out" styling if they have NO active stay but DO have history
+    const isCheckedOut = !residency.roomNumber && history.length > 0;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
@@ -67,12 +73,14 @@ const GuestProfile = () => {
             <div className="bg-white border-b sticky top-0 z-40 h-16">
                 <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 bg-black rounded-lg flex items-center justify-center text-white">
+                        <div className={`h-8 w-8 ${isCheckedOut ? 'bg-rose-600' : 'bg-black'} rounded-lg flex items-center justify-center text-white`}>
                             <User className="h-5 w-5" />
                         </div>
                         <div>
                             <h1 className="text-sm font-bold text-gray-900 tracking-tight uppercase">My Profile</h1>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Your Account Details</p>
+                            <p className={`text-[9px] font-bold uppercase tracking-widest ${isCheckedOut ? 'text-rose-500' : 'text-gray-400'}`}>
+                                {isCheckedOut ? 'Archived Resident Account' : 'Your Account Details'}
+                            </p>
                         </div>
                     </div>
                     <Button onClick={logout} variant="ghost" className="h-8 px-4 rounded-lg hover:bg-rose-50 text-rose-600 font-bold text-[10px] uppercase tracking-widest">
@@ -85,7 +93,7 @@ const GuestProfile = () => {
 
                 {/* Main Profile Card */}
                 <div className="bg-white rounded-[2rem] p-1 shadow-sm border border-gray-100">
-                    <div className="bg-gray-900 rounded-[1.8rem] p-8 text-white relative overflow-hidden">
+                    <div className={`${isCheckedOut ? 'bg-slate-900' : 'bg-gray-900'} rounded-[1.8rem] p-8 text-white relative overflow-hidden`}>
                         <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
 
                         <div className="flex flex-col md:flex-row items-center md:items-start gap-8 relative z-10">
@@ -94,8 +102,8 @@ const GuestProfile = () => {
                                     <AvatarImage src={userData.image || "/avatar-placeholder.png"} />
                                     <AvatarFallback className="text-4xl font-bold text-gray-900 bg-white">{userData.name?.charAt(0)}</AvatarFallback>
                                 </Avatar>
-                                <div className="absolute bottom-0 right-0 h-8 w-8 bg-emerald-500 rounded-full border-4 border-gray-900 flex items-center justify-center">
-                                    <CheckCircle2 className="h-4 w-4 text-white" />
+                                <div className={`absolute bottom-0 right-0 h-8 w-8 ${isCheckedOut ? 'bg-rose-500' : 'bg-emerald-500'} rounded-full border-4 border-gray-900 flex items-center justify-center`}>
+                                    {isCheckedOut ? <LogOut className="h-4 w-4 text-white" /> : <CheckCircle2 className="h-4 w-4 text-white" />}
                                 </div>
                             </div>
 
@@ -103,8 +111,8 @@ const GuestProfile = () => {
                                 <div>
                                     <div className="flex items-center justify-center md:justify-start gap-3 mb-1">
                                         <h2 className="text-3xl font-bold tracking-tight">{userData.name}</h2>
-                                        <Badge className="bg-white/10 hover:bg-white/20 text-white border-0 text-[9px] uppercase font-bold tracking-widest backdrop-blur-md">
-                                            {userData.role || 'Resident'}
+                                        <Badge className={`${isCheckedOut ? 'bg-rose-500/20 text-rose-300' : 'bg-white/10 text-white'} hover:bg-white/20 border-0 text-[9px] uppercase font-bold tracking-widest backdrop-blur-md`}>
+                                            {isCheckedOut ? 'Past Resident' : userData.role || 'Resident'}
                                         </Badge>
                                         {userData.uid && (
                                             <Badge className="bg-white/10 hover:bg-white/20 text-white border-0 text-[9px] uppercase font-bold tracking-widest backdrop-blur-md font-mono">
@@ -148,20 +156,22 @@ const GuestProfile = () => {
                     <Card className="rounded-[2rem] border-gray-100 shadow-sm overflow-hidden group">
                         <CardHeader className="bg-gray-50/50 border-b border-gray-50 py-4 px-6">
                             <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
-                                <Building2 className="h-4 w-4 text-gray-500" /> My Stay Details
+                                <Building2 className="h-4 w-4 text-gray-500" /> {isCheckedOut ? 'Past Residency' : 'My Stay Details'}
                             </h3>
                         </CardHeader>
                         <CardContent className="p-6">
                             {residency.roomNumber ? (
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4">
-                                        <div className="h-14 w-14 rounded-2xl bg-black flex items-center justify-center text-white shadow-lg shrink-0">
+                                        <div className={`h-14 w-14 rounded-2xl ${isCheckedOut ? 'bg-rose-600' : 'bg-black'} flex items-center justify-center text-white shadow-lg shrink-0`}>
                                             <Home className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Current Room</p>
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{isCheckedOut ? 'Checked Out From' : 'Current Room'}</p>
                                             <h4 className="text-xl font-bold text-gray-900 tracking-tight">Room {residency.roomNumber}</h4>
-                                            <p className="text-xs font-bold text-emerald-600 uppercase tracking-wide">Floor {residency.floor} • {residency.roomType}</p>
+                                            <p className={`text-xs font-bold uppercase tracking-wide ${isCheckedOut ? 'text-rose-500' : 'text-emerald-600'}`}>
+                                                {isCheckedOut ? 'Residency Inactive' : `Floor ${residency.floor} • ${residency.roomType}`}
+                                            </p>
                                         </div>
                                     </div>
 
@@ -236,6 +246,57 @@ const GuestProfile = () => {
                         </Card>
                     </div>
                 </div>
+
+                {/* Residency History Log */}
+                {profile?.history?.length > 0 && (
+                    <Card className="rounded-[2rem] border-gray-100 shadow-sm overflow-hidden group">
+                        <CardHeader className="bg-gray-50/50 border-b border-gray-50 py-4 px-6 flex flex-row items-center justify-between">
+                            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                                <History className="h-4 w-4 text-gray-500" /> Residency Timeline
+                            </h3>
+                            <Badge variant="outline" className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-white border-gray-200 px-3">
+                                {profile.history.length} Record{profile.history.length > 1 ? 's' : ''}
+                            </Badge>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <div className="divide-y divide-gray-50">
+                                {profile.history.map((item, idx) => (
+                                    <div key={item.id} className="p-6 flex items-center justify-between hover:bg-gray-50/30 transition-all cursor-default group/item">
+                                        <div className="flex items-center gap-5">
+                                            <div className="h-12 w-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 group-hover/item:bg-slate-900 group-hover/item:text-white transition-all">
+                                                <Home className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-3">
+                                                    <p className="text-sm font-bold text-gray-900">Room {item.roomNumber || 'N/A'}</p>
+                                                    <Badge className="bg-rose-50 text-rose-500 border-none text-[8px] font-bold uppercase tracking-wider px-2 py-0">Completed</Badge>
+                                                </div>
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{item.hostelName || 'Unknown Hostel'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="flex items-center gap-2 justify-end">
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-[10px] font-bold text-gray-900 uppercase tracking-widest leading-none">
+                                                        {item.checkIn ? new Date(item.checkIn).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
+                                                    </span>
+                                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.15em] mt-1">Arrival</span>
+                                                </div>
+                                                <div className="h-4 w-[1px] bg-gray-200 mx-1" />
+                                                <div className="flex flex-col items-end">
+                                                    <span className="text-[10px] font-bold text-gray-900 uppercase tracking-widest leading-none">
+                                                        {item.checkOut ? new Date(item.checkOut).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
+                                                    </span>
+                                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.15em] mt-1">Departed</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Account Security */}
                 <Card className="rounded-[2rem] border-gray-100 shadow-sm overflow-hidden bg-gray-900 text-white">

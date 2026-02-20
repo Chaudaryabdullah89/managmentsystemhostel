@@ -21,14 +21,17 @@ const GuestDashboard = () => {
     const user = useAuthStore((state) => state.user);
 
     // Fetch Data
-    const { data: bookingsData, isLoading: bookingsLoading } = useBookings(user?.id);
+    const { data: bookingsData, isLoading: bookingsLoading } = useBookings({ userId: user?.id });
     const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ userId: user?.id, limit: 10 });
     const { data: complaintsData, isLoading: complaintsLoading } = useComplaints({ userId: user?.id });
 
     const isLoading = bookingsLoading || paymentsLoading || complaintsLoading;
 
     // Derived State
-    const currentBooking = bookingsData?.length > 0 ? bookingsData[0] : null;
+    const currentBooking = bookingsData?.find(b => ['CONFIRMED', 'CHECKED_IN'].includes(b.status)) || bookingsData?.[0];
+    const hasCheckedOut = bookingsData?.some(b => b.status === 'CHECKED_OUT');
+    const hasActiveBooking = bookingsData?.some(b => ['CONFIRMED', 'CHECKED_IN', 'Active'].includes(b.status));
+    const isCheckedOut = hasCheckedOut && !hasActiveBooking;
     const pendingPayment = paymentsData?.payments?.find(p => p.status === 'PENDING' || p.status === 'OVERDUE');
     const activeComplaints = complaintsData?.filter(c => c.status !== 'RESOLVED' && c.status !== 'CLOSED') || [];
 
@@ -48,7 +51,9 @@ const GuestDashboard = () => {
                     <div>
                         <h1 className="text-xl font-bold text-gray-900 tracking-tight">Welcome, {user?.name?.split(' ')[0]}</h1>
                         <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Guest Dashboard</span>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                {isCheckedOut ? 'Archived Resident' : 'Guest Dashboard'}
+                            </span>
                             {user?.uid && (
                                 <>
                                     <span className="h-1 w-1 rounded-full bg-gray-200" />
@@ -67,12 +72,20 @@ const GuestDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Room Info */}
                     <Card className="bg-white border-gray-100 shadow-sm rounded-3xl overflow-hidden group hover:shadow-md transition-all">
-                        <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-br from-emerald-50 to-white border-b border-emerald-50/50">
-                            <CardTitle className="text-sm font-bold text-gray-900 uppercase tracking-widest">My Room</CardTitle>
-                            <Bed className="h-5 w-5 text-emerald-600" />
+                        <CardHeader className={`flex flex-row items-center justify-between pb-2 border-b ${isCheckedOut ? 'bg-gradient-to-br from-rose-50 to-white border-rose-50/50' : 'bg-gradient-to-br from-emerald-50 to-white border-emerald-50/50'}`}>
+                            <CardTitle className="text-sm font-bold text-gray-900 uppercase tracking-widest">Residency Status</CardTitle>
+                            <Bed className={`h-5 w-5 ${isCheckedOut ? 'text-rose-600' : 'text-emerald-600'}`} />
                         </CardHeader>
                         <CardContent className="pt-6">
-                            {currentBooking ? (
+                            {isCheckedOut ? (
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-2xl font-bold text-gray-400 tracking-tighter uppercase italic">Checked Out</span>
+                                    <span className="text-xs font-bold text-gray-500">History: {currentBooking?.Room?.roomNumber || 'N/A'} • {currentBooking?.Room?.Hostel?.name || 'N/A'}</span>
+                                    <Badge className="w-fit mt-2 bg-rose-50 text-rose-500 border-none rounded-full text-[10px] uppercase font-bold tracking-wider">
+                                        Access Limited
+                                    </Badge>
+                                </div>
+                            ) : currentBooking ? (
                                 <div className="flex flex-col gap-1">
                                     <span className="text-3xl font-bold text-gray-900 tracking-tighter">Room {currentBooking.Room?.roomNumber || 'N/A'}</span>
                                     <span className="text-xs font-bold text-gray-500">{currentBooking.Room?.Hostel?.name || 'Assigned'}</span>
@@ -92,6 +105,7 @@ const GuestDashboard = () => {
                             )}
                         </CardContent>
                     </Card>
+
 
                     {/* Pending Dues */}
                     <Card className="bg-white border-gray-100 shadow-sm rounded-3xl overflow-hidden group hover:shadow-md transition-all">
@@ -120,23 +134,24 @@ const GuestDashboard = () => {
                     {/* Reported Issues */}
                     <Card className="bg-white border-gray-100 shadow-sm rounded-3xl overflow-hidden group hover:shadow-md transition-all">
                         <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-br from-amber-50 to-white border-b border-amber-50/50">
-                            <CardTitle className="text-sm font-bold text-gray-900 uppercase tracking-widest">Active Issues</CardTitle>
+                            <CardTitle className="text-sm font-bold text-gray-900 uppercase tracking-widest">{isCheckedOut ? 'Support History' : 'Active Issues'}</CardTitle>
                             <MessageSquare className="h-5 w-5 text-amber-600" />
                         </CardHeader>
                         <CardContent className="pt-6">
                             <div className="flex flex-col gap-1">
-                                <span className="text-3xl font-bold text-gray-900 tracking-tighter">{activeComplaints.length} Shared</span>
+                                <span className="text-3xl font-bold text-gray-900 tracking-tighter">{activeComplaints.length} {isCheckedOut ? 'Archived' : 'Shared'}</span>
                                 <span className="text-xs font-bold text-gray-500">
-                                    {activeComplaints.length > 0 ? 'Team is working on it' : 'Everything looks good'}
+                                    {isCheckedOut ? 'Historical records restricted' : activeComplaints.length > 0 ? 'Team is working on it' : 'Everything looks good'}
                                 </span>
                                 <Link href="/guest/support">
                                     <Button variant="link" className="p-0 h-auto text-amber-600 font-bold text-[10px] uppercase tracking-wider mt-2 group-hover:underline">
-                                        Check Progress <ChevronRight className="h-3 w-3 ml-1" />
+                                        {isCheckedOut ? 'View Archive' : 'Check Progress'} <ChevronRight className="h-3 w-3 ml-1" />
                                     </Button>
                                 </Link>
                             </div>
                         </CardContent>
                     </Card>
+
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -419,39 +419,7 @@ const GuestBookings = () => {
                     )}
                 </div>
 
-                {/* System Status */}
-                <div className="pt-10">
-                    <div className="bg-indigo-600 text-white rounded-[2rem] p-4 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-full bg-white/5 skew-x-12 translate-x-20" />
-                        <div className="flex items-center gap-6 relative z-10 px-4">
-                            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
-                                <ShieldCheck className="h-5 w-5 text-white" />
-                            </div>
-                            <div className="flex flex-col">
-                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-100">Secure System</h4>
-                                <p className="text-[11px] font-bold mt-0.5 uppercase">Booking Data Synced</p>
-                            </div>
-                        </div>
 
-                        <div className="h-6 w-px bg-white/10 hidden md:block" />
-
-                        <div className="flex-1 flex items-center gap-12 px-8">
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-indigo-100 tracking-widest">Last Check</span>
-                                <span className="text-[10px] font-bold text-slate-200 uppercase mt-1">{new Date().toLocaleDateString()}</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-indigo-100 tracking-widest">Status</span>
-                                <span className="text-[10px] font-bold text-white uppercase mt-1">Operational</span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 pr-6 relative z-10">
-                            <span className="text-[9px] font-bold uppercase text-white tracking-widest">Online</span>
-                            <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
-                        </div>
-                    </div>
-                </div>
             </main>
         </div>
     );

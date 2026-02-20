@@ -13,8 +13,8 @@ export function useBookings(options = {}) {
         queryFn: async () => {
             let url = "/api/bookings";
             const params = new URLSearchParams();
-            if (userId) params.append("userId", userId);
-            if (hostelId) params.append("hostelId", hostelId);
+            if (userId && userId !== 'undefined') params.append("userId", userId);
+            if (hostelId && hostelId !== 'undefined') params.append("hostelId", hostelId);
 
             if (params.toString()) {
                 url += `?${params.toString()}`;

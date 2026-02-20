@@ -129,23 +129,47 @@ model OtpVerification {
 }
 
 model Payment {
-  id            String        @id @default(cuid())
+  id            String          @id @default(cuid())
   userId        String
   bookingId     String?
   amount        Float
-  date          DateTime      @default(now())
+  date          DateTime        @default(now())
   dueDate       DateTime?
   type          String
-  status        PaymentStatus @default(PENDING)
-  method        PaymentMethod @default(CASH)
+  status        PaymentStatus   @default(PENDING)
+  method        PaymentMethod   @default(CASH)
   transactionId String?
   receiptUrl    String?
   notes         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime
-  uid           String?       @unique
-  Booking       Booking?      @relation(fields: [bookingId], references: [id])
-  User          User          @relation(fields: [userId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  uid           String?         @unique
+  month         String?
+  year          Int?
+  Booking       Booking?        @relation(fields: [bookingId], references: [id])
+  User          User            @relation(fields: [userId], references: [id])
+  RefundRequest RefundRequest[]
+}
+
+model RefundRequest {
+  id        String       @id @default(cuid())
+  paymentId String
+  userId    String
+  reason    String
+  amount    Float
+  status    RefundStatus @default(PENDING)
+  notes     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  Payment   Payment      @relation(fields: [paymentId], references: [id])
+  User      User         @relation(fields: [userId], references: [id])
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
 }
 
 model ResidentProfile {
@@ -320,6 +344,7 @@ model User {
   Hostel_User_hostelIdToHostel               Hostel?            @relation("User_hostelIdToHostel", fields: [hostelId], references: [id])
   maintanance_maintanance_assignedToIdToUser maintanance[]      @relation("maintanance_assignedToIdToUser")
   maintanance_maintanance_userIdToUser       maintanance[]      @relation("maintanance_userIdToUser")
+  refundRequests                             RefundRequest[]
 }
 
 model StaffTask {

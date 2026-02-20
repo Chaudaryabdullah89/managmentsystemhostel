@@ -1,4 +1,4 @@
-// lib/prisma.ts 
+// lib/prisma.ts - Trigger Refresh
 import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = global as unknown as { prisma_clean?: PrismaClient };

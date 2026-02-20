@@ -9,6 +9,8 @@ import { Footer } from "@/components/Footer"
 import { useAuth } from "@/contexts/AuthContext"
 import { useEffect } from "react"
 import useAuthStore, { checkAuth } from "@/hooks/Authstate"
+import { useBookings } from "@/hooks/useBooking"
+import { AlertCircle } from "lucide-react"
 
 
 export default function RootLayout({
@@ -23,12 +25,26 @@ export default function RootLayout({
     checkAuth();
   }, []);
 
+  const { data: bookings = [] } = useBookings({ userId: user?.id });
+  const isGuest = user?.role === "GUEST";
+  const isCheckedOut = isGuest && bookings.length > 0 &&
+    bookings.some((b: any) => b.status === 'CHECKED_OUT') &&
+    !bookings.some((b: any) => ['CONFIRMED', 'CHECKED_IN', 'Active'].includes(b.status));
+
   return (
     <>
       <SidebarProvider>
         <AppSidebar />
         <main className="flex flex-col flex-1 min-h-screen">
-          <header className="flex h-16  items-center gap-2 border-b px-4">
+          {isCheckedOut && (
+            <div className="bg-rose-600 text-white py-2 px-4 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top-full duration-700 z-[60] sticky top-0">
+              <AlertCircle className="h-3.5 w-3.5" />
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em]">
+                Portal Restricted &bull; Read-only mode active (Residency Concluded)
+              </p>
+            </div>
+          )}
+          <header className={`flex h-16 items-center gap-2 border-b px-4 shrink-0 bg-white ${!isCheckedOut ? 'sticky top-0 z-50' : ''}`}>
             <SidebarTrigger />
             <div className="flex items-center justify-between w-full">
               <div></div>
@@ -47,7 +63,8 @@ export default function RootLayout({
               </div>
             </div>
           </header>
-          <div className="p-4  " >
+
+          <div className="p-4 flex-1 overflow-y-auto" >
 
             {children}
           </div>

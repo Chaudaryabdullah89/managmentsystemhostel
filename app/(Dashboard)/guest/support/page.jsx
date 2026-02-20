@@ -120,7 +120,8 @@ const GuestSupportPage = () => {
 
     const bookings = userData?.bookings || [];
     const activeBooking = bookings.find(b => b.status === 'CONFIRMED' || b.status === 'CHECKED_IN');
-    const room = activeBooking?.room;
+    const isCheckedOut = bookings.length > 0 && !activeBooking;
+    const room = activeBooking?.room || bookings[0]?.Room;
 
     // Combine complaints and maintenance tasks
     const issues = [
@@ -134,7 +135,7 @@ const GuestSupportPage = () => {
     );
 
     const handleSendComment = (complaintId) => {
-        if (!newComment.trim()) return;
+        if (!newComment.trim() || isCheckedOut) return;
         addCommentMutation.mutate({
             complaintId,
             userId: user?.id,
@@ -153,6 +154,10 @@ const GuestSupportPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isCheckedOut) {
+            toast.error("Account Restricted", { description: "Checked-out residents cannot submit new requests." });
+            return;
+        }
         if (!formData.title || !formData.description) {
             toast.error("Please fill in all fields");
             return;
@@ -193,18 +198,31 @@ const GuestSupportPage = () => {
                     <div>
                         <h1 className="text-lg font-extrabold text-slate-900 tracking-tight uppercase">Services & Support</h1>
                         <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Room #{room?.roomNumber || 'N/A'}</span>
-                            <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Active Stay</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                {isCheckedOut ? 'Archived Records' : `Room #${room?.roomNumber || 'N/A'}`}
+                            </span>
+                            <div className={`h-1 w-1 rounded-full ${isCheckedOut ? 'bg-rose-500' : 'bg-emerald-500'}`} />
+                            <span className={`text-[10px] font-bold uppercase tracking-widest ${isCheckedOut ? 'text-rose-600' : 'text-emerald-600'}`}>
+                                {isCheckedOut ? 'Residency Ended' : 'Active Stay'}
+                            </span>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button className="h-10 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-indigo-200 transition-all active:scale-95">
+                                <Button
+                                    className={`h-10 px-6 rounded-2xl font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 shadow-lg ${isCheckedOut ? 'bg-gray-100 text-gray-400 cursor-not-allowed border' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'}`}
+                                    onClick={(e) => {
+                                        if (isCheckedOut) {
+                                            e.preventDefault();
+                                            toast.error("Action Restricted", { description: "You cannot submit requests after checkout." });
+                                        }
+                                    }}
+                                >
                                     <Plus className="h-4 w-4 mr-2" /> New Request
                                 </Button>
                             </DialogTrigger>
+
                             <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none p-0 overflow-hidden shadow-2xl bg-white">
                                 <DialogHeader className="p-8 bg-slate-50 border-b border-slate-100 flex flex-row items-center gap-4">
                                     <div className="h-12 w-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100">
