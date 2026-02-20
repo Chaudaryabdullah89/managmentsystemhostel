@@ -257,15 +257,14 @@ const PaymentManagementPage = () => {
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
             {/* Minimal Premium Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
+                <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-indigo-600 rounded-full" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Payments</h1>
+                            <h1 className="text-base font-bold text-gray-900 tracking-tight uppercase">Payment Management</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Hostel Records</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Transaction History</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
                             </div>
                         </div>
                     </div>
@@ -284,8 +283,8 @@ const PaymentManagementPage = () => {
                 </div>
             </div>
 
-            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
-                {/* Minimal Metrics Matrix */}
+            <main className="max-w-[1400px] mx-auto px-6 py-8 space-y-8">
+                {/* Summary Metrics */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
                         { label: 'Total Revenue', value: `PKR ${(stats?.totalRevenue / 1000).toFixed(1)}k`, icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -293,7 +292,7 @@ const PaymentManagementPage = () => {
                         { label: 'Pending Approvals', value: paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
                         { label: 'Overdue Amount', value: `PKR ${(stats?.overdueLiability / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default">
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
@@ -305,7 +304,7 @@ const PaymentManagementPage = () => {
                     ))}
                 </div>
 
-                {/* Operations Command Bar */}
+                {/* Search & Filter */}
                 <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm">
                     <div className="flex-1 relative w-full group px-2">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -645,7 +644,7 @@ const PaymentManagementPage = () => {
                             <XCircle className="h-8 w-8" />
                         </div>
                         <h2 className="text-2xl font-bold uppercase tracking-tight">Reject Payment</h2>
-                        <p className="text-[10px] text-white/70 font-bold tracking-widest mt-2 uppercase">Cancel this payment record</p>
+                        <p className="text-[10px] text-white/70 font-bold tracking-widest mt-2 uppercase">Cancel payment record</p>
                     </div>
                     <div className="p-10 space-y-8">
                         <div className="space-y-3">

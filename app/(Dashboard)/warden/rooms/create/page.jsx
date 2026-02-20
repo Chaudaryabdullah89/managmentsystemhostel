@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { ChevronDown, X, Save, ArrowLeft, Building2, Info, LayoutGrid, Coins, Sparkle, ShieldCheck, Image as ImageIcon } from "lucide-react"
+import { ChevronDown, X, Save, ArrowLeft, Building2, LayoutGrid, Coins, Sparkle, ShieldCheck, Image as ImageIcon, Loader2 } from "lucide-react"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,16 +15,16 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from 'sonner'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Badge } from "@/components/ui/badge"
+import useAuthStore from '@/hooks/Authstate'
+import { useHostel } from '@/hooks/usehostel'
 
 const CreateRoomForm = () => {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const preSelectedHostelId = searchParams.get('hostelId');
+    const { user } = useAuthStore();
+    const { data: hostelsResponse, isLoading: hostelsLoading } = useHostel();
 
-    const [hostels, setHostels] = useState([]);
-    const [selectedHostel, setSelectedHostel] = useState(null);
     const [roomNumber, setRoomNumber] = useState('');
     const [floor, setFloor] = useState('');
     const [type, setType] = useState('SINGLE');
@@ -41,28 +41,15 @@ const CreateRoomForm = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    useEffect(() => {
-        const fetchHostels = async () => {
-            try {
-                const response = await fetch('/api/hostels');
-                const data = await response.json();
-                if (data.success && data.data) {
-                    setHostels(data.data);
-                    if (preSelectedHostelId) {
-                        const hostel = data.data.find(h => h.id === preSelectedHostelId);
-                        if (hostel) setSelectedHostel(hostel);
-                    }
-                }
-            } catch (error) {
-                console.error("Error fetching hostels:", error);
-                toast.error("Error loading property registry");
-            }
-        };
-        fetchHostels();
-    }, [preSelectedHostelId]);
+    // Get warden's specific hostel info
+    const wardenHostel = hostelsResponse?.hostels?.find(h => h.id === user?.hostelId);
 
     const handleCreateRoom = async () => {
-        if (!selectedHostel || !roomNumber || !floor || !price || !monthlyrent || !pricepernight) {
+        if (!user?.hostelId) {
+            toast.error("Hostel assignment not found.");
+            return;
+        }
+        if (!roomNumber || !floor || !price || !monthlyrent || !pricepernight) {
             toast.error("Please fill in all required fields.");
             return;
         }
@@ -70,7 +57,7 @@ const CreateRoomForm = () => {
 
         try {
             const roomPayload = {
-                hostelId: selectedHostel.id,
+                hostelId: user.hostelId,
                 roomNumber,
                 floor: parseInt(floor),
                 type,
@@ -95,7 +82,7 @@ const CreateRoomForm = () => {
             const data = await response.json();
             if (data.success) {
                 toast.success("Unit successfully registered.");
-                router.push(`/admin/hostels/${selectedHostel.id}/rooms`);
+                router.push(`/warden/rooms`);
             } else {
                 toast.error(data.error || "Failed to register unit.");
             }
@@ -107,8 +94,15 @@ const CreateRoomForm = () => {
         }
     };
 
+    if (hostelsLoading) return (
+        <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center font-sans tracking-tight">
+            <Loader2 className="h-10 w-10 text-black animate-spin mb-4" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Registry Protocol...</p>
+        </div>
+    );
+
     return (
-        <div className="min-h-screen bg-gray-50/50">
+        <div className="min-h-screen bg-gray-50/50 font-sans tracking-tight">
             {/* Synced Header */}
             <div className="bg-white border-b sticky top-0 z-40 h-16">
                 <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
@@ -118,12 +112,12 @@ const CreateRoomForm = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-none">Add New Room</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mt-1">Room Records</p>
+                            <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-none uppercase">Add New Room</h1>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mt-1">{wardenHostel?.name || 'Room Records'}</p>
                         </div>
                     </div>
                     <Button
-                        className="bg-black hover:bg-gray-800 text-white h-9 px-6 rounded-xl font-bold text-[11px] uppercase tracking-wider shadow-sm gap-2 transition-all"
+                        className="bg-black hover:bg-gray-800 text-white h-9 px-6 rounded-xl font-bold text-[11px] uppercase tracking-wider shadow-sm gap-2 transition-all active:scale-95"
                         onClick={handleCreateRoom}
                         disabled={isSubmitting}
                     >
@@ -137,34 +131,15 @@ const CreateRoomForm = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Primary Form Area */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Parent Selection */}
-                        <Card className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white">
-                            <CardHeader className="px-8 pt-8 pb-4">
-                                <CardTitle className="text-[11px] font-bold flex items-center gap-2 uppercase tracking-widest text-gray-400">
-                                    <Building2 className="h-4 w-4 text-blue-500" />
-                                    Property Placement
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="px-8 pb-8">
-                                <div className="space-y-2">
-                                    <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Select Hostel *</Label>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 bg-white font-bold text-gray-900">
-                                                <span>{selectedHostel ? selectedHostel.name : 'Choose Building'}</span>
-                                                <ChevronDown className="h-4 w-4 opacity-40" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-[400px] rounded-2xl border-gray-100 shadow-xl p-2">
-                                            {hostels.map((h) => (
-                                                <DropdownMenuItem key={h.id} onClick={() => setSelectedHostel(h)} className="p-3 font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer">
-                                                    {h.name} <span className="text-[9px] text-gray-400 ml-2">— {h.city}</span>
-                                                </DropdownMenuItem>
-                                            ))}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                        {/* Property Badge (Replacement for Selection) */}
+                        <Card className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white overflow-hidden">
+                            <div className="bg-emerald-50 px-8 py-4 flex items-center justify-between border-b border-emerald-100/50">
+                                <div className="flex items-center gap-3">
+                                    <Building2 className="h-4 w-4 text-emerald-600" />
+                                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-[0.2em]">Active Assignment</span>
                                 </div>
-                            </CardContent>
+                                <span className="text-[10px] font-black text-emerald-800 uppercase tracking-tight">{wardenHostel?.name}</span>
+                            </div>
                         </Card>
 
                         {/* Unit Identity */}
@@ -178,7 +153,7 @@ const CreateRoomForm = () => {
                             <CardContent className="px-8 pb-8 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Room Number *</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Room Number *</Label>
                                         <Input
                                             placeholder="e.g. B-102"
                                             className="h-11 bg-white border-gray-100 rounded-xl font-bold text-gray-900 placeholder:text-gray-200 focus:ring-1 focus:ring-black"
@@ -187,7 +162,7 @@ const CreateRoomForm = () => {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Floor Level *</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Floor Level *</Label>
                                         <Input
                                             type="number"
                                             placeholder="0"
@@ -199,23 +174,23 @@ const CreateRoomForm = () => {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Room Type *</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Room Type *</Label>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 bg-white font-bold text-gray-900">
-                                                    <span>{type}</span>
+                                                    <span className="uppercase tracking-wide">{type}</span>
                                                     <ChevronDown className="h-4 w-4 opacity-40" />
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent className="w-[300px] rounded-2xl border-gray-100 shadow-xl p-2">
                                                 {['SINGLE', 'DOUBLE', 'TRIPLE', 'DORMITORY'].map(t => (
-                                                    <DropdownMenuItem key={t} onClick={() => setType(t)} className="p-3 font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer">{t}</DropdownMenuItem>
+                                                    <DropdownMenuItem key={t} onClick={() => setType(t)} className="p-3 font-bold text-[10px] uppercase tracking-wider rounded-xl cursor-pointer">{t}</DropdownMenuItem>
                                                 ))}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Capacity (Beds) *</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Capacity (Beds) *</Label>
                                         <Input
                                             type="number"
                                             className="h-11 bg-white border-gray-100 rounded-xl font-bold text-gray-900 focus:ring-1 focus:ring-black"
@@ -225,11 +200,11 @@ const CreateRoomForm = () => {
                                     </div>
                                 </div>
                                 <div className="space-y-2 pt-4 border-t border-gray-50">
-                                    <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Status *</Label>
+                                    <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Status *</Label>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 bg-white font-bold text-gray-900 transition-colors hover:bg-gray-50">
-                                                <span className="flex items-center gap-2 uppercase tracking-wider">
+                                            <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 bg-white font-bold text-gray-900 transition-colors hover:bg-gray-50 uppercase tracking-wider">
+                                                <span className="flex items-center gap-2">
                                                     <div className={`h-1.5 w-1.5 rounded-full ${status === 'AVAILABLE' ? 'bg-emerald-500' : 'bg-blue-500'}`} />
                                                     {status}
                                                 </span>
@@ -238,7 +213,7 @@ const CreateRoomForm = () => {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent className="w-[400px] rounded-2xl border-gray-100 shadow-xl p-2">
                                             {['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'CLEANING'].map(s => (
-                                                <DropdownMenuItem key={s} onClick={() => setStatus(s)} className="p-3 font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer">{s}</DropdownMenuItem>
+                                                <DropdownMenuItem key={s} onClick={() => setStatus(s)} className="p-3 font-bold text-[10px] uppercase tracking-wider rounded-xl cursor-pointer">{s}</DropdownMenuItem>
                                             ))}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
@@ -247,7 +222,7 @@ const CreateRoomForm = () => {
                         </Card>
 
                         {/* Service Schedule */}
-                        <Card className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white font-sans">
+                        <Card className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white font-sans tracking-tight">
                             <CardHeader className="px-8 pt-8 pb-4">
                                 <CardTitle className="text-[11px] font-bold flex items-center gap-2 uppercase tracking-widest text-gray-400">
                                     <Sparkle className="h-4 w-4 text-emerald-500" />
@@ -257,7 +232,7 @@ const CreateRoomForm = () => {
                             <CardContent className="px-8 pb-8 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Cleaning Interval (Hours)</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Cleaning Interval (Hours)</Label>
                                         <Input
                                             type="number"
                                             placeholder="24"
@@ -268,7 +243,7 @@ const CreateRoomForm = () => {
                                         <p className="text-[9px] text-gray-400 font-medium italic">New log entry every {cleaningInterval} hours</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Laundry Interval (Hours)</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Laundry Interval (Hours)</Label>
                                         <Input
                                             type="number"
                                             placeholder="48"
@@ -295,21 +270,21 @@ const CreateRoomForm = () => {
                                     <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Base Price *</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-gray-300">PKR</span>
-                                        <Input type="number" className="pl-14 h-11 bg-gray-50/50 border-gray-100 rounded-2xl font-black text-lg text-center focus:bg-white transition-all" value={price} onChange={(e) => setPrice(e.target.value)} />
+                                        <Input type="number" className="pl-14 h-11 bg-gray-50/50 border-gray-100 rounded-2xl font-black text-lg text-center focus:bg-white transition-all shadow-none" value={price} onChange={(e) => setPrice(e.target.value)} />
                                     </div>
                                 </div>
                                 <div className="space-y-1.5 flex flex-col">
                                     <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Monthly Rent *</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-300">PKR</span>
-                                        <Input type="number" className="pl-14 h-11 bg-emerald-50/30 border-emerald-100/30 rounded-2xl font-black text-lg text-center text-emerald-700 focus:bg-white transition-all" value={monthlyrent} onChange={(e) => setMonthlyrent(e.target.value)} />
+                                        <Input type="number" className="pl-14 h-11 bg-emerald-50/30 border-emerald-100/30 rounded-2xl font-black text-lg text-center text-emerald-700 focus:bg-white transition-all shadow-none" value={monthlyrent} onChange={(e) => setMonthlyrent(e.target.value)} />
                                     </div>
                                 </div>
                                 <div className="space-y-1.5 flex flex-col">
                                     <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Price Per Night *</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-blue-300">PKR</span>
-                                        <Input type="number" className="pl-14 h-11 bg-blue-50/30 border-blue-100/30 rounded-2xl font-black text-lg text-center text-blue-700 focus:bg-white transition-all" value={pricepernight} onChange={(e) => setPricepernight(e.target.value)} />
+                                        <Input type="number" className="pl-14 h-11 bg-blue-50/30 border-blue-100/30 rounded-2xl font-black text-lg text-center text-blue-700 focus:bg-white transition-all shadow-none" value={pricepernight} onChange={(e) => setPricepernight(e.target.value)} />
                                     </div>
                                 </div>
                             </div>
@@ -362,17 +337,15 @@ const CreateRoomForm = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default function CreateRoomPage() {
+export default function WardenCreateRoomPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="h-10 w-10 border-[3px] border-gray-200 border-t-black rounded-full animate-spin" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Registry Protocol...</p>
-                </div>
+            <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center font-sans tracking-tight">
+                <Loader2 className="h-10 w-10 text-black animate-spin mb-4" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Registry Protocol...</p>
             </div>
         }>
             <CreateRoomForm />

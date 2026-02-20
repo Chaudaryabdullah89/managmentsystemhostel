@@ -251,7 +251,7 @@ const PaymentManagementPage = () => {
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
             {/* Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
+                <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-blue-600 rounded-full" />
                         <div className="flex flex-col">
@@ -278,7 +278,7 @@ const PaymentManagementPage = () => {
                 </div>
             </div>
 
-            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
+            <main className="max-w-[1400px] mx-auto px-6 py-8 space-y-8">
                 {/* Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[

@@ -108,15 +108,14 @@ const WardenRoomsPage = () => {
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
             {/* Minimal Premium Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
+                <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-indigo-600 rounded-full" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Room Inventory</h1>
+                            <h1 className="text-base font-bold text-gray-900 tracking-tight uppercase">Room Management</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Hostel Registry</span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Hostel Inventory</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Node</span>
                             </div>
                         </div>
                     </div>
@@ -132,6 +131,13 @@ const WardenRoomsPage = () => {
                             <RefreshCw className={`h-4 w-4 text-gray-400 ${isFetching ? 'animate-spin' : ''}`} />
                         </Button>
                         <Button
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all shadow-sm"
+                            onClick={() => router.push('/warden/rooms/create')}
+                        >
+                            <Plus className="h-4 w-4 mr-2" /> New Room
+                        </Button>
+                        <Button
                             className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 px-6 rounded-xl font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95"
                             onClick={() => router.push('/warden/bookings/create')}
                         >
@@ -141,7 +147,7 @@ const WardenRoomsPage = () => {
                 </div>
             </div>
 
-            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
+            <main className="max-w-[1400px] mx-auto px-6 py-8 space-y-8">
                 {/* Minimal Metrics Matrix */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[

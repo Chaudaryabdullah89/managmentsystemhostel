@@ -30,7 +30,8 @@ import {
     ExternalLink,
     XCircle,
     Loader2,
-    CheckCircle
+    CheckCircle,
+    Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -68,7 +69,7 @@ const PaymentApprovalDetailPage = () => {
             });
             toast.success(status === 'PAID' ? "Payment approved successfully" : "Payment rejected");
             if (status === 'PAID' || status === 'REJECTED') {
-                router.push('/admin/payment-approvals');
+                router.push('/admin/payments');
             }
             setIsRejectDialogOpen(false);
         } catch (error) {
@@ -85,7 +86,7 @@ const PaymentApprovalDetailPage = () => {
                 </div>
                 <div className="text-center">
                     <p className="text-lg font-bold text-gray-900 tracking-tight uppercase">Loading Payment...</p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-2">Fetching payment details</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-2">Checking records</p>
                 </div>
             </div>
         </div>
@@ -155,13 +156,13 @@ const PaymentApprovalDetailPage = () => {
                                         <XCircle className="h-7 w-7" />
                                     </div>
                                     <h2 className="text-lg font-bold uppercase tracking-tight">Reject Payment</h2>
-                                    <p className="text-[10px] text-rose-200 uppercase font-bold tracking-widest mt-1">This action will mark the payment as rejected</p>
+                                    <p className="text-[10px] text-rose-200 uppercase font-bold tracking-widest mt-1">Provide a reason for rejection</p>
                                 </div>
                                 <div className="p-8 bg-white space-y-5">
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 ml-1">Reason for Rejection</Label>
+                                        <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 ml-1">Rejection Reason</Label>
                                         <Textarea
-                                            placeholder="Specify the reason for rejection. This will be visible to the resident."
+                                            placeholder="Why is this payment being rejected? (Visible to resident)"
                                             className="rounded-xl border-gray-200 bg-gray-50 min-h-[120px] font-medium text-sm p-4 focus:ring-indigo-500 placeholder:text-gray-300 resize-none"
                                             value={rejectionReason}
                                             onChange={(e) => setRejectionReason(e.target.value)}
@@ -174,7 +175,7 @@ const PaymentApprovalDetailPage = () => {
                                             onClick={() => handleAction('REJECTED')}
                                             disabled={updatePayment.isPending || !rejectionReason}
                                         >
-                                            {updatePayment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Rejection'}
+                                            {updatePayment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Reject'}
                                         </Button>
                                     </div>
                                 </div>
@@ -225,8 +226,8 @@ const PaymentApprovalDetailPage = () => {
                             {[
                                 { label: 'Date', value: format(new Date(payment.date), 'MMMM yyyy'), icon: Calendar, sub: format(new Date(payment.date), 'MMM dd, yyyy') },
                                 { label: 'Method', value: payment.method, icon: CreditCard, sub: 'Payment Method' },
-                                { label: 'Type', value: payment.type, icon: Receipt, sub: 'Payment Type' },
-                                { label: 'System', value: 'All Good', icon: ShieldCheck, sub: 'Operational' }
+                                { label: 'Type', value: payment.type, icon: Receipt, sub: 'Payment Category' },
+                                { label: 'Status', value: payment.status, icon: ShieldCheck, sub: 'Current State' }
                             ].map((item, i) => (
                                 <div key={i} className="flex flex-col gap-2 group">
                                     <div className="flex items-center gap-2">
@@ -253,13 +254,13 @@ const PaymentApprovalDetailPage = () => {
                                         <FileText className="h-5 w-5" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Payment Proof</h3>
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Submitted receipt / screenshot</span>
+                                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Payment Receipt</h3>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Submitted verification image</span>
                                     </div>
                                 </div>
                                 <Link href={payment.receiptUrl} target="_blank">
                                     <Button variant="outline" className="rounded-xl h-9 px-5 font-bold uppercase text-[9px] tracking-widest group/btn hover:border-indigo-200 hover:text-indigo-600">
-                                        Open Full Size <ExternalLink className="h-3.5 w-3.5 ml-2 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                                        Open Full Image <ExternalLink className="h-3.5 w-3.5 ml-2 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
                                     </Button>
                                 </Link>
                             </div>
@@ -273,7 +274,7 @@ const PaymentApprovalDetailPage = () => {
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/proof:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
                                     <Link href={payment.receiptUrl} target="_blank">
                                         <Button className="bg-white text-gray-900 hover:bg-gray-100 rounded-xl h-11 px-8 font-bold uppercase text-[10px] tracking-widest shadow-2xl">
-                                            <Eye className="h-4 w-4 mr-2" /> View Full Size
+                                            <Eye className="h-4 w-4 mr-2" /> View Full Image
                                         </Button>
                                     </Link>
                                 </div>
@@ -285,8 +286,8 @@ const PaymentApprovalDetailPage = () => {
                                 <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-5 group-hover:bg-amber-50 transition-colors border border-gray-100">
                                     <AlertCircle className="h-8 w-8 text-gray-300 group-hover:text-amber-400 transition-colors" />
                                 </div>
-                                <h4 className="text-base font-bold text-gray-900 uppercase tracking-tight">No Proof Attached</h4>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 max-w-[260px] leading-relaxed mx-auto">This payment was submitted without a receipt or proof of payment.</p>
+                                <h4 className="text-base font-bold text-gray-900 uppercase tracking-tight">No Receipt Attached</h4>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 max-w-[260px] leading-relaxed mx-auto">This payment was submitted without an attached image.</p>
                             </div>
                         </div>
                     )}
@@ -295,11 +296,8 @@ const PaymentApprovalDetailPage = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Resident Card */}
                         <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-[0.04] group-hover:scale-110 transition-transform duration-700 pointer-events-none">
-                                <User className="h-28 w-28 text-indigo-600" />
-                            </div>
                             <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400 mb-6 flex items-center gap-2">
-                                <div className="h-1 w-3 bg-indigo-600 rounded-full" /> Resident Details
+                                <div className="h-1 w-3 bg-indigo-600 rounded-full" /> Resident Info
                             </h3>
                             <div className="space-y-6 relative z-10">
                                 <div className="flex items-center gap-5">
@@ -307,7 +305,7 @@ const PaymentApprovalDetailPage = () => {
                                         {payment.User?.name?.charAt(0)}
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Full Name</span>
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Resident</span>
                                         <p className="text-base font-bold text-gray-900 uppercase tracking-tight">{payment.User?.name}</p>
                                     </div>
                                 </div>
@@ -333,9 +331,6 @@ const PaymentApprovalDetailPage = () => {
 
                         {/* Room/Hostel Card */}
                         <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-[0.04] group-hover:scale-110 transition-transform duration-700 pointer-events-none">
-                                <Building2 className="h-28 w-28 text-indigo-600" />
-                            </div>
                             <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-gray-400 mb-6 flex items-center gap-2">
                                 <div className="h-1 w-3 bg-indigo-600 rounded-full" /> Room & Hostel
                             </h3>
@@ -346,14 +341,13 @@ const PaymentApprovalDetailPage = () => {
                                             <Home className="h-4 w-4 text-white" />
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-[0.2em]">Hostel Property</p>
+                                            <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-[0.2em]">Hostel</p>
                                             <p className="text-sm font-bold uppercase">{payment.Booking?.Room?.Hostel?.name}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between pt-3 border-t border-white/10">
                                         <div className="flex items-baseline gap-2">
-                                            <span className="text-xl font-bold">Unit {payment.Booking?.Room?.roomNumber}</span>
-                                            <span className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest">Active</span>
+                                            <span className="text-xl font-bold">Room {payment.Booking?.Room?.roomNumber}</span>
                                         </div>
                                         <Badge className="bg-white/20 text-white border-none rounded-lg px-2 py-1 text-[9px] font-bold uppercase tracking-tighter">
                                             Floor {payment.Booking?.Room?.floor}
@@ -382,17 +376,19 @@ const PaymentApprovalDetailPage = () => {
                     <div className="bg-indigo-600 text-white rounded-2xl p-8 shadow-2xl shadow-indigo-600/20 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl -mr-24 -mt-24 transition-transform duration-700 group-hover:scale-125" />
                         <h3 className="text-[10px] font-bold uppercase tracking-[0.4em] text-indigo-200 mb-8 flex items-center gap-2">
-                            <Building2 className="h-3.5 w-3.5" /> Booking Details
+                            <Building2 className="h-3.5 w-3.5" /> Booking Info
                         </h3>
 
                         <div className="space-y-6">
                             <div>
-                                <span className="text-[9px] font-bold text-indigo-300 uppercase block mb-2 tracking-widest">Booking ID</span>
+                                <span className="text-[9px] font-bold text-indigo-300 uppercase block mb-2 tracking-widest">Booking REF</span>
                                 <div className="flex items-center justify-between">
                                     <p className="text-xl font-bold text-white tracking-tighter">BK-{payment.bookingId?.slice(-8).toUpperCase()}</p>
-                                    <div className="h-7 w-7 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white hover:text-indigo-600 transition-all">
-                                        <ChevronRight className="h-4 w-4" />
-                                    </div>
+                                    <Link href={`/admin/bookings/${payment.bookingId}`}>
+                                        <div className="h-7 w-7 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white hover:text-indigo-600 transition-all">
+                                            <ChevronRight className="h-4 w-4" />
+                                        </div>
+                                    </Link>
                                 </div>
                             </div>
 
@@ -402,7 +398,7 @@ const PaymentApprovalDetailPage = () => {
                                     <p className="text-sm font-bold text-white">{format(new Date(payment.Booking?.checkIn || new Date()), 'dd MMM yy')}</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <span className="text-[9px] font-bold text-indigo-300 uppercase tracking-widest block">Booking Status</span>
+                                    <span className="text-[9px] font-bold text-indigo-300 uppercase tracking-widest block">Status</span>
                                     <p className="text-sm font-bold text-emerald-300 uppercase tracking-tighter leading-none">{payment.Booking?.status}</p>
                                 </div>
                             </div>
@@ -415,23 +411,22 @@ const PaymentApprovalDetailPage = () => {
                         </div>
                     </div>
 
-                    {/* Audit Timeline */}
+                    {/* Timeline */}
                     <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm space-y-6 group/audit">
                         <div className="flex items-center justify-between">
                             <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 flex items-center gap-2">
                                 <Activity className="h-3.5 w-3.5" /> Activity Log
                             </h3>
-                            <Activity className="h-4 w-4 text-gray-200 group-hover/audit:text-indigo-400 transition-colors" />
                         </div>
                         <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gray-100">
                             {[
-                                { event: 'Payment Created', date: payment.createdAt, icon: Activity, desc: 'Payment record initialized in the system' },
-                                { event: 'Payment Date', date: payment.date, icon: Clock, desc: 'Date of the reported payment transaction' },
-                                { event: 'Under Review', date: new Date(), icon: ShieldCheck, desc: 'Currently awaiting admin verification' },
+                                { event: 'Payment Created', date: payment.createdAt, icon: Activity, desc: 'Record initialized' },
+                                { event: 'Payment Date', date: payment.date, icon: Clock, desc: 'Date of transaction' },
+                                { event: 'Under Review', date: new Date(), icon: ShieldCheck, desc: 'Awaiting verification' },
                             ].map((item, i) => (
-                                <div key={i} className="flex gap-6 relative z-10 group/step">
-                                    <div className="h-6 w-6 rounded-full bg-white border-2 border-indigo-500 flex items-center justify-center shrink-0 shadow-sm group-hover/step:scale-125 transition-transform duration-300">
-                                        <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+                                <div key={i} className="flex gap-6 relative z-10">
+                                    <div className="h-6 w-6 rounded-full bg-white border-2 border-indigo-500 flex items-center justify-center shrink-0 shadow-sm">
+                                        <div className="h-2 w-2 rounded-full bg-indigo-500" />
                                     </div>
                                     <div className="flex flex-col">
                                         <span className="text-xs font-bold text-gray-900 uppercase tracking-tight">{item.event}</span>
@@ -445,16 +440,16 @@ const PaymentApprovalDetailPage = () => {
                         </div>
                     </div>
 
-                    {/* Quick Action Card */}
+                    {/* Quick Actions */}
                     <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-3">
-                        <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-4">Quick Actions</h3>
+                        <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 mb-4">Actions</h3>
                         <Button
                             className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-600/20 flex items-center gap-2"
                             onClick={() => handleAction('PAID')}
                             disabled={updatePayment.isPending}
                         >
                             {updatePayment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
-                            Approve Payment
+                            Approve
                         </Button>
                         <Button
                             variant="outline"
@@ -462,7 +457,7 @@ const PaymentApprovalDetailPage = () => {
                             onClick={() => setIsRejectDialogOpen(true)}
                         >
                             <XCircle className="h-4 w-4" />
-                            Reject Payment
+                            Reject
                         </Button>
                     </div>
                 </div>
