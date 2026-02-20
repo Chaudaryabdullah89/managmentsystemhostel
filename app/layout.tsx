@@ -7,7 +7,7 @@ import { Toaster } from "sonner"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/appsidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
+import { Analytics } from "@vercel/analytics/next"
 import { ReactQueryProvider } from "@/components/ReactQueryProvider"
 
 export const metadata: Metadata = {
@@ -29,6 +29,7 @@ export default function RootLayout({
           <AuthProvider>
 
             <Toaster position="top-right" richColors />
+            <Analytics />
             {children}
           </AuthProvider>
         </ReactQueryProvider>
