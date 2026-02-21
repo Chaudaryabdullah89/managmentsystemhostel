@@ -30,7 +30,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import Loader from "@/components/Loader";
+import Loader from "../../../../components/ui/Loader"
 import {
     Select,
     SelectContent,
