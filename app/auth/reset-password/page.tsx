@@ -38,7 +38,7 @@ function ResetPasswordForm() {
         password: "",
         confirmPassword: "",
     });
-    const [errors, setErrors] = useState({});
+    const [errors, setErrors] = useState<any>({});
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
