@@ -25,21 +25,28 @@ const WardenHostelsPage = () => {
 
     if (isLoading) {
         return (
-            <div className="p-8 space-y-6 animate-pulse">
-                <div className="h-20 bg-gray-100 rounded-3xl" />
-                <div className="h-96 bg-gray-50 rounded-[3rem]" />
+            <div className="flex h-screen items-center justify-center bg-white font-sans">
+                <div className="flex flex-col items-center gap-6">
+                    <div className="h-10 w-10 border-[3px] border-gray-100 border-t-black rounded-full animate-spin" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 italic">Accessing Property Node...</p>
+                </div>
             </div>
         );
     }
 
     if (!hostel) {
         return (
-            <div className="min-h-screen bg-gray-50/30 flex items-center justify-center">
-                <div className="text-center space-y-4">
-                    <Building2 className="h-16 w-16 text-gray-200 mx-auto" />
-                    <h2 className="text-xl font-bold text-gray-900 uppercase">No Hostel Assigned</h2>
-                    <p className="text-sm text-gray-400">Please contact the administrator to assign a hostel to your account.</p>
+            <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center p-6 text-center">
+                <div className="h-20 w-20 rounded-[2.5rem] bg-gray-100 flex items-center justify-center mb-6 shadow-sm">
+                    <Building2 className="h-10 w-10 text-gray-300" />
                 </div>
+                <h2 className="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tight italic">No Property Assigned</h2>
+                <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-[0.2em] mt-3 max-w-sm leading-relaxed italic">
+                    The identification matrix for your profile has no active property association. Please contact central administration.
+                </p>
+                <Button variant="outline" className="mt-8 rounded-xl border-gray-200 uppercase tracking-widest text-[9px] font-bold h-11 px-10 hover:bg-gray-50 transition-all text-gray-500">
+                    Refresh Node State
+                </Button>
             </div>
         );
     }
@@ -51,157 +58,153 @@ const WardenHostelsPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/30 pb-20">
-            {/* Header */}
+        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight leading-relaxed">
+            {/* Minimal Premium Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-8 w-1 bg-indigo-600 rounded-full" />
-                        <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">My Hostel</h1>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Assigned Property</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active</span>
+                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+                        <div className="h-8 w-1 bg-black rounded-full shrink-0" />
+                        <div className="flex flex-col min-w-0">
+                            <h1 className="text-sm md:text-lg font-black text-gray-900 tracking-tight uppercase truncate">My Hostel</h1>
+                            <div className="flex items-center gap-1.5 md:gap-2">
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 truncate">Property Management</span>
+                                <div className="h-1 w-1 rounded-full bg-emerald-500 shrink-0 hidden sm:block" />
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
-                {/* Hostel Overview Card */}
-                <Card className="bg-white border border-gray-100 rounded-[3rem] shadow-sm overflow-hidden">
-                    <div className="grid grid-cols-1 lg:grid-cols-3">
-                        {/* Main Info */}
-                        <div className="lg:col-span-2 p-10 space-y-8">
-                            <div className="flex items-start justify-between">
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-14 w-14 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                                            <Building2 className="h-7 w-7" />
-                                        </div>
-                                        <div>
-                                            <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">{hostel.name}</h2>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID: {hostel.id.slice(-8).toUpperCase()}</p>
+            <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8 min-w-0">
+                {/* Hostel Overview Matrix */}
+                <Card className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[3.5rem] shadow-sm overflow-hidden min-w-0">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
+                        {/* Main Technical Info */}
+                        <div className="lg:col-span-2 p-6 md:p-10 space-y-8 md:space-y-12">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+                                <div className="flex items-center gap-4 md:gap-6 min-w-0">
+                                    <div className="h-14 w-14 md:h-16 md:w-16 rounded-2xl md:rounded-3xl bg-black text-white flex items-center justify-center shadow-lg shadow-black/10 shrink-0">
+                                        <Building2 className="h-7 w-7 md:h-8 md:w-8" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h2 className="text-xl md:text-3xl font-black text-gray-900 uppercase tracking-tight italic truncate">{hostel.name}</h2>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest italic">Node ID: {hostel.id.slice(-8).toUpperCase()}</span>
+                                            <div className="h-1 w-1 rounded-full bg-gray-200" />
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest italic">{hostel.type} MODULE</span>
                                         </div>
                                     </div>
                                 </div>
-                                <Badge className={`text-[10px] font-bold uppercase px-4 py-1.5 rounded-full ${hostel.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-gray-100 text-gray-500'}`}>
+                                <Badge className={`self-start text-[8px] md:text-[10px] font-black uppercase tracking-widest px-5 py-2 rounded-full border-2 ${hostel.status === 'ACTIVE' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-gray-50 text-gray-500 border-gray-200'} shadow-sm`}>
                                     {hostel.status || 'ACTIVE'}
                                 </Badge>
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="p-5 rounded-2xl bg-gray-50/50 border border-gray-100">
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Type</p>
-                                    <p className="text-lg font-bold text-gray-900 uppercase">{hostel.type}</p>
-                                </div>
-                                <div className="p-5 rounded-2xl bg-gray-50/50 border border-gray-100">
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Floors</p>
-                                    <p className="text-lg font-bold text-gray-900">{hostel.floors}</p>
-                                </div>
-                                <div className="p-5 rounded-2xl bg-gray-50/50 border border-gray-100">
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Monthly Rent</p>
-                                    <p className="text-lg font-bold text-gray-900">PKR {hostel.montlyrent?.toLocaleString() || '--'}</p>
-                                </div>
-                                <div className="p-5 rounded-2xl bg-gray-50/50 border border-gray-100">
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Nightly Rent</p>
-                                    <p className="text-lg font-bold text-gray-900">PKR {hostel.pernightrent?.toLocaleString() || '--'}</p>
-                                </div>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+                                {[
+                                    { label: 'Infrastructure', value: `F-${hostel.floors}`, sub: 'Floors' },
+                                    { label: 'Capacity', value: roomStats.total, sub: 'Total Nodes' },
+                                    { label: 'Monthly Alloc', value: `PKR ${hostel.montlyrent?.toLocaleString()}`, sub: 'Subscription' },
+                                    { label: 'Nightly Alloc', value: `PKR ${hostel.pernightrent?.toLocaleString()}`, sub: 'On-Demand' }
+                                ].map((stat, i) => (
+                                    <div key={i} className="p-4 md:p-6 rounded-2xl md:rounded-3xl bg-gray-50/50 border border-gray-100 shadow-sm transition-all hover:bg-white hover:border-indigo-100 group">
+                                        <p className="text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1 italic group-hover:text-indigo-400 transition-colors">{stat.label}</p>
+                                        <p className="text-sm md:text-lg font-black text-gray-900 uppercase group-hover:text-indigo-600 transition-colors">{stat.value || '--'}</p>
+                                        <p className="text-[7px] md:text-[8px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">{stat.sub}</p>
+                                    </div>
+                                ))}
                             </div>
 
-                            <div className="space-y-4">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Contact Information</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50/50 border border-gray-50">
-                                        <MapPin className="h-4 w-4 text-gray-400" />
-                                        <span className="text-xs font-medium text-gray-700">{hostel.address}, {hostel.city}</span>
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-6 w-0.5 bg-black rounded-full" />
+                                    <h3 className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] italic">Comm-Link Credentials</h3>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="flex items-center gap-4 p-4 md:p-5 rounded-2xl bg-white border border-gray-50 shadow-sm transition-all hover:shadow-md">
+                                        <div className="h-9 w-9 rounded-xl bg-gray-50 text-gray-400 flex items-center justify-center shrink-0">
+                                            <MapPin className="h-4 w-4" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Global Address</p>
+                                            <p className="text-[11px] md:text-sm font-bold text-gray-700 truncate italic">{hostel.address}, {hostel.city}</p>
+                                        </div>
                                     </div>
-                                    {hostel.phone && (
-                                        <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50/50 border border-gray-50">
-                                            <Phone className="h-4 w-4 text-gray-400" />
-                                            <span className="text-xs font-medium text-gray-700">{hostel.phone}</span>
+                                    <div className="flex items-center gap-4 p-4 md:p-5 rounded-2xl bg-white border border-gray-50 shadow-sm transition-all hover:shadow-md">
+                                        <div className="h-9 w-9 rounded-xl bg-gray-50 text-gray-400 flex items-center justify-center shrink-0">
+                                            <Phone className="h-4 w-4" />
                                         </div>
-                                    )}
-                                    {hostel.email && (
-                                        <div className="flex items-center gap-3 p-4 rounded-xl bg-gray-50/50 border border-gray-50">
-                                            <Mail className="h-4 w-4 text-gray-400" />
-                                            <span className="text-xs font-medium text-gray-700">{hostel.email}</span>
+                                        <div className="min-w-0">
+                                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Voice Terminal</p>
+                                            <p className="text-[11px] md:text-sm font-bold text-gray-700 truncate italic">{hostel.phone || 'NO_VOICE_LINK'}</p>
                                         </div>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
 
                             {hostel.description && (
-                                <div className="space-y-2">
-                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Description</h3>
-                                    <p className="text-sm text-gray-600 leading-relaxed">{hostel.description}</p>
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-6 w-0.5 bg-black rounded-full" />
+                                        <h3 className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] italic">Property Manifest</h3>
+                                    </div>
+                                    <p className="text-xs md:text-sm text-gray-500 font-medium leading-relaxed italic border-l-2 border-gray-50 pl-6 md:pl-10">
+                                        "{hostel.description}"
+                                    </p>
                                 </div>
                             )}
                         </div>
 
-                        {/* Stats Sidebar */}
-                        <div className="bg-gray-50/50 border-l border-gray-100 p-10 space-y-8">
+                        {/* Inventory Context Sidebar */}
+                        <div className="bg-gray-50/30 p-6 md:p-10 space-y-10 md:space-y-12">
                             <div className="space-y-6">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Room Statistics</h3>
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] italic">Node Inventory</h3>
+                                    <Activity className="h-4 w-4 text-emerald-500" />
+                                </div>
 
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                                                <Bed className="h-5 w-5" />
+                                <div className="space-y-3">
+                                    {[
+                                        { label: 'Operational Nodes', value: roomStats.total, icon: Bed, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                                        { label: 'Active Occupancy', value: roomStats.occupied, icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                                        { label: 'Available Slots', value: roomStats.available, icon: CheckCircle2, color: 'text-blue-600', bg: 'bg-blue-50' }
+                                    ].map((stat, i) => (
+                                        <div key={i} className="flex items-center justify-between p-4 md:p-5 bg-white rounded-2xl md:rounded-3xl border border-gray-100 shadow-sm transition-all hover:scale-[1.02]">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
+                                                    <stat.icon className="h-5 w-5 md:h-6 md:w-6" />
+                                                </div>
+                                                <span className="text-[9px] md:text-[10px] font-black text-gray-500 uppercase tracking-widest">{stat.label}</span>
                                             </div>
-                                            <span className="text-xs font-bold text-gray-500 uppercase">Total Rooms</span>
+                                            <span className={`text-lg md:text-2xl font-black ${stat.color}`}>{stat.value}</span>
                                         </div>
-                                        <span className="text-xl font-bold text-gray-900">{roomStats.total}</span>
-                                    </div>
-
-                                    <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                                                <Users className="h-5 w-5" />
-                                            </div>
-                                            <span className="text-xs font-bold text-gray-500 uppercase">Occupied</span>
-                                        </div>
-                                        <span className="text-xl font-bold text-emerald-600">{roomStats.occupied}</span>
-                                    </div>
-
-                                    <div className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                                                <CheckCircle2 className="h-5 w-5" />
-                                            </div>
-                                            <span className="text-xs font-bold text-gray-500 uppercase">Available</span>
-                                        </div>
-                                        <span className="text-xl font-bold text-blue-600">{roomStats.available}</span>
-                                    </div>
+                                    ))}
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Quick Actions</h3>
-                                <div className="space-y-2">
+                            <div className="space-y-5">
+                                <h3 className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] italic">Quick Access</h3>
+                                <div className="grid grid-cols-1 gap-3">
                                     <Link href="/warden/rooms">
-                                        <Button className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl">
-                                            <Bed className="h-4 w-4 mr-2" /> Manage Rooms
+                                        <Button className="w-full h-12 md:h-14 bg-black hover:bg-gray-800 text-white font-black text-[10px] uppercase tracking-widest rounded-xl md:rounded-2xl shadow-xl shadow-black/10 transition-all active:scale-95">
+                                            <Bed className="h-4 w-4 mr-3" /> Manage Nodes
                                         </Button>
                                     </Link>
                                     <Link href="/warden/residents">
-                                        <Button variant="outline" className="w-full h-12 border-gray-200 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-gray-50">
-                                            <Users className="h-4 w-4 mr-2" /> View Residents
+                                        <Button variant="outline" className="w-full h-12 md:h-14 border-gray-200 bg-white font-black text-[10px] uppercase tracking-widest rounded-xl md:rounded-2xl hover:bg-gray-50 transition-all active:scale-95">
+                                            <Users className="h-4 w-4 mr-3" /> User Registry
                                         </Button>
                                     </Link>
                                 </div>
                             </div>
 
-                            {/* Amenities */}
+                            {/* Amenity Matrix */}
                             {hostel.amenities?.length > 0 && (
-                                <div className="space-y-4">
-                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Amenities</h3>
-                                    <div className="flex flex-wrap gap-2">
+                                <div className="space-y-6">
+                                    <h3 className="text-[10px] md:text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] italic">System Perks</h3>
+                                    <div className="flex flex-wrap gap-2 md:gap-3">
                                         {hostel.amenities.map((amenity, i) => (
-                                            <Badge key={i} variant="outline" className="text-[9px] font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-white">
+                                            <Badge key={i} variant="outline" className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.1em] px-4 py-1.5 rounded-full bg-white border-gray-100 text-gray-500 shadow-sm transition-all hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100">
                                                 {amenity}
                                             </Badge>
                                         ))}

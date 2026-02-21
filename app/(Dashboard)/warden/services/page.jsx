@@ -86,13 +86,16 @@ const UnifiedServicesPage = () => {
 
     if (isLoading) {
         return (
-            <div className="flex h-screen items-center justify-center bg-white font-sans">
+            <div className="flex h-[100dvh] items-center justify-center bg-white font-sans">
                 <div className="flex flex-col items-center gap-6">
                     <div className="relative">
-                        <div className="h-20 w-20 border-[3px] border-gray-100 border-t-blue-600 rounded-full animate-spin" />
-                        <Activity className="h-8 w-8 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+                        <div className="h-16 w-16 border-[3px] border-blue-50 border-t-blue-600 rounded-full animate-spin" />
+                        <Activity className="h-6 w-6 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
                     </div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Intelligence Mode...</p>
+                    <div className="flex flex-col items-center gap-1.5 text-center px-4">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-900">Synchronizing Hub</p>
+                        <p className="text-[8px] font-bold uppercase tracking-widest text-gray-400 italic">Optimizing Service Vectors</p>
+                    </div>
                 </div>
             </div>
         );
@@ -102,52 +105,54 @@ const UnifiedServicesPage = () => {
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
             {/* Unified Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-8 w-1 bg-blue-600 rounded-full" />
-                        <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Service Hub</h1>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Operations</span>
-                                <div className="h-1 w-1 rounded-full bg-blue-500 animate-pulse" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 italic">Algorithm Optimized</span>
+                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+                        <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
+                        <div className="flex flex-col min-w-0">
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase truncate">Service Hub</h1>
+                            <div className="flex items-center gap-1.5 md:gap-2">
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400">Operations</span>
+                                <div className="h-1 w-1 rounded-full bg-blue-500 shrink-0 hidden sm:block" />
+                                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider text-blue-600 italic truncate hidden xs:block">Algorithm Optimized</span>
                             </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 md:gap-3 shrink-0">
                         <Button
                             variant="outline"
-                            className="h-9 px-4 rounded-xl border-gray-200 font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50"
+                            className="h-8 md:h-10 px-2.5 md:px-5 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all shadow-sm shrink-0"
                             onClick={handleSync}
                         >
-                            <RefreshCw className="h-3.5 w-3.5 mr-2 text-gray-400" /> Run Sync
+                            <RefreshCw className="h-3.5 w-3.5 md:mr-2 text-gray-400" />
+                            <span className="hidden sm:inline">Run Sync</span>
+                            <span className="sm:hidden">Sync</span>
                         </Button>
-                        <Button onClick={refetchAll} variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200">
-                            <RefreshCw className="h-4 w-4 text-gray-400" />
+                        <Button onClick={refetchAll} variant="outline" size="icon" className="h-8 w-8 md:h-10 md:w-10 rounded-xl border-gray-200 bg-white shrink-0 sm:flex hidden">
+                            <RefreshCw className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-400" />
                         </Button>
                     </div>
                 </div>
             </div>
 
-            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
+            <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6 md:space-y-10">
                 {/* Stats Matrix */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                     {[
                         { label: 'Active Requests', value: stats.pending, icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50', sub: 'Tasks in queue' },
-                        { label: 'Scheduled Alerts', value: stats.overdue, icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50', sub: 'Suggested actions' },
-                        { label: 'Done Today', value: stats.productivity, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', sub: 'Services completed' },
+                        { label: 'Scheduled Alerts', value: stats.overdue, icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50', sub: 'Calculated suggestions' },
+                        { label: 'Done Today', value: stats.productivity, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', sub: 'Nodes serviced' },
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+                        <div key={i} className="bg-white border border-gray-100 rounded-[2rem] p-5 md:p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden flex-1 min-w-0">
                             <div className="absolute top-0 right-0 w-24 h-full bg-gray-50/50 skew-x-12 translate-x-10 group-hover:translate-x-8 transition-transform" />
-                            <div className="flex items-center gap-6 relative z-10">
-                                <div className={`h-14 w-14 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center shadow-inner`}>
-                                    <stat.icon className="h-7 w-7" />
+                            <div className="flex items-center gap-5 md:gap-6 relative z-10">
+                                <div className={`h-12 w-12 md:h-14 md:w-14 rounded-xl md:rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform`}>
+                                    <stat.icon className="h-6 w-6 md:h-7 md:w-7" />
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">{stat.label}</span>
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-3xl font-bold text-gray-900 tracking-tighter">{stat.value}</span>
-                                        <span className="text-[9px] font-bold text-gray-400 uppercase">{stat.sub}</span>
+                                <div className="flex flex-col min-w-0">
+                                    <span className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] truncate">{stat.label}</span>
+                                    <div className="flex items-baseline gap-2 mt-1 truncate">
+                                        <span className="text-2xl md:text-3xl font-black text-gray-900 tracking-tighter leading-none">{stat.value}</span>
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest truncate">{stat.sub}</span>
                                     </div>
                                 </div>
                             </div>
@@ -155,26 +160,26 @@ const UnifiedServicesPage = () => {
                     ))}
                 </div>
 
-                <Tabs defaultValue="operational-tasks" className="space-y-8">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <TabsList className="bg-white p-1 rounded-2xl border border-gray-100 h-12 inline-flex shadow-sm">
-                            <TabsTrigger value="operational-tasks" className="rounded-xl px-8 text-[11px] font-bold uppercase tracking-widest data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <Tabs defaultValue="operational-tasks" className="space-y-6 md:space-y-8">
+                    <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
+                        <TabsList className="bg-white p-1 rounded-xl md:rounded-2xl border border-gray-100 h-11 md:h-14 flex shadow-sm overflow-x-auto scrollbar-hide shrink-0 min-w-0">
+                            <TabsTrigger value="operational-tasks" className="flex-1 md:flex-none rounded-lg md:rounded-xl px-4 md:px-8 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.15em] data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all whitespace-nowrap">
                                 Task Queue
                             </TabsTrigger>
-                            <TabsTrigger value="due-alerts" className="rounded-xl px-8 text-[11px] font-bold uppercase tracking-widest data-[state=active]:bg-blue-600 data-[state=active]:text-white relative">
-                                Overdue Alerts
-                                {stats.overdue > 0 && <span className="absolute -top-1 -right-1 h-4 w-4 bg-rose-500 rounded-full border-2 border-white animate-pulse" />}
+                            <TabsTrigger value="due-alerts" className="flex-1 md:flex-none rounded-lg md:rounded-xl px-4 md:px-8 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.15em] data-[state=active]:bg-blue-600 data-[state=active]:text-white relative transition-all whitespace-nowrap">
+                                Due Alerts
+                                {stats.overdue > 0 && <span className="absolute -top-1 -right-0.5 h-3.5 w-3.5 md:h-4 md:w-4 bg-rose-500 rounded-full border-2 border-white animate-pulse" />}
                             </TabsTrigger>
-                            <TabsTrigger value="history" className="rounded-xl px-8 text-[11px] font-bold uppercase tracking-widest data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                            <TabsTrigger value="history" className="flex-1 md:flex-none rounded-lg md:rounded-xl px-4 md:px-8 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.15em] data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all whitespace-nowrap">
                                 Log History
                             </TabsTrigger>
                         </TabsList>
 
-                        <div className="relative w-full md:w-64">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <div className="relative w-full lg:w-72 group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 md:h-4 md:w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
                             <Input
-                                placeholder="Search Room Number..."
-                                className="pl-10 h-12 rounded-2xl border-gray-100 bg-white shadow-sm focus:ring-blue-500 transition-all text-[11px] font-bold uppercase"
+                                placeholder="IDENTIFY UNIT VECTOR..."
+                                className="pl-10 md:pl-12 h-11 md:h-14 rounded-xl md:rounded-[1.25rem] border-gray-100 bg-white shadow-sm focus:ring-blue-500 transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest placeholder:text-gray-300"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -285,7 +290,7 @@ const UnifiedServicesPage = () => {
                                                 </td>
                                                 <td className="px-8 py-5">
                                                     <Badge variant="outline" className={`text-[8px] font-bold rounded-full px-3 py-1 border-none shadow-sm ${['COMPLETED', 'DELIVERED'].includes(log.status) ? 'bg-emerald-50 text-emerald-600' :
-                                                            log.status === 'PENDING' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
+                                                        log.status === 'PENDING' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'
                                                         }`}>
                                                         {log.status}
                                                     </Badge>
@@ -341,7 +346,7 @@ const TaskCard = ({ data, refetch }) => {
                         {data.taskType === 'cleaning' ? <Brush className="h-6 w-6" /> : <Shirt className="h-6 w-6" />}
                     </div>
                     <Badge className={`text-[8px] font-bold px-3 py-1 rounded-full ${data.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                            data.status === 'PROCESSING' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                        data.status === 'PROCESSING' ? 'bg-blue-50 text-blue-600 border-blue-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                         }`}>
                         {data.status}
                     </Badge>

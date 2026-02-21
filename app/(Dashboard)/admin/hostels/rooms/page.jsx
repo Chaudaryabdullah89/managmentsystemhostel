@@ -165,39 +165,41 @@ const GlobalRoomsPage = () => {
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
             {/* Minimal Premium Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-6 w-px bg-gray-200" />
+                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
+                    <div className="flex items-center gap-2 md:gap-4">
+                        <div className="h-6 w-px bg-gray-200 hidden md:block" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight">All Rooms</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                                ROOMS LIST • UPDATING
+                            <h1 className="text-base md:text-lg font-bold text-gray-900 tracking-tight">All Rooms</h1>
+                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 md:gap-2">
+                                <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse hidden sm:block" />
+                                <span className="hidden sm:inline">ROOMS LIST • UPDATING</span>
+                                <span className="sm:hidden">UPDATING</span>
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 md:gap-3">
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="rounded-xl hover:bg-gray-100 h-9 w-9"
+                            className="rounded-xl hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9"
                             onClick={handleRefresh}
                             disabled={isFetchingRooms}
                         >
                             <RefreshCw className={`h-4 w-4 text-gray-400 ${isFetchingRooms ? 'animate-spin' : ''}`} />
                         </Button>
                         <Link href="/admin/hostels/createroom?role=admin">
-                            <Button className="bg-black hover:bg-gray-800 text-white h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-wider shadow-sm gap-2">
+                            <Button className="bg-black hover:bg-gray-800 text-white h-8 md:h-9 px-3 md:px-4 rounded-xl font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm gap-1.5 md:gap-2 flex items-center">
                                 <Plus className="h-3.5 w-3.5" />
-                                Add New Room
+                                <span className="hidden sm:inline">Add New Room</span>
+                                <span className="sm:hidden">Add</span>
                             </Button>
                         </Link>
                     </div>
                 </div>
             </div>
 
-            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
+            <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8 min-w-0">
                 {/* Minimal Metrics Matrix */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
@@ -219,20 +221,20 @@ const GlobalRoomsPage = () => {
                 </div>
 
                 {/* Operations Bar */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col lg:flex-row items-center gap-4 shadow-sm">
-                    <div className="flex-1 relative w-full group px-2">
+                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm w-full min-w-0">
+                    <div className="flex-1 relative w-full group px-2 min-w-0">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
                             placeholder="Find room by number, hostel or type..."
-                            className="w-full h-12 pl-10 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
+                            className="w-full h-12 pl-10 bg-transparent border-none shadow-none font-bold text-[11px] md:text-sm focus-visible:ring-0 placeholder:text-gray-300 min-w-0"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
 
-                    <div className="h-8 w-px bg-gray-100 mx-2 hidden lg:block" />
+                    <div className="h-8 w-px bg-gray-100 mx-2 hidden md:block" />
 
-                    <div className="flex items-center gap-2 p-1 w-full lg:w-auto overflow-x-auto">
+                    <div className="flex items-center gap-2 p-1 w-full md:w-auto overflow-x-auto">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 px-4 rounded-xl border-gray-100 font-bold gap-3 hover:bg-gray-50 text-[10px] uppercase tracking-wider text-gray-500 min-w-[160px]">
@@ -253,7 +255,7 @@ const GlobalRoomsPage = () => {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <div className="h-6 w-px bg-gray-100 mx-1 hidden lg:block" />
+                        <div className="h-6 w-px bg-gray-100 mx-1 hidden md:block" />
 
                         <div className="flex items-center gap-1 p-1 bg-gray-50 rounded-xl">
                             {['All', 'Available', 'Occupied', 'Maintenance'].map((s) => (
@@ -276,46 +278,46 @@ const GlobalRoomsPage = () => {
                             <div key={room.id || index} className="bg-white border border-gray-100 rounded-2xl flex flex-col items-stretch shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
                                 <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${room.status === 'AVAILABLE' ? 'bg-emerald-500' : room.status === 'OCCUPIED' ? 'bg-blue-600' : 'bg-amber-500'} opacity-70`} />
 
-                                <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 p-4 pr-6">
+                                <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4 lg:gap-8 p-4 pr-6">
                                     {/* Section 1: Visual Identity */}
-                                    <div className="flex items-center gap-5 min-w-[280px]">
-                                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border border-gray-100 group-hover:bg-black group-hover:text-white transition-colors ${room.status === 'AVAILABLE' ? 'bg-emerald-50/50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
-                                            <BedDouble className="h-6 w-6" />
+                                    <div className="flex items-center gap-3 md:gap-5 min-w-[200px] md:min-w-[280px]">
+                                        <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl flex items-center justify-center shrink-0 border border-gray-100 group-hover:bg-black group-hover:text-white transition-colors ${room.status === 'AVAILABLE' ? 'bg-emerald-50/50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                                            <BedDouble className="h-5 w-5 md:h-6 md:w-6" />
                                         </div>
-                                        <div className="flex flex-col">
-                                            <div className="flex items-center gap-3">
-                                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Suite {room.roomNumber}</h3>
+                                        <div className="flex flex-col min-w-0">
+                                            <div className="flex items-center gap-2 md:gap-3">
+                                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight truncate">Suite {room.roomNumber}</h3>
                                                 <Badge variant="outline" className={`${getStatusTheme(room.status)} text-[8px] font-bold px-2 py-0 rounded-full border shadow-sm`}>
                                                     {room.status}
                                                 </Badge>
                                             </div>
                                             <div className="flex items-center gap-1.5 mt-0.5">
-                                                <Building2 className="h-3 w-3 text-gray-400" />
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{room.Hostel?.name || 'Asset Registry'} • LVL {room.floor}</span>
+                                                <Building2 className="h-3 w-3 text-gray-400 min-w-3" />
+                                                <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{room.Hostel?.name || 'Asset Registry'} • LVL {room.floor}</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Section 2: Infrastructure */}
-                                    <div className="flex items-center gap-8 min-w-[160px]">
+                                    <div className="flex items-center gap-6 md:gap-8 min-w-[140px] md:min-w-[160px]">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Room Type</span>
-                                            <span className="text-[10px] font-bold text-gray-700 uppercase">{room.type}</span>
+                                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest">Room Type</span>
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-700 uppercase">{room.type}</span>
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Capacity</span>
+                                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest">Capacity</span>
                                             <div className="flex items-center gap-1.5 mt-1">
                                                 <Users className="h-3 w-3 text-gray-400" />
-                                                <span className="text-[10px] font-black text-gray-900">{room.capacity} BEDS</span>
+                                                <span className="text-[9px] md:text-[10px] font-black text-gray-900">{room.capacity} BEDS</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Section 3: Current Occupancy */}
-                                    <div className="flex-1 flex items-center gap-4 min-w-[200px]">
+                                    <div className="flex-1 flex items-center gap-4 min-w-[150px] md:min-w-[200px] w-full lg:w-auto">
                                         <div className="h-4 w-px bg-gray-100 hidden lg:block" />
-                                        <div className="flex flex-col flex-1">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                                        <div className="flex flex-col flex-1 min-w-0">
+                                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
                                                 <UserCircle2 className="h-3 w-3" />
                                                 Students
                                             </span>
@@ -327,26 +329,26 @@ const GlobalRoomsPage = () => {
                                                         </Badge>
                                                     ))
                                                 ) : (
-                                                    <span className="text-[10px] font-bold text-gray-300 italic uppercase">Empty Room</span>
+                                                    <span className="text-[9px] md:text-[10px] font-bold text-gray-300 italic uppercase">Empty Room</span>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Section 4: Commercial */}
-                                    <div className="flex items-center gap-10 min-w-[200px]">
+                                    <div className="flex items-center gap-6 md:gap-10 min-w-[140px] md:min-w-[200px]">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Price</span>
-                                            <span className="text-[11px] font-bold text-gray-900 italic tracking-tight">Rs. {room.price?.toLocaleString()}</span>
+                                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest">Price</span>
+                                            <span className="text-[10px] md:text-[11px] font-bold text-gray-900 italic tracking-tight">Rs. {room.price?.toLocaleString()}</span>
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Rent</span>
-                                            <span className="text-[11px] font-bold text-emerald-600 italic">Rs. {room.monthlyrent?.toLocaleString()}</span>
+                                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest">Rent</span>
+                                            <span className="text-[10px] md:text-[11px] font-bold text-emerald-600 italic">Rs. {room.monthlyrent?.toLocaleString()}</span>
                                         </div>
                                     </div>
 
-                                    {/* Section 4: Operational */}
-                                    <div className="flex items-center gap-2 lg:ml-auto">
+                                    {/* Section 5: Operational */}
+                                    <div className="flex items-center justify-between lg:justify-end gap-2 lg:ml-auto w-full lg:w-auto mt-2 lg:mt-0">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-gray-100 text-gray-400">
@@ -366,15 +368,15 @@ const GlobalRoomsPage = () => {
                                                         <AlertDialogTrigger className="w-full text-left flex items-center gap-2.5">
                                                             <Trash className="h-3.5 w-3.5" /> Delete
                                                         </AlertDialogTrigger>
-                                                        <AlertDialogContent className="rounded-3xl border-0 shadow-2xl overflow-hidden p-0 max-w-lg">
-                                                            <div className="bg-gray-950 p-8 text-white">
+                                                        <AlertDialogContent className="w-[95%] sm:w-full rounded-3xl border-0 shadow-2xl overflow-hidden p-0 max-w-lg mx-auto">
+                                                            <div className="bg-gray-950 p-6 md:p-8 text-white">
                                                                 <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center mb-4"><Trash size={20} className="text-rose-500" /></div>
-                                                                <AlertDialogTitle className="text-xl font-bold tracking-tight mb-2 uppercase">Delete Room?</AlertDialogTitle>
-                                                                <AlertDialogDescription className="text-gray-400 font-bold text-xs uppercase tracking-widest">
+                                                                <AlertDialogTitle className="text-lg md:text-xl font-bold tracking-tight mb-2 uppercase">Delete Room?</AlertDialogTitle>
+                                                                <AlertDialogDescription className="text-gray-400 font-bold text-[10px] md:text-xs uppercase tracking-widest leading-relaxed">
                                                                     Deleting <span className="text-white">Room {room.roomNumber}</span> is permanent.
                                                                 </AlertDialogDescription>
                                                             </div>
-                                                            <div className="p-6 flex items-center justify-end gap-3 bg-white">
+                                                            <div className="p-4 md:p-6 flex items-center justify-end gap-3 bg-white">
                                                                 <AlertDialogCancel className="rounded-xl border-gray-100 bg-gray-50 font-bold px-6 h-11 uppercase tracking-widest text-[9px] text-gray-500">Cancel</AlertDialogCancel>
                                                                 <AlertDialogAction className="bg-rose-600 hover:bg-rose-700 rounded-xl font-bold px-6 h-11 uppercase tracking-widest text-[9px] shadow-sm" onClick={() => handleDeleteRoom(room.id)}>Execute</AlertDialogAction>
                                                             </div>
@@ -385,7 +387,7 @@ const GlobalRoomsPage = () => {
                                         </DropdownMenu>
                                         <Button
                                             size="sm"
-                                            className="h-11 px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wider text-[10px] shadow-sm flex items-center gap-2 group/btn active:scale-95 transition-all"
+                                            className="h-9 md:h-11 px-4 md:px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold uppercase tracking-wider text-[9px] md:text-[10px] shadow-sm flex items-center gap-2 group/btn active:scale-95 transition-all"
                                             onClick={() => router.push(`/admin/hostels/${encodeURIComponent(room.Hostel?.name || 'asset')}/room-details/room/${room.id}?hostelId=${room.hostelId}`)}
                                         >
                                             View Room

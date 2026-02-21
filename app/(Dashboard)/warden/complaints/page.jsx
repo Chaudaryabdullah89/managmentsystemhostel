@@ -279,105 +279,116 @@ const ComplaintsPage = () => {
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight leading-relaxed">
             {/* Minimal Premium Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-8 w-1 bg-black rounded-full" />
-                        <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Grievance Hub</h1>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Resolution Network</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Monitoring</span>
+                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+                        <div className="h-8 w-1 bg-black rounded-full shrink-0" />
+                        <div className="flex flex-col min-w-0">
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase truncate">Grievances</h1>
+                            <div className="flex items-center gap-1.5 md:gap-2">
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 truncate">Registry Hub</span>
+                                <div className="h-1 w-1 rounded-full bg-emerald-500 shrink-0 hidden sm:block" />
                             </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <div className="relative group mr-2">
+                    <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                        <div className="relative group hidden lg:block">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 group-focus-within:text-black transition-colors" />
                             <Input
                                 placeholder="Audit ID or Resident..."
-                                className="h-9 w-[280px] pl-9 rounded-xl border-gray-100 bg-gray-50/50 font-bold text-[10px] uppercase tracking-wider text-gray-600 shadow-sm transition-all focus:bg-white focus:ring-0"
+                                className="h-9 w-[280px] pl-9 rounded-xl border-gray-100 bg-gray-50/50 font-bold text-[10px] uppercase tracking-wider text-gray-600 shadow-sm transition-all focus:bg-white focus:ring-0 placeholder:text-gray-300"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
                         <Button
-                            className="h-9 px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95"
+                            className="h-9 md:h-10 px-4 md:px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 shrink-0 flex items-center gap-2"
                             onClick={handleExportPDF}
                             disabled={isExporting}
                         >
-                            {isExporting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Download className="h-3.5 w-3.5 mr-2" />}
-                            Export Report
+                            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                            <span className="hidden sm:inline">Export Report</span>
+                            <span className="sm:hidden">PDF</span>
                         </Button>
                     </div>
                 </div>
             </div>
 
-            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
+            <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8 min-w-0">
+                {/* Search Bar Mobile */}
+                <div className="lg:hidden relative group w-full px-0.5">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-black transition-colors" />
+                    <Input
+                        placeholder="Search grievances..."
+                        className="h-12 w-full pl-11 rounded-2xl border-gray-100 bg-white font-bold text-[11px] uppercase tracking-wider text-gray-600 shadow-sm focus:bg-white focus:ring-0"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                </div>
+
                 {/* Metrics Matrix */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Grievance Pulse', value: stats.total, sub: 'Total Logged', icon: MessageSquare, color: 'text-gray-900', bg: 'bg-white' },
-                        { label: 'Pending Escalations', value: stats.pending, sub: 'Needs Attention', icon: Clock, color: 'text-rose-500', bg: 'bg-rose-50/50' },
-                        { label: 'Operational Load', value: stats.urgent, sub: 'Urgent Tokens', icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50/50' },
-                        { label: 'Resolution Rate', value: `${stats.resolutionRate}%`, sub: 'Efficiency Index', icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50/50' }
+                        { label: 'Pulse', value: stats.total, sub: 'Total', icon: MessageSquare, color: 'text-gray-900', bg: 'bg-white' },
+                        { label: 'Pending', value: stats.pending, sub: 'Needs Act', icon: Clock, color: 'text-rose-500', bg: 'bg-rose-50/50' },
+                        { label: 'Urgent', value: stats.urgent, sub: 'Tokens', icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50/50' },
+                        { label: 'Res. Rate', value: `${stats.resolutionRate}%`, sub: 'Efficiency', icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50/50' }
                     ].map((node, i) => (
-                        <div key={i} className={`border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all group ${node.bg}`}>
-                            <div className={`h-12 w-12 rounded-xl bg-white flex items-center justify-center shrink-0 border border-gray-100 group-hover:scale-110 transition-transform ${node.color}`}>
-                                <node.icon className="h-5 w-5" />
+                        <div key={i} className={`border border-gray-100 rounded-2xl p-3 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-all group min-w-0 ${node.bg}`}>
+                            <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white flex items-center justify-center shrink-0 border border-gray-100 group-hover:scale-110 transition-transform ${node.color}`}>
+                                <node.icon className="h-4 w-4 md:h-5 md:w-5" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest italic">{node.label}</span>
-                                <div className="flex items-baseline gap-2">
-                                    <span className={`text-xl font-bold tracking-tight ${node.color}`}>{node.value}</span>
-                                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em]">{node.sub}</span>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest italic truncate">{node.label}</span>
+                                <div className="flex items-baseline gap-1.5 md:gap-2 min-w-0">
+                                    <span className={`text-base md:text-xl font-bold tracking-tight truncate ${node.color}`}>{node.value}</span>
+                                    <span className="text-[7px] md:text-[8px] font-black text-gray-400 uppercase tracking-wider truncate mb-0.5">{node.sub}</span>
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-4 items-center">
-                    <div className="flex items-center gap-2">
+                <div className="flex flex-col md:flex-row gap-4 items-center min-w-0 w-full bg-white md:bg-transparent p-4 md:p-0 rounded-2xl md:rounded-none border md:border-none border-gray-100 shadow-sm md:shadow-none">
+                    <div className="flex items-center gap-2 shrink-0 self-start md:self-center">
                         <Filter className="h-3.5 w-3.5 text-gray-400" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Domain Filters</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Filters</span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2.5 w-full min-w-0">
                         <Select value={filterStatus} onValueChange={setFilterStatus}>
-                            <SelectTrigger className="h-9 w-[140px] rounded-xl border-gray-100 bg-white font-bold text-[9px] uppercase tracking-[0.15em] text-gray-600 shadow-sm focus:ring-0">
-                                <SelectValue placeholder="All STATUS" />
+                            <SelectTrigger className="flex-1 md:flex-none h-10 md:h-9 md:w-[140px] rounded-xl border-gray-100 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 shadow-sm focus:ring-0">
+                                <SelectValue placeholder="STATUS" />
                             </SelectTrigger>
                             <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                                <SelectItem value="all" className="text-[9px] font-bold uppercase tracking-widest">Global Status</SelectItem>
-                                <SelectItem value="PENDING" className="text-[9px] font-bold uppercase tracking-widest">Pending</SelectItem>
-                                <SelectItem value="IN_PROGRESS" className="text-[9px] font-bold uppercase tracking-widest">In Progress</SelectItem>
-                                <SelectItem value="RESOLVED" className="text-[9px] font-bold uppercase tracking-widest">Resolved</SelectItem>
-                                <SelectItem value="REJECTED" className="text-[9px] font-bold uppercase tracking-widest">Rejected</SelectItem>
+                                <SelectItem value="all" className="text-[10px] font-bold uppercase tracking-widest p-2">Global Status</SelectItem>
+                                <SelectItem value="PENDING" className="text-[10px] font-bold uppercase tracking-widest p-2">Pending</SelectItem>
+                                <SelectItem value="IN_PROGRESS" className="text-[10px] font-bold uppercase tracking-widest p-2">In Progress</SelectItem>
+                                <SelectItem value="RESOLVED" className="text-[10px] font-bold uppercase tracking-widest p-2">Resolved</SelectItem>
+                                <SelectItem value="REJECTED" className="text-[10px] font-bold uppercase tracking-widest p-2">Rejected</SelectItem>
                             </SelectContent>
                         </Select>
 
                         <Select value={filterPriority} onValueChange={setFilterPriority}>
-                            <SelectTrigger className="h-9 w-[140px] rounded-xl border-gray-100 bg-white font-bold text-[9px] uppercase tracking-[0.15em] text-gray-600 shadow-sm focus:ring-0">
-                                <SelectValue placeholder="All PRIORITY" />
+                            <SelectTrigger className="flex-1 md:flex-none h-10 md:h-9 md:w-[140px] rounded-xl border-gray-100 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 shadow-sm focus:ring-0">
+                                <SelectValue placeholder="PRIORITY" />
                             </SelectTrigger>
                             <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                                <SelectItem value="all" className="text-[9px] font-bold uppercase tracking-widest">Global Priority</SelectItem>
-                                <SelectItem value="URGENT" className="text-[9px] font-bold uppercase tracking-widest text-rose-600 italic">Urgent Focus</SelectItem>
-                                <SelectItem value="HIGH" className="text-[9px] font-bold uppercase tracking-widest">High Magnitude</SelectItem>
-                                <SelectItem value="MEDIUM" className="text-[9px] font-bold uppercase tracking-widest">Medium Scale</SelectItem>
-                                <SelectItem value="LOW" className="text-[9px] font-bold uppercase tracking-widest">Nominal Low</SelectItem>
+                                <SelectItem value="all" className="text-[10px] font-bold uppercase tracking-widest p-2">Global Priority</SelectItem>
+                                <SelectItem value="URGENT" className="text-[10px] font-bold uppercase tracking-widest p-2 text-rose-600 italic">Urgent Focus</SelectItem>
+                                <SelectItem value="HIGH" className="text-[10px] font-bold uppercase tracking-widest p-2">High Magnitude</SelectItem>
+                                <SelectItem value="MEDIUM" className="text-[10px] font-bold uppercase tracking-widest p-2">Medium Scale</SelectItem>
+                                <SelectItem value="LOW" className="text-[10px] font-bold uppercase tracking-widest p-2">Nominal Low</SelectItem>
                             </SelectContent>
                         </Select>
 
                         {user?.role === 'ADMIN' && (
                             <Select value={filterHostel} onValueChange={setFilterHostel}>
-                                <SelectTrigger className="h-9 w-[180px] rounded-xl border-gray-100 bg-white font-bold text-[9px] uppercase tracking-[0.15em] text-gray-600 shadow-sm focus:ring-0">
-                                    <SelectValue placeholder="All HOSTELS" />
+                                <SelectTrigger className="flex-1 md:flex-none h-10 md:h-9 md:w-[180px] rounded-xl border-gray-100 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 shadow-sm focus:ring-0">
+                                    <SelectValue placeholder="HOSTELS" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl border-gray-100 shadow-2xl max-h-[300px]">
-                                    <SelectItem value="all" className="text-[9px] font-bold uppercase tracking-widest italic">All Property Nodes</SelectItem>
+                                    <SelectItem value="all" className="text-[10px] font-bold uppercase tracking-widest italic p-2">All Properties</SelectItem>
                                     {hostels.map((h) => (
-                                        <SelectItem key={h.id} value={h.id} className="text-[9px] font-bold uppercase tracking-widest">{h.name}</SelectItem>
+                                        <SelectItem key={h.id} value={h.id} className="text-[10px] font-bold uppercase tracking-widest p-2">{h.name}</SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
@@ -386,7 +397,7 @@ const ComplaintsPage = () => {
                         {(filterStatus !== 'all' || filterPriority !== 'all' || filterHostel !== 'all' || searchQuery) && (
                             <Button
                                 variant="ghost"
-                                className="h-8 px-3 rounded-lg text-[9px] font-bold uppercase tracking-widest text-rose-500 hover:bg-rose-50"
+                                className="h-9 px-4 rounded-xl text-[10px] font-bold uppercase tracking-widest text-rose-500 hover:bg-rose-50 shrink-0"
                                 onClick={() => {
                                     setFilterStatus('all');
                                     setFilterPriority('all');
@@ -394,262 +405,247 @@ const ComplaintsPage = () => {
                                     setSearchQuery('');
                                 }}
                             >
-                                <Zap className="h-3 w-3 mr-2" /> Reset Matrix
+                                <Zap className="h-3.5 w-3.5 mr-2" /> Reset
                             </Button>
                         )}
                     </div>
                 </div>
 
-                {/* Registry Table */}
-                <Card className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
-                    <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/20">
-                        <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-xl bg-black flex items-center justify-center text-white shadow-lg shadow-black/10">
-                                <MessageSquare className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight italic">Grievance Registry</h3>
-                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic">Real-time concern identification & lifecycle audit</p>
-                            </div>
+                {/* Registry View */}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between px-2">
+                        <div className="flex items-center gap-3">
+                            <div className="h-5 w-1 bg-black rounded-full" />
+                            <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Grievance Registry</h3>
                         </div>
                     </div>
-                    <div className="p-0 overflow-x-auto">
-                        <table className="w-full text-left min-w-[1200px]">
-                            <thead>
-                                <tr className="bg-gray-50/70 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b">
-                                    <th className="px-8 py-5 italic">Token & Registry</th>
-                                    <th className="px-8 py-5">Residual Node</th>
-                                    <th className="px-8 py-5">Domain Context</th>
-                                    <th className="px-8 py-5">Magnitude</th>
-                                    <th className="px-8 py-5">Operational State</th>
-                                    <th className="px-8 py-5 text-right">Audit</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {filteredComplaints.map((complaint) => (
-                                    <tr key={complaint.id} className="group hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-8 py-6">
-                                            <div className="flex flex-col">
-                                                <span className="text-[11px] font-bold text-gray-900 uppercase tracking-tight italic line-clamp-1">{complaint.title}</span>
-                                                {complaint.uid ? (
-                                                    <span className="text-[8px] font-mono font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md mt-1 w-fit uppercase tracking-wider">
-                                                        {complaint.uid}
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5 flex items-center gap-1.5">
-                                                        <Hash className="h-2 w-2" /> #GRV-{complaint.id.slice(-8).toUpperCase()}
-                                                    </span>
-                                                )}
+
+                    <div className="grid grid-cols-1 gap-3 md:gap-4">
+                        {filteredComplaints.length > 0 ? filteredComplaints.map((complaint) => (
+                            <div key={complaint.id} className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden min-w-0">
+                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 md:gap-6">
+                                    <div className="flex items-start gap-3 md:gap-4 flex-1 min-w-0">
+                                        <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100 ${getPriorityTheme(complaint.priority)} shadow-sm`}>
+                                            <AlertTriangle className="h-4 w-4 md:h-5 md:w-5" />
+                                        </div>
+                                        <div className="flex flex-col min-w-0 flex-1">
+                                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                                                <Badge variant="outline" className={`${getStatusTheme(complaint.status)} text-[7px] md:text-[8px] font-black px-2 py-0.5 rounded-full border shrink-0 uppercase tracking-widest`}>
+                                                    {complaint.status}
+                                                </Badge>
+                                                <span className="text-[8px] md:text-[9px] font-mono font-bold text-gray-400 uppercase tracking-widest truncate">
+                                                    {complaint.uid || `#GRV-${complaint.id.slice(-8).toUpperCase()}`}
+                                                </span>
                                             </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex flex-col">
-                                                <span className="text-[11px] font-bold text-gray-900 uppercase tracking-tight italic">{complaint.User_Complaint_userIdToUser?.name}</span>
-                                                <span className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.2em] mt-0.5">{complaint.roomNumber || 'COMMON'} AREA</span>
+                                            <h3 className="text-[13px] md:text-sm font-black text-gray-900 uppercase tracking-tight line-clamp-1 group-hover:text-black transition-colors">{complaint.title}</h3>
+                                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 min-w-0">
+                                                <div className="flex items-center gap-1.5 shrink-0">
+                                                    <User className="h-3 w-3 text-gray-400" />
+                                                    <span className="text-[9px] md:text-[10px] font-bold text-gray-500 uppercase tracking-tight">{complaint.User_Complaint_userIdToUser?.name}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    <Building2 className="h-3 w-3 text-gray-400 shrink-0" />
+                                                    <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">Room {complaint.roomNumber || 'Common'}</span>
+                                                </div>
                                             </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <div className="flex flex-col">
-                                                <span className="text-[10px] font-bold text-gray-600 uppercase tracking-tight italic">{complaint.Hostel?.name}</span>
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5 italic">{complaint.category} MODULE</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <Badge variant="outline" className={`${getPriorityTheme(complaint.priority)} px-3 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border shadow-sm`}>
-                                                {complaint.priority}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-8 py-6">
-                                            <Badge variant="outline" className={`${getStatusTheme(complaint.status)} px-3 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest border shadow-sm`}>
-                                                {complaint.status}
-                                            </Badge>
-                                        </td>
-                                        <td className="px-8 py-6 text-right">
-                                            <Dialog>
-                                                <DialogTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-black hover:text-white transition-all" onClick={() => setSelectedComplaint(complaint)}>
-                                                        <ArrowUpRight className="h-4 w-4" />
-                                                    </Button>
-                                                </DialogTrigger>
-                                                <DialogContent className="max-w-xl p-0 overflow-hidden border-none rounded-3xl shadow-2xl">
-                                                    <div className="bg-white">
-                                                        <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/20">
-                                                            <div className="flex items-center gap-4">
-                                                                <div className="h-10 w-10 rounded-xl bg-black flex items-center justify-center text-white shadow-lg shadow-black/10">
-                                                                    <BarChart3 className="h-5 w-5" />
-                                                                </div>
-                                                                <div>
-                                                                    <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight italic">Audit Review</h3>
-                                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic">Lifecycle Management Node</p>
-                                                                </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between lg:justify-end gap-4 md:gap-6 border-t lg:border-t-0 pt-4 lg:pt-0">
+                                        <div className="flex flex-col lg:items-end shrink-0">
+                                            <span className="text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest italic">{complaint.category}</span>
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-500 mt-0.5 uppercase tracking-tighter">{format(new Date(complaint.createdAt), 'MMM dd, HH:mm')}</span>
+                                        </div>
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button className="h-10 md:h-12 px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 group-hover:px-8">
+                                                    Audit
+                                                    <ArrowUpRight className="h-3.5 w-3.5 ml-2" />
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="w-[95vw] md:max-w-xl p-0 overflow-hidden border-none rounded-[2rem] md:rounded-3xl shadow-2xl bg-white">
+                                                <div className="bg-white max-h-[90vh] flex flex-col min-w-0">
+                                                    <div className="p-6 md:p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/20 shrink-0">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-black flex items-center justify-center text-white shadow-lg shadow-black/10 shrink-0">
+                                                                <BarChart3 className="h-5 w-5" />
                                                             </div>
-                                                        </div>
-
-                                                        <div className="p-8 space-y-6">
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div className="space-y-1.5">
-                                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                                        <User className="h-3 w-3" /> Grievant Identity
-                                                                    </span>
-                                                                    <p className="text-sm font-bold text-gray-900 uppercase italic truncate">{complaint.User_Complaint_userIdToUser?.name}</p>
-                                                                </div>
-                                                                <div className="space-y-1.5">
-                                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                                        <Calendar className="h-3 w-3" /> Log Persistence
-                                                                    </span>
-                                                                    <p className="text-sm font-bold text-gray-900 uppercase italic truncate">{format(new Date(complaint.createdAt), 'MMM dd, yyyy')}</p>
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100 space-y-2">
-                                                                <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest italic">{complaint.title}</h4>
-                                                                <p className="text-xs text-gray-500 font-medium leading-relaxed italic">"{complaint.description}"</p>
-                                                            </div>
-
-                                                            {complaint.resolutionNotes && (
-                                                                <div className="p-5 bg-emerald-50/50 rounded-2xl border border-emerald-100 space-y-2">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <ShieldCheck className="h-3 w-3 text-emerald-600" />
-                                                                        <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest italic">Resolution Artifact</h4>
-                                                                    </div>
-                                                                    <p className="text-xs text-emerald-800 font-medium leading-relaxed italic">"{complaint.resolutionNotes}"</p>
-                                                                </div>
-                                                            )}
-
-                                                            {(complaint.status === 'PENDING' || complaint.status === 'IN_PROGRESS') && (
-                                                                <div className="space-y-4">
-                                                                    <div className="space-y-2">
-                                                                        <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Assign Staff Node</Label>
-                                                                        <Select
-                                                                            defaultValue={complaint.assignedToId}
-                                                                            onValueChange={(val) => setAssignedStaffId(val)}
-                                                                        >
-                                                                            <SelectTrigger className="h-10 rounded-xl border-gray-100 font-bold text-[10px] uppercase tracking-widest text-gray-600 shadow-sm focus:ring-0">
-                                                                                <SelectValue placeholder="SELECT OPERATIONAL STAFF" />
-                                                                            </SelectTrigger>
-                                                                            <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                                                                                {staffMembers.map((staff) => (
-                                                                                    <SelectItem key={staff.userId} value={staff.userId} className="text-[10px] font-bold uppercase tracking-widest">
-                                                                                        {staff.User.name} - {staff.designation}
-                                                                                    </SelectItem>
-                                                                                ))}
-                                                                            </SelectContent>
-                                                                        </Select>
-                                                                    </div>
-                                                                    <div className="space-y-2">
-                                                                        <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Response Notes</Label>
-                                                                        <Textarea
-                                                                            placeholder="Enter technical resolution metadata..."
-                                                                            value={responseNotes}
-                                                                            onChange={(e) => setResponseNotes(e.target.value)}
-                                                                            className="min-h-[100px] rounded-xl border-gray-100 font-medium text-xs shadow-sm focus:ring-0"
-                                                                        />
-                                                                    </div>
-                                                                    <div className="grid grid-cols-3 gap-3">
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            className="h-10 rounded-xl font-bold text-[9px] uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 border-emerald-100"
-                                                                            onClick={() => handleUpdateStatus(complaint.id, 'RESOLVED', assignedStaffId || undefined)}
-                                                                            disabled={updateMutation.isPending}
-                                                                        >
-                                                                            <CheckCircle className="h-3.5 w-3.5 mr-2" /> Resolve
-                                                                        </Button>
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            className="h-10 rounded-xl font-bold text-[9px] uppercase tracking-widest text-amber-600 hover:bg-amber-50 border-amber-100"
-                                                                            onClick={() => handleUpdateStatus(complaint.id, 'IN_PROGRESS', assignedStaffId || undefined)}
-                                                                            disabled={updateMutation.isPending}
-                                                                        >
-                                                                            <Zap className="h-3.5 w-3.5 mr-2" /> Assign/Update
-                                                                        </Button>
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            className="h-10 rounded-xl font-bold text-[9px] uppercase tracking-widest text-rose-500 hover:bg-rose-50 border-rose-100"
-                                                                            onClick={() => handleUpdateStatus(complaint.id, 'REJECTED')}
-                                                                            disabled={updateMutation.isPending}
-                                                                        >
-                                                                            <XCircle className="h-3.5 w-3.5 mr-2" /> Reject
-                                                                        </Button>
-                                                                    </div>
-                                                                </div>
-                                                            )}
-
-                                                            <div className="border-t border-gray-100 pt-6">
-                                                                <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest italic mb-4">Communication Channel</h4>
-
-                                                                <div className="space-y-4 mb-4 max-h-[300px] overflow-y-auto pr-2">
-                                                                    {complaint.comments?.map((comment) => (
-                                                                        <div key={comment.id} className={`flex gap-3 ${comment.User.role === 'RESIDENT' || comment.User.role === 'GUEST' ? '' : 'flex-row-reverse'}`}>
-                                                                            <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 border ${comment.User.role === 'RESIDENT' || comment.User.role === 'GUEST' ? 'bg-gray-100 border-gray-200 text-gray-500' : 'bg-black border-black text-white'}`}>
-                                                                                <span className="text-xs font-black">{comment.User.name?.charAt(0)}</span>
-                                                                            </div>
-                                                                            <div className={`p-3 rounded-2xl max-w-[80%] ${comment.User.role === 'RESIDENT' || comment.User.role === 'GUEST' ? 'bg-gray-50 border border-gray-100 rounded-tl-none' : 'bg-black text-white rounded-tr-none'}`}>
-                                                                                <div className="flex items-center gap-2 mb-1">
-                                                                                    <span className={`text-[8px] font-black uppercase tracking-widest ${comment.User.role === 'RESIDENT' || comment.User.role === 'GUEST' ? 'text-gray-400' : 'text-gray-400'}`}>{comment.User.name}</span>
-                                                                                    <span className={`text-[8px] uppercase tracking-widest opacity-50`}>{new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                                                                                </div>
-                                                                                <p className="text-xs font-medium leading-relaxed">{comment.message}</p>
-                                                                            </div>
-                                                                        </div>
-                                                                    ))}
-                                                                    {(!complaint.comments || complaint.comments.length === 0) && (
-                                                                        <p className="text-center text-xs text-gray-400 italic py-4">No recent activity in this channel</p>
-                                                                    )}
-                                                                </div>
-
-                                                                <div className="flex items-center gap-2">
-                                                                    <Input
-                                                                        placeholder="Type your reply here..."
-                                                                        className="rounded-xl border-gray-100 font-medium text-xs shadow-sm focus:ring-0"
-                                                                        value={newComment}
-                                                                        onChange={(e) => setNewComment(e.target.value)}
-                                                                        onKeyDown={(e) => {
-                                                                            if (e.key === 'Enter' && !e.shiftKey) {
-                                                                                e.preventDefault();
-                                                                                handleSendComment(complaint.id);
-                                                                            }
-                                                                        }}
-                                                                    />
-                                                                    <Button
-                                                                        size="icon"
-                                                                        className="rounded-xl bg-black hover:bg-gray-800 shrink-0"
-                                                                        onClick={() => handleSendComment(complaint.id)}
-                                                                        disabled={addCommentMutation.isPending || !newComment.trim()}
-                                                                    >
-                                                                        <Zap className="h-4 w-4 text-white" />
-                                                                    </Button>
-                                                                </div>
+                                                            <div className="min-w-0">
+                                                                <h3 className="text-base md:text-lg font-black text-gray-900 uppercase tracking-tight italic truncate">Audit Review</h3>
+                                                                <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5 italic truncate">Grievance Node Lifecycle</p>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </DialogContent>
-                                            </Dialog>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {filteredComplaints.length === 0 && (
-                                    <tr>
-                                        <td colSpan={6} className="px-8 py-20 text-center">
-                                            <div className="flex flex-col items-center gap-4">
-                                                <div className="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center">
-                                                    <Info className="h-6 w-6 text-gray-200" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-[11px] font-bold text-gray-900 uppercase">No Grievance Tokens Identified</p>
-                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic">Registry matrix is currently clear for this domain</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </Card>
 
+                                                    <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 md:space-y-8 scrollbar-hide">
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div className="space-y-1.5 md:space-y-2">
+                                                                <span className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                                                    <User className="h-3 w-3 md:h-3.5 md:w-3.5" /> Identity
+                                                                </span>
+                                                                <p className="text-[11px] md:text-sm font-black text-gray-900 uppercase italic truncate">{complaint.User_Complaint_userIdToUser?.name}</p>
+                                                            </div>
+                                                            <div className="space-y-1.5 md:space-y-2">
+                                                                <span className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                                                    <Calendar className="h-3 w-3 md:h-3.5 md:w-3.5" /> Date Log
+                                                                </span>
+                                                                <p className="text-[11px] md:text-sm font-black text-gray-900 uppercase italic truncate">{format(new Date(complaint.createdAt), 'MMM dd, yyyy')}</p>
+                                                            </div>
+                                                        </div>
 
-            </main>
-        </div>
+                                                        <div className="p-4 md:p-6 bg-gray-50 rounded-2xl md:rounded-3xl border border-gray-100 space-y-2.5">
+                                                            <h4 className="text-[10px] md:text-[11px] font-black text-gray-900 uppercase tracking-widest italic">{complaint.title}</h4>
+                                                            <p className="text-xs md:text-sm text-gray-500 font-medium leading-relaxed italic">"{complaint.description}"</p>
+                                                        </div>
+
+                                                        {complaint.resolutionNotes && (
+                                                            <div className="p-4 md:p-6 bg-emerald-50/50 rounded-2xl md:rounded-3xl border border-emerald-100 space-y-2.5">
+                                                                <div className="flex items-center gap-2">
+                                                                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                                                                    <h4 className="text-[10px] md:text-[11px] font-black text-emerald-700 uppercase tracking-widest italic">Resolution Artifact</h4>
+                                                                </div>
+                                                                <p className="text-xs md:text-sm text-emerald-800 font-medium leading-relaxed italic">"{complaint.resolutionNotes}"</p>
+                                                            </div>
+                                                        )}
+
+                                                        {(complaint.status === 'PENDING' || complaint.status === 'IN_PROGRESS') && (
+                                                            <div className="space-y-5 md:space-y-6">
+                                                                <div className="space-y-2">
+                                                                    <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Assign Staff</Label>
+                                                                    <Select
+                                                                        defaultValue={complaint.assignedToId}
+                                                                        onValueChange={(val) => setAssignedStaffId(val)}
+                                                                    >
+                                                                        <SelectTrigger className="h-11 rounded-xl border-gray-100 font-bold text-[10px] uppercase tracking-widest text-gray-600 shadow-sm focus:ring-0">
+                                                                            <SelectValue placeholder="SELECT OPERATIONAL STAFF" />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                                                                            {staffMembers.map((staff) => (
+                                                                                <SelectItem key={staff.userId} value={staff.userId} className="text-[10px] font-bold uppercase tracking-widest">
+                                                                                    {staff.User.name} - {staff.designation}
+                                                                                </SelectItem>
+                                                                            ))}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Response Notes</Label>
+                                                                    <Textarea
+                                                                        placeholder="Enter technical resolution metadata..."
+                                                                        value={responseNotes}
+                                                                        onChange={(e) => setResponseNotes(e.target.value)}
+                                                                        className="min-h-[100px] rounded-xl border-gray-100 font-medium text-xs shadow-sm focus:ring-0 p-4"
+                                                                    />
+                                                                </div>
+                                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        className="h-11 rounded-xl font-bold text-[9px] uppercase tracking-widest text-emerald-600 hover:bg-emerald-50 border-emerald-100 order-2 sm:order-1"
+                                                                        onClick={() => handleUpdateStatus(complaint.id, 'RESOLVED', assignedStaffId || undefined)}
+                                                                        disabled={updateMutation.isPending}
+                                                                    >
+                                                                        <CheckCircle className="h-3.5 w-3.5 mr-2" /> Resolve
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        className="h-11 rounded-xl font-bold text-[9px] uppercase tracking-widest text-amber-600 hover:bg-amber-50 border-amber-100 order-1 sm:order-2"
+                                                                        onClick={() => handleUpdateStatus(complaint.id, 'IN_PROGRESS', assignedStaffId || undefined)}
+                                                                        disabled={updateMutation.isPending}
+                                                                    >
+                                                                        <Zap className="h-3.5 w-3.5 mr-2" /> Assign
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        className="h-11 rounded-xl font-bold text-[9px] uppercase tracking-widest text-rose-500 hover:bg-rose-50 border-rose-100 order-3"
+                                                                        onClick={() => handleUpdateStatus(complaint.id, 'REJECTED')}
+                                                                        disabled={updateMutation.isPending}
+                                                                    >
+                                                                        <XCircle className="h-3.5 w-3.5 mr-2" /> Reject
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="border-t border-gray-100 pt-6 md:pt-8 min-w-0 pb-6 md:pb-8">
+                                                            <h4 className="text-[10px] md:text-[11px] font-black text-gray-900 uppercase tracking-widest italic mb-5 md:mb-6">Communication Hub</h4>
+
+                                                            <div className="space-y-4 md:space-y-5 mb-6 max-h-[400px] overflow-y-auto pr-2 scrollbar-hide min-w-0">
+                                                                {complaint.comments?.map((comment) => (
+                                                                    <div key={comment.id} className={`flex gap-3 md:gap-4 ${comment.User.role === 'RESIDENT' || comment.User.role === 'GUEST' ? '' : 'flex-row-reverse'} min-w-0`}>
+                                                                        <div className={`h-9 w-9 md:h-10 md:w-10 rounded-full flex items-center justify-center shrink-0 border-2 ${comment.User.role === 'RESIDENT' || comment.User.role === 'GUEST' ? 'bg-gray-50 border-gray-100 text-gray-400' : 'bg-black border-black text-white'} shadow-sm`}>
+                                                                            <span className="text-[11px] md:text-xs font-black">{comment.User.name?.charAt(0)}</span>
+                                                                        </div>
+                                                                        <div className={`p-4 md:p-5 rounded-2xl md:rounded-3xl max-w-[85%] min-w-0 shadow-sm ${comment.User.role === 'RESIDENT' || comment.User.role === 'GUEST' ? 'bg-gray-50 border border-gray-100 rounded-tl-none' : 'bg-black text-white rounded-tr-none'}`}>
+                                                                            <div className="flex items-center gap-2.5 mb-1.5 flex-wrap min-w-0">
+                                                                                <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-widest truncate ${comment.User.role === 'RESIDENT' || comment.User.role === 'GUEST' ? 'text-gray-900' : 'text-gray-400'}`}>{comment.User.name}</span>
+                                                                                <span className={`text-[8px] md:text-[9px] font-bold uppercase tracking-widest opacity-40 shrink-0`}>{new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                                            </div>
+                                                                            <p className="text-xs md:text-[13px] font-medium leading-relaxed break-words">{comment.message}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                                {(!complaint.comments || complaint.comments.length === 0) && (
+                                                                    <div className="py-10 md:py-16 text-center bg-gray-50/50 rounded-2xl md:rounded-3xl border border-dashed border-gray-200">
+                                                                        <p className="text-[10px] md:text-[11px] text-gray-400 font-black uppercase tracking-widest italic">Silent Channel</p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="flex items-center gap-3 sticky bottom-0 bg-white pt-2">
+                                                                <Input
+                                                                    placeholder="Type response..."
+                                                                    className="h-11 md:h-12 rounded-xl md:rounded-2xl border-gray-100 bg-gray-50/50 font-bold text-[10px] md:text-xs shadow-sm focus:bg-white focus:ring-0 px-5"
+                                                                    value={newComment}
+                                                                    onChange={(e) => setNewComment(e.target.value)}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                                            e.preventDefault();
+                                                                            handleSendComment(complaint.id);
+                                                                        }
+                                                                    }}
+                                                                />
+                                                                <Button
+                                                                    size="icon"
+                                                                    className="h-11 w-11 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-black hover:bg-gray-800 shrink-0 shadow-xl shadow-black/10 transition-all active:scale-90"
+                                                                    onClick={() => handleSendComment(complaint.id)}
+                                                                    disabled={addCommentMutation.isPending || !newComment.trim()}
+                                                                >
+                                                                    <Zap className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </DialogContent>
+                                        </Dialog>
+                                    </div>
+                                </div>
+                            </div>
+                        )) : (
+                            <div className="py-20 md:py-32 flex flex-col items-center justify-center bg-white border border-dashed border-gray-200 rounded-[2rem] md:rounded-[3rem] text-center px-6">
+                                <div className="h-16 w-16 md:h-20 md:w-20 rounded-[2rem] bg-gray-50 flex items-center justify-center mb-6">
+                                    <MessageSquare className="h-8 w-8 md:h-10 md:w-10 text-gray-200" />
+                                </div>
+                                <h3 className="text-lg md:text-xl font-bold text-gray-900 uppercase tracking-tight">Registry Node Empty</h3>
+                                <p className="text-gray-400 font-bold uppercase tracking-widest text-[9px] md:text-[10px] mt-2 italic max-w-[280px]">No grievance tokens currently meet the identification criteria in this matrix</p>
+                                <Button
+                                    variant="outline"
+                                    className="mt-8 rounded-xl border-gray-200 uppercase tracking-widest text-[9px] font-bold h-11 px-10 hover:bg-gray-50 transition-all text-gray-500"
+                                    onClick={() => {
+                                        setFilterStatus('all');
+                                        setFilterPriority('all');
+                                        setFilterHostel('all');
+                                        setSearchQuery('');
+                                    }}
+                                >
+                                    Reset Discovery Matrix
+                                </Button>
+                            </div>
+                        )}
+                    </div >
+                </div >
+            </main >
+        </div >
     );
 };
 

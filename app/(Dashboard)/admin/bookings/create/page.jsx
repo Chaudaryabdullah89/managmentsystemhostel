@@ -211,14 +211,14 @@ const CreateBookingPage = () => {
                 </div>
             </div>
 
-            <div className="max-w-[1000px] mx-auto px-6 py-8">
-                <div className="bg-white border border-gray-100 rounded-[2.5rem] shadow-2xl shadow-black/5 overflow-hidden">
+            <div className="max-w-[1000px] mx-auto px-4 md:px-6 py-6 md:py-8 min-w-0">
+                <div className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl shadow-black/5 overflow-hidden min-w-0">
                     {/* Progress Bar */}
                     <div className="h-1 bg-gray-100 w-full">
                         <div className="h-full bg-indigo-600 transition-all duration-700 ease-out" style={{ width: `${(step / 4) * 100}%` }} />
                     </div>
 
-                    <div className="p-12">
+                    <div className="p-6 md:p-12 min-w-0">
                         {/* Step 1: Guest Information */}
                         {step === 1 && (
                             <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -591,10 +591,10 @@ const CreateBookingPage = () => {
                     </div>
 
                     {/* Footer Actions */}
-                    <div className="bg-gray-50/50 border-t p-8 flex items-center justify-between">
+                    <div className="bg-gray-50/50 border-t p-4 md:p-8 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
                         <Button
                             variant="outline"
-                            className="h-14 px-10 rounded-2xl border-gray-200 bg-white font-bold text-xs uppercase tracking-widest hover:bg-gray-100 disabled:opacity-30"
+                            className="h-12 md:h-14 px-8 md:px-10 w-full sm:w-auto rounded-2xl border-gray-200 bg-white font-bold text-xs uppercase tracking-widest hover:bg-gray-100 disabled:opacity-30"
                             onClick={handleBack}
                             disabled={step === 1}
                         >
@@ -603,7 +603,7 @@ const CreateBookingPage = () => {
 
                         {step < 4 ? (
                             <Button
-                                className="h-14 px-12 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/10 group animate-in slide-in-from-right-4"
+                                className="h-12 md:h-14 px-8 md:px-12 w-full sm:w-auto rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/10 group animate-in slide-in-from-right-4"
                                 onClick={handleNext}
                             >
                                 Next
@@ -611,11 +611,11 @@ const CreateBookingPage = () => {
                             </Button>
                         ) : (
                             <Button
-                                className="h-14 px-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-widest shadow-xl shadow-emerald-600/20 group scale-100 active:scale-95 transition-all"
+                                className="h-12 md:h-14 px-8 md:px-12 w-full sm:w-auto rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-widest shadow-xl shadow-emerald-600/20 group scale-100 active:scale-95 transition-all"
                                 onClick={handleSubmit}
                                 disabled={createBooking.isPending}
                             >
-                                {createBooking.isPending ? 'Saving...' : 'Confirm Booking'}
+                                {createBooking.isPending ? 'Saving...' : 'Confirm'}
                                 <ShieldCheck className="h-4 w-4 ml-2 group-hover:scale-110 transition-transform" />
                             </Button>
                         )}

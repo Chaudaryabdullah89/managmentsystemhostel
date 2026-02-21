@@ -36,7 +36,7 @@ export default function RootLayout({
     <>
       <SidebarProvider>
         <AppSidebar />
-        <main className="flex flex-col flex-1 min-h-screen">
+        <main className="flex flex-col flex-1 min-w-0 min-h-screen">
           {isCheckedOut && (
             <div className="bg-rose-600 text-white py-2 px-4 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top-full duration-700 z-[60] sticky top-0">
               <AlertCircle className="h-3.5 w-3.5" />
@@ -47,28 +47,28 @@ export default function RootLayout({
           )}
           <header className={`flex h-16 items-center gap-2 border-b px-4 shrink-0 bg-white ${!isCheckedOut ? 'sticky top-0 z-50' : ''}`}>
             <SidebarTrigger />
-            <div className="flex items-center justify-between w-full">
+            <div className="flex items-center justify-between min-w-0 w-full">
               <div></div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 min-w-0">
                 <HeaderNotices />
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8 rounded-lg">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Avatar className="h-8 w-8 rounded-lg shrink-0">
                     <AvatarImage />
                     <AvatarFallback className="rounded-lg">
                       {user?.name?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="text-sm text-left">
-                    <p className="font-medium">{user?.name || "Loading..."}</p>
-                    <p className="text-xs text-muted-foreground">{user?.role || "Guest"}</p>
+                  <div className="text-sm text-left min-w-0 hidden md:block">
+                    <p className="font-medium truncate">{user?.name || "Loading..."}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user?.role || "Guest"}</p>
                   </div>
                 </div>
               </div>
             </div>
           </header>
 
-          <div className="p-4 flex-1 overflow-y-auto" >
+          <div className="p-2 md:p-4 flex-1 h-full w-full min-w-0 overflow-y-auto overflow-x-hidden" >
 
             {children}
           </div>

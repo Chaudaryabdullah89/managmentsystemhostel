@@ -215,21 +215,21 @@ const CreateBookingForm = () => {
         <div className="min-h-screen bg-gray-50/30 pb-20">
             {/* Slim Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1200px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9" onClick={() => router.back()}>
+                <div className="max-w-[1200px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
+                    <div className="flex items-center gap-2 md:gap-4">
+                        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9" onClick={() => router.back()}>
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-none">Create Booking</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">New Booking Entry</p>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight leading-none uppercase md:normal-case">Create Booking</h1>
+                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">New Booking Entry</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center -space-x-2">
+                        <div className="flex items-center -space-x-1 md:-space-x-2">
                             {[1, 2, 3, 4].map(s => (
-                                <div key={s} className={`h-7 w-7 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-bold transition-all ${step >= s ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-100 text-gray-400'}`}>
+                                <div key={s} className={`h-6 w-6 md:h-7 md:w-7 rounded-full border-2 border-white flex items-center justify-center text-[8px] md:text-[9px] font-bold transition-all ${step >= s ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-100 text-gray-400'}`}>
                                     {s}
                                 </div>
                             ))}
@@ -238,20 +238,20 @@ const CreateBookingForm = () => {
                 </div>
             </div>
 
-            <div className="max-w-[1000px] mx-auto px-6 py-8">
-                <div className="bg-white border border-gray-100 rounded-[2.5rem] shadow-2xl shadow-black/5 overflow-hidden">
+            <div className="max-w-[1000px] mx-auto px-4 md:px-6 py-6 md:py-8 min-w-0">
+                <div className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl shadow-black/5 overflow-hidden min-w-0">
                     {/* Progress Bar */}
                     <div className="h-1 bg-gray-100 w-full">
                         <div className="h-full bg-indigo-600 transition-all duration-700 ease-out" style={{ width: `${(step / 4) * 100}%` }} />
                     </div>
 
-                    <div className="p-12">
+                    <div className="p-6 md:p-12 min-w-0">
                         {/* Step 1: Guest Information */}
                         {step === 1 && (
                             <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="flex flex-col gap-2">
-                                    <h2 className="text-3xl font-bold tracking-tight">Guest Profile</h2>
-                                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Enter guest details</p>
+                                <div className="flex flex-col gap-1 md:gap-2">
+                                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Guest Profile</h2>
+                                    <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-widest">Enter guest details</p>
                                 </div>
 
                                 <div className="space-y-8">
@@ -260,7 +260,7 @@ const CreateBookingForm = () => {
                                             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                                             <Input
                                                 placeholder="Search by Name, Email, or CNIC..."
-                                                className="h-16 pl-14 pr-6 rounded-2xl border-gray-100 bg-gray-50/50 font-bold focus:bg-white focus:border-indigo-600 transition-all"
+                                                className="h-14 md:h-16 pl-12 md:pl-14 pr-6 rounded-2xl border-gray-100 bg-gray-50/50 font-bold focus:bg-white focus:border-indigo-600 transition-all text-sm"
                                                 value={existingGuestQuery}
                                                 onChange={(e) => setExistingGuestQuery(e.target.value)}
                                             />
@@ -296,7 +296,7 @@ const CreateBookingForm = () => {
                                                     <UserCheck className="h-8 w-8" />
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-xl font-bold text-emerald-900 leading-none">{selectedGuest.name}</h3>
+                                                    <h3 className="text-lg md:text-xl font-bold text-emerald-900 leading-none">{selectedGuest.name}</h3>
                                                     <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] mt-2">Verified Guest</p>
                                                 </div>
                                             </div>
@@ -310,19 +310,19 @@ const CreateBookingForm = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-2.5">
                                                 <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Legal Name</Label>
-                                                <Input name="guestName" value={formData.guestName} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="First & Last Name" />
+                                                <Input name="guestName" value={formData.guestName} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-bold text-sm" placeholder="First & Last Name" />
                                             </div>
                                             <div className="space-y-2.5">
                                                 <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Email Address</Label>
-                                                <Input name="guestEmail" value={formData.guestEmail} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="address@domain.com" />
+                                                <Input name="guestEmail" value={formData.guestEmail} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-bold text-sm" placeholder="address@domain.com" />
                                             </div>
                                             <div className="space-y-2.5">
                                                 <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Phone Number</Label>
-                                                <Input name="guestPhone" value={formData.guestPhone} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="03XX-XXXXXXX" />
+                                                <Input name="guestPhone" value={formData.guestPhone} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-bold text-sm" placeholder="03XX-XXXXXXX" />
                                             </div>
                                             <div className="space-y-2.5">
                                                 <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">CNIC Number</Label>
-                                                <Input name="cnic" value={formData.cnic} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="XXXXX-XXXXXXX-X" />
+                                                <Input name="cnic" value={formData.cnic} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-bold text-sm" placeholder="XXXXX-XXXXXXX-X" />
                                             </div>
 
                                             {/* Expanded Profile Fields */}
@@ -446,9 +446,9 @@ const CreateBookingForm = () => {
                         {/* Step 3: Payment Details */}
                         {step === 3 && (
                             <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
-                                <div className="flex flex-col gap-2">
-                                    <h2 className="text-3xl font-bold tracking-tight">Payment Details</h2>
-                                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Set payment and dates</p>
+                                <div className="flex flex-col gap-1 md:gap-2">
+                                    <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Payment Details</h2>
+                                    <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-widest">Set payment and dates</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -506,7 +506,7 @@ const CreateBookingForm = () => {
                                         </div>
                                     </div>
 
-                                    <div className="bg-indigo-600 text-white rounded-[2.5rem] p-10 space-y-8 shadow-2xl shadow-indigo-600/20">
+                                    <div className="bg-indigo-600 text-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 space-y-6 md:space-y-8 shadow-2xl shadow-indigo-600/20">
                                         <div className="flex items-center gap-4">
                                             <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
                                                 <ShieldCheck className="h-5 w-5 text-emerald-400" />
@@ -547,7 +547,7 @@ const CreateBookingForm = () => {
                                                             name="totalAmount"
                                                             value={formData.totalAmount}
                                                             onChange={handleInputChange}
-                                                            className="h-14 pl-14 bg-white/20 border-white/30 text-white font-bold text-2xl tracking-tighter rounded-2xl"
+                                                            className="h-12 md:h-14 pl-12 md:pl-14 bg-white/20 border-white/30 text-white font-bold text-xl md:text-2xl tracking-tighter rounded-2xl"
                                                         />
                                                     </div>
                                                 </div>
@@ -567,47 +567,47 @@ const CreateBookingForm = () => {
                                     <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Check all details before saving</p>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="bg-gray-50/50 rounded-3xl p-8 border border-gray-100 flex items-start gap-6">
-                                        <div className="h-12 w-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm">
-                                            <User className="h-6 w-6 text-gray-400" />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                                    <div className="bg-gray-50/50 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 flex items-start gap-4 md:gap-6">
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
+                                            <User className="h-5 w-5 md:h-6 md:w-6 text-gray-400" />
                                         </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Guest</p>
-                                            <h4 className="text-lg font-bold text-gray-900">{formData.guestName}</h4>
-                                            <p className="text-xs font-bold text-gray-500 mt-1">{formData.guestEmail}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-gray-50/50 rounded-3xl p-8 border border-gray-100 flex items-start gap-6">
-                                        <div className="h-12 w-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm">
-                                            <Building2 className="h-6 w-6 text-gray-400" />
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Room</p>
-                                            <h4 className="text-lg font-bold text-gray-900">Room {selectedRoom?.roomNumber}</h4>
-                                            <p className="text-xs font-bold text-gray-500 mt-1">{hostels.find(h => h.id === formData.hostelId)?.name}</p>
+                                        <div className="min-w-0">
+                                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Guest</p>
+                                            <h4 className="text-base md:text-lg font-bold text-gray-900 truncate">{formData.guestName}</h4>
+                                            <p className="text-[10px] md:text-xs font-bold text-gray-500 mt-1 truncate">{formData.guestEmail}</p>
                                         </div>
                                     </div>
 
-                                    <div className="bg-gray-50/50 rounded-3xl p-8 border border-gray-100 flex items-start gap-6">
-                                        <div className="h-12 w-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm">
-                                            <Calendar className="h-6 w-6 text-gray-400" />
+                                    <div className="bg-gray-50/50 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 flex items-start gap-4 md:gap-6">
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
+                                            <Building2 className="h-5 w-5 md:h-6 md:w-6 text-gray-400" />
                                         </div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Timeline</p>
-                                            <h4 className="text-lg font-bold text-gray-900">Starts {formData.checkIn}</h4>
-                                            <p className="text-xs font-bold text-gray-500 mt-1">{formData.checkOut ? `Ends ${formData.checkOut}` : 'Continuous Stay'}</p>
+                                        <div className="min-w-0">
+                                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Room</p>
+                                            <h4 className="text-base md:text-lg font-bold text-gray-900 truncate">Room {selectedRoom?.roomNumber}</h4>
+                                            <p className="text-[10px] md:text-xs font-bold text-gray-500 mt-1 truncate">{hostels.find(h => h.id === formData.hostelId)?.name}</p>
                                         </div>
                                     </div>
 
-                                    <div className="bg-emerald-500 text-white rounded-3xl p-8 flex items-start justify-between">
-                                        <div>
-                                            <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">Amount</p>
-                                            <h4 className="text-2xl font-bold">PKR {formData.totalAmount}</h4>
-                                            <p className="text-[10px] font-bold text-white/80 uppercase tracking-widest mt-2">{formData.advanceMonths} Month Advance + Security</p>
+                                    <div className="bg-gray-50/50 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 flex items-start gap-4 md:gap-6">
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
+                                            <Calendar className="h-5 w-5 md:h-6 md:w-6 text-gray-400" />
                                         </div>
-                                        <ShieldCheck className="h-10 w-10 text-white/30" />
+                                        <div className="min-w-0">
+                                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Timeline</p>
+                                            <h4 className="text-base md:text-lg font-bold text-gray-900">Starts {formData.checkIn}</h4>
+                                            <p className="text-[10px] md:text-xs font-bold text-gray-500 mt-1">{formData.checkOut ? `Ends ${formData.checkOut}` : 'Continuous Stay'}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-emerald-500 text-white rounded-2xl md:rounded-3xl p-6 md:p-8 flex items-start justify-between">
+                                        <div>
+                                            <p className="text-[9px] md:text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">Amount</p>
+                                            <h4 className="text-xl md:text-2xl font-bold">PKR {formData.totalAmount}</h4>
+                                            <p className="text-[9px] md:text-[10px] font-bold text-white/80 uppercase tracking-widest mt-2">{formData.advanceMonths} Mo Advance + Security</p>
+                                        </div>
+                                        <ShieldCheck className="h-8 w-8 md:h-10 md:w-10 text-white/30" />
                                     </div>
                                 </div>
 
@@ -622,10 +622,10 @@ const CreateBookingForm = () => {
                     </div>
 
                     {/* Footer Actions */}
-                    <div className="bg-gray-50/50 border-t p-8 flex items-center justify-between">
+                    <div className="bg-gray-50/50 border-t p-4 md:p-8 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
                         <Button
                             variant="outline"
-                            className="h-14 px-10 rounded-2xl border-gray-200 bg-white font-bold text-xs uppercase tracking-widest hover:bg-gray-100 disabled:opacity-30"
+                            className="h-12 md:h-14 px-8 md:px-10 w-full sm:w-auto rounded-2xl border-gray-200 bg-white font-bold text-xs uppercase tracking-widest hover:bg-gray-100 disabled:opacity-30"
                             onClick={handleBack}
                             disabled={step === 1}
                         >
@@ -634,7 +634,7 @@ const CreateBookingForm = () => {
 
                         {step < 4 ? (
                             <Button
-                                className="h-14 px-12 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/10 group animate-in slide-in-from-right-4"
+                                className="h-12 md:h-14 px-8 md:px-12 w-full sm:w-auto rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-widest shadow-xl shadow-indigo-600/10 group animate-in slide-in-from-right-4"
                                 onClick={handleNext}
                             >
                                 Next
@@ -642,11 +642,11 @@ const CreateBookingForm = () => {
                             </Button>
                         ) : (
                             <Button
-                                className="h-14 px-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-widest shadow-xl shadow-emerald-600/20 group scale-100 active:scale-95 transition-all"
+                                className="h-12 md:h-14 px-8 md:px-12 w-full sm:w-auto rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-widest shadow-xl shadow-emerald-600/20 group scale-100 active:scale-95 transition-all"
                                 onClick={handleSubmit}
                                 disabled={createBooking.isPending}
                             >
-                                {createBooking.isPending ? 'Saving...' : 'Confirm Booking'}
+                                {createBooking.isPending ? 'Saving...' : 'Confirm'}
                                 <ShieldCheck className="h-4 w-4 ml-2 group-hover:scale-110 transition-transform" />
                             </Button>
                         )}

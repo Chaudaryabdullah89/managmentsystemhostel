@@ -119,7 +119,7 @@ const WardenMessMenu = () => {
             const pageWidth = doc.internal.pageSize.getWidth();
 
             // Header Section
-            doc.setFillColor(30, 58, 138); // blue-900
+            doc.setFillColor(0, 0, 0);
             doc.rect(0, 0, pageWidth, 35, 'F');
 
             doc.setTextColor(255, 255, 255);
@@ -132,13 +132,13 @@ const WardenMessMenu = () => {
             doc.text(`${hostelName.toUpperCase()}`, pageWidth / 2, 26, { align: "center" });
 
             // Branding Sub-header
-            doc.setTextColor(100, 116, 139); // slate-500
+            doc.setTextColor(100, 116, 139);
             doc.setFontSize(10);
             doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
-            doc.text(`Official GreenView Management Document`, pageWidth - 14, 45, { align: "right" });
+            doc.text(`Official Property Management Document`, pageWidth - 14, 45, { align: "right" });
 
             // Horizontal Line
-            doc.setDrawColor(226, 232, 240); // slate-200
+            doc.setDrawColor(226, 232, 240);
             doc.setLineWidth(0.5);
             doc.line(14, 49, pageWidth - 14, 49);
 
@@ -156,8 +156,8 @@ const WardenMessMenu = () => {
                             valign: 'middle',
                             halign: 'center',
                             fontStyle: 'bold',
-                            fillColor: [248, 250, 252],
-                            textColor: [30, 58, 138]
+                            fillColor: [250, 250, 250],
+                            textColor: [0, 0, 0]
                         }
                     },
                     "BREAKFAST",
@@ -186,7 +186,7 @@ const WardenMessMenu = () => {
                 startY: 55,
                 theme: 'grid',
                 headStyles: {
-                    fillColor: [30, 58, 138],
+                    fillColor: [0, 0, 0],
                     textColor: [255, 255, 255],
                     fontStyle: 'bold',
                     fontSize: 10,
@@ -205,14 +205,6 @@ const WardenMessMenu = () => {
                     1: { cellWidth: 35, fontStyle: 'bold' },
                     2: { cellWidth: 'auto' },
                     3: { cellWidth: 60, halign: 'center' }
-                },
-                didParseCell: function (data) {
-                    if (data.section === 'body' && data.column.index === 1) {
-                        const meal = String(data.cell.raw || data.cell.text[0]).toUpperCase();
-                        if (meal.includes('BREAKFAST')) data.cell.styles.textColor = [180, 83, 9];
-                        if (meal.includes('LUNCH')) data.cell.styles.textColor = [21, 128, 61];
-                        if (meal.includes('DINNER')) data.cell.styles.textColor = [67, 56, 202];
-                    }
                 }
             });
 
@@ -221,7 +213,7 @@ const WardenMessMenu = () => {
                 doc.setPage(i);
                 doc.setFontSize(8);
                 doc.setTextColor(148, 163, 184);
-                doc.text(`© GreenView Hostel Management System - Page ${i} of ${totalPages}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
+                doc.text(`© Central Management System - Page ${i} of ${totalPages}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
             }
 
             doc.save(`${hostelName.replace(/\s+/g, '_')}_Mess_Schedule.pdf`);
@@ -236,236 +228,164 @@ const WardenMessMenu = () => {
 
     if (isMenusLoading) {
         return (
-            <div className="flex h-screen items-center justify-center bg-gray-50/50">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+            <div className="flex h-screen items-center justify-center bg-white font-sans">
+                <div className="flex flex-col items-center gap-6">
+                    <div className="h-10 w-10 border-[3px] border-gray-100 border-t-black rounded-full animate-spin" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 italic">Accessing Menu Node...</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
-            <div className="bg-white border-b sticky top-0 z-50 h-[72px]">
-                <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center">
-                            <Utensils className="h-5 w-5 text-indigo-600" />
+        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight leading-relaxed text-gray-900">
+            {/* Minimal Premium Header */}
+            <div className="bg-white border-b sticky top-0 z-50 h-16">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+                        <div className="h-9 w-9 md:h-10 md:w-10 bg-black rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-black/5">
+                            <Utensils className="h-4 w-4 md:h-5 md:w-5 text-white" />
                         </div>
-                        <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Mess Schedule</h1>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Hostel Branch: {user?.Hostel?.name}</p>
+                        <div className="flex flex-col min-w-0">
+                            <h1 className="text-sm md:text-lg font-black text-gray-900 tracking-tight uppercase truncate">Mess Schedule</h1>
+                            <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 truncate italic">{user?.Hostel?.name}</span>
+                            </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 shrink-0">
                         <Button
                             variant="default"
                             onClick={handleExportPDF}
                             disabled={!hostelId || isExporting || isMenusLoading}
-                            className="h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm"
+                            className="h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl bg-black hover:bg-gray-800 text-white font-black text-[9px] md:text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-black/10 transition-all active:scale-95"
                         >
-                            {isExporting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Download className="h-3.5 w-3.5 mr-2" />}
-                            {isExporting ? 'Exporting...' : 'Export Schedule'}
+                            {isExporting ? <Loader2 className="h-3 w-3 md:h-3.5 md:w-3.5 animate-spin mr-2" /> : <Download className="h-3 w-3 md:h-3.5 md:w-3.5 mr-2" />}
+                            <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export PDF'}</span>
+                            <span className="sm:hidden">{isExporting ? '...' : 'PDF'}</span>
                         </Button>
                     </div>
                 </div>
             </div>
 
-            <main className="max-w-[1400px] mx-auto px-6 py-8">
+            <main className="max-w-[1400px] mx-auto px-4 md:px-6 py-6 md:py-8">
                 {!hostelId ? (
-                    <div className="bg-white border border-dashed border-gray-200 rounded-3xl p-16 text-center max-w-2xl mx-auto shadow-sm mt-12">
-                        <div className="h-24 w-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Utensils className="h-10 w-10 text-gray-300" />
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 uppercase">Hostel Not Identified</h3>
-                        <p className="text-gray-400 text-sm mt-2 max-w-md mx-auto">Your account is not associated with any hostel. Please contact admin to set your hostel branch.</p>
+                    <div className="py-20 md:py-32 bg-white border border-dashed border-gray-200 rounded-[2rem] md:rounded-[3rem] text-center px-6 max-w-2xl mx-auto shadow-sm">
+                        <Utensils className="h-12 w-12 md:h-20 md:w-20 text-gray-100 mx-auto mb-6" />
+                        <h3 className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-widest italic">Hostel Identity Missing</h3>
+                        <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-[0.3em] mt-3 italic max-w-sm mx-auto leading-relaxed">Your account profile contains no active hostel association tokens.</p>
+                        <Button variant="outline" className="mt-8 rounded-xl border-gray-200 uppercase tracking-widest text-[9px] font-bold h-11 px-10 hover:bg-gray-50 transition-all text-gray-500">
+                            Re-Identify Node
+                        </Button>
                     </div>
                 ) : (
-                    <div className="space-y-6">
+                    <div className="space-y-4 md:space-y-6">
                         {DAYS.map((day) => {
                             const currentMenu = messMenus?.find(m => m.dayOfWeek === day);
                             const isEditing = editingDay === day;
 
                             return (
-                                <Card key={day} className={`rounded-3xl border ${isEditing ? 'border-indigo-200 shadow-md ring-4 ring-indigo-50' : 'border-gray-100 shadow-sm'} overflow-hidden transition-all duration-300`}>
-                                    <CardHeader className={`px-8 py-5 border-b ${isEditing ? 'bg-indigo-50/50 border-indigo-100' : 'bg-white border-gray-50'} flex flex-row items-center justify-between`}>
-                                        <div className="flex items-center gap-3">
-                                            <div className={`h-12 w-12 flex items-center justify-center rounded-xl font-black text-xs uppercase tracking-widest ${isEditing ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'bg-gray-100 text-gray-500'}`}>
+                                <Card key={day} className={`rounded-[2rem] md:rounded-[3rem] border shadow-sm overflow-hidden transition-all duration-500 min-w-0 group ${isEditing ? 'border-black ring-4 ring-black/5 shadow-xl scale-[1.01]' : 'border-gray-50 hover:border-gray-200 hover:shadow-md'}`}>
+                                    <div className={`px-5 md:px-10 py-5 md:py-8 border-b flex items-center justify-between gap-4 overflow-hidden transition-colors ${isEditing ? 'bg-black text-white' : 'bg-white'}`}>
+                                        <div className="flex items-center gap-4 md:gap-6 min-w-0">
+                                            <div className={`h-11 w-11 md:h-14 md:w-14 shrink-0 flex items-center justify-center rounded-2xl md:rounded-3xl font-black text-[10px] md:text-sm uppercase tracking-widest transition-all ${isEditing ? 'bg-white text-black shadow-lg' : 'bg-gray-100 text-gray-500 group-hover:bg-black group-hover:text-white'}`}>
                                                 {day.substring(0, 3)}
                                             </div>
-                                            <CardTitle className="text-xl font-bold text-gray-900 uppercase tracking-tight">{day}</CardTitle>
+                                            <div className="min-w-0">
+                                                <h2 className={`text-base md:text-2xl font-black uppercase tracking-tight italic truncate ${isEditing ? 'text-white' : 'text-gray-900'}`}>{day}</h2>
+                                                <p className={`text-[8px] md:text-[9px] font-bold uppercase tracking-[0.3em] italic mt-0.5 ${isEditing ? 'text-gray-400' : 'text-gray-400'}`}>Daily Refresh Matrix</p>
+                                            </div>
                                         </div>
-                                        <div>
+                                        <div className="shrink-0">
                                             {isEditing ? (
-                                                <div className="flex gap-3">
+                                                <div className="flex gap-2">
                                                     <Button
                                                         variant="ghost"
                                                         onClick={() => setEditingDay(null)}
-                                                        className="h-9 px-4 rounded-lg text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                                                        className="h-9 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl text-[9px] md:text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                                                     >
                                                         Discard
                                                     </Button>
                                                     <Button
                                                         onClick={() => handleSave(day)}
                                                         disabled={upsertMessMenu.isPending}
-                                                        className="h-9 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm"
+                                                        className="h-9 md:h-11 px-5 md:px-8 rounded-xl md:rounded-2xl bg-white text-black hover:bg-gray-100 font-black text-[9px] md:text-[10px] uppercase tracking-widest shadow-xl shadow-black/10 transition-all active:scale-95"
                                                     >
-                                                        {upsertMessMenu.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Save className="h-3.5 w-3.5 mr-2" />}
-                                                        {upsertMessMenu.isPending ? 'Saving' : 'Save Details'}
+                                                        {upsertMessMenu.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Save className="h-3 w-3 mr-2" />}
+                                                        <span>{upsertMessMenu.isPending ? 'Syncing...' : 'Publish'}</span>
                                                     </Button>
                                                 </div>
                                             ) : (
                                                 <Button
                                                     variant="secondary"
                                                     onClick={() => handleEdit(day)}
-                                                    className="h-9 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-[10px] uppercase tracking-wider"
+                                                    className="h-9 md:h-11 w-9 md:w-11 sm:w-auto sm:px-6 rounded-xl md:rounded-2xl bg-gray-50 group-hover:bg-black group-hover:text-white text-gray-400 font-black text-[9px] md:text-[10px] uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
                                                 >
-                                                    <Edit3 className="h-3.5 w-3.5 mr-2" /> Modify Schedule
+                                                    <Edit3 className="h-3.5 w-3.5 sm:mr-2" />
+                                                    <span className="hidden sm:inline">Modify</span>
                                                 </Button>
                                             )}
                                         </div>
-                                    </CardHeader>
+                                    </div>
 
-                                    <CardContent className="p-0">
-                                        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100">
-                                            <div className="p-8 hover:bg-gray-50/50 transition-colors">
-                                                <div className="flex items-center gap-2 mb-6">
-                                                    <Coffee className="h-5 w-5 text-amber-500" />
-                                                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Breakfast</h4>
-                                                </div>
-                                                <div className="space-y-5">
-                                                    <div className="space-y-2">
-                                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Food Menu</Label>
-                                                        {isEditing ? (
-                                                            <Input
-                                                                value={formData.breakfast}
-                                                                onChange={e => setFormData({ ...formData, breakfast: e.target.value })}
-                                                                className="h-11 rounded-xl bg-white border-gray-200 text-sm font-medium focus:ring-1 focus:ring-indigo-600"
-                                                                placeholder="e.g. Omelette, Tea, Paratha"
-                                                            />
-                                                        ) : (
-                                                            <p className="text-sm font-medium text-gray-800 min-h-[44px] flex items-center">{currentMenu?.breakfast || <span className="text-gray-400 italic font-normal">Not defined</span>}</p>
-                                                        )}
+                                    <CardContent className="p-0 bg-white">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-50 border-gray-50">
+                                            {[
+                                                { type: 'breakfast', label: 'Breakfast', icon: Coffee, color: 'text-amber-500', bg: 'bg-amber-50', field: 'breakfast', startField: 'breakfastStart', endField: 'breakfastEnd', timeLabel: 'breakfastTime' },
+                                                { type: 'lunch', label: 'Lunch', icon: Utensils, color: 'text-emerald-500', bg: 'bg-emerald-50', field: 'lunch', startField: 'lunchStart', endField: 'lunchEnd', timeLabel: 'lunchTime' },
+                                                { type: 'dinner', label: 'Dinner', icon: Utensils, color: 'text-indigo-500', bg: 'bg-indigo-50', field: 'dinner', startField: 'dinnerStart', endField: 'dinnerEnd', timeLabel: 'dinnerTime' }
+                                            ].map((meal) => (
+                                                <div key={meal.type} className={`p-6 md:p-10 transition-all duration-500 ${isEditing ? 'bg-gray-50/30' : 'hover:bg-gray-50/50'}`}>
+                                                    <div className="flex items-center gap-3 mb-6 md:mb-10">
+                                                        <div className={`h-8 w-8 md:h-10 md:w-10 rounded-xl ${meal.bg} ${meal.color} flex items-center justify-center shrink-0 border border-current opacity-20`}>
+                                                            <meal.icon className="h-4 w-4 md:h-5 md:w-5" />
+                                                        </div>
+                                                        <h4 className="text-[11px] md:text-sm font-black text-gray-900 uppercase tracking-[0.2em] italic">{meal.label}</h4>
                                                     </div>
-                                                    <div className="space-y-2">
-                                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Window</Label>
-                                                        {isEditing ? (
-                                                            <div className="flex items-center gap-2">
+                                                    <div className="space-y-6 md:space-y-8">
+                                                        <div className="space-y-2 min-w-0">
+                                                            <Label className="text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest block italic">Cuisine Assignment</Label>
+                                                            {isEditing ? (
                                                                 <Input
-                                                                    type="time"
-                                                                    value={formData.breakfastStart}
-                                                                    onChange={e => setFormData({ ...formData, breakfastStart: e.target.value })}
-                                                                    className="h-11 rounded-xl bg-white border-gray-200 text-xs font-bold text-gray-700 focus:ring-1 focus:ring-indigo-600"
+                                                                    value={formData[meal.field]}
+                                                                    onChange={e => setFormData({ ...formData, [meal.field]: e.target.value })}
+                                                                    className="h-11 md:h-14 rounded-xl md:rounded-2xl bg-white border-gray-100 text-xs md:text-sm font-bold focus:ring-2 focus:ring-black placeholder:text-gray-200 transition-all uppercase tracking-tight"
+                                                                    placeholder={`ENTER ${meal.label.toUpperCase()} MENU`}
                                                                 />
-                                                                <span className="text-gray-400 font-bold">-</span>
-                                                                <Input
-                                                                    type="time"
-                                                                    value={formData.breakfastEnd}
-                                                                    onChange={e => setFormData({ ...formData, breakfastEnd: e.target.value })}
-                                                                    className="h-11 rounded-xl bg-white border-gray-200 text-xs font-bold text-gray-700 focus:ring-1 focus:ring-indigo-600"
-                                                                />
-                                                            </div>
-                                                        ) : (
-                                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold border border-gray-200">
-                                                                <Clock className="h-3.5 w-3.5 text-gray-500" />
-                                                                {displayTimeRange(currentMenu?.breakfastTime)}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="p-8 hover:bg-gray-50/50 transition-colors">
-                                                <div className="flex items-center gap-2 mb-6">
-                                                    <Utensils className="h-5 w-5 text-emerald-500" />
-                                                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Lunch</h4>
-                                                </div>
-                                                <div className="space-y-5">
-                                                    <div className="space-y-2">
-                                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Food Menu</Label>
-                                                        {isEditing ? (
-                                                            <Input
-                                                                value={formData.lunch}
-                                                                onChange={e => setFormData({ ...formData, lunch: e.target.value })}
-                                                                className="h-11 rounded-xl bg-white border-gray-200 text-sm font-medium focus:ring-1 focus:ring-emerald-600"
-                                                                placeholder="e.g. Chicken Biryani, Raita"
-                                                            />
-                                                        ) : (
-                                                            <p className="text-sm font-medium text-gray-800 min-h-[44px] flex items-center">{currentMenu?.lunch || <span className="text-gray-400 italic font-normal">Not defined</span>}</p>
-                                                        )}
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Window</Label>
-                                                        {isEditing ? (
-                                                            <div className="flex items-center gap-2">
-                                                                <Input
-                                                                    type="time"
-                                                                    value={formData.lunchStart}
-                                                                    onChange={e => setFormData({ ...formData, lunchStart: e.target.value })}
-                                                                    className="h-11 rounded-xl bg-white border-gray-200 text-xs font-bold text-gray-700 focus:ring-1 focus:ring-emerald-600"
-                                                                />
-                                                                <span className="text-gray-400 font-bold">-</span>
-                                                                <Input
-                                                                    type="time"
-                                                                    value={formData.lunchEnd}
-                                                                    onChange={e => setFormData({ ...formData, lunchEnd: e.target.value })}
-                                                                    className="h-11 rounded-xl bg-white border-gray-200 text-xs font-bold text-gray-700 focus:ring-1 focus:ring-emerald-600"
-                                                                />
-                                                            </div>
-                                                        ) : (
-                                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold border border-gray-200">
-                                                                <Clock className="h-3.5 w-3.5 text-gray-500" />
-                                                                {displayTimeRange(currentMenu?.lunchTime)}
-                                                            </div>
-                                                        )}
+                                                            ) : (
+                                                                <p className="text-xs md:text-base font-black text-gray-800 min-h-[44px] md:min-h-[56px] flex items-center leading-tight uppercase tracking-tighter">
+                                                                    {currentMenu?.[meal.field] || <span className="text-gray-200 italic font-medium tracking-normal">LOG_PNDNG</span>}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                        <div className="space-y-2 shrink-0">
+                                                            <Label className="text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-widest block italic">Operational Slot</Label>
+                                                            {isEditing ? (
+                                                                <div className="flex items-center gap-2">
+                                                                    <Input
+                                                                        type="time"
+                                                                        value={formData[meal.startField]}
+                                                                        onChange={e => setFormData({ ...formData, [meal.startField]: e.target.value })}
+                                                                        className="h-11 md:h-14 rounded-xl md:rounded-2xl bg-white border-gray-100 text-[10px] md:text-xs font-black text-gray-600 focus:ring-2 focus:ring-black px-3"
+                                                                    />
+                                                                    <span className="text-gray-200 font-bold italic">TO</span>
+                                                                    <Input
+                                                                        type="time"
+                                                                        value={formData[meal.endField]}
+                                                                        onChange={e => setFormData({ ...formData, [meal.endField]: e.target.value })}
+                                                                        className="h-11 md:h-14 rounded-xl md:rounded-2xl bg-white border-gray-100 text-[10px] md:text-xs font-black text-gray-600 focus:ring-2 focus:ring-black px-3"
+                                                                    />
+                                                                </div>
+                                                            ) : (
+                                                                <div className="inline-flex items-center gap-3 px-4 py-2 rounded-xl bg-gray-50 text-gray-600 text-[10px] md:text-xs font-black border border-gray-100 transition-all group-hover:border-black/10 group-hover:bg-white group-hover:shadow-sm">
+                                                                    <Clock className="h-3.5 w-3.5 text-gray-300 group-hover:text-black transition-colors" />
+                                                                    <span className="tracking-widest">{displayTimeRange(currentMenu?.[meal.timeLabel])}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-
-                                            <div className="p-8 hover:bg-gray-50/50 transition-colors">
-                                                <div className="flex items-center gap-2 mb-6">
-                                                    <Utensils className="h-5 w-5 text-indigo-500" />
-                                                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Dinner</h4>
-                                                </div>
-                                                <div className="space-y-5">
-                                                    <div className="space-y-2">
-                                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Food Menu</Label>
-                                                        {isEditing ? (
-                                                            <Input
-                                                                value={formData.dinner}
-                                                                onChange={e => setFormData({ ...formData, dinner: e.target.value })}
-                                                                className="h-11 rounded-xl bg-white border-gray-200 text-sm font-medium focus:ring-1 focus:ring-indigo-600"
-                                                                placeholder="e.g. Daal Mash, Roti"
-                                                            />
-                                                        ) : (
-                                                            <p className="text-sm font-medium text-gray-800 min-h-[44px] flex items-center">{currentMenu?.dinner || <span className="text-gray-400 italic font-normal">Not defined</span>}</p>
-                                                        )}
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Window</Label>
-                                                        {isEditing ? (
-                                                            <div className="flex items-center gap-2">
-                                                                <Input
-                                                                    type="time"
-                                                                    value={formData.dinnerStart}
-                                                                    onChange={e => setFormData({ ...formData, dinnerStart: e.target.value })}
-                                                                    className="h-11 rounded-xl bg-white border-gray-200 text-xs font-bold text-gray-700 focus:ring-1 focus:ring-indigo-600"
-                                                                />
-                                                                <span className="text-gray-400 font-bold">-</span>
-                                                                <Input
-                                                                    type="time"
-                                                                    value={formData.dinnerEnd}
-                                                                    onChange={e => setFormData({ ...formData, dinnerEnd: e.target.value })}
-                                                                    className="h-11 rounded-xl bg-white border-gray-200 text-xs font-bold text-gray-700 focus:ring-1 focus:ring-indigo-600"
-                                                                />
-                                                            </div>
-                                                        ) : (
-                                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold border border-gray-200">
-                                                                <Clock className="h-3.5 w-3.5 text-gray-500" />
-                                                                {displayTimeRange(currentMenu?.dinnerTime)}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            ))}
                                         </div>
                                     </CardContent>
                                 </Card>

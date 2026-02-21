@@ -148,22 +148,21 @@ const HostelsPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50/50">
-            {/* Slim Premium Header */}
             <div className="bg-white border-b sticky top-0 z-40 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-8 w-1 bg-blue-600 rounded-full" />
+                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
+                    <div className="flex items-center gap-2 md:gap-4">
+                        <div className="h-8 w-1 bg-blue-600 rounded-full hidden md:block" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight">All Hostels</h1>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Settings</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active</span>
+                            <h1 className="text-base md:text-lg font-bold text-gray-900 tracking-tight leading-tight">All Hostels</h1>
+                            <div className="flex items-center gap-1 md:gap-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 hidden sm:inline">Settings</span>
+                                <div className="h-1 w-1 rounded-full bg-emerald-500 hidden sm:block" />
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 md:gap-4">
                         <div className="hidden md:flex items-center gap-8 mr-4">
                             <div className="flex flex-col items-end">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</span>
@@ -177,39 +176,40 @@ const HostelsPage = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="rounded-full hover:bg-gray-100 h-9 w-9"
+                            className="rounded-full hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9 shrink-0"
                             onClick={handleRefresh}
                             disabled={isFetchingHostels}
                         >
                             <RefreshCw className={`h-4 w-4 text-gray-500 ${isFetchingHostels ? 'animate-spin' : ''}`} />
                         </Button>
                         <Link href="/admin/hostels/createhostel?role=admin">
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-4 rounded-xl font-bold text-[11px] uppercase tracking-wider shadow-sm gap-2">
-                                <Plus className="h-4 w-4" />
-                                Add Hostel
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white h-8 md:h-9 px-3 md:px-4 rounded-xl font-bold text-[10px] md:text-[11px] uppercase tracking-wider shadow-sm gap-1.5 md:gap-2 flex whitespace-nowrap">
+                                <Plus className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">Add Hostel</span>
+                                <span className="sm:hidden">Add</span>
                             </Button>
                         </Link>
                     </div>
                 </div>
             </div>
 
-            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
+            <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8 min-w-0">
                 {/* Statistics Overview */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
                         { label: 'Buildings', value: hostelsToDisplay.length, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
                         { label: 'Total BEDS', value: hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 0), icon: Bed, color: 'text-purple-600', bg: 'bg-purple-50' },
                         { label: 'Available', value: hostelsToDisplay.reduce((t, h) => t + h.roomStats.availableRooms, 0), icon: DoorOpen, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Occupied', value: `${Math.round((hostelsToDisplay.reduce((t, h) => t + h.roomStats.occupiedRooms, 0) / hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 1)) * 100)}%`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Occupied', value: `${Math.round((hostelsToDisplay.reduce((t, h) => t + h.roomStats.occupiedRooms, 0) / Math.max(hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 1), 1)) * 100)}%`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
                     ].map((s, i) => (
-                        <Card key={i} className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white">
-                            <CardContent className="p-5 flex items-center gap-4">
-                                <div className={`h-11 w-11 rounded-xl flex items-center justify-center ${s.bg} ${s.color}`}>
-                                    <s.icon className="h-6 w-6" />
+                        <Card key={i} className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white overflow-hidden">
+                            <CardContent className="p-3 md:p-5 flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
+                                <div className={`h-8 w-8 md:h-11 md:w-11 rounded-lg md:rounded-xl flex items-center justify-center ${s.bg} ${s.color}`}>
+                                    <s.icon className="h-4 w-4 md:h-6 md:w-6" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{s.label}</span>
-                                    <span className="text-xl font-bold text-gray-900 tracking-tight">{s.value}</span>
+                                    <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">{s.label}</span>
+                                    <span className="text-base md:text-xl font-bold text-gray-900 tracking-tight">{s.value}</span>
                                 </div>
                             </CardContent>
                         </Card>
