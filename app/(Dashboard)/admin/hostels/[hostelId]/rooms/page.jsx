@@ -62,7 +62,7 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { QueryKeys } from '@/lib/queryclient'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
-import { Loader } from '@/components/ui/loader'
+import Loader from '../../../../../../components/ui/Loader'
 
 const useSyncAutomation = () => {
     const queryClient = useQueryClient();
