@@ -94,6 +94,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
 import SalarySlip from "@/components/SalarySlip";
+import Loader from "@/components/ui/Loader";
 
 const SalariesPage = () => {
     const router = useRouter();
@@ -373,17 +374,7 @@ const SalariesPage = () => {
         } catch (error) { }
     };
 
-    if (salariesLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
-                    <Coins className="h-8 w-8 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <p className="text-sm font-bold text-gray-900 uppercase tracking-widest">Loading Payroll...</p>
-            </div>
-        </div>
-    );
+    if (salariesLoading) return <Loader label="Synchronizing Payroll" subLabel="Accessing financial records node" icon={Coins} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">

@@ -99,6 +99,7 @@ import SecurityRefundModal from "./SecurityRefundModal";
 import { useBookings } from "@/hooks/useBooking";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import Loader from "@/components/ui/Loader";
 
 const PaymentManagementPage = () => {
     const router = useRouter();
@@ -474,29 +475,18 @@ const PaymentManagementPage = () => {
     };
 
     if (paymentsLoading || statsLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-blue-600 rounded-full animate-spin" />
-                    <Wallet className="h-8 w-8 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 tracking-tight">Loading Payments...</p>
-                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Searching records...</p>
-                </div>
-            </div>
-        </div>
+        <Loader label="Synchronizing Payments" subLabel="Accessing financial registry node" icon={Wallet} />
     );
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">
             {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between">
+            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
                     <div className="flex items-center gap-4">
-                        <div className="h-8 w-1 bg-blue-600 rounded-full" />
+                        <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Payments</h1>
+                            <h1 className="text-base md:text-lg font-bold text-gray-900 tracking-tight uppercase">Payments</h1>
                             <div className="flex items-center gap-2">
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">All Records</span>
                                 <div className="h-1 w-1 rounded-full bg-blue-500 animate-pulse" />
@@ -505,30 +495,30 @@ const PaymentManagementPage = () => {
                         </div>
                     </div>
 
-                    <div className="flex  gap-3">
+                    <div className="flex flex-wrap items-center gap-2 md:gap-3">
                         <Button
                             variant="outline"
-                            className="h-9 px-4 rounded-xl border-rose-200 bg-rose-50 font-bold text-[10px] uppercase tracking-wider text-rose-700 hover:bg-rose-100 transition-all shadow-sm flex items-center gap-2"
+                            className="h-8 md:h-9 px-3 md:px-4 rounded-xl border-rose-200 bg-rose-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-rose-700 hover:bg-rose-100 transition-all shadow-sm flex items-center gap-2 flex-1 md:flex-none justify-center"
                             onClick={handleExportDefaultersList}
                             disabled={isExportingDefaulters}
                         >
-                            {isExportingDefaulters ? <Loader2 className="h-3.5 w-3.5 text-rose-700 animate-spin" /> : <AlertCircle className="h-3.5 w-3.5 text-rose-700" />}
-                            DEFAULTERS
+                            {isExportingDefaulters ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <AlertCircle className="h-3.5 w-3.5" />}
+                            <span className="truncate">DEFAULTERS</span>
                         </Button>
                         <Button
                             variant="outline"
-                            className="h-9 px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2"
+                            className="h-8 md:h-9 px-3 md:px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2 flex-1 md:flex-none justify-center"
                             onClick={handleExportPaymentsList}
                             disabled={isExportingPayments}
                         >
-                            {isExportingPayments ? <Loader2 className="h-3.5 w-3.5 text-indigo-700 animate-spin" /> : <Download className="h-3.5 w-3.5 text-indigo-700" />}
-                            EXPORT PAYMENTS
+                            {isExportingPayments ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                            <span className="truncate">EXPORT</span>
                         </Button>
                         <Button
-                            className="h-9 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95"
+                            className="h-8 md:h-9 px-4 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex-1 md:flex-none justify-center"
                             onClick={() => router.push('/admin/bookings')}
                         >
-                            <Plus className="h-4 w-4 mr-2" /> New Payment
+                            <Plus className="h-3.5 w-3.5 mr-1.5" /> <span className="truncate">New Payment</span>
                         </Button>
                     </div>
                 </div>
@@ -537,53 +527,53 @@ const PaymentManagementPage = () => {
 
             <main className="max-w-[1400px] mx-auto px-6 py-8 space-y-8">
                 {/* Stats */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
                         { label: 'Total Money', value: `PKR ${(stats?.totalRevenue / 1000).toFixed(1)}k`, icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-50' },
                         { label: 'Collection %', value: `${((stats?.monthlyRevenue / (stats?.monthlyRevenue + stats?.pendingReceivables)) * 100 || 0).toFixed(0)}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Unpaid Payments', value: paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Unpaid', value: paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
                         { label: 'Late Fees', value: `PKR ${(stats?.overdueLiability / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default">
-                            <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
-                                <stat.icon className="h-5 w-5" />
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default min-w-0">
+                            <div className={`h-9 w-9 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
+                                <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
-                                <span className="text-xl font-bold text-gray-900 tracking-tight">{stat.value}</span>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
+                                <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate">{stat.value}</span>
                             </div>
                         </div>
                     ))}
                 </div>
 
                 {/* Search and Filters */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm">
-                    <div className="flex-1 relative w-full group px-2">
+                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm">
+                    <div className="flex-1 relative w-full group">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
                         <Input
                             placeholder="Search by student, room or ID..."
-                            className="w-full h-12 pl-12 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
+                            className="w-full h-11 md:h-12 pl-12 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         {searchQuery && (
-                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase animate-in fade-in zoom-in">
+                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase animate-in fade-in zoom-in hidden sm:block">
                                 {filteredPayments.length} results
                             </span>
                         )}
                     </div>
 
-                    <div className="h-8 w-px bg-gray-100 mx-2 hidden md:block" />
+                    <div className="h-4 w-px bg-gray-100 mx-2 hidden md:block" />
 
-                    <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto">
+                    <div className="flex items-center gap-1 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm">
-                                    <Filter className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {filterStatus === 'All' ? 'All Statuses' : filterStatus}
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
+                                    <Filter className="h-3.5 w-3.5 mr-1.5 md:mr-2 text-gray-400" />
+                                    <span className="truncate">{filterStatus === 'All' ? 'Statuses' : filterStatus}</span>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[220px] rounded-xl border-gray-100 shadow-xl p-2">
+                            <DropdownMenuContent align="end" className="w-[180px] md:w-[220px] rounded-xl border-gray-100 shadow-xl p-2">
                                 <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Search Status</DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-gray-50 mb-1" />
                                 {["All", "PAID", "PENDING", "PARTIAL", "OVERDUE", "REJECTED"].map(status => (
@@ -596,12 +586,12 @@ const PaymentManagementPage = () => {
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm">
-                                    <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {filterHostel === 'All' ? 'All Hostels' : filterHostel}
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
+                                    <Building2 className="h-3.5 w-3.5 mr-1.5 md:mr-2 text-gray-400" />
+                                    <span className="truncate">{filterHostel === 'All' ? 'Hostels' : filterHostel}</span>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[280px] rounded-xl border-gray-100 shadow-xl p-2">
+                            <DropdownMenuContent align="end" className="w-[200px] md:w-[280px] rounded-xl border-gray-100 shadow-xl p-2">
                                 <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Hostels</DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-gray-50 mb-1" />
                                 <DropdownMenuItem onClick={() => setFilterHostel("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">Show All</DropdownMenuItem>
@@ -616,30 +606,30 @@ const PaymentManagementPage = () => {
                 </div>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-                    <div className="flex items-center justify-between px-2">
-                        <TabsList className="bg-white border border-gray-100 p-1 rounded-xl h-11 w-full lg:w-auto shadow-sm">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-2">
+                        <TabsList className="bg-white border border-gray-100 p-1 rounded-xl h-11 w-full lg:w-auto shadow-sm overflow-x-auto scrollbar-hide flex justify-start lg:justify-center">
                             <TabsTrigger
                                 value="ledger"
-                                className="h-full px-8 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all"
+                                className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all shrink-0"
                             >
-                                <Boxes className="h-3.5 w-3.5 mr-2" /> All Payments
+                                <Boxes className="h-3.5 w-3.5 mr-2" /> <span className="hidden sm:inline">All</span> Payments
                             </TabsTrigger>
                             <TabsTrigger
                                 value="verification"
-                                className="h-full px-8 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all relative"
+                                className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all relative shrink-0"
                             >
                                 <CheckCircle className="h-3.5 w-3.5 mr-2" /> Pending Approval
                                 {(paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length > 0) && (
-                                    <span className="absolute -top-1 -right-1 h-2 w-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                 )}
                             </TabsTrigger>
                             <TabsTrigger
                                 value="refunds"
-                                className="h-full px-8 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-rose-600 data-[state=active]:text-white transition-all relative"
+                                className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-rose-600 data-[state=active]:text-white transition-all relative shrink-0"
                             >
                                 <Undo2 className="h-3.5 w-3.5 mr-2" /> Refund Requests
                                 {(filteredRefunds.filter(r => r.status === 'PENDING').length > 0) && (
-                                    <span className="absolute -top-1 -right-1 h-2 w-2 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
+                                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
                                 )}
                             </TabsTrigger>
                         </TabsList>
@@ -660,30 +650,30 @@ const PaymentManagementPage = () => {
                         {filteredPayments.map((payment) => (
                             <div
                                 key={payment.id}
-                                className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col lg:flex-row items-center justify-between gap-6 hover:shadow-md transition-shadow group relative overflow-hidden"
+                                className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-shadow group relative overflow-hidden"
                             >
-                                <div className={`absolute top-0 left-0 w-1.5 h-full ${getRibbonColor(payment.status)} opacity-70`} />
+                                <div className={`absolute top-0 left-0 w-1 md:w-1.5 h-full ${getRibbonColor(payment.status)} opacity-70`} />
 
-                                <div className="flex items-center gap-6 flex-1 min-w-0">
-                                    <div className="flex items-center gap-5 min-w-[280px]">
-                                        <div className="h-14 w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm shrink-0 group-hover:bg-blue-600 transition-colors">
-                                            <User className="h-6 w-6 text-gray-400 group-hover:text-white transition-colors" />
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6 flex-1 min-w-0 w-full">
+                                    <div className="flex items-center gap-3 md:gap-5 min-w-0 lg:min-w-[280px] w-full sm:w-auto">
+                                        <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm shrink-0 group-hover:bg-blue-600 transition-colors">
+                                            <User className="h-5 w-5 md:h-6 md:w-6 text-gray-400 group-hover:text-white transition-colors" />
                                         </div>
-                                        <div className="flex flex-col min-w-0">
-                                            <h4 className="text-base font-bold text-gray-900 uppercase tracking-tight truncate">{payment.User?.name}</h4>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{payment.Booking?.Room?.Hostel?.name}</span>
+                                        <div className="flex flex-col min-w-0 flex-1 sm:flex-none">
+                                            <h4 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight truncate">{payment.User?.name}</h4>
+                                            <div className="flex items-center gap-1.5 md:gap-2 mt-0.5">
+                                                <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{payment.Booking?.Room?.Hostel?.name}</span>
                                                 {payment.uid && (
                                                     <>
-                                                        <span className="h-1 w-1 rounded-full bg-gray-200" />
-                                                        <span className="text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">{payment.uid}</span>
+                                                        <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                                                        <span className="text-[9px] md:text-[10px] font-mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded truncate">{payment.uid}</span>
                                                     </>
                                                 )}
                                             </div>
                                             {payment.notes && (
-                                                <div className="flex items-center gap-1.5 mt-2 py-0.5 px-2 bg-blue-50/30 rounded-md border border-blue-100/20 w-fit">
+                                                <div className="flex items-center gap-1.5 mt-1.5 py-0.5 px-2 bg-blue-50/30 rounded-md border border-blue-100/20 w-fit">
                                                     <FileText className="h-2.5 w-2.5 text-blue-400" />
-                                                    <span className="text-[9px] font-bold text-blue-600/60 uppercase tracking-widest truncate max-w-[200px]">
+                                                    <span className="text-[8px] md:text-[9px] font-bold text-blue-600/60 uppercase tracking-widest truncate max-w-[120px] md:max-w-[200px]">
                                                         {payment.notes}
                                                     </span>
                                                 </div>
@@ -691,37 +681,35 @@ const PaymentManagementPage = () => {
                                         </div>
                                     </div>
 
-                                    <div className="hidden md:flex flex-col gap-1 min-w-[160px]">
-                                        <div className="flex items-center gap-2">
-                                            <CreditCard className="h-3.5 w-3.5 text-blue-500" />
-                                            <span className="text-xs font-bold text-gray-900 uppercase">PKR {payment.amount.toLocaleString()}</span>
+                                    <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-1 min-w-0 sm:min-w-[140px] md:min-w-[160px]">
+                                        <div className="flex items-center gap-1.5 md:gap-2">
+                                            <CreditCard className="h-3 w-3 md:h-3.5 md:w-3.5 text-blue-500" />
+                                            <span className="text-xs md:text-sm font-bold text-gray-900 uppercase">PKR {payment.amount.toLocaleString()}</span>
                                         </div>
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5">{payment.method}</span>
+                                        <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5 whitespace-nowrap">{payment.method}</span>
                                     </div>
 
-                                    <div className="hidden xl:flex items-center gap-8 min-w-[220px]">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100">
-                                                <Calendar className="h-3.5 w-3.5" />
-                                            </div>
-                                            <div className="flex flex-col gap-0.5">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Date</span>
-                                                <span className="text-xs font-bold text-gray-900 uppercase">{format(new Date(payment.date), 'MMM dd, yyyy')}</span>
-                                            </div>
+                                    <div className="hidden sm:flex items-center gap-3 min-w-0 md:min-w-[180px] xl:min-w-[220px]">
+                                        <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100 shrink-0">
+                                            <Calendar className="h-3.5 w-3.5" />
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-wider">Date</span>
+                                            <span className="text-[10px] md:text-xs font-bold text-gray-900 uppercase truncate">{format(new Date(payment.date), 'MMM dd, yyyy')}</span>
                                         </div>
                                     </div>
 
-                                    <div className="min-w-[140px] flex justify-center">
-                                        <Badge variant="outline" className={`${getStatusStyle(payment.status)} px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest border shadow-sm`}>
+                                    <div className="flex-1 flex justify-end lg:justify-center w-full lg:w-auto min-w-0 lg:min-w-[140px]">
+                                        <Badge variant="outline" className={`${getStatusStyle(payment.status)} px-3 md:px-4 py-1 md:py-1.5 rounded-full text-[8px] md:text-[9px] font-bold uppercase tracking-widest border shadow-sm`}>
                                             {payment.status}
                                         </Badge>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2 lg:ml-auto">
+                                <div className="flex items-center gap-2 w-full lg:w-auto lg:ml-auto justify-end pt-2 lg:pt-0 border-t lg:border-none border-gray-50">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button size="icon" variant="ghost" className="h-10 w-10 rounded-full hover:bg-gray-50 text-gray-400 transition-colors">
+                                            <Button size="icon" variant="ghost" className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-gray-50 text-gray-400 transition-colors">
                                                 <MoreVertical className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
@@ -756,7 +744,7 @@ const PaymentManagementPage = () => {
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                    <Button asChild className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn">
+                                    <Button asChild className="h-9 md:h-10 px-4 md:px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn">
                                         <Link href={`/admin/payments/${payment.id}`}>
                                             View
                                             <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
@@ -770,10 +758,10 @@ const PaymentManagementPage = () => {
                     <TabsContent value="verification" className="space-y-6 outline-none">
                         {filteredPayments.length > 0 ? (
                             filteredPayments.map((payment) => (
-                                <div key={payment.id} className="bg-white border border-gray-100 rounded-3xl p-6 flex flex-col lg:flex-row items-center justify-between gap-8 hover:shadow-md transition-shadow group relative overflow-hidden">
-                                    <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500 opacity-70" />
-                                    <div className="flex items-center gap-8 flex-1 w-full">
-                                        <div className="h-24 w-20 rounded-2xl bg-gray-50 border border-gray-200 flex flex-col items-center justify-center gap-3 shrink-0 overflow-hidden relative group/img">
+                                <div key={payment.id} className="bg-white border border-gray-100 rounded-3xl p-4 md:p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 md:gap-8 hover:shadow-md transition-shadow group relative overflow-hidden">
+                                    <div className="absolute top-0 left-0 w-1 md:w-1.5 h-full bg-amber-500 opacity-70" />
+                                    <div className="flex flex-col sm:flex-row items-center sm:items-start lg:items-center gap-4 md:gap-8 flex-1 w-full min-w-0">
+                                        <div className="h-40 w-full sm:w-20 sm:h-24 rounded-2xl bg-gray-50 border border-gray-200 flex flex-col items-center justify-center gap-3 shrink-0 overflow-hidden relative group/img">
                                             {payment.receiptUrl ? (
                                                 <>
                                                     <img src={payment.receiptUrl} alt="Proof" className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover/img:opacity-100 transition-opacity" />
@@ -799,40 +787,40 @@ const PaymentManagementPage = () => {
                                                 <XCircle className="h-6 w-6 text-gray-300" />
                                             )}
                                         </div>
-                                        <div className="flex flex-col gap-4 flex-1">
+                                        <div className="flex flex-col gap-4 flex-1 min-w-0 w-full">
                                             <div className="flex items-center gap-3">
-                                                <h4 className="text-lg font-bold text-gray-900 uppercase tracking-tight">{payment.User?.name}</h4>
-                                                <Badge className="bg-amber-50 text-amber-600 border-amber-100 font-bold uppercase text-[9px] tracking-widest px-3">New Payment sent</Badge>
+                                                <h4 className="text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight truncate">{payment.User?.name}</h4>
+                                                <Badge className="hidden sm:inline-flex bg-amber-50 text-amber-600 border-amber-100 font-bold uppercase text-[8px] md:text-[9px] tracking-widest px-2 md:px-3">Verification Pending</Badge>
                                                 <Link href={`/admin/payment-approvals/${payment.id}`} className="ml-auto lg:hidden">
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-500"><ExternalLink className="h-4 w-4" /></Button>
                                                 </Link>
                                             </div>
-                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                                                <div>
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                                                <div className="min-w-0">
                                                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Amount</span>
-                                                    <p className="text-sm font-bold text-gray-900 uppercase">PKR {payment.amount.toLocaleString()}</p>
+                                                    <p className="text-sm font-bold text-gray-900 uppercase truncate">PKR {payment.amount.toLocaleString()}</p>
                                                 </div>
-                                                <div>
+                                                <div className="min-w-0">
                                                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Method</span>
-                                                    <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest">{payment.method}</p>
+                                                    <p className="text-[10px] md:text-xs font-bold text-emerald-600 uppercase tracking-widest truncate">{payment.method}</p>
                                                 </div>
-                                                <div>
+                                                <div className="min-w-0">
                                                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Hostel</span>
-                                                    <p className="text-xs font-bold text-gray-900 uppercase tracking-widest truncate">{payment.Booking?.Room?.Hostel?.name}</p>
+                                                    <p className="text-[10px] md:text-xs font-bold text-gray-900 uppercase tracking-widest truncate">{payment.Booking?.Room?.Hostel?.name}</p>
                                                 </div>
-                                                <div>
+                                                <div className="min-w-0">
                                                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Date Sent</span>
-                                                    <p className="text-xs font-bold text-gray-900 uppercase tracking-tight">{format(new Date(payment.date), 'dd/MM/yy HH:mm')}</p>
+                                                    <p className="text-[10px] md:text-xs font-bold text-gray-900 uppercase tracking-tight truncate">{format(new Date(payment.date), 'dd/MM/yy HH:mm')}</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-3 w-full lg:w-auto">
+                                    <div className="flex items-center gap-3 w-full lg:w-auto mt-2 lg:mt-0 border-t lg:border-none pt-4 lg:pt-0">
                                         <Button
                                             asChild
                                             variant="ghost"
-                                            className="h-12 w-12 rounded-xl hover:bg-gray-100 text-gray-400 order-3 hidden lg:flex items-center justify-center p-0"
+                                            className="h-11 w-11 md:h-12 md:w-12 rounded-xl hover:bg-gray-100 text-gray-400 order-3 hidden lg:flex items-center justify-center p-0"
                                         >
                                             <Link href={`/admin/payment-approvals/${payment.id}`}>
                                                 <ChevronRight className="h-5 w-5" />
@@ -840,7 +828,7 @@ const PaymentManagementPage = () => {
                                         </Button>
                                         <Button
                                             variant="outline"
-                                            className="flex-1 h-12 rounded-xl border-rose-100 bg-rose-50 text-rose-600 font-bold text-[10px] uppercase tracking-wider hover:bg-rose-600 hover:text-white transition-all order-2 lg:order-1"
+                                            className="flex-1 lg:w-28 h-11 md:h-12 rounded-xl border-rose-100 bg-rose-50 text-rose-600 font-bold text-[10px] uppercase tracking-wider hover:bg-rose-600 hover:text-white transition-all order-2 lg:order-1"
                                             onClick={() => {
                                                 setSelectedPaymentId(payment.id);
                                                 setIsRejectDialogOpen(true);
@@ -849,7 +837,7 @@ const PaymentManagementPage = () => {
                                             Reject
                                         </Button>
                                         <Button
-                                            className="flex-1 h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700 border-none font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 order-1 lg:order-2 active:scale-95"
+                                            className="flex-1 lg:w-32 h-11 md:h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700 border-none font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 order-1 lg:order-2 active:scale-95"
                                             onClick={() => handleApprove(payment.id)}
                                         >
                                             <CheckCircle className="h-4 w-4" />
@@ -874,45 +862,45 @@ const PaymentManagementPage = () => {
                             filteredRefunds.map((refund) => (
                                 <div
                                     key={refund.id}
-                                    className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col lg:flex-row items-center justify-between gap-6 hover:shadow-md transition-shadow group relative overflow-hidden"
+                                    className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-shadow group relative overflow-hidden"
                                 >
-                                    <div className={`absolute top-0 left-0 w-1.5 h-full ${refund.status === 'PENDING' ? 'bg-amber-500' : refund.status === 'COMPLETED' ? 'bg-emerald-500' : 'bg-rose-500'} opacity-70`} />
+                                    <div className={`absolute top-0 left-0 w-1 md:w-1.5 h-full ${refund.status === 'PENDING' ? 'bg-amber-500' : refund.status === 'COMPLETED' ? 'bg-emerald-500' : 'bg-rose-500'} opacity-70`} />
 
-                                    <div className="flex items-center gap-6 flex-1 min-w-0">
-                                        <div className="flex items-center gap-5 min-w-[280px]">
-                                            <div className="h-14 w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm shrink-0">
-                                                <Undo2 className="h-6 w-6 text-rose-400" />
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6 flex-1 min-w-0 w-full">
+                                        <div className="flex items-center gap-3 md:gap-5 min-w-0 lg:min-w-[280px] w-full sm:w-auto">
+                                            <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm shrink-0">
+                                                <Undo2 className="h-5 w-5 md:h-6 md:w-6 text-rose-400" />
                                             </div>
-                                            <div className="flex flex-col min-w-0">
-                                                <h4 className="text-base font-bold text-gray-900 uppercase tracking-tight truncate">{refund.User?.name}</h4>
-                                                <div className="flex items-center gap-2 mt-0.5">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{refund.Payment?.Booking?.Room?.Hostel?.name}</span>
-                                                    <span className="h-1 w-1 rounded-full bg-gray-200" />
-                                                    <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">Refund Request</span>
-                                                </div>
-                                                <div className="mt-2 py-1 px-3 bg-slate-50 rounded-lg border border-gray-100">
-                                                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1 leading-none">Reason for Reversal</p>
-                                                    <p className="text-xs font-semibold text-gray-700 leading-relaxed italic">"{refund.reason}"</p>
+                                            <div className="flex flex-col min-w-0 flex-1">
+                                                <h4 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight truncate">{refund.User?.name}</h4>
+                                                <div className="flex items-center gap-1.5 md:gap-2 mt-0.5">
+                                                    <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{refund.Payment?.Booking?.Room?.Hostel?.name}</span>
+                                                    <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                                                    <span className="text-[9px] md:text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded truncate">Refund</span>
                                                 </div>
                                             </div>
                                         </div>
+                                        <div className="mt-1 md:mt-0 py-2 px-3 bg-slate-50 rounded-lg border border-gray-100 flex-1 min-w-0 w-full">
+                                            <p className="text-[8px] md:text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 leading-none">Reason</p>
+                                            <p className="text-[10px] md:text-xs font-semibold text-gray-700 leading-relaxed italic truncate sm:whitespace-normal">"{refund.reason}"</p>
+                                        </div>
 
-                                        <div className="hidden md:flex flex-col gap-1 min-w-[160px]">
-                                            <div className="flex items-center gap-2">
-                                                <CreditCard className="h-3.5 w-3.5 text-rose-500" />
-                                                <span className="text-sm font-black text-rose-600 uppercase">PKR {refund.amount.toLocaleString()}</span>
+                                        <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-1 min-w-0 sm:min-w-[140px] md:min-w-[160px]">
+                                            <div className="flex items-center gap-1.5 md:gap-2">
+                                                <CreditCard className="h-3 w-3 md:h-3.5 md:w-3.5 text-rose-500" />
+                                                <span className="text-xs md:text-sm font-black text-rose-600 uppercase">PKR {refund.amount.toLocaleString()}</span>
                                             </div>
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5">Original: {refund.Payment?.uid || refund.Payment?.id.slice(-6).toUpperCase()}</span>
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5 truncate overflow-hidden">UID: {refund.Payment?.uid || refund.Payment?.id.slice(-6).toUpperCase()}</span>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-4 shrink-0">
+                                    <div className="flex items-center gap-2 w-full lg:w-auto mt-2 lg:mt-0 border-t lg:border-none pt-4 lg:pt-0 justify-end">
                                         {refund.status === 'PENDING' ? (
                                             <>
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    className="h-10 px-6 rounded-xl font-bold text-[10px] uppercase tracking-wider text-gray-400 hover:text-rose-600 hover:bg-rose-50"
+                                                    className="h-9 md:h-10 px-4 md:px-6 rounded-xl font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-400 hover:text-rose-600 hover:bg-rose-50 flex-1 sm:grow-0"
                                                     onClick={() => updateRefundStatus.mutate({ id: refund.id, status: 'REJECTED', notes: 'Refund request declined by administration.' })}
                                                     disabled={updateRefundStatus.isPending}
                                                 >
@@ -920,7 +908,7 @@ const PaymentManagementPage = () => {
                                                 </Button>
                                                 <Button
                                                     size="sm"
-                                                    className="h-10 px-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-lg shadow-emerald-500/20"
+                                                    className="h-9 md:h-10 px-4 md:px-8 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-lg shadow-emerald-500/20 flex-1 sm:grow-0"
                                                     onClick={() => updateRefundStatus.mutate({ id: refund.id, status: 'COMPLETED', notes: 'Refund processed and completed.' })}
                                                     disabled={updateRefundStatus.isPending}
                                                 >
@@ -928,7 +916,7 @@ const PaymentManagementPage = () => {
                                                 </Button>
                                             </>
                                         ) : (
-                                            <Badge variant="outline" className={`${refund.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'} px-5 py-2 font-black text-[10px] uppercase tracking-widest rounded-xl border-2`}>
+                                            <Badge variant="outline" className={`${refund.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'} px-4 md:px-5 py-1.5 md:py-2 font-black text-[9px] md:text-[10px] uppercase tracking-widest rounded-xl border-2`}>
                                                 {refund.status}
                                             </Badge>
                                         )}
@@ -949,10 +937,10 @@ const PaymentManagementPage = () => {
                 </Tabs>
 
                 <div className="pt-10">
-                    <div className="bg-blue-600 text-white rounded-[2rem] p-4 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
+                    <div className="bg-blue-600 text-white rounded-[2rem] p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-full bg-white/5 skew-x-12 translate-x-20" />
-                        <div className="flex items-center gap-6 relative z-10 px-4">
-                            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
+                        <div className="flex items-center gap-6 relative z-10 px-4 w-full md:w-auto">
+                            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md shrink-0">
                                 <ShieldCheck className="h-5 w-5 text-white" />
                             </div>
                             <div className="flex flex-col">
@@ -963,18 +951,18 @@ const PaymentManagementPage = () => {
 
                         <div className="h-6 w-px bg-white/10 hidden md:block" />
 
-                        <div className="flex-1 flex items-center gap-12 px-8">
+                        <div className="flex-1 flex items-center justify-start md:justify-center gap-8 md:gap-12 px-4 md:px-8 w-full md:w-auto">
                             <div className="flex flex-col">
                                 <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Today</span>
                                 <span className="text-[10px] font-bold text-gray-200 uppercase mt-1">{new Date().toLocaleDateString()}</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Total Collected</span>
-                                <span className="text-[10px] font-bold text-white uppercase mt-1">PKR {stats?.totalRevenue?.toLocaleString()} Collected</span>
+                                <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Revenue Flow</span>
+                                <span className="text-[10px] font-bold text-white uppercase mt-1">PKR {stats?.totalRevenue?.toLocaleString()}</span>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 pr-6 relative z-10">
+                        <div className="flex items-center gap-3 md:pr-6 relative z-10 w-full md:w-auto justify-end px-4 md:px-0">
                             <span className="text-[9px] font-bold uppercase text-white tracking-widest">System Online</span>
                             <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
                         </div>

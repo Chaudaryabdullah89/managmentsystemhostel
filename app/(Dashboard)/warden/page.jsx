@@ -31,6 +31,7 @@ import { useAllPayments, useFinancialStats } from "@/hooks/usePayment";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
+import Loader from "@/components/ui/Loader";
 
 const WardenDashboard = () => {
     const { user } = useAuthStore();
@@ -58,15 +59,7 @@ const WardenDashboard = () => {
     };
 
     if (reportsLoading || complaintsLoading || financialsLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-blue-600 rounded-full animate-spin" />
-                    <Activity className="h-8 w-8 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
-                </div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Dashboard...</p>
-            </div>
-        </div>
+        <Loader label="Synchronizing Warden Node" subLabel="Accessing facility registry" icon={Activity} />
     );
 
     const stats = reportData?.overall || {

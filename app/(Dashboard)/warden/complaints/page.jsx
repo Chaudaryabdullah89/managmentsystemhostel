@@ -60,6 +60,7 @@ import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import Loader from "@/components/ui/Loader";
 
 const ComplaintsPage = () => {
     const user = useAuthStore((state) => state.user);
@@ -267,12 +268,7 @@ const ComplaintsPage = () => {
     };
 
     if (isComplaintsLoading || isStatsLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="h-10 w-10 border-[3px] border-gray-100 border-t-black rounded-full animate-spin" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 italic">Accessing Grievance Registry...</p>
-            </div>
-        </div>
+        <Loader label="Accessing Grievance Registry" subLabel="Synchronizing incident reports" />
     );
 
     return (

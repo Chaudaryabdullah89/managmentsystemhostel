@@ -45,6 +45,7 @@ import { useComplaints } from "@/hooks/usecomplaints";
 import { useAllPayments, useFinancialStats } from "@/hooks/usePayment";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import Loader from "@/components/ui/Loader";
 
 const AdminDashboard = () => {
     const [selectedPeriod, setSelectedPeriod] = useState("month");
@@ -65,10 +66,7 @@ const AdminDashboard = () => {
     };
 
     if (reportsLoading || complaintsLoading || financialsLoading) return (
-        <div className="flex flex-col items-center justify-center min-h-screen py-20">
-            <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-4" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Dashboard...</p>
-        </div>
+        <Loader label="Synchronizing Dashboard" subLabel="Accessing management registry node" icon={ClipboardList} />
     );
 
     const stats = reportData?.overall || {

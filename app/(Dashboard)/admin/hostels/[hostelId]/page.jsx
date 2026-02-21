@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useHostelById } from "@/hooks/usehostel";
 import { format } from "date-fns";
+import Loader from "@/components/ui/Loader";
 
 const HostelOverviewPage = () => {
     const { hostelId } = useParams();
@@ -44,20 +45,7 @@ const HostelOverviewPage = () => {
     const { data, isLoading } = useHostelById(hostelId);
     const hostel = data?.hostel;
 
-    if (isLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-blue-600 rounded-full animate-spin" />
-                    <Building2 className="h-8 w-8 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 tracking-tight">Loading Hostel Details...</p>
-                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Getting the latest information</p>
-                </div>
-            </div>
-        </div>
-    );
+    if (isLoading) return <Loader label="Loading Hostel Details" subLabel="Getting the latest information" icon={Building2} />;
 
     if (!hostel) return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50/50 font-sans">

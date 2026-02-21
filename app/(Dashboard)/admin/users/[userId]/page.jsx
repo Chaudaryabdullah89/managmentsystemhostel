@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/select";
 import { useUserDetailedProfile, useUserUpdate } from "@/hooks/useusers";
 import { toast } from "sonner";
+import Loader from "@/components/ui/Loader";
 
 const UserEditPage = () => {
     const params = useParams();
@@ -144,16 +145,7 @@ const UserEditPage = () => {
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className="flex h-screen items-center justify-center bg-white">
-                <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-                    <p className="text-sm font-medium text-gray-500">Loading profile data...</p>
-                </div>
-            </div>
-        );
-    }
+    if (isLoading) return <Loader label="Accessing User Registry" subLabel="Synchronizing profile data" icon={UserCog} />;
 
     if (!user) {
         return (

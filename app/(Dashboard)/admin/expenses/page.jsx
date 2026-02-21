@@ -65,6 +65,7 @@ import { toast } from "sonner";
 import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import Loader from "@/components/ui/Loader";
 
 const ExpensesPage = () => {
     const { user } = useAuthStore();
@@ -283,15 +284,7 @@ const ExpensesPage = () => {
         }
     };
 
-    if (expensesLoading || statsLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="h-20 w-20 border-[3px] border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
-                <Receipt className="h-8 w-8 text-indigo-600 absolute" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Expenses...</p>
-            </div>
-        </div>
-    );
+    if (expensesLoading || statsLoading) return <Loader label="Auditing Expenses" subLabel="Synchronizing fiscal records" icon={Receipt} />;
 
     const stats = statsData?.summary || { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalCount: 0 };
 
