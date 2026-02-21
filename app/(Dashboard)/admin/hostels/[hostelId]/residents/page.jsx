@@ -14,7 +14,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Loader } from '@/components/ui/loader'
+
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -36,7 +36,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Trash } from "lucide-react"
-import Loader from '@/components/ui/Loader'
+import Loader from '../../../../../../components/ui/Loader'
 
 const ResidentActions = ({ resident, params, hostelId, router, updateStatus }) => (
     <DropdownMenu>
