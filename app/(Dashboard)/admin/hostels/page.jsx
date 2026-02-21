@@ -59,6 +59,7 @@ import WardenNames from '../../../../components/WardenNames'
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import Loader from "../../../../components/ui/Loader";
 
 const HostelsPage = () => {
     const queryClient = useQueryClient()
