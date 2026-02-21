@@ -181,33 +181,33 @@ const UserRecordPage = () => {
     return (
         <div className="min-h-screen bg-gray-50/30 pb-20">
             {/* Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16 shadow-black/5 shadow-sm">
-                <div className="max-w-[1600px] mx-auto px-8 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-5">
-                        <div className="h-8 w-1.5 bg-blue-600 rounded-full" />
+            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16 shadow-black/5 shadow-sm">
+                <div className="max-w-[1600px] mx-auto px-4 md:px-8 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+                    <div className="flex items-center gap-3 md:gap-5">
+                        <div className="h-8 w-1 md:w-1.5 bg-blue-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-base font-bold text-gray-900 tracking-tight uppercase">Staff & Residents</h1>
+                            <h1 className="text-sm md:text-base font-bold text-gray-900 tracking-tight uppercase">Staff & Residents</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-blue-600">Management</span>
+                                <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-[0.2em] text-blue-600">Management</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-600">Active Records</span>
+                                <span className="text-[8px] md:text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-600 truncate">Active Records</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
                         <Button
                             variant="outline"
-                            className="h-10 px-5 rounded-2xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95"
+                            className="h-9 md:h-10 flex-1 md:flex-none px-3 md:px-5 rounded-xl md:rounded-2xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
                             onClick={() => setIsCreateDialogOpen(true)}
                         >
-                            <Plus className="h-4 w-4 mr-2" /> Quick Add
+                            <Plus className="h-3.5 w-3.5 md:h-4 md:w-4" /> Quick Add
                         </Button>
                         <Button
-                            className="h-10 px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all active:scale-95"
+                            className="h-9 md:h-10 flex-1 md:flex-none px-3 md:px-6 rounded-xl md:rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all active:scale-95 flex items-center justify-center gap-2"
                             onClick={() => router.push('/admin/users-records/register')}
                         >
-                            <UserPlus className="h-4 w-4 mr-2" /> Register User
+                            <UserPlus className="h-3.5 w-3.5 md:h-4 md:w-4" /> <span className="hidden xs:inline">Register</span> User
                         </Button>
                     </div>
                 </div>
@@ -215,24 +215,24 @@ const UserRecordPage = () => {
 
             <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
                 {/* Search */}
-                <div className="bg-white border border-gray-100 rounded-[2.5rem] p-3 flex flex-col md:flex-row items-center gap-4 shadow-sm">
-                    <div className="flex-1 relative w-full group px-4">
-                        <Search className="absolute left-8 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                <div className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm">
+                    <div className="flex-1 relative w-full group">
+                        <Search className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
                         <Input
                             placeholder="Search by Name or Email..."
-                            className="w-full h-12 pl-12 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
+                            className="w-full h-11 md:h-12 pl-10 md:pl-12 bg-transparent border-none shadow-none font-bold text-xs md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
                     <div className="h-8 w-px bg-gray-100 hidden md:block" />
-                    <div className="flex items-center gap-3 p-1.5 bg-gray-50/50 rounded-2xl mr-2">
+                    <div className="flex items-center gap-1.5 md:gap-3 p-1.5 bg-gray-50/50 rounded-[1.5rem] w-full md:w-auto overflow-x-auto scrollbar-hide">
                         {["all", "ADMIN", "WARDEN", "STAFF", "RESIDENT"].map(role => (
                             <button
                                 key={role}
                                 onClick={() => setFilterRole(role)}
-                                className={`h-10 px-6 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${filterRole === role
-                                    ? "bg-white text-blue-600 shadow-md ring-1 ring-black/5"
+                                className={`h-9 md:h-10 px-3 md:px-6 rounded-xl font-bold text-[8px] md:text-[10px] uppercase tracking-widest transition-all shrink-0 ${filterRole === role
+                                    ? "bg-white text-blue-600 shadow-sm ring-1 ring-black/5"
                                     : "text-gray-400 hover:text-gray-600 hover:bg-white/50"
                                     }`}
                             >
@@ -251,16 +251,16 @@ const UserRecordPage = () => {
                     ) : filteredUsers.map(user => {
                         const styles = getRoleStyles(user.role);
                         return (
-                            <div key={user.id} className="bg-white border border-gray-100 rounded-[2.5rem] p-7 hover:shadow-2xl hover:shadow-indigo-100/50 transition-all group relative overflow-hidden flex flex-col h-full border-b-[3px] border-b-transparent hover:border-b-blue-500">
-                                <div className={`absolute top-0 right-0 w-40 h-40 ${styles.bg} rounded-bl-full opacity-10 -mr-16 -mt-16 transition-transform group-hover:scale-110`} />
+                            <div key={user.id} className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-7 hover:shadow-2xl hover:shadow-indigo-100/50 transition-all group relative overflow-hidden flex flex-col h-full border-b-[3px] border-b-transparent hover:border-b-blue-500">
+                                <div className={`absolute top-0 right-0 w-32 h-32 md:w-40 md:h-40 ${styles.bg} rounded-bl-full opacity-10 -mr-12 md:-mr-16 -mt-12 md:-mt-16 transition-transform group-hover:scale-110`} />
 
-                                <div className="flex items-start justify-between relative mb-8">
-                                    <div className={`h-16 w-16 rounded-[1.5rem] ${styles.bg} ${styles.color} flex items-center justify-center border ${styles.border} shadow-sm group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all duration-500`}>
-                                        <styles.icon className="h-7 w-7" />
+                                <div className="flex items-start justify-between relative mb-6 md:mb-8">
+                                    <div className={`h-12 w-12 md:h-16 md:w-16 rounded-[1.2rem] md:rounded-[1.5rem] ${styles.bg} ${styles.color} flex items-center justify-center border ${styles.border} shadow-sm group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all duration-500`}>
+                                        <styles.icon className="h-5 w-5 md:h-7 md:w-7" />
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-gray-50 border border-gray-100">
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-gray-50 border border-gray-100">
                                                 <MoreVertical className="h-4 w-4 text-gray-400" />
                                             </Button>
                                         </DropdownMenuTrigger>
@@ -273,91 +273,91 @@ const UserRecordPage = () => {
                                                     setSelectedUser({ ...user });
                                                     setIsEditDialogOpen(true);
                                                 }}
-                                                className="h-11 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer hover:bg-gray-50 transition-colors"
+                                                className="h-11 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2"
                                             >
-                                                <Settings2 className="h-4 w-4 mr-3 text-gray-400" /> Modify Profile
+                                                <Settings2 className="h-4 w-4 text-gray-400" /> Modify Profile
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onClick={() => {
                                                     setSelectedUser({ ...user });
                                                     setIsRoleDialogOpen(true);
                                                 }}
-                                                className="h-11 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer hover:bg-gray-50 transition-colors"
+                                                className="h-11 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer hover:bg-gray-50 transition-colors flex items-center gap-2"
                                             >
-                                                <Shield className="h-4 w-4 mr-3 text-gray-400" /> Modify Role
+                                                <Shield className="h-4 w-4 text-gray-400" /> Modify Role
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onClick={() => {
                                                     setSelectedUser(user);
                                                     setIsAccessDialogOpen(true);
                                                 }}
-                                                className="h-11 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer text-blue-600 hover:bg-blue-50 transition-colors"
+                                                className="h-11 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer text-blue-600 hover:bg-blue-50 transition-colors flex items-center gap-2"
                                             >
-                                                <Zap className="h-4 w-4 mr-3" /> Grant Access
+                                                <Zap className="h-4 w-4" /> Grant Access
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator className="bg-gray-50 mx-2 my-2" />
                                             <DropdownMenuItem
                                                 onClick={() => handleDeleteUser(user.id)}
-                                                className="h-11 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer text-rose-600 hover:bg-rose-50 transition-colors"
+                                                className="h-11 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer text-rose-600 hover:bg-rose-50 transition-colors flex items-center gap-2"
                                             >
-                                                <Trash2 className="h-4 w-4 mr-3" /> Delete User
+                                                <Trash2 className="h-4 w-4 text-gray-400" /> Delete User
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
 
-                                <div className="space-y-4">
+                                <div className="space-y-4 flex-1 flex flex-col">
                                     <div>
-                                        <h3 className="text-xl font-black text-gray-900 tracking-tight truncate">{user.name}</h3>
+                                        <h3 className="text-lg md:text-xl font-black text-gray-900 tracking-tight truncate">{user.name}</h3>
                                         <div className="flex items-center gap-2 mt-1">
-                                            <Badge variant="outline" className={`px-3 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${styles.bg} ${styles.color} ${styles.border}`}>
+                                            <Badge variant="outline" className={`px-2 md:px-3 py-0.5 rounded-full text-[8px] md:text-[9px] font-bold uppercase tracking-widest ${styles.bg} ${styles.color} ${styles.border}`}>
                                                 {user.role}
                                             </Badge>
                                             {user.isActive ? (
                                                 <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
-                                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                                    <span className="text-[9px] font-black uppercase tracking-tighter">Active</span>
+                                                    <div className="h-1 w-1 md:h-1.5 md:w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                    <span className="text-[8px] md:text-[9px] font-black uppercase tracking-tighter">Active</span>
                                                 </div>
                                             ) : (
                                                 <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-gray-50 text-gray-400 border border-gray-100">
-                                                    <div className="h-1.5 w-1.5 rounded-full bg-gray-300" />
-                                                    <span className="text-[9px] font-black uppercase tracking-tighter">Inactive</span>
+                                                    <div className="h-1 w-1 md:h-1.5 md:w-1.5 rounded-full bg-gray-300" />
+                                                    <span className="text-[8px] md:text-[9px] font-black uppercase tracking-tighter">Inactive</span>
                                                 </div>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 gap-2">
-                                        <div className="flex items-center gap-3 text-gray-500">
-                                            <Mail className="h-3.5 w-3.5" />
-                                            <span className="text-[11px] font-bold truncate tracking-tight">{user.email}</span>
+                                    <div className="grid grid-cols-1 gap-1.5 md:gap-2">
+                                        <div className="flex items-center gap-2.5 md:gap-3 text-gray-500">
+                                            <Mail className="h-3.5 w-3.5 shrink-0" />
+                                            <span className="text-[10px] md:text-[11px] font-bold truncate tracking-tight">{user.email}</span>
                                         </div>
-                                        <div className="flex items-center gap-3 text-gray-500">
-                                            <Phone className="h-3.5 w-3.5" />
-                                            <span className="text-[11px] font-bold tracking-tight">{user.phone || 'N/A'}</span>
+                                        <div className="flex items-center gap-2.5 md:gap-3 text-gray-500">
+                                            <Phone className="h-3.5 w-3.5 shrink-0" />
+                                            <span className="text-[10px] md:text-[11px] font-bold tracking-tight">{user.phone || 'N/A'}</span>
                                         </div>
-                                        <div className="flex items-center gap-3 text-gray-500">
-                                            <Building2 className="h-3.5 w-3.5" />
-                                            <span className="text-[11px] font-bold tracking-tight">{user.Hostel_User_hostelIdToHostel?.name || 'Global Access'}</span>
+                                        <div className="flex items-center gap-2.5 md:gap-3 text-gray-500">
+                                            <Building2 className="h-3.5 w-3.5 shrink-0" />
+                                            <span className="text-[10px] md:text-[11px] font-bold tracking-tight truncate">{user.Hostel_User_hostelIdToHostel?.name || 'Global Access'}</span>
                                         </div>
                                     </div>
 
-                                    <Separator className="bg-gray-50 my-6" />
+                                    <Separator className="bg-gray-50 my-4 md:my-6" />
 
                                     <div className="flex items-center justify-between pt-2 mt-auto">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">User ID</span>
+                                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest">User ID</span>
                                             {user.uid ? (
-                                                <Badge className="bg-gray-100 text-gray-600 border-none text-[8px] font-mono font-bold px-2 py-0.5">
+                                                <Badge className="bg-gray-100 text-gray-600 border-none text-[8px] font-mono font-bold px-2 py-0.5 w-fit">
                                                     {user.uid}
                                                 </Badge>
                                             ) : (
-                                                <span className="text-[10px] font-bold text-gray-900 tracking-tighter uppercase tabular-nums">#{user.id.slice(-8).toUpperCase()}</span>
+                                                <span className="text-[9px] md:text-[10px] font-bold text-gray-900 tracking-tighter uppercase tabular-nums">#{user.id.slice(-8).toUpperCase()}</span>
                                             )}
                                         </div>
                                         <Link href={`/admin/users-records/${user.id}`}>
-                                            <Button variant="outline" className="h-10 px-5 rounded-[1.2rem] font-bold text-[10px] uppercase tracking-widest text-blue-600 border-indigo-100 bg-blue-50/50 hover:bg-blue-600 hover:text-white transition-all group/btn">
-                                                View Records <ChevronRight className="h-3.5 w-3.5 ml-2 transition-transform group-hover/btn:translate-x-1" />
+                                            <Button variant="outline" className="h-9 md:h-10 px-3 md:px-5 rounded-xl md:rounded-[1.2rem] font-bold text-[8px] md:text-[10px] uppercase tracking-widest text-blue-600 border-indigo-100 bg-blue-50/50 hover:bg-blue-600 hover:text-white transition-all group/btn flex items-center gap-2">
+                                                Records <ChevronRight className="h-3 md:h-3.5 w-3 md:w-3.5 transition-transform group-hover/btn:translate-x-1" />
                                             </Button>
                                         </Link>
                                     </div>

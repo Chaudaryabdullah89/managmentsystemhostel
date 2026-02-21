@@ -28,6 +28,7 @@ import { useStaffList } from "@/hooks/useSalaries";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
+import Loader from "@/components/ui/Loader";
 
 // ─── Status & Priority helpers ────────────────────────────────────────────────
 const getStatusStyle = (status) => {
@@ -283,41 +284,28 @@ const ComplaintsPage = () => {
         toast.success("Complaints exported successfully");
     };
 
-    if (isComplaintsLoading || isStatsLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
-                    <MessageSquare className="h-8 w-8 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 tracking-tight">Loading Complaints...</p>
-                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Fetching complaint data</p>
-                </div>
-            </div>
-        </div>
-    );
+    if (isComplaintsLoading || isStatsLoading) return <Loader label="Auditing Complaints" subLabel="Accessing grievance registry node" icon={MessageSquare} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
             {/* ── Sticky Header ── */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-8 w-1 bg-indigo-600 rounded-full" />
+            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
+                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="h-8 w-1 bg-indigo-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Complaints</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Complaints</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Complaint Management</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Complaint Management</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Monitoring</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Monitoring</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <Button variant="outline" onClick={handleExport}
-                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all">
-                            <Download className="h-3.5 w-3.5 mr-2 text-gray-400" /> Export
+                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-2">
+                            <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Export Registry</span> <span className="xs:hidden">Export</span>
                         </Button>
                     </div>
                 </div>
@@ -325,37 +313,37 @@ const ComplaintsPage = () => {
 
             <div className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
                 {/* ── Stat Cards ── */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 animate-in slide-in-from-bottom-6 fade-in duration-500 fill-mode-both">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 animate-in slide-in-from-bottom-6 fade-in duration-500 fill-mode-both">
                     {[
                         { label: "Total Complaints", value: stats.total, icon: MessageSquare, color: "text-indigo-600", bg: "bg-indigo-50" },
                         { label: "Pending", value: stats.pending, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
                         { label: "Urgent Cases", value: stats.urgent, icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50" },
                         { label: "Resolution Rate", value: `${stats.resolutionRate}%`, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default">
-                            <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-3 md:gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default text-center sm:text-left">
+                            <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
-                                <span className="text-xl font-bold text-gray-900 tracking-tight">{stat.value}</span>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
+                                <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight">{stat.value}</span>
                             </div>
                         </div>
                     ))}
                 </div>
 
                 {/* ── Search + Filter Bar ── */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm animate-in slide-in-from-bottom-6 fade-in duration-500 fill-mode-both delay-100">
-                    <div className="flex-1 relative w-full group px-2">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm animate-in slide-in-from-bottom-6 fade-in duration-500 fill-mode-both delay-100">
+                    <div className="flex-1 relative w-full group">
+                        <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                         <Input
                             placeholder="Search by title, resident or ID..."
-                            className="w-full h-12 pl-10 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
+                            className="w-full h-11 md:h-12 pl-10 md:pl-12 bg-transparent border-none shadow-none font-bold text-xs md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         {searchQuery && (
-                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full uppercase animate-in fade-in zoom-in duration-300">
+                            <span className="hidden sm:inline-flex absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full uppercase animate-in fade-in zoom-in duration-300">
                                 {filteredComplaints.length} Results
                             </span>
                         )}
@@ -363,13 +351,13 @@ const ComplaintsPage = () => {
 
                     <div className="h-8 w-px bg-gray-100 mx-2 hidden md:block" />
 
-                    <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto">
+                    <div className="flex items-center gap-1.5 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
                         {/* Status Filter */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm">
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
                                     <Filter className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {statusFilter === "All" ? "All Status" : statusFilter.replace("_", " ")}
+                                    <span className="truncate">{statusFilter === "All" ? "All Status" : statusFilter.replace("_", " ")}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[220px] rounded-xl border-gray-100 shadow-xl p-2">
@@ -386,9 +374,9 @@ const ComplaintsPage = () => {
                         {/* Priority Filter */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm">
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
                                     <AlertTriangle className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {priorityFilter === "All" ? "All Priority" : priorityFilter}
+                                    <span className="truncate">{priorityFilter === "All" ? "All Priority" : priorityFilter}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[200px] rounded-xl border-gray-100 shadow-xl p-2">
@@ -405,9 +393,9 @@ const ComplaintsPage = () => {
                         {/* Hostel Filter */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm">
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
                                     <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {hostelFilter === "All" ? "All Hostels" : hostelFilter}
+                                    <span className="truncate">{hostelFilter === "All" ? "All Hostels" : hostelFilter}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[260px] rounded-xl border-gray-100 shadow-xl p-2">
@@ -428,34 +416,43 @@ const ComplaintsPage = () => {
                 <div className="space-y-4 animate-in slide-in-from-bottom-8 fade-in duration-600 fill-mode-both delay-200">
                     {filteredComplaints.length > 0 ? filteredComplaints.map((complaint) => (
                         <Dialog key={complaint.id}>
-                            <div className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col lg:flex-row items-center justify-between gap-6 hover:shadow-md transition-shadow group relative overflow-hidden">
+                            <div className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-shadow group relative overflow-hidden">
                                 {/* Left color ribbon */}
-                                <div className={`absolute top-0 left-0 w-1.5 h-full ${getRibbonColor(complaint.status)} opacity-80`} />
+                                <div className={`absolute top-0 left-0 w-1 md:w-1.5 h-full ${getRibbonColor(complaint.status)} opacity-80`} />
 
-                                <div className="flex items-center gap-6 flex-1 min-w-0">
+                                <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0 w-full lg:w-auto">
                                     {/* Avatar + Title */}
-                                    <div className="flex items-center gap-5 min-w-[260px]">
-                                        <div className={`h-14 w-14 rounded-xl flex items-center justify-center border border-gray-100 shadow-sm shrink-0 transition-colors group-hover:border-indigo-100 ${complaint.priority === "URGENT" ? "bg-rose-50" : "bg-gray-50"}`}>
-                                            <MessageSquare className={`h-6 w-6 ${complaint.priority === "URGENT" ? "text-rose-400" : "text-gray-400"} group-hover:text-indigo-500 transition-colors`} />
+                                    <div className="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
+                                        <div className={`h-11 w-11 md:h-14 md:w-14 rounded-xl flex items-center justify-center border border-gray-100 shadow-sm shrink-0 transition-colors group-hover:border-indigo-100 ${complaint.priority === "URGENT" ? "bg-rose-50" : "bg-gray-50"}`}>
+                                            <MessageSquare className={`h-5 w-5 md:h-6 md:w-6 ${complaint.priority === "URGENT" ? "text-rose-400" : "text-gray-400"} group-hover:text-indigo-500 transition-colors`} />
                                         </div>
                                         <div className="flex flex-col min-w-0">
-                                            <h4 className="text-base font-bold text-gray-900 uppercase tracking-tight truncate">{complaint.title}</h4>
+                                            <h4 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight truncate">{complaint.title}</h4>
                                             <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate max-w-[160px]">
+                                                <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate max-w-[120px] md:max-w-[160px]">
                                                     {complaint.User_Complaint_userIdToUser?.name}
                                                 </span>
                                                 {complaint.uid && (
                                                     <>
-                                                        <span className="h-1 w-1 rounded-full bg-gray-200" />
-                                                        <span className="text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">{complaint.uid}</span>
+                                                        <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                                                        <span className="text-[8px] md:text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 px-1.5 md:px-2 py-0.5 rounded">{complaint.uid}</span>
                                                     </>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
 
+                                    {/* Status Badge Mobile */}
+                                    <div className="lg:hidden">
+                                        <Badge variant="outline" className={`${getStatusStyle(complaint.status)} px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest border`}>
+                                            {complaint.status.replace("_", " ")}
+                                        </Badge>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 md:gap-8 flex-1 w-full lg:w-auto">
                                     {/* Hostel + Category */}
-                                    <div className="hidden md:flex flex-col gap-1 min-w-[160px]">
+                                    <div className="hidden md:flex flex-col gap-1 min-w-[140px] flex-1">
                                         <div className="flex items-center gap-2">
                                             <Building2 className="h-3.5 w-3.5 text-indigo-400" />
                                             <span className="text-xs font-bold text-gray-900 uppercase truncate">{complaint.Hostel?.name ?? "N/A"}</span>
@@ -465,7 +462,7 @@ const ComplaintsPage = () => {
 
                                     {/* Date + Priority inline panel */}
                                     <div className="hidden xl:flex items-center gap-6 min-w-[300px] bg-indigo-50/30 p-3 rounded-2xl border border-indigo-100/50">
-                                        <div className="flex flex-col gap-0.5">
+                                        <div className="flex flex-col gap-0.5 text-left">
                                             <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5 pl-0.5">
                                                 <Calendar className="h-2.5 w-2.5" /> Filed
                                             </span>
@@ -487,8 +484,8 @@ const ComplaintsPage = () => {
                                         </div>
                                     </div>
 
-                                    {/* Status Badge */}
-                                    <div className="min-w-[130px] flex justify-center">
+                                    {/* Status Badge Desktop */}
+                                    <div className="hidden lg:flex min-w-[130px] justify-center">
                                         <Badge variant="outline" className={`${getStatusStyle(complaint.status)} px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest border shadow-sm`}>
                                             {complaint.status.replace("_", " ")}
                                         </Badge>
@@ -496,9 +493,9 @@ const ComplaintsPage = () => {
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex items-center gap-2 lg:ml-auto">
+                                <div className="flex items-center gap-2 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t lg:border-none border-gray-50">
                                     <DialogTrigger asChild>
-                                        <Button className="h-10 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn">
+                                        <Button className="h-9 md:h-10 px-4 md:px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn flex-1 md:flex-none justify-center">
                                             View Details
                                             <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
                                         </Button>
@@ -532,35 +529,37 @@ const ComplaintsPage = () => {
 
                 {/* ── Bottom Status Banner ── */}
                 <div className="pt-4">
-                    <div className="bg-indigo-600 text-white rounded-[2rem] p-4 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-indigo-600/20 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-full bg-white/5 skew-x-12 translate-x-20" />
-                        <div className="flex items-center gap-6 relative z-10 px-4">
-                            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
-                                <ShieldCheck className="h-5 w-5 text-white" />
+                    <div className="pt-4 px-2 md:px-0">
+                        <div className="bg-indigo-600 text-white rounded-[2rem] p-5 md:p-4 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl shadow-indigo-600/20 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-full bg-white/5 skew-x-12 translate-x-20" />
+                            <div className="flex items-center gap-4 md:gap-6 relative z-10 w-full md:w-auto px-2 md:px-4">
+                                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md shrink-0">
+                                    <ShieldCheck className="h-5 w-5 text-white" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <h4 className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-200">System Status</h4>
+                                    <p className="text-[10px] md:text-[11px] font-bold mt-0.5">Audit surveillance active</p>
+                                </div>
                             </div>
-                            <div className="flex flex-col">
-                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-200">System Status</h4>
-                                <p className="text-[11px] font-bold mt-0.5">Complaints monitoring active</p>
+                            <div className="h-6 w-px bg-white/10 hidden md:block" />
+                            <div className="flex-1 grid grid-cols-3 md:flex items-center gap-4 md:gap-12 px-2 md:px-8 w-full md:w-auto text-center md:text-left">
+                                <div className="flex flex-col">
+                                    <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-200 tracking-widest truncate">Open Cases</span>
+                                    <span className="text-[9px] md:text-[10px] font-bold text-white uppercase mt-1">{stats.pending}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-200 tracking-widest truncate">Total Records</span>
+                                    <span className="text-[9px] md:text-[10px] font-bold text-white uppercase mt-1">{complaints.length}</span>
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-200 tracking-widest truncate">Efficiency Rate</span>
+                                    <span className="text-[9px] md:text-[10px] font-bold text-white uppercase mt-1">{stats.resolutionRate}%</span>
+                                </div>
                             </div>
-                        </div>
-                        <div className="h-6 w-px bg-white/10 hidden md:block" />
-                        <div className="flex-1 flex items-center gap-12 px-8">
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-indigo-200 tracking-widest">Open Cases</span>
-                                <span className="text-[10px] font-bold text-white uppercase mt-1">{stats.pending} Pending</span>
+                            <div className="flex items-center gap-3 md:pr-6 relative z-10 w-full md:w-auto justify-center md:justify-end border-t md:border-none border-white/10 pt-4 md:pt-0">
+                                <span className="text-[8px] md:text-[9px] font-bold uppercase text-white tracking-widest">Network Pulse</span>
+                                <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-indigo-200 tracking-widest">Total Records</span>
-                                <span className="text-[10px] font-bold text-white uppercase mt-1">{complaints.length} Total</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-indigo-200 tracking-widest">Resolution Rate</span>
-                                <span className="text-[10px] font-bold text-white uppercase mt-1">{stats.resolutionRate}% Resolved</span>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 pr-6 relative z-10">
-                            <span className="text-[9px] font-bold uppercase text-white tracking-widest">Online</span>
-                            <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
                         </div>
                     </div>
                 </div>

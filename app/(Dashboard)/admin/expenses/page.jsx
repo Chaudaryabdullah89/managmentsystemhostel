@@ -291,41 +291,43 @@ const ExpensesPage = () => {
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">
             {/* Premium Header - Synchronized Design */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-8 w-1 bg-indigo-600 rounded-full" />
+            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
+                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="h-8 w-1 bg-indigo-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Expense Records</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Expense Records</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Hostel Branch</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Hostel Branch</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
                             </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <Button
+                                variant="outline"
+                                className="h-9 px-3 md:px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 flex-1 sm:flex-none flex items-center justify-center gap-2"
+                                onClick={handleExportCSV}
+                            >
+                                <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Export</span> CSV
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="h-9 px-3 md:px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex-1 sm:flex-none flex items-center justify-center gap-2"
+                                onClick={handleExportPDF}
+                                disabled={isExportingExpenses}
+                            >
+                                {isExportingExpenses ? <Loader2 className="h-3.5 w-3.5 text-indigo-700 animate-spin" /> : <Download className="h-3.5 w-3.5 text-indigo-700" />}
+                                <span className="hidden xs:inline">EXPORT</span> REPORTS
+                            </Button>
+                        </div>
                         <Button
-                            variant="outline"
-                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 flex items-center gap-2"
-                            onClick={handleExportCSV}
-                        >
-                            <Download className="h-3.5 w-3.5 text-gray-400" /> Export CSV
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="h-9 px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2"
-                            onClick={handleExportPDF}
-                            disabled={isExportingExpenses}
-                        >
-                            {isExportingExpenses ? <Loader2 className="h-3.5 w-3.5 text-indigo-700 animate-spin" /> : <Download className="h-3.5 w-3.5 text-indigo-700" />}
-                            EXPORT EXPENSES
-                        </Button>
-                        <Button
-                            className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all flex items-center gap-2"
+                            className="h-9 px-4 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all flex-1 sm:flex-none flex items-center justify-center gap-2"
                             onClick={() => setIsAddOpen(true)}
                         >
-                            <Plus className="h-3.5 w-3.5" /> Add Expense
+                            <Plus className="h-3.5 w-3.5" /> <span className="hidden xs:inline">Add</span> Expense
                         </Button>
                     </div>
                 </div>
@@ -333,32 +335,32 @@ const ExpensesPage = () => {
 
             <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
                 {/* Metrics Matrix - Standardized Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
                         { label: 'Total Expenses', value: `PKR ${(stats.totalAmount / 1000).toFixed(1)}k`, icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50' },
                         { label: 'Paid Expenses', value: `PKR ${(stats.paidAmount / 1000).toFixed(1)}k`, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                         { label: 'Pending Expenses', value: `PKR ${(stats.pendingAmount / 1000).toFixed(1)}k`, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
                         { label: 'Total Count', value: stats.totalCount, icon: History, color: 'text-purple-600', bg: 'bg-purple-50' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
-                            <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-3 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-shadow text-center sm:text-left">
+                            <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
-                                <span className="text-xl font-bold text-gray-900 tracking-tight">{stat.value}</span>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
+                                <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate">{stat.value}</span>
                             </div>
                         </div>
                     ))}
                 </div>
 
                 {/* Operations Bar - Unified Search & Filter */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm">
-                    <div className="flex-1 relative w-full group px-2">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm">
+                    <div className="flex-1 relative w-full group">
+                        <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-hover:text-indigo-600 transition-colors" />
                         <Input
                             placeholder="Search by ID or Title..."
-                            className="w-full h-12 pl-10 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
+                            className="w-full h-11 md:h-12 pl-10 md:pl-12 bg-transparent border-none shadow-none font-bold text-xs md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -366,12 +368,12 @@ const ExpensesPage = () => {
 
                     <div className="h-8 w-px bg-gray-100 mx-2 hidden md:block" />
 
-                    <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto">
+                    <div className="flex items-center gap-1.5 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500">
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none">
                                     <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {filterHostel === 'all' ? 'All Hostels' : hostels.find(h => h.id === filterHostel)?.name}
+                                    <span className="truncate">{filterHostel === 'all' ? 'All Hostels' : hostels.find(h => h.id === filterHostel)?.name}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[240px] rounded-xl">
@@ -386,9 +388,9 @@ const ExpensesPage = () => {
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500">
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none">
                                     <Zap className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {filterCategory === 'all' ? 'All Categories' : filterCategory}
+                                    <span className="truncate">{filterCategory === 'all' ? 'All Categories' : filterCategory}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[200px] rounded-xl">
@@ -402,9 +404,9 @@ const ExpensesPage = () => {
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500">
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none">
                                     <ShieldCheck className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {filterStatus === 'all' ? 'All Statuses' : filterStatus}
+                                    <span className="truncate">{filterStatus === 'all' ? 'All Statuses' : filterStatus}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[200px] rounded-xl">
@@ -419,11 +421,11 @@ const ExpensesPage = () => {
                 </div>
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-                    <TabsList className="bg-white border border-gray-100 p-1 rounded-xl h-11 shadow-sm">
-                        <TabsTrigger value="current" className="h-full px-8 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
-                            <Zap className="h-3.5 w-3.5 mr-2" /> This Month ({currentMonthLabel})
+                    <TabsList className="bg-white border border-gray-100 p-1 rounded-xl h-11 w-full lg:w-auto shadow-sm overflow-x-auto scrollbar-hide flex justify-start lg:justify-center">
+                        <TabsTrigger value="current" className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white shrink-0">
+                            <Zap className="h-3.5 w-3.5 mr-2" /> This Month <span className="hidden xs:inline">({currentMonthLabel})</span>
                         </TabsTrigger>
-                        <TabsTrigger value="history" className="h-full px-8 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+                        <TabsTrigger value="history" className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white shrink-0">
                             <History className="h-3.5 w-3.5 mr-2" /> All Time
                         </TabsTrigger>
                     </TabsList>
@@ -432,57 +434,59 @@ const ExpensesPage = () => {
                         {filteredExpenses.map((expense) => (
                             <div
                                 key={expense.id}
-                                className="bg-white border border-gray-100 rounded-2xl p-6 flex flex-col lg:flex-row items-center gap-8 hover:shadow-md transition-shadow group relative overflow-hidden cursor-pointer"
+                                className="bg-white border border-gray-100 rounded-2xl p-4 md:p-6 flex flex-col lg:flex-row items-center justify-between gap-4 md:gap-8 hover:shadow-md transition-shadow group relative overflow-hidden cursor-pointer"
                                 onClick={() => { setSelectedExpense(expense); setIsDetailOpen(true); }}
                             >
-                                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${expense.status === 'PAID' ? 'bg-emerald-500' : expense.status === 'APPROVED' ? 'bg-blue-500' : expense.status === 'REJECTED' ? 'bg-rose-500' : 'bg-amber-500'} opacity-70`} />
+                                <div className={`absolute left-0 top-0 bottom-0 w-1 md:w-1.5 ${expense.status === 'PAID' ? 'bg-emerald-500' : expense.status === 'APPROVED' ? 'bg-blue-500' : expense.status === 'REJECTED' ? 'bg-rose-500' : 'bg-amber-500'} opacity-70`} />
 
-                                {/* Section 1: Expense Details */}
-                                <div className="flex items-center gap-6 flex-1 min-w-[300px]">
-                                    <div className="h-14 w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-indigo-600 transition-colors shrink-0">
-                                        <Receipt className="h-6 w-6 text-gray-400 group-hover:text-white transition-colors" />
+                                <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0 w-full lg:w-auto">
+                                    <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-indigo-600 transition-colors shrink-0">
+                                        <Receipt className="h-5 w-5 md:h-6 md:w-6 text-gray-400 group-hover:text-white transition-colors" />
                                     </div>
-                                    <div className="flex flex-col min-w-0">
-                                        <h4 className="text-base font-bold text-gray-900 uppercase tracking-tight truncate">{expense.title}</h4>
-                                        <div className="flex items-center gap-3 mt-1">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{expense.category}</span>
-                                            <div className="h-1 w-1 rounded-full bg-gray-200" />
-                                            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">{expense.Hostel?.name}</span>
+                                    <div className="flex flex-col min-w-0 flex-1">
+                                        <h4 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight truncate">{expense.title}</h4>
+                                        <div className="flex items-center flex-wrap gap-2 md:gap-3 mt-0.5 md:mt-1">
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">{expense.category}</span>
+                                            <div className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                                            <span className="text-[9px] md:text-[10px] font-bold text-emerald-600 uppercase tracking-widest truncate">{expense.Hostel?.name}</span>
                                         </div>
+                                    </div>
+                                    <div className="lg:hidden">
+                                        <Badge variant="outline" className={`px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest ${expense.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : expense.status === 'APPROVED' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                                            {expense.status}
+                                        </Badge>
                                     </div>
                                 </div>
 
-                                {/* Section 2: Details */}
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-8 flex-[1.5]">
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 flex-1 w-full lg:w-auto">
                                     <div>
-                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Expense ID</span>
-                                        <Badge className="bg-gray-100 text-gray-700 border-none text-[10px] font-mono font-bold px-2 py-0.5 w-fit">
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5 md:mb-1">Reference</span>
+                                        <Badge className="bg-gray-100 text-gray-700 border-none text-[8px] md:text-[10px] font-mono font-bold px-2 py-0.5 w-fit">
                                             EXP-{expense.id.slice(-8).toUpperCase()}
                                         </Badge>
                                     </div>
                                     <div>
-                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Date</span>
-                                        <p className="text-sm font-bold text-blue-600 uppercase">{format(new Date(expense.date), 'MMM dd, yyyy')}</p>
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5 md:mb-1">Date</span>
+                                        <p className="text-[11px] md:text-sm font-bold text-blue-600 uppercase">{format(new Date(expense.date), 'MMM dd, yyyy')}</p>
                                     </div>
                                     <div>
-                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Amount</span>
-                                        <p className="text-sm font-bold text-rose-600">PKR {expense.amount.toLocaleString()}</p>
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5 md:mb-1">Amount</span>
+                                        <p className="text-xs md:text-sm font-black text-rose-600 truncate">PKR {expense.amount.toLocaleString()}</p>
                                     </div>
                                 </div>
 
-                                {/* Section 3: Status */}
-                                <div className="flex items-center gap-3">
-                                    <Badge variant="outline" className={`px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${expense.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : expense.status === 'APPROVED' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                                <div className="flex items-center gap-3 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t lg:border-none border-gray-50">
+                                    <Badge variant="outline" className={`hidden lg:inline-flex px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${expense.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : expense.status === 'APPROVED' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
                                         {expense.status}
                                     </Badge>
 
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 lg:hidden">
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-10 w-10 rounded-full hover:bg-gray-50 border border-gray-100 text-gray-400"
+                                            className="h-8 w-8 rounded-full hover:bg-gray-50 border border-gray-100 text-gray-400"
                                         >
-                                            <ChevronRight className="h-5 w-5" />
+                                            <ChevronRight className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </div>

@@ -67,6 +67,7 @@ import { QueryKeys } from '@/lib/queryclient';
 import { format } from "date-fns";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import Loader from "../../../../components/ui/Loader";
 
 const useSyncAutomation = () => {
     const queryClient = useQueryClient();
@@ -295,58 +296,43 @@ const GlobalBookingsPage = () => {
         }
     };
 
-    if (isLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-blue-600 rounded-full animate-spin" />
-                    <Calendar className="h-8 w-8 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 tracking-tight">Loading Bookings...</p>
-                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Getting booking data</p>
-                </div>
-            </div>
-        </div>
-    );
+    if (isLoading) return <Loader label="Compiling Bookings" subLabel="Accessing reservation registry node" icon={Calendar} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
             {/* Minimal Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-2 md:gap-4">
-                        <div className="h-8 w-1 bg-blue-600 rounded-full hidden md:block" />
+            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-base md:text-lg font-bold text-gray-900 tracking-tight uppercase">All Bookings</h1>
-                            <div className="flex items-center gap-1 md:gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 hidden sm:inline">Manage bookings</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500 hidden sm:block" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Reservation Ledger</h1>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Total Records</span>
+                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Node</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 md:gap-3">
-                        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9" onClick={() => syncAutomation.mutate()}>
+                        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9" onClick={() => syncAutomation.mutate()}>
                             <RefreshCw className={`h-4 w-4 text-gray-500 ${syncAutomation.isPending ? 'animate-spin' : ''}`} />
                         </Button>
                         <Button
                             variant="outline"
-                            className="h-8 px-2 md:h-9 md:px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-1.5 md:gap-2"
+                            className="h-9 px-3 md:px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2"
                             onClick={() => setIsExportDialogOpen(true)}
                         >
                             <ShieldCheck className="h-3.5 w-3.5 text-indigo-700" />
-                            <span className="hidden sm:inline">GET VERIFIED PDF</span>
-                            <span className="sm:hidden">PDF</span>
+                            <span className="hidden xs:inline">Verified PDF</span> <span className="xs:hidden">PDF</span>
                         </Button>
                         <Button
-                            className="h-8 px-3 md:h-9 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center"
+                            className="h-9 px-4 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center gap-2"
                             onClick={() => router.push('/admin/bookings/create')}
                         >
-                            <Plus className="h-3.5 w-3.5 md:h-4 md:w-4 sm:mr-1.5 md:mr-2" />
-                            <span className="hidden sm:inline">Add Booking</span>
-                            <span className="sm:hidden">Add</span>
+                            <Plus className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                            <span className="hidden xs:inline">New Booking</span> <span className="xs:hidden">Add</span>
                         </Button>
                     </div>
                 </div>
@@ -354,76 +340,72 @@ const GlobalBookingsPage = () => {
 
             <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8 min-w-0">
                 {/* Statistics Overview */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Total Bookings', value: bookings.length, icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Reservations', value: bookings.length, icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
                         { label: 'Active Guests', value: activeBookings, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Pending Approvals', value: pendingBookings, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Total Revenue', value: `PKR ${(totalRevenue / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' }
+                        { label: 'Pending Node', value: pendingBookings, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Revenue Stream', value: `PKR ${(totalRevenue / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default">
-                            <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
+                            <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform shrink-0`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
-                                <span className="text-xl font-bold text-gray-900 tracking-tight">{stat.value}</span>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
+                                <span className="text-sm md:text-xl font-black text-gray-900 tracking-tight">{stat.value}</span>
                             </div>
                         </div>
                     ))}
                 </div>
 
                 {/* Search and Filters */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col sm:flex-row items-center gap-4 shadow-sm w-full min-w-0">
-                    <div className="flex-1 relative w-full group px-2 min-w-0">
+                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm">
+                    <div className="flex-1 relative w-full group px-2">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
                         <Input
-                            placeholder="Search by Guest, Room or Hostel..."
-                            className="w-full h-12 pl-10 bg-transparent border-none shadow-none font-bold text-[11px] md:text-sm focus-visible:ring-0 placeholder:text-gray-300 min-w-0"
+                            placeholder="Filter by Resident, Room or Branch..."
+                            className="w-full h-11 md:h-12 pl-10 bg-transparent border-none shadow-none font-bold text-[11px] md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         {searchQuery && (
-                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase transition-all animate-in fade-in zoom-in duration-300">
-                                {filteredBookings.length} Results
+                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[8px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase transition-all animate-in fade-in zoom-in duration-300 hidden sm:inline">
+                                {filteredBookings.length} Matches
                             </span>
                         )}
                     </div>
 
-                    <div className="h-8 w-px bg-gray-100 mx-2 hidden sm:block" />
-
-                    <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-xl w-full sm:w-auto overflow-x-auto">
+                    <div className="flex items-center gap-1.5 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm">
+                                <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0">
                                     <Filter className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {statusFilter === 'All' ? 'All Status' : statusFilter.replace('_', ' ')}
+                                    {statusFilter === 'All' ? 'ANY STATUS' : statusFilter.replace('_', ' ')}
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[220px] rounded-xl border-gray-100 shadow-xl p-2">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Booking Status</DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-gray-50 mb-1" />
+                            <DropdownMenuContent align="end" className="w-[180px] rounded-xl border-gray-100 shadow-xl p-1">
                                 {["All", "CONFIRMED", "PENDING", "CHECKED_IN", "CHECKED_OUT", "CANCELLED"].map(status => (
-                                    <DropdownMenuItem key={status} onClick={() => setStatusFilter(status)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer">
+                                    <DropdownMenuItem key={status} onClick={() => setStatusFilter(status)} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg cursor-pointer">
                                         {status.replace('_', ' ')}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
 
+                        <div className="h-4 w-px bg-gray-200 shrink-0" />
+
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-10 px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm">
+                                <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0">
                                     <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {hostelFilter === 'All' ? 'All Hostels' : hostelFilter}
+                                    {hostelFilter === 'All' ? 'ALL BRANCHES' : hostelFilter}
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[280px] rounded-xl border-gray-100 shadow-xl p-2">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Select Hostel</DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-gray-50 mb-1" />
-                                <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">All Hostels</DropdownMenuItem>
+                            <DropdownMenuContent align="end" className="w-[200px] rounded-xl border-gray-100 shadow-xl p-1">
+                                <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">All Branches</DropdownMenuItem>
                                 {hostels.map(h => (
-                                    <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">
+                                    <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">
                                         {h.name}
                                     </DropdownMenuItem>
                                 ))}
@@ -439,113 +421,105 @@ const GlobalBookingsPage = () => {
                             <Link
                                 href={`/admin/bookings/${booking.id}`}
                                 key={booking.id}
-                                className="bg-white border border-gray-100 rounded-2xl p-5 pb-14 flex flex-col lg:flex-row items-center justify-between gap-6 hover:shadow-md transition-shadow group relative overflow-hidden"
+                                className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 pb-14 md:pb-14 flex flex-col xl:flex-row items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-shadow group relative overflow-hidden"
                             >
-                                <div className={`absolute top-0 left-0 w-1.5 h-full ${getRibbonColor(booking.status)} opacity-70`} />
+                                <div className={`absolute top-0 left-0 w-1 md:w-1.5 h-full ${getRibbonColor(booking.status)} opacity-70`} />
 
-                                <div className="flex items-center gap-6 flex-1 min-w-0">
-                                    {/* Guest Info */}
-                                    <div className="flex items-center gap-3 sm:gap-5 min-w-[200px] sm:min-w-[280px]">
-                                        <div className="h-10 w-10 sm:h-14 sm:w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm shrink-0 group-hover:bg-blue-600 transition-colors">
-                                            <UserIcon className="h-4 w-4 sm:h-6 sm:w-6 text-gray-400 group-hover:text-white transition-colors" />
+                                <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 flex-1 min-w-0 w-full xl:w-auto text-center md:text-left">
+                                    {/* Resident Info */}
+                                    <div className="flex items-center gap-3 md:gap-5 min-w-0 md:min-w-[280px] w-full md:w-auto">
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm shrink-0 group-hover:bg-indigo-600 transition-colors">
+                                            <UserIcon className="h-4 w-4 md:h-5 md:w-5 text-gray-400 group-hover:text-white transition-colors" />
                                         </div>
                                         <div className="flex flex-col min-w-0">
-                                            <h4 className="text-sm sm:text-base font-bold text-gray-900 uppercase tracking-tight truncate">{booking.User.name}</h4>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest">{booking.Room?.Hostel?.name}</span>
+                                            <h4 className="text-[13px] md:text-sm font-black text-gray-900 uppercase tracking-tight truncate">{booking.User.name}</h4>
+                                            <div className="flex items-center justify-center md:justify-start gap-2 mt-0.5">
+                                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest truncate">{booking.Room?.Hostel?.name}</span>
                                                 {booking.uid && (
-                                                    <>
-                                                        <span className="h-1 w-1 rounded-full bg-gray-200" />
-                                                        <span className="text-[9px] sm:text-[10px] font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{booking.uid}</span>
-                                                    </>
+                                                    <span className="text-[8px] font-black text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded uppercase">{booking.uid}</span>
                                                 )}
                                             </div>
+                                        </div>
+                                        <div className="ml-auto md:hidden">
+                                            <Badge variant="outline" className={`${getStatusStyle(booking.status)} px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border shrink-0`}>
+                                                {booking.status.replace('_', ' ')}
+                                            </Badge>
                                         </div>
                                     </div>
 
                                     {/* Room Details */}
-                                    <div className="hidden md:flex flex-col gap-1 min-w-[160px]">
+                                    <div className="flex items-center gap-4 md:flex-col md:items-start md:gap-1 w-full md:w-auto justify-between md:justify-start px-2 md:px-0">
                                         <div className="flex items-center gap-2">
-                                            <BedDouble className="h-3.5 w-3.5 text-blue-500" />
-                                            <span className="text-xs font-bold text-gray-900 uppercase">Room {booking.Room?.roomNumber}</span>
+                                            <BedDouble className="h-3.5 w-3.5 text-indigo-500" />
+                                            <span className="text-[11px] font-black text-gray-900 uppercase">UNIT {booking.Room?.roomNumber}</span>
                                         </div>
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5">{booking.Room?.type} Unit</span>
+                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{booking.Room?.type} SEATER</span>
                                     </div>
 
-                                    {/* Dates: Horizontal Timeline Style */}
-                                    <div className="hidden xl:flex items-center gap-6 min-w-[340px] bg-blue-50/30 p-3 rounded-2xl border border-blue-100/50">
+                                    {/* Timeline */}
+                                    <div className="hidden xl:flex items-center gap-4 min-w-[300px] bg-indigo-50/30 p-2.5 rounded-xl border border-indigo-100/50">
                                         <div className="flex flex-col gap-0.5">
-                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5 pl-0.5">
-                                                <Calendar className="h-2.5 w-2.5" /> ENTRY
+                                            <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                                                <Calendar className="h-2.5 w-2.5" /> IN
                                             </span>
-                                            <span className="text-[11px] font-bold text-gray-900 uppercase">{format(new Date(booking.checkIn), 'MMM dd, yyyy')}</span>
+                                            <span className="text-[10px] font-black text-gray-900 uppercase">{format(new Date(booking.checkIn), 'MMM dd, yy')}</span>
                                         </div>
-                                        <div className="flex-1 flex items-center px-4">
-                                            <div className="h-[2px] w-full bg-blue-100 relative">
-                                                <div className="absolute -top-1 left-0 h-2 w-2 rounded-full bg-blue-200" />
-                                                <div className="absolute -top-1 right-0 h-2 w-2 rounded-full bg-blue-200" />
-                                            </div>
+                                        <div className="flex-1 h-[1px] bg-indigo-100 relative mx-2">
+                                            <div className="absolute -top-1 left-0 h-2 w-2 rounded-full bg-indigo-200" />
+                                            <div className="absolute -top-1 right-0 h-2 w-2 rounded-full bg-indigo-200" />
                                         </div>
                                         <div className="flex flex-col gap-0.5 text-right">
-                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest flex items-center justify-end gap-1.5 pr-0.5">
-                                                EXIT <History className="h-2.5 w-2.5" />
+                                            <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest flex items-center justify-end gap-1.5">
+                                                OUT <History className="h-2.5 w-2.5" />
                                             </span>
-                                            <span className="text-[11px] font-bold text-gray-900 uppercase">{booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'ACTIVE'}</span>
+                                            <span className="text-[10px] font-black text-gray-900 uppercase">{booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yy') : 'ACTIVE'}</span>
                                         </div>
                                     </div>
 
-                                    {/* Status */}
-                                    <div className="min-w-[140px] flex justify-center hidden sm:flex">
-                                        <Badge variant="outline" className={`${getStatusStyle(booking.status)} px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest border shadow-sm`}>
+                                    {/* Status (Desktop) */}
+                                    <div className="hidden md:flex min-w-[120px] justify-center">
+                                        <Badge variant="outline" className={`${getStatusStyle(booking.status)} px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm`}>
                                             {booking.status.replace('_', ' ')}
                                         </Badge>
                                     </div>
                                 </div>
 
-                                {/* Actions */}
-                                <div className="flex items-center gap-2 lg:ml-auto w-full sm:w-auto mt-4 lg:mt-0 justify-between sm:justify-end">
-                                    <div className="sm:hidden flex justify-center">
-                                        <Badge variant="outline" className={`${getStatusStyle(booking.status)} px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest border shadow-sm`}>
-                                            {booking.status.replace('_', ' ')}
-                                        </Badge>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Button
-                                            size="icon"
-                                            variant="ghost"
-                                            className="h-10 w-10 rounded-full hover:bg-gray-50 text-gray-400 transition-colors"
-                                        >
-                                            <Eye className="h-4 w-4" />
-                                        </Button>
-                                        <Button
-                                            className="h-10 px-3 sm:px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] sm:text-[10px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn"
-                                        >
-                                            View Details
-                                            <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
-                                        </Button>
-                                    </div>
+                                <div className="flex items-center gap-2 w-full xl:w-auto justify-end pt-3 md:pt-0 border-t md:border-none border-gray-50">
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        className="h-9 w-9 rounded-full hover:bg-gray-50 text-gray-400 hidden sm:flex"
+                                    >
+                                        <Eye className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn w-full sm:w-auto justify-center"
+                                    >
+                                        Open Record
+                                        <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
+                                    </Button>
                                 </div>
 
-                                {/* Most Recent Payment Instant Check - Absoluted to bottom */}
+                                {/* Instant Payment Check */}
                                 {booking.Payment && booking.Payment.length > 0 && (
-                                    <div className="absolute bottom-0 left-0 w-full h-[38px] bg-gray-50/80 backdrop-blur-sm border-t border-gray-100 flex items-center justify-between px-4 sm:px-6 group-hover:bg-white transition-colors duration-300">
-                                        <div className="flex items-center gap-2 sm:gap-3">
-                                            <div className="flex items-center gap-1 sm:gap-1.5">
+                                    <div className="absolute bottom-0 left-0 w-full h-[36px] bg-gray-50/80 backdrop-blur-sm border-t border-gray-100 flex items-center justify-between px-4 md:px-6 group-hover:bg-white transition-colors duration-300">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-1.5">
                                                 <CreditCard className="h-3 w-3 text-gray-400" />
-                                                <span className="hidden sm:inline text-[9px] font-bold text-gray-400 uppercase tracking-widest">Payment Status</span>
+                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">FISCAL STATUS</span>
                                             </div>
-                                            <div className="h-3 w-px bg-gray-200 hidden sm:block" />
-                                            <div className="flex items-center gap-1.5 sm:gap-2">
-                                                <span className={`text-[9px] sm:text-[10px] font-bold uppercase tracking-tight ${booking.Payment[0].status === 'PAID' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                            <div className="h-3 w-px bg-gray-200" />
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-[9px] font-black uppercase tracking-tight ${booking.Payment[0].status === 'PAID' ? 'text-emerald-600' : 'text-rose-600'}`}>
                                                     {booking.Payment[0].status}
                                                 </span>
-                                                <span className="text-[9px] sm:text-[10px] font-bold text-gray-900 tracking-tighter">PKR {booking.Payment[0].amount.toLocaleString()}</span>
+                                                <span className="text-[9px] font-black text-gray-900">Rs. {booking.Payment[0].amount.toLocaleString()}</span>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-1.5 sm:gap-2">
-                                            <span className="h-1 w-1 rounded-full bg-emerald-400 animate-pulse" />
-                                            <span className="text-[8px] sm:text-[9px] font-bold text-gray-500 uppercase tracking-widest hidden xs:inline">
-                                                {format(new Date(booking.Payment[0].date), 'MMM dd, HH:mm')}
+                                        <div className="flex items-center gap-2">
+                                            <div className={`h-1.5 w-1.5 rounded-full ${booking.Payment[0].status === 'PAID' ? 'bg-emerald-400' : 'bg-rose-400'} animate-pulse`} />
+                                            <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">
+                                                {format(new Date(booking.Payment[0].date), 'MMM dd')}
                                             </span>
                                         </div>
                                     </div>

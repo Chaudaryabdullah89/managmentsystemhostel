@@ -131,62 +131,48 @@ const HostelsPage = () => {
         }
     };
 
-    if (hostelsloading) return (
-        <div className="flex h-screen items-center justify-center bg-white">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 border-4 border-blue-50 border-t-blue-600 rounded-full animate-spin" />
-                    <Building2 className="h-8 w-8 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
-                </div>
-                <div className="text-center">
-                    <p className="text-xl font-bold text-gray-900 tracking-tight">Loading Hostels...</p>
-                    <p className="text-sm text-gray-500 font-medium mt-1">Getting your records...</p>
-                </div>
-            </div>
-        </div>
-    );
+    if (hostelsloading) return <Loader label="Compiling Properties" subLabel="Accessing infrastructure registry node" icon={Building2} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50">
-            <div className="bg-white border-b sticky top-0 z-40 h-16">
-                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-2 md:gap-4">
-                        <div className="h-8 w-1 bg-blue-600 rounded-full hidden md:block" />
+            <div className="bg-white border-b sticky top-0 z-40 py-2 md:h-16">
+                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-base md:text-lg font-bold text-gray-900 tracking-tight leading-tight">All Hostels</h1>
-                            <div className="flex items-center gap-1 md:gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 hidden sm:inline">Settings</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500 hidden sm:block" />
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Infrastructure</h1>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Node Registry</span>
+                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
                                 <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 md:gap-4">
-                        <div className="hidden md:flex items-center gap-8 mr-4">
+                        <div className="hidden lg:flex items-center gap-8 mr-4">
                             <div className="flex flex-col items-end">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</span>
-                                <span className="text-sm font-bold text-emerald-600 uppercase">System OK</span>
+                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Efficiency</span>
+                                <span className="text-sm font-bold text-emerald-600 uppercase tracking-tighter">Optimal</span>
                             </div>
                             <div className="flex flex-col items-end">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total</span>
-                                <span className="text-sm font-bold text-gray-900">{hostelsToDisplay.length} Hostels</span>
+                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Total Nodes</span>
+                                <span className="text-sm font-bold text-gray-900 tracking-tighter">{hostelsToDisplay.length} Branches</span>
                             </div>
                         </div>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="rounded-full hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9 shrink-0"
+                            className="rounded-xl hover:bg-gray-100 h-9 w-9 shrink-0"
                             onClick={handleRefresh}
                             disabled={isFetchingHostels}
                         >
                             <RefreshCw className={`h-4 w-4 text-gray-500 ${isFetchingHostels ? 'animate-spin' : ''}`} />
                         </Button>
                         <Link href="/admin/hostels/createhostel?role=admin">
-                            <Button className="bg-blue-600 hover:bg-blue-700 text-white h-8 md:h-9 px-3 md:px-4 rounded-xl font-bold text-[10px] md:text-[11px] uppercase tracking-wider shadow-sm gap-1.5 md:gap-2 flex whitespace-nowrap">
-                                <Plus className="h-3.5 w-3.5" />
-                                <span className="hidden sm:inline">Add Hostel</span>
-                                <span className="sm:hidden">Add</span>
+                            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 px-4 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm gap-2 whitespace-nowrap">
+                                <Plus className="h-4 w-4" />
+                                <span>Add Branch</span>
                             </Button>
                         </Link>
                     </div>
@@ -200,42 +186,39 @@ const HostelsPage = () => {
                         { label: 'Buildings', value: hostelsToDisplay.length, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
                         { label: 'Total BEDS', value: hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 0), icon: Bed, color: 'text-purple-600', bg: 'bg-purple-50' },
                         { label: 'Available', value: hostelsToDisplay.reduce((t, h) => t + h.roomStats.availableRooms, 0), icon: DoorOpen, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Occupied', value: `${Math.round((hostelsToDisplay.reduce((t, h) => t + h.roomStats.occupiedRooms, 0) / Math.max(hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 1), 1)) * 100)}%`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Occupancy', value: `${Math.round((hostelsToDisplay.reduce((t, h) => t + h.roomStats.occupiedRooms, 0) / Math.max(hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 1), 1)) * 100)}%`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
                     ].map((s, i) => (
-                        <Card key={i} className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white overflow-hidden">
-                            <CardContent className="p-3 md:p-5 flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
-                                <div className={`h-8 w-8 md:h-11 md:w-11 rounded-lg md:rounded-xl flex items-center justify-center ${s.bg} ${s.color}`}>
-                                    <s.icon className="h-4 w-4 md:h-6 md:w-6" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">{s.label}</span>
-                                    <span className="text-base md:text-xl font-bold text-gray-900 tracking-tight">{s.value}</span>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
+                            <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${s.bg} ${s.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform shrink-0`}>
+                                <s.icon className="h-5 w-5" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">{s.label}</span>
+                                <span className="text-sm md:text-xl font-black text-gray-900 tracking-tight">{s.value}</span>
+                            </div>
+                        </div>
                     ))}
                 </div>
 
                 {/* Search & Filter */}
                 <div className="bg-white border border-gray-100 p-2 rounded-2xl flex flex-col md:flex-row gap-4 items-center shadow-sm">
                     <div className="relative flex-1 group w-full px-2">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                         <Input
-                            className="w-full bg-transparent border-none shadow-none h-12 pl-10 text-sm font-bold text-gray-900 placeholder:text-gray-300 focus-visible:ring-0"
-                            placeholder="Search by name, city or type..."
+                            className="w-full bg-transparent border-none shadow-none h-11 md:h-12 pl-10 text-[11px] md:text-sm font-black text-gray-900 placeholder:text-gray-300 focus-visible:ring-0 uppercase tracking-tight"
+                            placeholder="Filter by Name, City or Category..."
                             value={searchterm}
                             onChange={(e) => setsearchterm(e.target.value)}
                         />
                     </div>
-                    <div className="h-8 w-px bg-gray-100 mx-2 hidden md:block" />
-                    <div className="flex items-center gap-1.5 p-1 bg-gray-50 rounded-xl w-full md:w-auto">
+                    <div className="flex items-center gap-1.5 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide shrink-0">
                         {['All', 'Boys', 'Girls'].map((type) => (
                             <button
                                 key={type}
                                 onClick={() => setFilterType(type)}
-                                className={`flex-1 md:flex-none px-6 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${filterType === type ? 'bg-white text-gray-900 shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`flex-1 md:flex-none px-6 py-2 rounded-lg text-9px md:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterType === type ? 'bg-white text-gray-900 shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}
                             >
-                                {type}
+                                {type === 'All' ? 'ANY' : type}
                             </button>
                         ))}
                     </div>
@@ -246,39 +229,35 @@ const HostelsPage = () => {
                     {matchedData.length > 0 ? (
                         matchedData.map((hostel, index) => (
                             <Link key={hostel.id || index} className='hover:bg-gray-100 block' href={`/admin/hostels/${hostel.id}`}>
-                                <div className="flex flex-col w-full relative">
+                                <div className="flex flex-col w-full relative group">
                                     {/* Hostel Item Content */}
-                                    <div className="flex flex-col lg:flex-row items-start lg:items-center gap-8 p-5 pr-6">
-                                        {/* Status Indicator */}
-                                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-l-2xl ${hostel.type === 'BOYS' ? 'bg-blue-600 shadow-[2px_0_10px_rgba(37,99,235,0.2)]' : 'bg-pink-500 shadow-[2px_0_10px_rgba(236,72,153,0.2)]'}`} />
+                                    <div className="flex flex-col xl:flex-row items-center gap-6 p-4 md:p-5">
+                                        <div className={`absolute left-0 top-0 bottom-0 w-1 md:w-1.5 rounded-l-2xl ${hostel.type === 'BOYS' ? 'bg-blue-600' : 'bg-pink-500'} opacity-80`} />
 
-                                        {/* Hostel Info */}
-                                        <div
-                                            className="flex items-center gap-5 min-w-[280px] cursor-pointer group/node"
-                                            onClick={() => router.push(`/admin/hostels/${hostel.id}`)}
-                                        >
-                                            <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 border shadow-sm transition-all group-hover/node:bg-black group-hover/node:text-white ${hostel.type === 'BOYS' ? 'bg-blue-50 border-blue-100 text-blue-600' : 'bg-pink-50 border-pink-100 text-pink-600'}`}>
-                                                <Building2 className="h-7 w-7" />
+                                        {/* Branch Identifier */}
+                                        <div className="flex items-center gap-4 md:gap-5 min-w-0 md:min-w-[300px] w-full xl:w-auto">
+                                            <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl flex items-center justify-center shrink-0 border shadow-sm transition-all group-hover:bg-black group-hover:text-white ${hostel.type === 'BOYS' ? 'bg-blue-50 border-blue-100 text-blue-600' : 'bg-pink-50 border-pink-100 text-pink-600'}`}>
+                                                <Building2 className="h-5 w-5 md:h-6 md:w-6" />
                                             </div>
-                                            <div className="flex flex-col gap-0.5">
-                                                <div className="flex items-center gap-3">
-                                                    <h3 className="text-base font-bold text-gray-900 tracking-tight group-hover/node:text-black transition-colors uppercase">{hostel.name}</h3>
-                                                    <Badge variant="outline" className={`${getStatusTheme(hostel.status)} text-[8px] font-bold px-2 py-0 rounded-full border-px`}>
+                                            <div className="flex flex-col min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="text-sm md:text-base font-black text-gray-900 tracking-tight uppercase truncate">{hostel.name}</h3>
+                                                    <Badge variant="outline" className={`${getStatusTheme(hostel.status)} text-[8px] font-black px-1.5 py-0 rounded-full border-px shrink-0`}>
                                                         {hostel.status}
                                                     </Badge>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <MapPin className="h-3.5 w-3.5 text-gray-400" />
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{hostel.location.city} • {hostel.type}</span>
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                    <MapPin className="h-3 w-3 text-gray-400" />
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest truncate">{hostel.location.city} • {hostel.type}</span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        {/* Occupancy Status */}
-                                        <div className="flex-1 w-full max-w-sm lg:max-w-md hidden md:block px-4">
+                                        {/* Performance Metrics */}
+                                        <div className="flex-1 w-full max-w-none md:max-w-sm xl:max-w-md hidden md:block">
                                             <div className="flex justify-between items-end mb-1.5">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Occupancy</span>
-                                                <span className="text-xs font-bold text-gray-900">{Math.round((hostel.roomStats.occupiedRooms / hostel.roomStats.totalRooms) * 100 || 0)}%</span>
+                                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Occupancy Metrics</span>
+                                                <span className="text-xs font-black text-gray-900">{Math.round((hostel.roomStats.occupiedRooms / hostel.roomStats.totalRooms) * 100 || 0)}%</span>
                                             </div>
                                             <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100">
                                                 <div
@@ -288,61 +267,51 @@ const HostelsPage = () => {
                                             </div>
                                         </div>
 
-                                        {/* Management Info */}
-                                        <div className="flex items-center gap-10 min-w-[220px]">
+                                        {/* Custodial Info */}
+                                        <div className="hidden lg:flex items-center gap-8 min-w-[200px]">
                                             <div className="flex flex-col">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Managers</span>
-                                                <div className="text-[11px] font-bold text-gray-700 truncate max-w-[120px]">
+                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Registry Leads</span>
+                                                <div className="text-[10px] font-black text-gray-700 truncate max-w-[120px] uppercase">
                                                     <WardenNames wardenIds={hostel.basicInfo.wardens} />
                                                 </div>
                                             </div>
                                             <div className="flex flex-col text-right">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Link</span>
-                                                <Button
-                                                    variant="ghost"
-                                                    className="h-6 p-0 hover:bg-transparent text-emerald-600 text-[9px] font-black uppercase tracking-widest"
-                                                    onClick={() => router.push(`/admin/hostels/${hostel.id}`)}
-                                                >
-                                                    View Details →
-                                                </Button>
+                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Inventory</span>
+                                                <span className="text-[10px] font-black text-gray-700 uppercase">{hostel.roomStats.totalRooms} Blocks</span>
                                             </div>
                                         </div>
 
                                         {/* Actions */}
-                                        <div className="flex items-center gap-3 lg:ml-auto">
+                                        <div className="flex items-center gap-2 md:gap-3 w-full xl:w-auto justify-end pt-3 xl:pt-0 border-t xl:border-none border-gray-50">
                                             <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-gray-100 text-gray-400 transition-all">
+                                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-gray-100 text-gray-400 hidden sm:flex shrink-0">
                                                         <MoreVertical className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-gray-100 shadow-xl">
-                                                    <DropdownMenuItem className="p-3 gap-3 rounded-lg font-bold text-[11px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/admin/hostels/${hostel.id}`)}>
-                                                        <LayoutGrid className="h-3.5 w-3.5" /> View Hostel
+                                                <DropdownMenuContent align="end" className="w-52 p-1 rounded-xl border-gray-100 shadow-xl">
+                                                    <DropdownMenuItem className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/admin/hostels/${hostel.id}`)}>
+                                                        <LayoutGrid className="h-3.5 w-3.5" /> Registry View
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="p-3 gap-3 rounded-lg font-bold text-[11px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/admin/hostels/${encodeURIComponent(hostel.name)}/edithostel?hostelId=${hostel.id}`)}>
-                                                        <Edit className="h-3.5 w-3.5" /> Edit Hostel
+                                                    <DropdownMenuItem className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/admin/hostels/${encodeURIComponent(hostel.name)}/edithostel?hostelId=${hostel.id}`)}>
+                                                        <Edit className="h-3.5 w-3.5" /> Modify Node
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="p-3 gap-3 rounded-lg font-bold text-[11px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/admin/hostels/${encodeURIComponent(hostel.name)}/residents?hostelId=${hostel.id}`)}>
-                                                        <Users className="h-3.5 w-3.5" /> View Residents
-                                                    </DropdownMenuItem>
-                                                    <div className="h-px bg-gray-50 my-1 mx-2" />
-                                                    <DropdownMenuItem className="p-3 gap-3 rounded-lg font-bold text-[11px] uppercase tracking-wider text-red-500 focus:bg-red-50 focus:text-red-600 cursor-pointer" onSelect={(e) => e.preventDefault()}>
+                                                    <DropdownMenuItem className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-red-500 focus:bg-red-50 focus:text-red-600 cursor-pointer" onSelect={(e) => e.preventDefault()}>
                                                         <AlertDialog>
                                                             <AlertDialogTrigger className="w-full text-left flex items-center gap-3">
-                                                                <Trash className="h-3.5 w-3.5" /> Delete Hostel
+                                                                <Trash className="h-3.5 w-3.5" /> Purge Records
                                                             </AlertDialogTrigger>
-                                                            <AlertDialogContent className="rounded-3xl border-none shadow-2xl overflow-hidden p-0 max-w-lg">
-                                                                <div className="bg-red-600 p-10 text-white relative">
-                                                                    <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center mb-6"><Trash size={24} /></div>
-                                                                    <AlertDialogTitle className="text-2xl font-bold tracking-tight mb-2">Delete Hostel?</AlertDialogTitle>
-                                                                    <AlertDialogDescription className="text-red-100 font-medium">
-                                                                        Deleting <span className="text-white font-bold">{hostel.name}</span> will remove all rooms and resident records permanently. This action cannot be undone.
+                                                            <AlertDialogContent className="rounded-[2.5rem] border-none shadow-3xl overflow-hidden p-0 max-w-md">
+                                                                <div className="bg-rose-600 p-8 text-white relative">
+                                                                    <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center mb-4"><Trash size={24} /></div>
+                                                                    <AlertDialogTitle className="text-xl font-black uppercase tracking-tight mb-2 text-white">Purge Branch Data?</AlertDialogTitle>
+                                                                    <AlertDialogDescription className="text-rose-100 text-xs font-medium uppercase tracking-wider">
+                                                                        This will erase all room and resident data for {hostel.name}.
                                                                     </AlertDialogDescription>
                                                                 </div>
-                                                                <div className="p-8 flex items-center justify-end gap-3 bg-white">
-                                                                    <AlertDialogCancel className="rounded-xl border-none bg-gray-100 font-bold px-6 h-11 uppercase tracking-wider text-[10px] text-gray-500">Cancel</AlertDialogCancel>
-                                                                    <AlertDialogAction className="bg-red-600 hover:bg-red-700 rounded-xl font-bold px-6 h-11 uppercase tracking-wider text-[10px] transition-all shadow-sm" onClick={() => handledelecthostel(hostel.id)}>Yes, Delete</AlertDialogAction>
+                                                                <div className="p-6 flex items-center justify-end gap-3 bg-white">
+                                                                    <AlertDialogCancel className="rounded-xl border-none bg-gray-50 font-black px-6 h-10 uppercase tracking-widest text-[9px] text-gray-400">Abort</AlertDialogCancel>
+                                                                    <AlertDialogAction className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black px-6 h-10 uppercase tracking-widest text-[9px] transition-all" onClick={() => handledelecthostel(hostel.id)}>Confirm Purge</AlertDialogAction>
                                                                 </div>
                                                             </AlertDialogContent>
                                                         </AlertDialog>
@@ -350,45 +319,44 @@ const HostelsPage = () => {
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                             <Button
-                                                size="sm"
-                                                className="h-12 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase tracking-wider text-[10px] shadow-sm flex items-center gap-2 group/btn"
-                                                onClick={() => router.push(`/admin/hostels/${encodeURIComponent(hostel.name)}/rooms?role=admin&hostelId=${hostel.id}`)}
+                                                className="h-9 px-4 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-[9px] shadow-sm flex items-center gap-2 group/btn w-full sm:w-auto justify-center"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    router.push(`/admin/hostels/${encodeURIComponent(hostel.name)}/rooms?role=admin&hostelId=${hostel.id}`);
+                                                }}
                                             >
-                                                View Rooms
+                                                Enter Branch
                                                 <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
                                             </Button>
                                         </div>
                                     </div>
 
                                     {/* Room Preview */}
-                                    <div className="bg-gray-50/50 border-t border-gray-100 px-6 py-3.5 flex items-center gap-6">
-                                        <div className="flex items-center gap-2">
+                                    <div className="bg-gray-50/50 border-t border-gray-100 px-4 md:px-6 py-3 flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
+                                        <div className="flex items-center gap-2 shrink-0">
                                             <LayoutGrid className="h-3 w-3 text-gray-400" />
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">Rooms</span>
+                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Inventory Map</span>
                                         </div>
-                                        <div className="h-4 w-px bg-gray-200" />
-                                        <div className="flex flex-wrap gap-2.5">
-                                            {hostel.rooms.slice(0, 5).map((room) => (
+                                        <div className="h-px md:h-4 w-full md:w-px bg-gray-200" />
+                                        <div className="flex flex-wrap gap-2">
+                                            {hostel.rooms.slice(0, 8).map((room) => (
                                                 <div
                                                     key={room.id}
-                                                    className="group/tag flex items-center gap-2 bg-white border border-gray-100 px-3 py-1.5 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                                                    className="group/tag flex items-center gap-1.5 bg-white border border-gray-100 px-2 py-1 rounded-lg hover:border-indigo-300 transition-all cursor-pointer"
                                                     onClick={(e) => {
+                                                        e.preventDefault();
                                                         e.stopPropagation();
                                                         router.push(`/admin/hostels/${encodeURIComponent(hostel.name)}/room-details/room/${room.id}?hostelId=${hostel.id}`);
                                                     }}
                                                 >
-                                                    <div className={`h-1.5 w-1.5 rounded-full ${room.status === 'AVAILABLE' ? 'bg-emerald-500' : 'bg-blue-500'}`} />
-                                                    <span className="text-[10px] font-bold text-gray-900 uppercase">Room {room.roomNumber}</span>
-                                                    <span className="text-[8px] font-bold text-gray-300 group-hover/tag:text-blue-500 transition-colors">→</span>
+                                                    <div className={`h-1.5 w-1.5 rounded-full ${room.status === 'AVAILABLE' ? 'bg-emerald-500' : 'bg-indigo-500'}`} />
+                                                    <span className="text-[9px] font-black text-gray-700 uppercase">{room.roomNumber}</span>
                                                 </div>
                                             ))}
-                                            {hostel.rooms.length > 5 && (
-                                                <div className="flex items-center px-3 py-1.5 rounded-lg bg-gray-200/30 border border-dashed border-gray-200">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase">{hostel.rooms.length - 5} more rooms</span>
+                                            {hostel.rooms.length > 8 && (
+                                                <div className="flex items-center px-2 py-1 rounded-lg bg-gray-100 border border-dashed border-gray-200">
+                                                    <span className="text-[8px] font-black text-gray-400 uppercase">+{hostel.rooms.length - 8}</span>
                                                 </div>
-                                            )}
-                                            {hostel.rooms.length === 0 && (
-                                                <span className="text-[10px] font-bold text-gray-300 italic uppercase tracking-widest">No rooms added yet</span>
                                             )}
                                         </div>
                                     </div>

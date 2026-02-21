@@ -6,32 +6,27 @@ import {
     Wrench,
     Calendar,
     Clock,
-    AlertCircle,
     CheckCircle2,
-    Filter,
     Search,
     AlertTriangle,
-    Info,
     LayoutGrid,
     History as HistoryIcon,
     Plus,
     Loader2,
-    MoreVertical,
     CheckCircle,
-    Edit2
+    Edit2,
+    MoreVertical,
+    Activity
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton"
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
     Dialog,
     DialogContent,
-    DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogFooter,
     DialogDescription
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -50,6 +45,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { useSingleRoomByHostelId, useCreateMaintenance, useUpdateMaintenance } from "@/hooks/useRoom";
+import Loader from "@/components/ui/Loader";
 
 const MaintenancePage = () => {
     const params = useParams();
@@ -115,20 +111,7 @@ const MaintenancePage = () => {
         setIsUpdateDialogOpen(true);
     };
 
-    if (isLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-24 w-24 border-[3px] border-gray-100 border-t-amber-500 rounded-full animate-spin" />
-                    <Wrench className="h-10 w-10 text-amber-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <div className="text-center space-y-1.5">
-                    <p className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">Syncing Health Logs</p>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Retreiving Maintenance History & Diagnostics</p>
-                </div>
-            </div>
-        </div>
-    );
+    if (isLoading) return <Loader label="Analyzing Health Logs" subLabel={`Retrieving maintenance protocols for Unit_${roomData?.data?.roomNumber || '...'}`} icon={Wrench} />;
 
     const logs = roomData?.data?.maintanance || [];
 
@@ -146,45 +129,52 @@ const MaintenancePage = () => {
 
     const getPriorityColor = (p) => {
         switch (p) {
-            case "URGENT": return "bg-red-50 text-red-700 border-red-100";
-            case "HIGH": return "bg-orange-50 text-orange-700 border-orange-100";
-            case "MEDIUM": return "bg-blue-50 text-blue-700 border-blue-100";
-            default: return "bg-gray-50 text-gray-700 border-gray-100";
+            case "URGENT": return "bg-rose-50 text-rose-700 border-none";
+            case "HIGH": return "bg-orange-50 text-orange-700 border-none";
+            case "MEDIUM": return "bg-indigo-50 text-indigo-700 border-none";
+            default: return "bg-gray-50 text-gray-700 border-none";
         }
     };
 
     return (
         <div className="min-h-screen bg-gray-50/30 pb-20">
-            {/* Slim Header */}
-            <div className="bg-white border-b sticky top-0 z-30 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
+            <header className="bg-white border-b sticky top-0 z-40 py-2 md:h-16">
+                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl hover:bg-gray-100 h-9 w-9">
-                            <ArrowLeft className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl hover:bg-gray-100 h-9 w-9 shrink-0">
+                            <ArrowLeft className="h-5 w-5" />
                         </Button>
-                        <div className="flex flex-col">
-                            <h1 className="text-lg font-black text-gray-900 tracking-tight leading-none flex items-center gap-2">
-                                <Wrench className="h-4 w-4 text-gray-400" />
-                                Maintenance Ledger
-                            </h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
-                                Unit {roomData?.data?.roomNumber} • {decodeURIComponent(hostelName)}
+                        <div className="h-6 w-px bg-gray-100 hidden md:block" />
+                        <div className="flex flex-col min-w-0">
+                            <h1 className="text-sm md:text-lg font-black text-gray-900 tracking-tight leading-none truncate uppercase">Maintenance Ledger</h1>
+                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1 truncate">
+                                Unit {roomData?.data?.roomNumber} • <span className="text-amber-500">{decodeURIComponent(hostelName)}</span>
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        <div className="relative hidden lg:block">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                            <Input
+                                className="pl-9 h-9 w-48 xl:w-64 bg-gray-50/50 border-none text-[10px] font-black uppercase tracking-widest focus:bg-white transition-all rounded-xl shadow-inner"
+                                placeholder="Scan Logs..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button className="h-9 px-4 bg-black hover:bg-gray-800 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-black/10">
-                                    <Plus className="h-3 w-3 mr-2" />
-                                    New Ticket
+                                <Button className="h-9 px-4 md:px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg transition-all active:scale-95 gap-2">
+                                    <Plus className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Issue Ticket</span>
+                                    <span className="sm:hidden">Issue</span>
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-[400px] rounded-3xl p-0 overflow-hidden gap-0">
+                            <DialogContent className="sm:max-w-[400px] rounded-3xl p-0 overflow-hidden gap-0 border-none shadow-2xl">
                                 <div className="p-6 bg-gray-50 border-b border-gray-100">
-                                    <DialogTitle className="text-lg font-black tracking-tight">System Request</DialogTitle>
-                                    <DialogDescription className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Submit maintenance for Room {roomData?.data?.roomNumber}</DialogDescription>
+                                    <DialogTitle className="text-lg font-black tracking-tight uppercase">System Request</DialogTitle>
+                                    <DialogDescription className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Submit maintenance for Unit {roomData?.data?.roomNumber}</DialogDescription>
                                 </div>
                                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                                     <div className="space-y-1.5">
@@ -201,26 +191,26 @@ const MaintenancePage = () => {
                                         <div className="space-y-1.5">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Urgency Level</Label>
                                             <Select value={formData.priority} onValueChange={(v) => setFormData({ ...formData, priority: v })}>
-                                                <SelectTrigger className="h-10 rounded-xl font-bold text-xs uppercase">
+                                                <SelectTrigger className="h-10 rounded-xl font-black text-[10px] uppercase tracking-widest">
                                                     <SelectValue />
                                                 </SelectTrigger>
-                                                <SelectContent className="rounded-xl">
-                                                    <SelectItem value="LOW">Low</SelectItem>
-                                                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                                                    <SelectItem value="HIGH">High</SelectItem>
-                                                    <SelectItem value="URGENT">Urgent</SelectItem>
+                                                <SelectContent className="rounded-xl border-gray-100 shadow-2xl">
+                                                    <SelectItem value="LOW" className="text-[10px] font-black uppercase tracking-widest">Low</SelectItem>
+                                                    <SelectItem value="MEDIUM" className="text-[10px] font-black uppercase tracking-widest">Medium</SelectItem>
+                                                    <SelectItem value="HIGH" className="text-[10px] font-black uppercase tracking-widest">High</SelectItem>
+                                                    <SelectItem value="URGENT" className="text-[10px] font-black uppercase tracking-widest">Urgent</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                         <div className="space-y-1.5">
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Initial State</Label>
                                             <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
-                                                <SelectTrigger className="h-10 rounded-xl font-bold text-xs uppercase">
+                                                <SelectTrigger className="h-10 rounded-xl font-black text-[10px] uppercase tracking-widest">
                                                     <SelectValue />
                                                 </SelectTrigger>
-                                                <SelectContent className="rounded-xl">
-                                                    <SelectItem value="PENDING">Pending</SelectItem>
-                                                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                                                <SelectContent className="rounded-xl border-gray-100 shadow-2xl">
+                                                    <SelectItem value="PENDING" className="text-[10px] font-black uppercase tracking-widest">Pending</SelectItem>
+                                                    <SelectItem value="IN_PROGRESS" className="text-[10px] font-black uppercase tracking-widest">In Progress</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -229,12 +219,12 @@ const MaintenancePage = () => {
                                         <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Technical Details</Label>
                                         <Textarea
                                             placeholder="Detailed diagnostic report..."
-                                            className="min-h-[100px] rounded-xl font-medium text-sm resize-none pt-3"
+                                            className="min-h-[100px] rounded-xl font-medium text-sm resize-none pt-3 focus:ring-1 focus:ring-indigo-500"
                                             value={formData.description}
                                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                         />
                                     </div>
-                                    <Button type="submit" className="w-full h-12 bg-black hover:bg-gray-800 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg mt-2" disabled={createMaintenance.isPending}>
+                                    <Button type="submit" className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg mt-2 transition-all active:scale-[0.98]" disabled={createMaintenance.isPending}>
                                         {createMaintenance.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Initiate Protocol"}
                                     </Button>
                                 </form>
@@ -242,127 +232,161 @@ const MaintenancePage = () => {
                         </Dialog>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            <div className="max-w-[1600px] mx-auto px-6 py-8">
+            <div className="max-w-[1600px] mx-auto px-4 md:px-6 py-8">
                 {/* Metrics Matrix */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-10">
                     {[
-                        { label: 'Total Tickets', value: stats.total, color: 'text-gray-900', icon: LayoutGrid },
-                        { label: 'Pending Action', value: stats.pending, color: 'text-amber-600', icon: Clock },
-                        { label: 'Resolved', value: stats.resolved, color: 'text-emerald-600', icon: CheckCircle2 },
-                        { label: 'Critical Alert', value: stats.urgent, color: 'text-rose-600', icon: AlertTriangle },
+                        { label: 'Total Tickets', value: stats.total, color: 'text-indigo-600', bg: 'bg-indigo-50', icon: LayoutGrid, sub: 'All Logs' },
+                        { label: 'Pending Ops', value: stats.pending, color: 'text-amber-600', bg: 'bg-amber-50', icon: Clock, sub: 'Active Queue' },
+                        { label: 'Resolved', value: stats.resolved, color: 'text-emerald-600', bg: 'bg-emerald-50', icon: CheckCircle2, sub: 'Ops Complete' },
+                        { label: 'Critical Ops', value: stats.urgent, color: 'text-rose-600', bg: 'bg-rose-50', icon: AlertTriangle, sub: 'High Urgency' },
                     ].map((s, i) => (
-                        <div key={i} className="bg-white rounded-[1.5rem] p-5 border border-gray-100 shadow-sm flex items-center gap-4 group hover:shadow-md transition-all">
-                            <div className={`h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center ${s.color} group-hover:scale-110 transition-transform`}>
+                        <Card key={i} className="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex items-center gap-4 group hover:shadow-md transition-all active:scale-[0.98] cursor-default relative overflow-hidden">
+                            <div className={`absolute top-0 right-0 h-12 w-12 ${s.bg} opacity-10 rounded-bl-full translate-x-6 -translate-y-6`} />
+                            <div className={`h-11 w-11 rounded-xl ${s.bg} ${s.color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
                                 <s.icon className="h-5 w-5" />
                             </div>
-                            <div>
-                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{s.label}</p>
-                                <p className="text-xl font-black text-gray-900 leading-tight">{s.value}</p>
+                            <div className="min-w-0">
+                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest truncate">{s.label}</p>
+                                <p className="text-xl font-black text-gray-900 leading-tight truncate">{s.value}</p>
+                                <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest mt-0.5 truncate">{s.sub}</p>
                             </div>
-                        </div>
+                        </Card>
                     ))}
                 </div>
 
                 {/* Asset Ribbon Feed */}
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {filteredLogs.length > 0 ? (
                         filteredLogs.map((log) => (
-                            <div key={log.id} className="group bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-lg transition-all flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
-                                <div className={`absolute left-0 top-0 bottom-0 w-1 ${log.status === 'RESOLVED' ? 'bg-emerald-500' : log.priority === 'URGENT' ? 'bg-red-500' : log.priority === 'HIGH' ? 'bg-orange-500' : 'bg-blue-500'}`} />
-                                <div className="flex items-start gap-5">
-                                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${log.status === 'RESOLVED' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-                                        {log.status === 'RESOLVED' ? <CheckCircle2 className="h-6 w-6" /> : <Clock className="h-6 w-6" />}
+                            <Card key={log.id} className="group bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-xl hover:border-indigo-100 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden active:scale-[0.99] cursor-pointer" onClick={() => openUpdate(log)}>
+                                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${log.status === 'RESOLVED' ? 'bg-emerald-500' : log.priority === 'URGENT' ? 'bg-rose-500' : log.priority === 'HIGH' ? 'bg-orange-500' : 'bg-indigo-500'} opacity-70`} />
+                                <div className="flex items-start gap-4 flex-1">
+                                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-500 ${log.status === 'RESOLVED' ? 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white' : 'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white'}`}>
+                                        {log.status === 'RESOLVED' ? <CheckCircle2 className="h-6 w-6" /> : <Wrench className="h-6 w-6" />}
                                     </div>
-                                    <div>
-                                        <div className="flex items-center gap-3 mb-1">
-                                            <h3 className="text-sm font-black text-gray-900">{log.title}</h3>
-                                            <Badge variant="outline" className={`h-5 border-0 rounded-md text-[9px] font-black uppercase tracking-widest ${getPriorityColor(log.priority)}`}>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight truncate">{log.title}</h3>
+                                            <Badge variant="outline" className={`h-5 border-none rounded-full text-[8px] font-black uppercase tracking-widest px-2 shadow-sm ${getPriorityColor(log.priority)}`}>
                                                 {log.priority}
                                             </Badge>
                                         </div>
-                                        <p className="text-xs font-medium text-gray-500 line-clamp-1">{log.description || "No technical details provided."}</p>
+                                        <p className="text-[11px] font-medium text-gray-500 line-clamp-1 italic">{log.description || "System diagnostic incomplete."}</p>
                                         <div className="flex items-center gap-3 mt-2">
-                                            <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">{new Date(log.createdAt).toLocaleDateString()}</span>
+                                            <div className="flex items-center gap-1.5 text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                                                <Calendar className="h-3 w-3" />
+                                                Node: {roomData?.data?.roomNumber}
+                                            </div>
                                             <span className="h-1 w-1 rounded-full bg-gray-200" />
-                                            <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            <div className="flex items-center gap-1.5 text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                                                <Clock className="h-3 w-3" />
+                                                {new Date(log.createdAt).toLocaleDateString()}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between md:justify-end gap-6 pl-16 md:pl-0">
-                                    <div className="flex flex-col items-end hidden md:flex">
-                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Status Vector</span>
-                                        <span className={`text-[10px] font-black uppercase mt-0.5 ${log.status === 'RESOLVED' ? 'text-emerald-600' : 'text-amber-600'}`}>{log.status}</span>
+                                <div className="flex items-center justify-between md:justify-end gap-6 md:gap-10 border-t md:border-t-0 border-gray-50 pt-4 md:pt-0">
+                                    <div className="flex flex-col items-start md:items-end">
+                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Artifact State</span>
+                                        <Badge className={`mt-0.5 h-6 text-[8px] font-black px-3 py-0 border-none rounded-full shadow-sm ${log.status === 'RESOLVED' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
+                                            {log.status}
+                                        </Badge>
                                     </div>
 
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400">
-                                                <MoreVertical className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="w-48 rounded-xl p-2 border-gray-100 shadow-xl">
-                                            <DropdownMenuItem className="rounded-lg text-xs font-bold p-2.5 cursor-pointer hover:bg-gray-50 mb-1" onClick={() => openUpdate(log)}>
-                                                <Edit2 className="h-3.5 w-3.5 mr-2 text-gray-500" /> Update Status
-                                            </DropdownMenuItem>
-                                            {log.status !== 'RESOLVED' && (
-                                                <DropdownMenuItem
-                                                    className="rounded-lg text-xs font-bold p-2.5 cursor-pointer hover:bg-emerald-50 text-emerald-600"
-                                                    onClick={() => updateMaintenance.mutate({ id: log.id, status: 'RESOLVED' })}
-                                                >
-                                                    <CheckCircle className="h-3.5 w-3.5 mr-2" /> Mark Resolved
+                                    <div className="flex items-center gap-1">
+                                        <div className="h-9 w-9 rounded-xl flex items-center justify-center text-gray-300 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all border border-transparent group-hover:border-indigo-100 hidden sm:flex">
+                                            <Edit2 className="h-4 w-4" />
+                                        </div>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-gray-100 shadow-2xl bg-white/95 backdrop-blur-xl">
+                                                <DropdownMenuItem className="p-3 gap-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-gray-600 focus:bg-gray-50 cursor-pointer" onClick={() => openUpdate(log)}>
+                                                    <Edit2 className="h-4 w-4" /> Update Diagnostics
                                                 </DropdownMenuItem>
-                                            )}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                                {log.status !== 'RESOLVED' && (
+                                                    <DropdownMenuItem
+                                                        className="p-3 gap-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-emerald-600 focus:bg-emerald-50 cursor-pointer"
+                                                        onClick={() => updateMaintenance.mutate({ id: log.id, status: 'RESOLVED' })}
+                                                    >
+                                                        <CheckCircle className="h-4 w-4" /> Execute Resolve
+                                                    </DropdownMenuItem>
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
                                 </div>
-                            </div>
+                            </Card>
                         ))
                     ) : (
-                        <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
-                            <Wrench className="h-8 w-8 text-gray-300 mb-3" />
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">System Optimal • No Active Tickets</p>
+                        <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-dashed border-gray-100">
+                            <Wrench className="h-10 w-10 text-gray-100 mb-4 animate-pulse" />
+                            <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">Maintenance logs void of active tickets</p>
                         </div>
                     )}
                 </div>
             </div>
 
+            {/* Architecture Bar */}
+            <div className="fixed bottom-0 w-full z-40 px-4 md:px-6 pb-4 pointer-events-none left-0">
+                <div className="max-w-[1600px] mx-auto bg-gray-950/90 backdrop-blur-xl border border-white/5 text-white h-12 rounded-2xl shadow-2xl flex items-center justify-between px-6 pointer-events-auto">
+                    <div className="flex items-center gap-4 md:gap-8">
+                        <div className="flex items-center gap-2.5">
+                            <Activity className="w-3.5 h-3.5 text-amber-400" />
+                            <span className="text-[9px] font-black tracking-[0.2em] uppercase text-amber-400 shrink-0 italic">Maintenance Pulse</span>
+                        </div>
+                        <div className="h-4 w-px bg-white/10 hidden md:block"></div>
+                        <div className="flex items-center gap-2">
+                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[9px] font-black uppercase text-gray-400 tracking-widest">All Systems Operational</span>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4 text-[9px] font-black tracking-widest uppercase text-gray-500">
+                        <span className="hidden sm:block">Artifact: MAIN_{roomData?.data?.roomNumber}</span>
+                        <div className="h-1.5 w-1.5 rounded-full bg-white/10 animate-pulse" />
+                    </div>
+                </div>
+            </div>
 
-
-            {/* RESOLUTION DIALOG - Updated Style */}
+            {/* RESOLUTION DIALOG */}
             <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
-                <DialogContent className="sm:max-w-[400px] rounded-3xl p-0 overflow-hidden gap-0">
+                <DialogContent className="sm:max-w-[400px] rounded-3xl p-0 overflow-hidden gap-0 border-none shadow-2xl">
                     <div className="p-6 bg-gray-50 border-b border-gray-100">
-                        <DialogTitle className="text-lg font-black tracking-tight">Status Update</DialogTitle>
-                        <DialogDescription className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Modify ticket state</DialogDescription>
+                        <DialogTitle className="text-lg font-black tracking-tight uppercase">Status Update</DialogTitle>
+                        <DialogDescription className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Modify ticket state for Unit {roomData?.data?.roomNumber}</DialogDescription>
                     </div>
                     <form onSubmit={handleUpdate} className="p-6 space-y-4">
                         <div className="space-y-1.5">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Current State</Label>
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Lifecycle State</Label>
                             <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
-                                <SelectTrigger className="h-10 rounded-xl font-bold text-xs uppercase">
+                                <SelectTrigger className="h-10 rounded-xl font-black text-[10px] uppercase tracking-widest border-gray-100">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-xl">
-                                    <SelectItem value="PENDING">Pending</SelectItem>
-                                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                                    <SelectItem value="RESOLVED">Resolved</SelectItem>
+                                <SelectContent className="rounded-xl border-gray-100 shadow-2xl">
+                                    <SelectItem value="PENDING" className="text-[10px] font-black uppercase tracking-widest">Pending</SelectItem>
+                                    <SelectItem value="IN_PROGRESS" className="text-[10px] font-black uppercase tracking-widest">In Progress</SelectItem>
+                                    <SelectItem value="RESOLVED" className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Resolved</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-1.5">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Resolution Protocol</Label>
                             <Textarea
-                                placeholder="Actions taken..."
-                                className="min-h-[100px] rounded-xl font-medium text-sm resize-none pt-3"
+                                placeholder="Describe actions taken to restore component..."
+                                className="min-h-[100px] rounded-xl font-medium text-sm resize-none pt-3 border-gray-100 focus:ring-1 focus:ring-amber-500"
                                 value={formData.resolutionNotes}
                                 onChange={(e) => setFormData({ ...formData, resolutionNotes: e.target.value })}
                             />
                         </div>
-                        <Button type="submit" className="w-full h-12 bg-black hover:bg-gray-800 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg mt-2" disabled={updateMaintenance.isPending}>
-                            {updateMaintenance.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm Updates"}
+                        <Button type="submit" className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-widest rounded-xl shadow-lg mt-2 transition-all active:scale-[0.98]" disabled={updateMaintenance.isPending}>
+                            {updateMaintenance.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify Resolution"}
                         </Button>
                     </form>
                 </DialogContent>

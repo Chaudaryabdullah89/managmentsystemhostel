@@ -28,6 +28,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import Loader from "@/components/ui/Loader";
 
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
 
@@ -246,42 +247,36 @@ const AdminMessMenu = () => {
         }
     };
 
-    if (isHostelsLoading) {
-        return (
-            <div className="flex h-screen items-center justify-center bg-gray-50/50">
-                <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-            </div>
-        );
-    }
+    if (isHostelsLoading) return <Loader label="Accessing Mess Node" subLabel="Synchronizing nutritional records" icon={Utensils} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
             {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-[72px]">
-                <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center">
+            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-[72px]">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="h-9 w-9 md:h-10 md:w-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center shrink-0">
                             <Utensils className="h-5 w-5 text-indigo-600" />
                         </div>
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Mess Schedule Management</h1>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Manage daily food items & timings</p>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Mess Schedule</h1>
+                            <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400">Nutritional Registry & Timing</p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
                         <Button
                             variant="default"
                             onClick={handleExportPDF}
                             disabled={!selectedHostel || isExporting || isMenusLoading}
-                            className="h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm"
+                            className="h-9 md:h-10 px-3 md:px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm flex-1 md:flex-none"
                         >
                             {isExporting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Download className="h-3.5 w-3.5 mr-2" />}
-                            {isExporting ? 'Exporting...' : 'Export Schedule'}
+                            {isExporting ? 'Exporting...' : 'Export'}
                         </Button>
                         <Select value={selectedHostel} onValueChange={setSelectedHostel}>
-                            <SelectTrigger className="w-[240px] h-10 rounded-xl font-bold text-[10px] uppercase tracking-wider bg-white border-gray-200 focus:ring-1 focus:ring-indigo-600">
-                                <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                <SelectValue placeholder="SELECT HOSTEL BRANCH" />
+                            <SelectTrigger className="flex-1 md:w-[240px] h-9 md:h-10 rounded-xl font-bold text-[9px] md:text-[10px] uppercase tracking-wider bg-white border-gray-200 focus:ring-1 focus:ring-indigo-600">
+                                <Building2 className="h-3.5 w-3.5 mr-1 md:mr-2 text-gray-400 shrink-0" />
+                                <span className="truncate"><SelectValue placeholder="SELECT HOSTEL" /></span>
                             </SelectTrigger>
                             <SelectContent className="rounded-xl">
                                 {hostels.map(h => (
@@ -306,7 +301,7 @@ const AdminMessMenu = () => {
                     </div>
                 ) : isMenusLoading ? (
                     <div className="flex items-center justify-center p-20">
-                        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+                        <Loader fullScreen={false} label="Compiling Menu" subLabel="Formatting scheduling data" icon={Utensils} />
                     </div>
                 ) : (
                     <div className="space-y-6">
@@ -316,37 +311,37 @@ const AdminMessMenu = () => {
 
                             return (
                                 <Card key={day} className={`rounded-3xl border ${isEditing ? 'border-indigo-200 shadow-md ring-4 ring-indigo-50' : 'border-gray-100 shadow-sm'} overflow-hidden transition-all duration-300`}>
-                                    <CardHeader className={`px-8 py-5 border-b ${isEditing ? 'bg-indigo-50/50 border-indigo-100' : 'bg-white border-gray-50'} flex flex-row items-center justify-between`}>
+                                    <CardHeader className={`px-4 md:px-8 py-4 md:py-5 border-b ${isEditing ? 'bg-indigo-50/50 border-indigo-100' : 'bg-white border-gray-50'} flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0`}>
                                         <div className="flex items-center gap-3">
-                                            <div className={`h-12 w-12 flex items-center justify-center rounded-xl font-black text-xs uppercase tracking-widest ${isEditing ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'bg-gray-100 text-gray-500'}`}>
+                                            <div className={`h-10 w-10 md:h-12 md:w-12 flex items-center justify-center rounded-xl font-black text-[10px] md:text-xs uppercase tracking-widest shrink-0 ${isEditing ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'bg-gray-100 text-gray-400'}`}>
                                                 {day.substring(0, 3)}
                                             </div>
-                                            <CardTitle className="text-xl font-bold text-gray-900 uppercase tracking-tight">{day}</CardTitle>
+                                            <CardTitle className="text-lg md:text-xl font-bold text-gray-900 uppercase tracking-tight">{day}</CardTitle>
                                         </div>
-                                        <div>
+                                        <div className="w-full sm:w-auto">
                                             {isEditing ? (
-                                                <div className="flex gap-3">
+                                                <div className="flex gap-2 md:gap-3 w-full sm:w-auto">
                                                     <Button
                                                         variant="ghost"
                                                         onClick={() => setEditingDay(null)}
-                                                        className="h-9 px-4 rounded-lg text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+                                                        className="h-9 px-3 md:px-4 rounded-lg text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:bg-gray-100 flex-1 sm:flex-none"
                                                     >
                                                         Discard
                                                     </Button>
                                                     <Button
                                                         onClick={() => handleSave(day)}
                                                         disabled={upsertMessMenu.isPending}
-                                                        className="h-9 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm"
+                                                        className="h-9 px-4 md:px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm flex-1 sm:flex-none"
                                                     >
                                                         {upsertMessMenu.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Save className="h-3.5 w-3.5 mr-2" />}
-                                                        {upsertMessMenu.isPending ? 'Saving' : 'Save Details'}
+                                                        {upsertMessMenu.isPending ? 'Saving' : 'Save'}
                                                     </Button>
                                                 </div>
                                             ) : (
                                                 <Button
                                                     variant="secondary"
                                                     onClick={() => handleEdit(day)}
-                                                    className="h-9 px-4 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-[10px] uppercase tracking-wider"
+                                                    className="h-9 w-full sm:w-auto px-4 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-[9px] md:text-[10px] uppercase tracking-wider"
                                                 >
                                                     <Edit3 className="h-3.5 w-3.5 mr-2" /> Modify Schedule
                                                 </Button>
@@ -358,55 +353,55 @@ const AdminMessMenu = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100">
 
                                             {/* Breakfast Section */}
-                                            <div className="p-8 hover:bg-gray-50/50 transition-colors">
-                                                <div className="flex items-center justify-between mb-6">
+                                            <div className="p-5 md:p-8 hover:bg-gray-50/50 transition-colors">
+                                                <div className="flex items-center justify-between mb-4 md:mb-6">
                                                     <div className="flex items-center gap-2">
-                                                        <Coffee className="h-5 w-5 text-amber-500" />
-                                                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Breakfast</h4>
+                                                        <Coffee className="h-4 w-4 md:h-5 md:w-5 text-amber-500" />
+                                                        <h4 className="text-xs md:text-sm font-bold text-gray-900 uppercase tracking-widest">Breakfast</h4>
                                                     </div>
                                                 </div>
 
-                                                <div className="space-y-5">
+                                                <div className="space-y-4 md:space-y-5">
                                                     <div className="space-y-2">
-                                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Food Menu</Label>
+                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Food Menu</Label>
                                                         {isEditing ? (
                                                             <Input
                                                                 value={formData.breakfast}
                                                                 onChange={e => setFormData({ ...formData, breakfast: e.target.value })}
-                                                                className="h-11 rounded-xl bg-white border-gray-200 text-sm font-medium focus:ring-1 focus:ring-indigo-600"
-                                                                placeholder="e.g. Omelette, Tea, Paratha"
+                                                                className="h-10 md:h-11 rounded-xl bg-white border-gray-200 text-xs md:text-sm font-medium focus:ring-1 focus:ring-indigo-600"
+                                                                placeholder="e.g. Omelette, Tea"
                                                             />
                                                         ) : (
-                                                            <p className="text-sm font-medium text-gray-800 min-h-[44px] flex items-center">{currentMenu?.breakfast || <span className="text-gray-400 italic font-normal">Not defined</span>}</p>
+                                                            <p className="text-xs md:text-sm font-medium text-gray-800 min-h-[40px] md:min-h-[44px] flex items-center leading-relaxed">{currentMenu?.breakfast || <span className="text-gray-400 italic font-normal">Not defined</span>}</p>
                                                         )}
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Window</Label>
+                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Window</Label>
                                                         {isEditing ? (
                                                             <div className="flex items-center gap-2">
                                                                 <div className="relative flex-1">
-                                                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                                                                    <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
                                                                     <Input
                                                                         type="time"
                                                                         value={formData.breakfastStart}
                                                                         onChange={e => setFormData({ ...formData, breakfastStart: e.target.value })}
-                                                                        className="h-11 rounded-xl bg-white border-gray-200 text-xs font-bold text-gray-700 focus:ring-1 focus:ring-indigo-600 pl-9"
+                                                                        className="h-10 md:h-11 rounded-xl bg-white border-gray-200 text-[10px] md:text-xs font-bold text-gray-700 focus:ring-1 focus:ring-indigo-600 pl-8 md:pl-9"
                                                                     />
                                                                 </div>
-                                                                <span className="text-gray-400 font-bold">-</span>
+                                                                <span className="text-gray-300 font-bold">-</span>
                                                                 <div className="relative flex-1">
-                                                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                                                                    <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
                                                                     <Input
                                                                         type="time"
                                                                         value={formData.breakfastEnd}
                                                                         onChange={e => setFormData({ ...formData, breakfastEnd: e.target.value })}
-                                                                        className="h-11 rounded-xl bg-white border-gray-200 text-xs font-bold text-gray-700 focus:ring-1 focus:ring-indigo-600 pl-9"
+                                                                        className="h-10 md:h-11 rounded-xl bg-white border-gray-200 text-[10px] md:text-xs font-bold text-gray-700 focus:ring-1 focus:ring-indigo-600 pl-8 md:pl-9"
                                                                     />
                                                                 </div>
                                                             </div>
                                                         ) : (
-                                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold border border-gray-200">
-                                                                <Clock className="h-3.5 w-3.5 text-gray-500" />
+                                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-[10px] md:text-xs font-bold border border-gray-200">
+                                                                <Clock className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-500" />
                                                                 {displayTimeRange(currentMenu?.breakfastTime)}
                                                             </div>
                                                         )}
@@ -415,55 +410,55 @@ const AdminMessMenu = () => {
                                             </div>
 
                                             {/* Lunch Section */}
-                                            <div className="p-8 hover:bg-gray-50/50 transition-colors">
-                                                <div className="flex items-center justify-between mb-6">
+                                            <div className="p-5 md:p-8 hover:bg-gray-50/50 transition-colors">
+                                                <div className="flex items-center justify-between mb-4 md:mb-6">
                                                     <div className="flex items-center gap-2">
-                                                        <Utensils className="h-5 w-5 text-emerald-500" />
-                                                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Lunch</h4>
+                                                        <Utensils className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
+                                                        <h4 className="text-xs md:text-sm font-bold text-gray-900 uppercase tracking-widest">Lunch</h4>
                                                     </div>
                                                 </div>
 
-                                                <div className="space-y-5">
+                                                <div className="space-y-4 md:space-y-5">
                                                     <div className="space-y-2">
-                                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Food Menu</Label>
+                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Food Menu</Label>
                                                         {isEditing ? (
                                                             <Input
                                                                 value={formData.lunch}
                                                                 onChange={e => setFormData({ ...formData, lunch: e.target.value })}
-                                                                className="h-11 rounded-xl bg-white border-gray-200 text-sm font-medium focus:ring-1 focus:ring-emerald-600"
-                                                                placeholder="e.g. Chicken Biryani, Raita"
+                                                                className="h-10 md:h-11 rounded-xl bg-white border-gray-200 text-xs md:text-sm font-medium focus:ring-1 focus:ring-emerald-600"
+                                                                placeholder="e.g. Chicken Biryani"
                                                             />
                                                         ) : (
-                                                            <p className="text-sm font-medium text-gray-800 min-h-[44px] flex items-center">{currentMenu?.lunch || <span className="text-gray-400 italic font-normal">Not defined</span>}</p>
+                                                            <p className="text-xs md:text-sm font-medium text-gray-800 min-h-[40px] md:min-h-[44px] flex items-center leading-relaxed">{currentMenu?.lunch || <span className="text-gray-400 italic font-normal">Not defined</span>}</p>
                                                         )}
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Window</Label>
+                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Window</Label>
                                                         {isEditing ? (
                                                             <div className="flex items-center gap-2">
                                                                 <div className="relative flex-1">
-                                                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                                                                    <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
                                                                     <Input
                                                                         type="time"
                                                                         value={formData.lunchStart}
                                                                         onChange={e => setFormData({ ...formData, lunchStart: e.target.value })}
-                                                                        className="h-11 rounded-xl bg-white border-gray-200 text-xs font-bold text-gray-700 focus:ring-1 focus:ring-emerald-600 pl-9"
+                                                                        className="h-10 md:h-11 rounded-xl bg-white border-gray-200 text-[10px] md:text-xs font-bold text-gray-700 focus:ring-1 focus:ring-emerald-600 pl-8 md:pl-9"
                                                                     />
                                                                 </div>
-                                                                <span className="text-gray-400 font-bold">-</span>
+                                                                <span className="text-gray-300 font-bold">-</span>
                                                                 <div className="relative flex-1">
-                                                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                                                                    <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
                                                                     <Input
                                                                         type="time"
                                                                         value={formData.lunchEnd}
                                                                         onChange={e => setFormData({ ...formData, lunchEnd: e.target.value })}
-                                                                        className="h-11 rounded-xl bg-white border-gray-200 text-xs font-bold text-gray-700 focus:ring-1 focus:ring-emerald-600 pl-9"
+                                                                        className="h-10 md:h-11 rounded-xl bg-white border-gray-200 text-[10px] md:text-xs font-bold text-gray-700 focus:ring-1 focus:ring-emerald-600 pl-8 md:pl-9"
                                                                     />
                                                                 </div>
                                                             </div>
                                                         ) : (
-                                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold border border-gray-200">
-                                                                <Clock className="h-3.5 w-3.5 text-gray-500" />
+                                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-[10px] md:text-xs font-bold border border-gray-200">
+                                                                <Clock className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-500" />
                                                                 {displayTimeRange(currentMenu?.lunchTime)}
                                                             </div>
                                                         )}
@@ -472,55 +467,55 @@ const AdminMessMenu = () => {
                                             </div>
 
                                             {/* Dinner Section */}
-                                            <div className="p-8 hover:bg-gray-50/50 transition-colors">
-                                                <div className="flex items-center justify-between mb-6">
+                                            <div className="p-5 md:p-8 hover:bg-gray-50/50 transition-colors">
+                                                <div className="flex items-center justify-between mb-4 md:mb-6">
                                                     <div className="flex items-center gap-2">
-                                                        <Utensils className="h-5 w-5 text-indigo-500" />
-                                                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Dinner</h4>
+                                                        <Utensils className="h-4 w-4 md:h-5 md:w-5 text-indigo-500" />
+                                                        <h4 className="text-xs md:text-sm font-bold text-gray-900 uppercase tracking-widest">Dinner</h4>
                                                     </div>
                                                 </div>
 
-                                                <div className="space-y-5">
+                                                <div className="space-y-4 md:space-y-5">
                                                     <div className="space-y-2">
-                                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Food Menu</Label>
+                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Food Menu</Label>
                                                         {isEditing ? (
                                                             <Input
                                                                 value={formData.dinner}
                                                                 onChange={e => setFormData({ ...formData, dinner: e.target.value })}
-                                                                className="h-11 rounded-xl bg-white border-gray-200 text-sm font-medium focus:ring-1 focus:ring-indigo-600"
+                                                                className="h-10 md:h-11 rounded-xl bg-white border-gray-200 text-xs md:text-sm font-medium focus:ring-1 focus:ring-indigo-600"
                                                                 placeholder="e.g. Daal Mash, Roti"
                                                             />
                                                         ) : (
-                                                            <p className="text-sm font-medium text-gray-800 min-h-[44px] flex items-center">{currentMenu?.dinner || <span className="text-gray-400 italic font-normal">Not defined</span>}</p>
+                                                            <p className="text-xs md:text-sm font-medium text-gray-800 min-h-[40px] md:min-h-[44px] flex items-center leading-relaxed">{currentMenu?.dinner || <span className="text-gray-400 italic font-normal">Not defined</span>}</p>
                                                         )}
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Window</Label>
+                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Window</Label>
                                                         {isEditing ? (
                                                             <div className="flex items-center gap-2">
                                                                 <div className="relative flex-1">
-                                                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                                                                    <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
                                                                     <Input
                                                                         type="time"
                                                                         value={formData.dinnerStart}
                                                                         onChange={e => setFormData({ ...formData, dinnerStart: e.target.value })}
-                                                                        className="h-11 rounded-xl bg-white border-gray-200 text-xs font-bold text-gray-700 focus:ring-1 focus:ring-indigo-600 pl-9"
+                                                                        className="h-10 md:h-11 rounded-xl bg-white border-gray-200 text-[10px] md:text-xs font-bold text-gray-700 focus:ring-1 focus:ring-indigo-600 pl-8 md:pl-9"
                                                                     />
                                                                 </div>
-                                                                <span className="text-gray-400 font-bold">-</span>
+                                                                <span className="text-gray-300 font-bold">-</span>
                                                                 <div className="relative flex-1">
-                                                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                                                                    <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
                                                                     <Input
                                                                         type="time"
                                                                         value={formData.dinnerEnd}
                                                                         onChange={e => setFormData({ ...formData, dinnerEnd: e.target.value })}
-                                                                        className="h-11 rounded-xl bg-white border-gray-200 text-xs font-bold text-gray-700 focus:ring-1 focus:ring-indigo-600 pl-9"
+                                                                        className="h-10 md:h-11 rounded-xl bg-white border-gray-200 text-[10px] md:text-xs font-bold text-gray-700 focus:ring-1 focus:ring-indigo-600 pl-8 md:pl-9"
                                                                     />
                                                                 </div>
                                                             </div>
                                                         ) : (
-                                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold border border-gray-200">
-                                                                <Clock className="h-3.5 w-3.5 text-gray-500" />
+                                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-700 text-[10px] md:text-xs font-bold border border-gray-200">
+                                                                <Clock className="h-3 w-3 md:h-3.5 md:w-3.5 text-gray-500" />
                                                                 {displayTimeRange(currentMenu?.dinnerTime)}
                                                             </div>
                                                         )}

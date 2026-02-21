@@ -201,14 +201,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
         }
     }
 
-    if (isLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white">
-            <div className="flex flex-col items-center gap-4">
-                <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
-                <p className="text-sm font-medium text-gray-500">Loading resident details...</p>
-            </div>
-        </div>
-    )
+    if (isLoading) return <Loader label="Retrieving Profile" subLabel="Accessing Resident Directory and History" icon={User} />;
 
     if (!resident) return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -225,31 +218,31 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20">
             {/* Header */}
-            <header className="bg-white border-b sticky top-0 z-30">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <header className="bg-white border-b sticky top-0 z-30 py-2 md:h-16">
+                <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                        <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl hover:bg-gray-100 shrink-0">
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
-                        <div>
-                            <h1 className="text-lg font-bold text-gray-900 leading-none">{resident.name}</h1>
-                            <p className="text-xs text-gray-500 mt-1">Resident ID: {resident.id?.slice(-8).toUpperCase()}</p>
+                        <div className="flex flex-col min-w-0">
+                            <h1 className="text-sm md:text-lg font-black text-gray-900 leading-none truncate uppercase tracking-tight">{resident.name}</h1>
+                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Resident ID: {resident.id?.slice(-8).toUpperCase()}</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2">
                         <Button
-                            variant="outline"
-                            size="sm"
+                            variant="ghost"
+                            size="icon"
                             onClick={() => refetch()}
+                            className="rounded-xl hover:bg-gray-50 h-9 w-9 shrink-0"
                             disabled={isFetching}
                         >
-                            <RefreshCw className={`h-4 w-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
-                            Refresh
+                            <RefreshCw className={`h-4 w-4 text-gray-400 ${isFetching ? 'animate-spin' : ''}`} />
                         </Button>
-                        <Button size="sm" onClick={() => router.push(`/admin/users/${residentId}`)}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit Profile
+                        <Button className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-sm gap-2 transition-all active:scale-95 whitespace-nowrap" onClick={() => router.push(`/admin/users/${residentId}`)}>
+                            <Edit className="h-3.5 w-3.5" />
+                            Registry Update
                         </Button>
                     </div>
                 </div>
@@ -259,84 +252,85 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Left Column: Basic Info */}
                     <div className="lg:col-span-4 space-y-6">
-                        <Card className="overflow-hidden border-none shadow-sm">
-                            <CardContent className="p-8 flex flex-col items-center text-center">
-                                <Avatar className="h-32 w-32 border-4 border-white shadow-md mb-6">
+                        <Card className="overflow-hidden border border-gray-100 shadow-sm rounded-3xl">
+                            <CardContent className="p-6 md:p-8 flex flex-col items-center text-center">
+                                <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-white shadow-md mb-6 ring-1 ring-gray-100">
                                     <AvatarImage src={resident.image} />
-                                    <AvatarFallback className="text-3xl font-bold bg-gray-100 text-gray-600">
+                                    <AvatarFallback className="text-2xl md:text-3xl font-black bg-indigo-50 text-indigo-400">
                                         {resident.name?.split(' ').map(n => n[0]).join('')}
                                     </AvatarFallback>
                                 </Avatar>
-                                <h2 className="text-xl font-bold text-gray-900">{resident.name}</h2>
-                                <p className="text-sm text-gray-500 mb-6">{resident.email}</p>
+                                <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">{resident.name}</h2>
+                                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mt-1 truncate w-full">{resident.email}</p>
 
-                                <div className="w-full space-y-4 text-left">
-                                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                                        <Phone className="h-4 w-4 text-gray-400" />
+                                <div className="w-full space-y-4 text-left mt-8 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                    <div className="flex items-center gap-3 text-xs font-black text-gray-600 uppercase tracking-tight">
+                                        <Phone className="h-3.5 w-3.5 text-indigo-400" />
                                         <span>{resident.phone || 'No phone provided'}</span>
                                     </div>
-                                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                                        <MapPin className="h-4 w-4 text-gray-400" />
+                                    <div className="flex items-center gap-3 text-xs font-black text-gray-600 uppercase tracking-tight">
+                                        <MapPin className="h-3.5 w-3.5 text-indigo-400" />
                                         <span className="line-clamp-2">{resident.address || 'No address provided'}</span>
                                     </div>
-                                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                                        <CreditCard className="h-4 w-4 text-gray-400" />
-                                        <span>CNIC: {resident.cnic || 'N/A'}</span>
+                                    <div className="flex items-center gap-3 text-xs font-black text-gray-600 uppercase tracking-tight">
+                                        <CreditCard className="h-3.5 w-3.5 text-indigo-400" />
+                                        <span className="font-mono">ID: {resident.cnic || 'N/A'}</span>
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border-none shadow-sm">
-                            <CardHeader>
-                                <CardTitle className="text-sm font-bold uppercase tracking-wider text-gray-500">Quick Actions</CardTitle>
+                        <Card className="border border-gray-100 shadow-sm rounded-3xl">
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Registry Protocols</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
                                 <Button
                                     variant="outline"
-                                    className="w-full justify-start text-xs font-bold uppercase tracking-wider"
+                                    className="w-full justify-start text-[10px] font-black uppercase tracking-widest h-11 px-4 rounded-xl border-gray-100 transition-all hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100"
                                     onClick={() => activeBooking ? router.push(`/admin/bookings/${activeBooking.id}/payments`) : toast.error("No active booking found")}
                                 >
-                                    <DollarSign className="h-4 w-4 mr-2 text-green-600" /> Manage Payments
+                                    <DollarSign className="h-4 w-4 mr-2" /> Financial Audit
                                 </Button>
                                 <Button
                                     variant="outline"
-                                    className="w-full justify-start text-xs font-bold uppercase tracking-wider group"
+                                    className="w-full justify-start text-[10px] font-black uppercase tracking-widest h-11 px-4 rounded-xl border-gray-100 transition-all hover:bg-blue-50 hover:text-blue-600 hover:border-blue-100"
                                     onClick={() => setIsInvoiceDialogOpen(true)}
                                 >
-                                    <Receipt className="h-4 w-4 mr-2 text-blue-600" />
-                                    <span>Generate Invoice</span>
+                                    <Receipt className="h-4 w-4 mr-2" />
+                                    Generate Ledger
                                 </Button>
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <Button
                                             variant="outline"
-                                            className="w-full justify-start text-xs font-bold uppercase tracking-wider text-red-600 hover:text-red-700 hover:bg-red-50"
+                                            className="w-full justify-start text-[10px] font-black uppercase tracking-widest h-11 px-4 rounded-xl border-gray-100 text-rose-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all"
                                             disabled={isCheckingOut || !activeBooking}
                                         >
                                             {isCheckingOut ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <UserX className="h-4 w-4 mr-2" />}
-                                            Checkout Resident
+                                            Decommission Node
                                         </Button>
                                     </AlertDialogTrigger>
-                                    <AlertDialogContent className="rounded-2xl border-none shadow-2xl">
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle className="text-xl font-bold">Checkout Resident?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Are you sure you want to checkout <span className="font-bold text-gray-900">{resident.name}</span>? This will mark the room as vacant and end their stay.
+                                    <AlertDialogContent className="rounded-3xl border-none shadow-2xl overflow-hidden p-0 max-w-lg mx-4 sm:mx-0">
+                                        <div className="bg-gray-950 p-8 text-white">
+                                            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center mb-4"><UserX size={20} className="text-rose-500" /></div>
+                                            <AlertDialogTitle className="text-xl font-black tracking-tight mb-2 uppercase italic">Purge Occupancy Node?</AlertDialogTitle>
+                                            <AlertDialogDescription className="text-gray-400 font-black text-[10px] uppercase tracking-widest">
+                                                Wiping <span className="text-white font-black">{resident.name}</span> from the active unit registry. This will vacate the node and terminate all sub-protocols.
                                             </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel className="rounded-xl font-bold">Cancel</AlertDialogCancel>
+                                        </div>
+                                        <div className="p-6 flex items-center justify-end gap-3 bg-white">
+                                            <AlertDialogCancel className="rounded-xl border-gray-100 bg-gray-50 font-black px-6 h-11 uppercase tracking-widest text-[9px] text-gray-500">Abort</AlertDialogCancel>
                                             <AlertDialogAction
-                                                className="bg-red-600 hover:bg-red-700 rounded-xl font-bold"
+                                                className="bg-rose-600 hover:bg-rose-700 rounded-xl font-black px-6 h-11 uppercase tracking-widest text-[9px] shadow-sm"
                                                 onClick={() => {
                                                     setIsCheckingOut(true)
                                                     handleCheckout()
                                                 }}
                                             >
-                                                Yes, Checkout
+                                                Execute Purge
                                             </AlertDialogAction>
-                                        </AlertDialogFooter>
+                                        </div>
                                     </AlertDialogContent>
                                 </AlertDialog>
                             </CardContent>
@@ -346,40 +340,40 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                     {/* Right Column: Detailed Info & History */}
                     <div className="lg:col-span-8 space-y-8">
                         {/* Stats Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <Card className="border-none shadow-sm py-2 group cursor-pointer hover:bg-white transition-colors" onClick={() => currentRoom?.id && router.push(`/admin/hostels/${hostelId}/room-details/room/${currentRoom.id}`)}>
-                                <CardContent className="flex items-center gap-4 py-4">
-                                    <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-                                        <Home className="h-5 w-5 text-blue-600 group-hover:text-white transition-colors" />
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+                            <Card className="border border-gray-100 shadow-sm py-1 group cursor-pointer hover:bg-white transition-all rounded-2xl active:scale-95" onClick={() => currentRoom?.id && router.push(`/admin/hostels/${hostelId}/room-details/room/${currentRoom.id}`)}>
+                                <CardContent className="flex items-center gap-4 py-4 px-5">
+                                    <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-600 transition-colors shrink-0">
+                                        <Home className="h-5 w-5 text-indigo-600 group-hover:text-white transition-colors" />
                                     </div>
-                                    <div className="flex flex-col">
-                                        <p className="text-xs font-medium text-gray-500">Room</p>
-                                        <p className="text-base font-bold text-gray-900 flex items-center gap-1">
-                                            {currentRoom?.roomNumber ? `Room ${currentRoom.roomNumber}` : 'Not Assigned'}
-                                            <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="flex flex-col min-w-0">
+                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest truncate">Access node</p>
+                                        <p className="text-sm font-black text-gray-900 flex items-center gap-1.5 truncate">
+                                            {currentRoom?.roomNumber ? `UNIT_${currentRoom.roomNumber}` : 'UNALLOCATED'}
+                                            <ArrowUpRight className="h-3 w-3 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </p>
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="border-none shadow-sm py-2">
-                                <CardContent className="flex items-center gap-4 py-4">
-                                    <div className="h-10 w-10 rounded-full bg-green-50 flex items-center justify-center">
-                                        <DollarSign className="h-5 w-5 text-green-600" />
+                            <Card className="border border-gray-100 shadow-sm py-1 rounded-2xl">
+                                <CardContent className="flex items-center gap-4 py-4 px-5">
+                                    <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
+                                        <DollarSign className="h-5 w-5 text-emerald-600" />
                                     </div>
-                                    <div>
-                                        <p className="text-xs font-medium text-gray-500">Total Paid</p>
-                                        <p className="text-base font-bold text-gray-900">Rs. {resident.payments?.reduce((acc, p) => acc + (p.status === 'PAID' ? p.amount : 0), 0).toLocaleString()}</p>
+                                    <div className="flex flex-col min-w-0">
+                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest truncate">Capital yield</p>
+                                        <p className="text-sm font-black text-gray-900 truncate">PKR {resident.payments?.reduce((acc, p) => acc + (p.status === 'PAID' ? p.amount : 0), 0).toLocaleString()}</p>
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="border-none shadow-sm py-2">
-                                <CardContent className="flex items-center gap-4 py-4">
-                                    <div className="h-10 w-10 rounded-full bg-orange-50 flex items-center justify-center">
-                                        <AlertCircle className="h-5 w-5 text-orange-600" />
+                            <Card className="border border-gray-100 shadow-sm py-1 rounded-2xl">
+                                <CardContent className="flex items-center gap-4 py-4 px-5">
+                                    <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                                        <AlertCircle className="h-5 w-5 text-amber-600" />
                                     </div>
-                                    <div>
-                                        <p className="text-xs font-medium text-gray-500">Complaints</p>
-                                        <p className="text-base font-bold text-gray-900">{resident.complaints?.filter(c => c.status !== 'RESOLVED').length || 0} Active</p>
+                                    <div className="flex flex-col min-w-0">
+                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest truncate">System flags</p>
+                                        <p className="text-sm font-black text-gray-900 truncate">{resident.complaints?.filter(c => c.status !== 'RESOLVED').length || 0} ACTIVE_ISSUES</p>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -394,31 +388,33 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                             </TabsList>
 
                             <TabsContent value="payments" className="mt-0">
-                                <Card className="border-none shadow-sm overflow-hidden bg-white rounded-2xl">
-                                    <div className="p-6 border-b border-gray-50 flex justify-between items-center">
+                                <Card className="border border-gray-100 shadow-sm overflow-hidden bg-white rounded-3xl">
+                                    <div className="p-5 md:p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between sm:items-center gap-4 sm:gap-0">
                                         <div>
-                                            <h3 className="font-black text-gray-900 uppercase tracking-tighter text-lg">Payments</h3>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">All payment records</p>
+                                            <h3 className="font-black text-gray-900 uppercase tracking-tighter text-lg">Financial Ledger</h3>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Transaction nodes active</p>
                                         </div>
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="rounded-xl border-gray-100 font-bold text-[10px] uppercase tracking-widest h-10 px-4"
+                                            className="rounded-xl border-gray-100 font-black text-[10px] uppercase tracking-widest h-10 px-4 transition-all hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2"
                                             onClick={() => activeBooking ? router.push(`/admin/bookings/${activeBooking.id}/payments`) : toast.error("No active booking found")}
                                         >
-                                            <Plus className="h-3.5 w-3.5 mr-2 text-blue-600" /> New Transaction
+                                            <Plus className="h-3.5 w-3.5" /> Force Credit
                                         </Button>
                                     </div>
-                                    <div className="overflow-x-auto">
+
+                                    {/* Desktop Table View */}
+                                    <div className="hidden md:block overflow-x-auto">
                                         <Table>
                                             <TableHeader className="bg-gray-50/50">
                                                 <TableRow className="hover:bg-transparent border-gray-50">
                                                     <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Date</TableHead>
                                                     <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Type</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Amount</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Method</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Status</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 text-right">Actions</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Value</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Protocol</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Node Status</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 text-right">Ops</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -427,34 +423,31 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                         <TableRow key={p.id} className="hover:bg-gray-50/30 transition-colors group">
                                                             <TableCell className="py-5 px-6">
                                                                 <div className="flex flex-col">
-                                                                    <span className="text-sm font-bold text-gray-900 italic tracking-tight">{safeFormat(p.date, 'MMM dd, yyyy')}</span>
-                                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">{safeFormat(p.date, 'HH:mm:ss')}</span>
+                                                                    <span className="text-sm font-black text-gray-900 italic tracking-tight">{safeFormat(p.date, 'MMM dd, yyyy')}</span>
+                                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{safeFormat(p.date, 'HH:mm:ss')}</span>
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6">
                                                                 <div className="flex items-center gap-3">
-                                                                    <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100">
-                                                                        <Receipt className="h-4 w-4 text-gray-400" />
+                                                                    <div className="h-8 w-8 rounded-lg bg-indigo-50/50 flex items-center justify-center border border-indigo-100/50">
+                                                                        <Receipt className="h-4 w-4 text-indigo-400" />
                                                                     </div>
                                                                     <div className="flex flex-col">
                                                                         <span className="text-xs font-black text-gray-800 uppercase tracking-tight">{p.type}</span>
-                                                                        <span className="text-[10px] font-mono font-bold text-blue-500 uppercase tracking-tighter cursor-pointer hover:underline">#{p.id.slice(-8).toUpperCase()}</span>
+                                                                        <span className="text-[9px] font-mono font-black text-indigo-500 uppercase tracking-tighter cursor-pointer hover:underline">TX_{p.id.slice(-8).toUpperCase()}</span>
                                                                     </div>
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6">
-                                                                <span className="text-sm font-black text-gray-900">Rs. {p.amount.toLocaleString()}</span>
+                                                                <span className="text-sm font-black text-gray-900">PKR {p.amount.toLocaleString()}</span>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6">
-                                                                <div className="flex items-center gap-2">
-                                                                    <Badge variant="outline" className="text-[9px] font-black uppercase tracking-wider bg-gray-50/50 border-gray-100 px-2 py-0.5 rounded-md">
-                                                                        {p.method === 'CASH' ? 'Physical' : 'Digital'}
-                                                                    </Badge>
-                                                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">{p.method}</span>
-                                                                </div>
+                                                                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest bg-gray-50/50 border-gray-100 px-2 py-0.5 rounded-md">
+                                                                    {p.method}
+                                                                </Badge>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6">
-                                                                <Badge className={`${getStatusTheme(p.status)} border-none rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-[0.1em] shadow-sm`}>
+                                                                <Badge className={`${getStatusTheme(p.status)} border-none rounded-full px-3 py-1 text-[8px] font-black uppercase tracking-widest shadow-sm`}>
                                                                     {p.status}
                                                                 </Badge>
                                                             </TableCell>
@@ -463,22 +456,22 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
-                                                                        className="h-8 w-8 rounded-lg hover:bg-gray-100"
+                                                                        className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-indigo-600"
                                                                         onClick={() => activeBooking && router.push(`/admin/bookings/${activeBooking.id}/payments`)}
                                                                     >
-                                                                        <Eye className="h-4 w-4 text-gray-400" />
+                                                                        <Eye className="h-4 w-4" />
                                                                     </Button>
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
-                                                                        className="h-8 w-8 rounded-lg hover:bg-gray-100"
+                                                                        className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-emerald-600"
                                                                         onClick={() => {
                                                                             if (!activeBooking) return toast.error("Booking context missing");
                                                                             generateInvoice(p, { ...activeBooking, User: resident });
                                                                             toast.success("Invoice generated successfully");
                                                                         }}
                                                                     >
-                                                                        <Download className="h-4 w-4 text-gray-400" />
+                                                                        <Download className="h-4 w-4" />
                                                                     </Button>
                                                                 </div>
                                                             </TableCell>
@@ -487,9 +480,9 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                 ) : (
                                                     <TableRow>
                                                         <TableCell colSpan={6} className="py-20 text-center">
-                                                            <div className="flex flex-col items-center gap-3 opacity-20">
+                                                            <div className="flex flex-col items-center gap-3 opacity-10">
                                                                 <History className="h-12 w-12" />
-                                                                <span className="text-xs font-black uppercase tracking-[0.2em]">No payments found</span>
+                                                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">VOID_LEDGER</span>
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>
@@ -497,36 +490,101 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                             </TableBody>
                                         </Table>
                                     </div>
+
+                                    {/* Mobile Card View */}
+                                    <div className="md:hidden divide-y divide-gray-50">
+                                        {resident.payments?.length > 0 ? (
+                                            resident.payments.map((p) => (
+                                                <div key={p.id} className="p-5 space-y-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-9 w-9 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+                                                                <Receipt className="h-5 w-5 text-indigo-400" />
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-xs font-black text-gray-900 uppercase">{p.type}</span>
+                                                                <span className="text-[9px] font-mono font-black text-indigo-500 uppercase">TX_{p.id.slice(-8).toUpperCase()}</span>
+                                                            </div>
+                                                        </div>
+                                                        <Badge className={`${getStatusTheme(p.status)} border-none rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest`}>
+                                                            {p.status}
+                                                        </Badge>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-3">
+                                                        <div className="bg-gray-50/50 p-3 rounded-2xl border border-gray-100 flex flex-col gap-0.5">
+                                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Amount</span>
+                                                            <span className="text-xs font-black text-gray-900">PKR {p.amount.toLocaleString()}</span>
+                                                        </div>
+                                                        <div className="bg-gray-50/50 p-3 rounded-2xl border border-gray-100 flex flex-col gap-0.5">
+                                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Protocol</span>
+                                                            <span className="text-[10px] font-black text-gray-600 uppercase">{p.method}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-[9px] font-black text-gray-400 uppercase italic">{safeFormat(p.date, 'MMM dd, yyyy')}</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 text-indigo-400"
+                                                                onClick={() => {
+                                                                    if (!activeBooking) return toast.error("Booking context missing");
+                                                                    generateInvoice(p, { ...activeBooking, User: resident });
+                                                                    toast.success("Invoice generated successfully");
+                                                                }}
+                                                            >
+                                                                <Download className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 text-indigo-400"
+                                                                onClick={() => activeBooking && router.push(`/admin/bookings/${activeBooking.id}/payments`)}
+                                                            >
+                                                                <Eye className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="py-16 text-center opacity-10">
+                                                <History className="h-10 w-10 mx-auto mb-2" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">VOID_LEDGER</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </Card>
                             </TabsContent>
 
                             <TabsContent value="complaints" className="mt-0">
-                                <Card className="border-none shadow-sm overflow-hidden bg-white rounded-2xl">
-                                    <div className="p-6 border-b border-gray-50 flex justify-between items-center">
+                                <Card className="border border-gray-100 shadow-sm overflow-hidden bg-white rounded-3xl">
+                                    <div className="p-5 md:p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between sm:items-center gap-4 sm:gap-0">
                                         <div>
-                                            <h3 className="font-black text-gray-900 uppercase tracking-tighter text-lg">Complaints</h3>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Support & Maintenance</p>
+                                            <h3 className="font-black text-gray-900 uppercase tracking-tighter text-lg">System Flag Logs</h3>
+                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Grievance nodes active</p>
                                         </div>
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            className="border-dashed border-gray-200 font-black text-[10px] uppercase tracking-widest h-10 px-4 rounded-xl hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200 transition-all"
+                                            className="border-gray-100 font-black text-[10px] uppercase tracking-widest h-10 px-4 rounded-xl hover:bg-amber-50 hover:text-amber-600 hover:border-amber-100 transition-all flex items-center gap-2"
                                             onClick={() => setIsGrievanceDialogOpen(true)}
                                         >
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            Add Complaint
+                                            <Plus className="h-3.5 w-3.5" /> Flag Issue
                                         </Button>
                                     </div>
-                                    <div className="overflow-x-auto">
+
+                                    {/* Desktop Table View */}
+                                    <div className="hidden md:block overflow-x-auto">
                                         <Table>
                                             <TableHeader className="bg-gray-50/50">
                                                 <TableRow className="hover:bg-transparent border-gray-50">
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Issue</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Category</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Date Logged</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Issue Dossier</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Class</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Logged</TableHead>
                                                     <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Priority</TableHead>
                                                     <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Status</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 text-right">Actions</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 text-right">Ops</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -534,43 +592,43 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                     resident.complaints.map((c) => (
                                                         <TableRow key={c.id} className="hover:bg-gray-50/30 transition-colors group">
                                                             <TableCell className="py-5 px-6">
-                                                                <div className="flex flex-col">
-                                                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight line-clamp-1">{c.title || 'Untitled Issue'}</p>
-                                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter line-clamp-1">{c.description || 'No detailed dossier provided.'}</p>
+                                                                <div className="flex flex-col min-w-[200px]">
+                                                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight line-clamp-1 italic">{c.title || 'Untitled Issue'}</p>
+                                                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter line-clamp-1 mt-0.5">{c.description || 'No detailed dossier provided.'}</p>
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6">
                                                                 <div className="flex items-center gap-2">
-                                                                    <div className="h-6 w-6 rounded-md bg-gray-50 flex items-center justify-center border border-gray-100">
-                                                                        <Activity className="h-3 w-3 text-gray-400" />
+                                                                    <div className="h-7 w-7 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100">
+                                                                        <Activity className="h-3.5 w-3.5 text-gray-400" />
                                                                     </div>
-                                                                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-wider">
-                                                                        {c.category || 'General'}
+                                                                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
+                                                                        {c.category}
                                                                     </span>
                                                                 </div>
                                                             </TableCell>
-                                                            <TableCell className="py-5 px-6 text-xs font-bold text-gray-700 italic">
+                                                            <TableCell className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase italic">
                                                                 {safeFormat(c.createdAt, 'MMM dd, yyyy')}
                                                             </TableCell>
-                                                            <TableCell className="py-5 px-6 text-xs font-bold">
+                                                            <TableCell className="py-5 px-6">
                                                                 <div className="flex items-center gap-1.5">
-                                                                    <div className={`h-1.5 w-1.5 rounded-full animate-pulse ${c.priority === 'HIGH' || c.priority === 'URGENT' ? 'bg-red-500' :
-                                                                        c.priority === 'MEDIUM' ? 'bg-orange-500' : 'bg-blue-500'
+                                                                    <div className={`h-1.5 w-1.5 rounded-full animate-pulse ${c.priority === 'HIGH' || c.priority === 'URGENT' ? 'bg-rose-500' :
+                                                                        c.priority === 'MEDIUM' ? 'bg-amber-500' : 'bg-indigo-500'
                                                                         }`} />
-                                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${c.priority === 'HIGH' || c.priority === 'URGENT' ? 'text-red-600' :
-                                                                        c.priority === 'MEDIUM' ? 'text-orange-600' : 'text-blue-600'
+                                                                    <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${c.priority === 'HIGH' || c.priority === 'URGENT' ? 'text-rose-600' :
+                                                                        c.priority === 'MEDIUM' ? 'text-amber-600' : 'text-indigo-600'
                                                                         }`}>
-                                                                        {c.priority || 'NORMAL'}
+                                                                        {c.priority}
                                                                     </span>
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6">
-                                                                <Badge className={`${getStatusTheme(c.status)} border-none rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-[0.1em] shadow-sm`}>
-                                                                    {c.status || 'PENDING'}
+                                                                <Badge className={`${getStatusTheme(c.status)} border-none rounded-full px-3 py-1 text-[8px] font-black uppercase tracking-widest shadow-sm`}>
+                                                                    {c.status}
                                                                 </Badge>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6 text-right">
-                                                                <Button variant="ghost" size="icon" className="h-9 w-9 p-0 rounded-full hover:bg-gray-100 text-gray-400 group-hover:text-black transition-colors" onClick={() => toast.info("Authenticating detailed view...")}>
+                                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-indigo-600" onClick={() => toast.info("Opening detailed dossier view...")}>
                                                                     <ArrowUpRight className="h-4 w-4" />
                                                                 </Button>
                                                             </TableCell>
@@ -579,15 +637,63 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                 ) : (
                                                     <TableRow>
                                                         <TableCell colSpan={6} className="py-20 text-center">
-                                                            <div className="flex flex-col items-center gap-3 opacity-20">
+                                                            <div className="flex flex-col items-center gap-3 opacity-10">
                                                                 <ShieldCheck className="h-12 w-12" />
-                                                                <span className="text-xs font-black uppercase tracking-[0.2em]">No complaints yet</span>
+                                                                <span className="text-[10px] font-black uppercase tracking-[0.2em]">ALL_SYSTEMS_GO</span>
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>
                                                 )}
                                             </TableBody>
                                         </Table>
+                                    </div>
+
+                                    {/* Mobile Card View */}
+                                    <div className="md:hidden divide-y divide-gray-50">
+                                        {resident.complaints?.length > 0 ? (
+                                            resident.complaints.map((c) => (
+                                                <div key={c.id} className="p-5 space-y-4">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3 min-w-0">
+                                                            <div className="h-9 w-9 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                                                                <Activity className="h-5 w-5 text-amber-500" />
+                                                            </div>
+                                                            <div className="flex flex-col min-w-0">
+                                                                <span className="text-xs font-black text-gray-900 uppercase truncate">{c.title}</span>
+                                                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{c.category}</span>
+                                                            </div>
+                                                        </div>
+                                                        <Badge className={`${getStatusTheme(c.status)} border-none rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest shrink-0`}>
+                                                            {c.status}
+                                                        </Badge>
+                                                    </div>
+
+                                                    <div className="p-3 bg-gray-50/50 rounded-2xl border border-gray-100">
+                                                        <p className="text-[10px] font-black text-gray-500 uppercase leading-relaxed line-clamp-2">{c.description}</p>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <div className={`h-1.5 w-1.5 rounded-full animate-pulse ${c.priority === 'HIGH' || c.priority === 'URGENT' ? 'bg-rose-500' : 'bg-indigo-500'}`} />
+                                                            <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${c.priority === 'HIGH' || c.priority === 'URGENT' ? 'text-rose-600' : 'text-indigo-600'}`}>
+                                                                {c.priority}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-[8px] font-black text-gray-400 uppercase italic">{safeFormat(c.createdAt, 'MMM dd, yyyy')}</span>
+                                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 text-indigo-400">
+                                                                <ArrowUpRight className="h-3.5 w-3.5" />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="py-16 text-center opacity-10">
+                                                <ShieldCheck className="h-10 w-10 mx-auto mb-2" />
+                                                <span className="text-[10px] font-black uppercase tracking-widest">ALL_SYSTEMS_GO</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </Card>
                             </TabsContent>

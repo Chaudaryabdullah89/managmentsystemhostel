@@ -87,31 +87,31 @@ const AdminDashboard = () => {
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
             {/* Dashboard Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-8 w-1 bg-blue-600 rounded-full" />
+            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
+                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Dashboard</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Dashboard</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Overview</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Registry Overview</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Surveillance</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <Button
                             variant="outline"
-                            className="h-9 px-4 rounded-xl border-gray-200 font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50"
+                            className="h-9 px-3 md:px-4 rounded-xl border-gray-200 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 flex items-center gap-2"
                             onClick={handleRefresh}
                         >
-                            <RefreshCw className="h-3.5 w-3.5 mr-2 text-gray-400" /> Refresh
+                            <RefreshCw className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Refresh Data</span> <span className="xs:hidden">Refresh</span>
                         </Button>
                         <Button
-                            className="h-9 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all"
+                            className="h-9 px-4 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all flex items-center gap-2"
                         >
-                            <Download className="h-3.5 w-3.5 mr-2" /> Export
+                            <Download className="h-3.5 w-3.5" /> <span className="hidden xs:inline">Export Analytics</span> <span className="xs:hidden">Export</span>
                         </Button>
                     </div>
                 </div>
@@ -119,7 +119,7 @@ const AdminDashboard = () => {
 
             <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
                 {/* Statistics Overview */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 px-4 md:px-0">
                     {[
                         {
                             label: 'Revenue',
@@ -158,21 +158,24 @@ const AdminDashboard = () => {
                             bg: 'bg-purple-50'
                         }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-24 h-full bg-gray-50/50 skew-x-12 translate-x-10 group-hover:translate-x-8 transition-transform" />
-                            <div className="flex flex-col gap-4 relative z-10">
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden flex flex-col items-center md:items-start text-center md:text-left">
+                            <div className="absolute top-0 right-0 w-24 h-full bg-gray-50/50 skew-x-12 translate-x-10 group-hover:translate-x-8 transition-transform hidden md:block" />
+                            <div className="flex flex-col gap-2 md:gap-4 relative z-10 w-full">
                                 <div className="flex items-center justify-between">
-                                    <div className={`h-11 w-11 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center shadow-inner`}>
-                                        <stat.icon className="h-5 w-5" />
+                                    <div className={`h-9 w-9 md:h-11 md:w-11 rounded-xl md:rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center shadow-inner shrink-0 mx-auto md:mx-0`}>
+                                        <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
                                     </div>
-                                    <div className={`flex items-center gap-1 text-[10px] font-bold ${stat.isUp ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                        {stat.isUp ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
+                                    <div className={`hidden xs:flex items-center gap-1 text-[9px] md:text-[10px] font-bold ${stat.isUp ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                        {stat.isUp ? <ArrowUpRight className="h-2.5 w-2.5 md:h-3 md:w-3" /> : <ArrowDownRight className="h-2.5 w-2.5 md:h-3 md:w-3" />}
                                         {stat.change}
                                     </div>
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">{stat.label}</span>
-                                    <span className="text-2xl font-bold text-gray-900 tracking-tighter">{stat.value}</span>
+                                <div className="flex flex-col min-w-0 mt-1 md:mt-0">
+                                    <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] md:tracking-[0.2em]">{stat.label}</span>
+                                    <span className="text-sm md:text-2xl font-bold text-gray-900 tracking-tighter truncate">{stat.value}</span>
+                                </div>
+                                <div className={`xs:hidden mt-1 text-[8px] font-bold ${stat.isUp ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                    {stat.isUp ? '+' : ''}{stat.change}
                                 </div>
                             </div>
                         </div>
@@ -194,78 +197,80 @@ const AdminDashboard = () => {
                             </Link>
                         </div>
 
-                        <div className="bg-white border border-gray-100 rounded-[2.5rem] overflow-hidden shadow-sm">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/50">
-                                    <tr>
-                                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Hostel</th>
-                                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Occupancy</th>
-                                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Revenue</th>
-                                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 text-right">Details</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {hostels.slice(0, 5).map((hostel) => (
-                                        <tr key={hostel.id} className="hover:bg-gray-50/50 transition-colors group cursor-pointer">
-                                            <td className="px-8 py-5">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[13px] font-bold text-gray-900 uppercase tracking-tight">{hostel.name}</span>
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">ID: {hostel.id.slice(-8).toUpperCase()}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex-1 h-1.5 w-24 bg-gray-100 rounded-full overflow-hidden">
-                                                        <div
-                                                            className={`h-full ${hostel.occupancy > 80 ? 'bg-emerald-500' : hostel.occupancy > 50 ? 'bg-blue-500' : 'bg-amber-500'} rounded-full`}
-                                                            style={{ width: `${hostel.occupancy}%` }}
-                                                        />
-                                                    </div>
-                                                    <span className="text-[11px] font-bold text-gray-600">{hostel.occupancy}%</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-8 py-5">
-                                                <span className="text-[11px] font-bold text-emerald-600">PKR {(hostel.revenue / 1000).toFixed(1)}k</span>
-                                            </td>
-                                            <td className="px-8 py-5 text-right">
-                                                <Badge variant="outline" className="text-[9px] font-bold rounded-full px-3 py-1 border-gray-100 bg-white shadow-sm">
-                                                    {hostel.rooms} ROOMS
-                                                </Badge>
-                                            </td>
+                        <div className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-sm">
+                            <div className="overflow-x-auto scrollbar-hide">
+                                <table className="w-full text-left border-collapse min-w-[600px]">
+                                    <thead className="bg-gray-50/50">
+                                        <tr>
+                                            <th className="px-6 md:px-8 py-4 md:py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Hostel Branch</th>
+                                            <th className="px-6 md:px-8 py-4 md:py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Capacity Metrics</th>
+                                            <th className="px-6 md:px-8 py-4 md:py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Revenue Stream</th>
+                                            <th className="px-6 md:px-8 py-4 md:py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 text-right">Inventory</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {hostels.slice(0, 5).map((hostel) => (
+                                            <tr key={hostel.id} className="hover:bg-gray-50/50 transition-colors group cursor-pointer">
+                                                <td className="px-6 md:px-8 py-4 md:py-5">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[11px] md:text-[13px] font-bold text-gray-900 uppercase tracking-tight">{hostel.name}</span>
+                                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">#{hostel.id.slice(-6).toUpperCase()}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 md:px-8 py-4 md:py-5">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="flex-1 h-1.5 w-16 md:w-24 bg-gray-100 rounded-full overflow-hidden">
+                                                            <div
+                                                                className={`h-full ${hostel.occupancy > 80 ? 'bg-emerald-500' : hostel.occupancy > 50 ? 'bg-indigo-500' : 'bg-amber-500'} rounded-full`}
+                                                                style={{ width: `${hostel.occupancy}%` }}
+                                                            />
+                                                        </div>
+                                                        <span className="text-[10px] md:text-[11px] font-bold text-gray-600">{hostel.occupancy}%</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 md:px-8 py-4 md:py-5">
+                                                    <span className="text-[10px] md:text-[11px] font-bold text-emerald-600">PKR {(hostel.revenue / 1000).toFixed(1)}k</span>
+                                                </td>
+                                                <td className="px-6 md:px-8 py-4 md:py-5 text-right">
+                                                    <Badge variant="outline" className="text-[8px] md:text-[9px] font-black rounded-full px-2 md:px-3 py-1 border-gray-100 bg-white shadow-sm shrink-0 whitespace-nowrap">
+                                                        {hostel.rooms} NODES
+                                                    </Badge>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         {/* System Status */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                            <Card className="rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden group">
-                                <CardHeader className="bg-gray-50/50 p-6 flex flex-row items-center justify-between border-b border-gray-50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pt-2 md:pt-4">
+                            <Card className="rounded-[2rem] md:rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden group">
+                                <CardHeader className="bg-gray-50/50 p-5 md:p-6 flex flex-row items-center justify-between border-b border-gray-50">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                                        <div className="h-8 w-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
                                             <AlertTriangle className="h-4 w-4" />
                                         </div>
-                                        <CardTitle className="text-[11px] font-bold uppercase tracking-widest text-gray-900">Urgent</CardTitle>
+                                        <CardTitle className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-gray-900">Grievances</CardTitle>
                                     </div>
-                                    <Badge className="bg-rose-500 text-white border-none text-[9px] font-bold rounded-full px-2">
+                                    <Badge className="bg-rose-500 text-white border-none text-[8px] md:text-[9px] font-black rounded-full px-2 py-0.5">
                                         {complaintStats.urgent} URGENT
                                     </Badge>
                                 </CardHeader>
-                                <CardContent className="p-6">
+                                <CardContent className="p-5 md:p-6">
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Complaints</span>
-                                            <span className="text-base font-bold text-gray-900">{complaintStats.total}</span>
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Active</span>
+                                            <span className="text-sm md:text-base font-bold text-gray-900">{complaintStats.total}</span>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pending</span>
-                                            <span className="text-base font-bold text-amber-600">{complaintStats.pending}</span>
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Processing</span>
+                                            <span className="text-sm md:text-base font-bold text-indigo-600">{complaintStats.pending}</span>
                                         </div>
-                                        <div className="pt-4">
+                                        <div className="pt-2 md:pt-4">
                                             <Link href="/admin/complaints">
-                                                <Button className="w-full h-10 bg-blue-600 text-white text-[9px] font-bold uppercase tracking-widest rounded-xl hover:bg-blue-700 transition-all">
-                                                    Manage
+                                                <Button className="w-full h-10 bg-indigo-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/10">
+                                                    Review Ledger
                                                 </Button>
                                             </Link>
                                         </div>
@@ -273,30 +278,30 @@ const AdminDashboard = () => {
                                 </CardContent>
                             </Card>
 
-                            <Card className="rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden group">
-                                <CardHeader className="bg-gray-50/50 p-6 flex flex-row items-center justify-between border-b border-gray-50">
+                            <Card className="rounded-[2rem] md:rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden group">
+                                <CardHeader className="bg-gray-50/50 p-5 md:p-6 flex flex-row items-center justify-between border-b border-gray-50">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                                        <div className="h-8 w-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                                             <ShieldCheck className="h-4 w-4" />
                                         </div>
-                                        <CardTitle className="text-[11px] font-bold uppercase tracking-widest text-gray-900">Approvals</CardTitle>
+                                        <CardTitle className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-gray-900">Fiscal Pulse</CardTitle>
                                     </div>
-                                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
                                 </CardHeader>
-                                <CardContent className="p-6">
+                                <CardContent className="p-5 md:p-6">
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Approval</span>
-                                            <span className="text-base font-bold text-emerald-600">98.4%</span>
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Collection Rate</span>
+                                            <span className="text-sm md:text-base font-bold text-emerald-600">98.4%</span>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">System</span>
-                                            <span className="text-base font-bold text-gray-900">OPTIMAL</span>
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">System Load</span>
+                                            <span className="text-sm md:text-base font-bold text-gray-900 uppercase">Optimal</span>
                                         </div>
-                                        <div className="pt-4">
+                                        <div className="pt-2 md:pt-4">
                                             <Link href="/admin/payment-approvals">
-                                                <Button variant="outline" className="w-full h-10 border-gray-200 text-[9px] font-bold uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all">
-                                                    View
+                                                <Button variant="outline" className="w-full h-10 border-gray-200 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all">
+                                                    Verify Approvals
                                                 </Button>
                                             </Link>
                                         </div>
@@ -313,22 +318,22 @@ const AdminDashboard = () => {
                                 <div className="h-5 w-1 bg-blue-600 rounded-full" />
                                 <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Quick</h3>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-2 gap-3 md:gap-4 px-2 md:px-0">
                                 {[
                                     { label: 'Bookings', icon: ClipboardList, href: '/admin/bookings', color: 'text-orange-600', bg: 'bg-orange-50' },
                                     { label: 'Payments', icon: DollarSign, href: '/admin/payments', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                                    { label: 'Complaints', icon: MessageSquare, href: '/admin/complaints', color: 'text-rose-600', bg: 'bg-rose-50' },
-                                    { label: 'Notice Board', icon: Megaphone, href: '/admin/notices', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                                    { label: 'Grievances', icon: MessageSquare, href: '/admin/complaints', color: 'text-rose-600', bg: 'bg-rose-50' },
+                                    { label: 'Notices', icon: Megaphone, href: '/admin/notices', color: 'text-indigo-600', bg: 'bg-indigo-50' },
                                     { label: 'Expenses', icon: Receipt, href: '/admin/expenses', color: 'text-blue-600', bg: 'bg-blue-50' },
-                                    { label: 'Maintenance', icon: History, href: '/admin/maintenances', color: 'text-amber-600', bg: 'bg-amber-50' },
+                                    { label: 'Asset Log', icon: History, href: '/admin/maintenances', color: 'text-amber-600', bg: 'bg-amber-50' },
                                     { label: 'Salaries', icon: Wallet, href: '/admin/salaries', color: 'text-purple-600', bg: 'bg-purple-50' },
                                 ].map((item, i) => (
                                     <Link key={i} href={item.href}>
-                                        <div className="bg-white border border-gray-100 rounded-2xl p-4 flex flex-col items-center gap-3 shadow-sm hover:shadow-md hover:border-blue-600/20 transition-all text-center">
-                                            <div className={`h-10 w-10 rounded-xl ${item.bg} ${item.color} flex items-center justify-center`}>
-                                                <item.icon className="h-5 w-5" />
+                                        <div className="bg-white border border-gray-100 rounded-2xl p-3 md:p-4 flex flex-col items-center gap-2 md:gap-3 shadow-sm hover:shadow-md hover:border-indigo-600/20 transition-all text-center group h-full justify-center">
+                                            <div className={`h-9 w-9 md:h-10 md:w-10 rounded-xl ${item.bg} ${item.color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
+                                                <item.icon className="h-4.5 w-4.5 md:h-5 md:w-5" />
                                             </div>
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-600">{item.label}</span>
+                                            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-indigo-600 transition-colors line-clamp-1">{item.label}</span>
                                         </div>
                                     </Link>
                                 ))}
@@ -340,21 +345,21 @@ const AdminDashboard = () => {
                                 <div className="h-5 w-1 bg-blue-600 rounded-full" />
                                 <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Recent</h3>
                             </div>
-                            <div className="bg-white border border-gray-100 rounded-[2.5rem] p-6 shadow-sm space-y-6">
+                            <div className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-6 shadow-sm space-y-5 md:space-y-6">
                                 {recentPayments?.payments?.length > 0 ? recentPayments.payments.slice(0, 4).map((pmt) => (
-                                    <div key={pmt.id} className="flex items-center justify-between group cursor-pointer">
-                                        <div className="flex items-center gap-4">
-                                            <div className={`h-10 w-10 rounded-xl ${pmt.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-400'} flex items-center justify-center border border-gray-100 group-hover:bg-blue-600 group-hover:text-white transition-all`}>
+                                    <div key={pmt.id} className="flex items-center justify-between group cursor-pointer w-full">
+                                        <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+                                            <div className={`h-9 w-9 md:h-10 md:w-10 rounded-xl ${pmt.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-400'} flex items-center justify-center border border-gray-100 group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0`}>
                                                 <DollarSign className="h-4 w-4" />
                                             </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-[11px] font-bold text-gray-900 uppercase tracking-tight">{pmt.User?.name || 'Guest'}</span>
-                                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{format(new Date(pmt.date), 'MMM dd, HH:mm')}</span>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-[10px] md:text-[11px] font-bold text-gray-900 uppercase tracking-tight truncate">{pmt.User?.name || 'Guest User'}</span>
+                                                <span className="text-[7px] md:text-[8px] font-black text-gray-400 uppercase tracking-widest mt-0.5">{format(new Date(pmt.date), 'MMM dd, HH:mm')}</span>
                                             </div>
                                         </div>
-                                        <div className="text-right flex flex-col items-end">
-                                            <span className="text-[11px] font-bold text-gray-900">PKR {pmt.amount.toLocaleString()}</span>
-                                            <Badge variant="outline" className={`text-[7px] font-bold rounded-full px-2 py-0 border-none ${pmt.status === 'PAID' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                        <div className="text-right flex flex-col items-end shrink-0 ml-2">
+                                            <span className="text-[10px] md:text-[11px] font-bold text-gray-900">Rs. {pmt.amount.toLocaleString()}</span>
+                                            <Badge variant="outline" className={`text-[7px] font-black rounded-full px-2 py-0 border-none ${pmt.status === 'PAID' ? 'text-emerald-500 bg-emerald-50/50' : 'text-amber-500 bg-amber-50/50'}`}>
                                                 {pmt.status}
                                             </Badge>
                                         </div>
@@ -362,14 +367,14 @@ const AdminDashboard = () => {
                                 )) : (
                                     <div className="py-10 text-center">
                                         <Activity className="h-8 w-8 text-gray-100 mx-auto mb-3" />
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No payments yet</p>
+                                        <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">No recent transactions</p>
                                     </div>
                                 )}
 
-                                <div className="pt-4">
-                                    <Link href="/admin/payments">
-                                        <Button variant="ghost" className="w-full text-[9px] font-bold uppercase tracking-widest text-gray-400 hover:text-blue-600 hover:bg-gray-50 rounded-xl">
-                                            View Payments
+                                <div className="pt-2 md:pt-4">
+                                    <Link href="/admin/payments" className="block">
+                                        <Button variant="ghost" className="w-full h-10 text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-indigo-600 hover:bg-gray-50 rounded-xl border border-transparent hover:border-indigo-100 transition-all">
+                                            Access All Payments
                                         </Button>
                                     </Link>
                                 </div>

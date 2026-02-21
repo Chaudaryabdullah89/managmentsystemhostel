@@ -30,6 +30,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Loader from "@/components/ui/Loader";
 import {
     Select,
     SelectContent,
@@ -44,14 +45,7 @@ const ReportsPage = () => {
     const [selectedPeriod, setSelectedPeriod] = useState("month");
     const { data, isLoading } = useReports(selectedPeriod);
 
-    if (isLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="h-10 w-10 border-[3px] border-gray-100 border-t-black rounded-full animate-spin" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Compiling Analytics Data...</p>
-            </div>
-        </div>
-    );
+    if (isLoading) return <Loader label="Compiling Analytics" subLabel="Accessing financial insights node" icon={Activity} />;
 
     const stats = data?.overall || {
         totalRevenue: 0,
@@ -100,22 +94,22 @@ const ReportsPage = () => {
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight leading-relaxed">
             {/* Minimal Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-8 w-1 bg-black rounded-full" />
+            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
+                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="h-8 w-1 bg-black rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">Business Analytics</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Business Analytics</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Network Registry</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Network Registry</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Live Insights</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Live Insights</span>
                             </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 md:gap-3">
                         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                            <SelectTrigger className="h-9 w-[140px] rounded-xl border-gray-100 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 shadow-sm transition-all focus:ring-0">
+                            <SelectTrigger className="h-9 w-full md:w-[140px] rounded-xl border-gray-100 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 shadow-sm transition-all focus:ring-0">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
@@ -126,10 +120,10 @@ const ReportsPage = () => {
                             </SelectContent>
                         </Select>
                         <Button
-                            className="h-9 px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95"
+                            className="h-9 px-4 md:px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap"
                             onClick={handleExport}
                         >
-                            <Download className="h-3.5 w-3.5 mr-2" /> Export Protocol
+                            <Download className="h-3.5 w-3.5" /> <span className="hidden xs:inline">Export</span> Protocol
                         </Button>
                     </div>
                 </div>
@@ -137,61 +131,61 @@ const ReportsPage = () => {
 
             <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
                 {/* Metrics Matrix */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all group">
-                        <div className="h-12 w-12 rounded-xl bg-emerald-50 emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/50 group-hover:scale-110 transition-transform">
-                            <Wallet className="h-5 w-5 text-emerald-600" />
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                    <div className="bg-white border border-gray-100 rounded-2xl p-3 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
+                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100/50 group-hover:scale-110 transition-transform">
+                            <Wallet className="h-5 w-5" />
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest italic flex items-center gap-1.5">
+                        <div className="flex flex-col min-w-0">
+                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest italic flex items-center justify-center sm:justify-start gap-1 md:gap-1.5 shrink-0">
                                 Gross Revenue <TrendingUp className="h-2.5 w-2.5" />
                             </span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-xl font-bold text-gray-900 tracking-tight">PKR {stats.totalRevenue.toLocaleString()}</span>
-                                <span className={`text-[9px] font-bold ${Number(stats.revenueChange) >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            <div className="flex flex-col sm:flex-row items-center sm:items-baseline gap-1 md:gap-2">
+                                <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate w-full">PKR {stats.totalRevenue.toLocaleString()}</span>
+                                <span className={`text-[8px] md:text-[9px] font-bold ${Number(stats.revenueChange) >= 0 ? 'text-emerald-500' : 'text-rose-500'} shrink-0`}>
                                     {Number(stats.revenueChange) >= 0 ? '+' : ''}{stats.revenueChange}%
                                 </span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all group">
-                        <div className="h-12 w-12 rounded-xl bg-rose-50 flex items-center justify-center shrink-0 border border-rose-100/50 group-hover:scale-110 transition-transform">
-                            <CreditCard className="h-5 w-5 text-rose-600" />
+                    <div className="bg-white border border-gray-100 rounded-2xl p-3 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
+                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0 border border-rose-100/50 group-hover:scale-110 transition-transform">
+                            <CreditCard className="h-5 w-5" />
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest italic flex items-center gap-1.5">
+                        <div className="flex flex-col min-w-0">
+                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest italic flex items-center justify-center sm:justify-start gap-1 md:gap-1.5 shrink-0">
                                 Operating Costs <TrendingDown className="h-2.5 w-2.5" />
                             </span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-xl font-bold text-gray-900 tracking-tight">PKR {stats.totalExpenses.toLocaleString()}</span>
-                                <span className="text-[9px] font-bold text-emerald-500">{stats.expenseChange}%</span>
+                            <div className="flex flex-col sm:flex-row items-center sm:items-baseline gap-1 md:gap-2">
+                                <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate w-full">PKR {stats.totalExpenses.toLocaleString()}</span>
+                                <span className="text-[8px] md:text-[9px] font-bold text-emerald-500 shrink-0">{stats.expenseChange}%</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all group">
-                        <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 border border-blue-100/50 group-hover:scale-110 transition-transform">
-                            <TrendingUp className="h-5 w-5 text-blue-600" />
+                    <div className="bg-white border border-gray-100 rounded-2xl p-3 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
+                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/50 group-hover:scale-110 transition-transform">
+                            <TrendingUp className="h-5 w-5" />
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest italic">Net Performance</span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-xl font-bold text-blue-600 tracking-tight">PKR {stats.netProfit.toLocaleString()}</span>
-                                <span className="text-[9px] font-bold text-emerald-500">+{stats.profitChange}%</span>
+                        <div className="flex flex-col min-w-0">
+                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest italic shrink-0">Net Performance</span>
+                            <div className="flex flex-col sm:flex-row items-center sm:items-baseline gap-1 md:gap-2">
+                                <span className="text-sm md:text-xl font-bold text-blue-600 tracking-tight truncate w-full">PKR {stats.netProfit.toLocaleString()}</span>
+                                <span className="text-[8px] md:text-[9px] font-bold text-emerald-500 shrink-0">+{stats.profitChange}%</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all group">
-                        <div className="h-12 w-12 rounded-xl bg-amber-50 flex items-center justify-center shrink-0 border border-amber-100/50 group-hover:scale-110 transition-transform">
-                            <Home className="h-5 w-5 text-amber-600" />
+                    <div className="bg-white border border-gray-100 rounded-2xl p-3 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
+                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-100/50 group-hover:scale-110 transition-transform">
+                            <Home className="h-5 w-5" />
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest italic">Network Occupancy</span>
-                            <div className="flex items-baseline gap-2">
-                                <span className="text-xl font-bold text-gray-900 tracking-tight">{stats.occupancyRate}%</span>
-                                <span className="text-[9px] font-bold text-emerald-500">+{stats.occupancyChange}%</span>
+                        <div className="flex flex-col min-w-0">
+                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest italic shrink-0">Network Occupancy</span>
+                            <div className="flex flex-col sm:flex-row items-center sm:items-baseline gap-1 md:gap-2">
+                                <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate w-full">{stats.occupancyRate}%</span>
+                                <span className="text-[8px] md:text-[9px] font-bold text-emerald-500 shrink-0">+{stats.occupancyChange}%</span>
                             </div>
                         </div>
                     </div>
