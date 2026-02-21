@@ -16,6 +16,7 @@ import useAuthStore from "@/hooks/Authstate";
 import { useBookings } from "@/hooks/useBooking";
 import { useAllPayments } from "@/hooks/usePayment";
 import { useComplaints } from "@/hooks/usecomplaints";
+import NoticeWidget from "@/components/Dashboard/NoticeWidget";
 
 const GuestDashboard = () => {
     const user = useAuthStore((state) => state.user);
@@ -234,73 +235,82 @@ const GuestDashboard = () => {
 
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Recent Payments Summary */}
-                            <div className="space-y-6 animate-in slide-in-from-bottom-8 fade-in duration-700 fill-mode-both delay-[400ms]">
-                                <div className="flex items-center justify-between px-2">
-                                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Recent Payments</h3>
-                                    <Link href="/guest/payments">
-                                        <Button variant="ghost" size="sm" className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-black">
-                                            History
-                                        </Button>
-                                    </Link>
-                                </div>
-                                <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
-                                    {paymentsData?.payments?.length > 0 ? paymentsData.payments.slice(0, 3).map((payment) => (
-                                        <div key={payment.id} className="flex items-center justify-between group cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors -mx-2">
-                                            <div className="flex items-center gap-4">
-                                                <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${payment.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-                                                    <CreditCard className="h-4 w-4" />
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-gray-900">{payment.notes || 'Stay Payment'}</span>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{new Date(payment.date).toLocaleDateString()}</span>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-sm font-bold text-gray-900">PKR {payment.amount?.toLocaleString()}</div>
-                                                <span className={`text-[9px] font-bold uppercase tracking-wider ${payment.status === 'PAID' ? 'text-emerald-500' : 'text-amber-500'}`}>
-                                                    {payment.status === 'PAID' ? 'Done' : 'Pending'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    )) : (
-                                        <div className="text-center py-8 text-gray-400 text-xs font-bold uppercase tracking-widest">No payments yet</div>
-                                    )}
-                                </div>
+                        {/* Bulletin & Operations Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Notice Board Widget */}
+                            <div className="lg:col-span-1 animate-in slide-in-from-bottom-8 fade-in duration-700 fill-mode-both delay-[400ms]">
+                                <NoticeWidget hostelId={user?.hostelId} />
                             </div>
 
-                            {/* Recent Issues Summary */}
-                            <div className="space-y-6 animate-in slide-in-from-bottom-8 fade-in duration-700 fill-mode-both delay-[500ms]">
-                                <div className="flex items-center justify-between px-2">
-                                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Recent Issues</h3>
-                                    <Link href="/guest/support">
-                                        <Button variant="ghost" size="sm" className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-black">
-                                            Support hub
-                                        </Button>
-                                    </Link>
-                                </div>
-                                <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
-                                    {complaintsData && complaintsData.length > 0 ? complaintsData.slice(0, 3).map((complaint) => (
-                                        <div key={complaint.id} className="flex items-center justify-between group cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors -mx-2">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 rounded-xl bg-gray-50 text-gray-500 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
-                                                    <AlertCircle className="h-4 w-4" />
+                            {/* Recent Activity Grid */}
+                            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {/* Recent Payments Summary */}
+                                <div className="space-y-6 animate-in slide-in-from-bottom-8 fade-in duration-700 fill-mode-both delay-[500ms]">
+                                    <div className="flex items-center justify-between px-2">
+                                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Recent Payments</h3>
+                                        <Link href="/guest/payments">
+                                            <Button variant="ghost" size="sm" className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-black">
+                                                History
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                    <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
+                                        {paymentsData?.payments?.length > 0 ? paymentsData.payments.slice(0, 3).map((payment) => (
+                                            <div key={payment.id} className="flex items-center justify-between group cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors -mx-2">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${payment.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                                                        <CreditCard className="h-4 w-4" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-bold text-gray-900">{payment.notes || 'Stay Payment'}</span>
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{new Date(payment.date).toLocaleDateString()}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-sm font-bold text-gray-900">{complaint.title}</span>
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{new Date(complaint.createdAt).toLocaleDateString()}</span>
+                                                <div className="text-right">
+                                                    <div className="text-sm font-bold text-gray-900">PKR {payment.amount?.toLocaleString()}</div>
+                                                    <span className={`text-[9px] font-bold uppercase tracking-wider ${payment.status === 'PAID' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                                                        {payment.status === 'PAID' ? 'Done' : 'Pending'}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <Badge variant="outline" className={`border-none rounded-full text-[9px] font-bold uppercase tracking-wider
+                                        )) : (
+                                            <div className="text-center py-8 text-gray-400 text-xs font-bold uppercase tracking-widest">No payments yet</div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Recent Issues Summary */}
+                                <div className="space-y-6 animate-in slide-in-from-bottom-8 fade-in duration-700 fill-mode-both delay-[500ms]">
+                                    <div className="flex items-center justify-between px-2">
+                                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Recent Issues</h3>
+                                        <Link href="/guest/support">
+                                            <Button variant="ghost" size="sm" className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-black">
+                                                Support hub
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                    <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
+                                        {complaintsData && complaintsData.length > 0 ? complaintsData.slice(0, 3).map((complaint) => (
+                                            <div key={complaint.id} className="flex items-center justify-between group cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors -mx-2">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-10 w-10 rounded-xl bg-gray-50 text-gray-500 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
+                                                        <AlertCircle className="h-4 w-4" />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-sm font-bold text-gray-900">{complaint.title}</span>
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{new Date(complaint.createdAt).toLocaleDateString()}</span>
+                                                    </div>
+                                                </div>
+                                                <Badge variant="outline" className={`border-none rounded-full text-[9px] font-bold uppercase tracking-wider
                                         ${complaint.status === 'RESOLVED' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}
                                     `}>
-                                                {complaint.status === 'RESOLVED' ? 'Fixed' : 'Sent'}
-                                            </Badge>
-                                        </div>
-                                    )) : (
-                                        <div className="text-center py-8 text-gray-400 text-xs font-bold uppercase tracking-widest">No issues reported</div>
-                                    )}
+                                                    {complaint.status === 'RESOLVED' ? 'Fixed' : 'Sent'}
+                                                </Badge>
+                                            </div>
+                                        )) : (
+                                            <div className="text-center py-8 text-gray-400 text-xs font-bold uppercase tracking-widest">No issues reported</div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>

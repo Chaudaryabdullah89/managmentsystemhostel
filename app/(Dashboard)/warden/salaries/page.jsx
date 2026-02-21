@@ -91,6 +91,8 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import SalarySlip from "@/components/SalarySlip";
 import useAuthStore from "@/hooks/Authstate";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const WardenSalariesPage = () => {
     const router = useRouter();
@@ -138,6 +140,8 @@ const WardenSalariesPage = () => {
         notes: ""
     });
 
+    const [isExportingSalaries, setIsExportingSalaries] = useState(false);
+
     const { data: salaries, isLoading: salariesLoading } = useAllSalaries({
         month: activeTab === "current" ? currentMonth : null,
         hostelId: user?.hostelId
@@ -171,7 +175,7 @@ const WardenSalariesPage = () => {
         return { total, paid, pending, count: data.length };
     }, [salaries]);
 
-    const handleExport = () => {
+    const handleExportCSV = () => {
         const headers = ["ID", "Staff Name", "Month", "Basic Salary", "Allowances", "Bonuses", "Deductions", "Net Amount", "Status", "Payment Method", "Date"];
         const rows = filteredSalaries.map(s => [
             s.id,
@@ -197,7 +201,102 @@ const WardenSalariesPage = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success("Payroll data exported successfully");
+        toast.success("Payroll CSV Exported!");
+    };
+
+    const handleExportPDF = async () => {
+        setIsExportingSalaries(true);
+        try {
+            const doc = new jsPDF('landscape');
+            doc.setFont("helvetica", "bold");
+
+            // Header Section
+            doc.setFillColor(31, 41, 55); // gray-800
+            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text("STAFF PAYROLL REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Month: ${selectedMonth} | Total Staff: ${filteredSalaries.length}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Total Amount: PKR ${stats.total.toLocaleString()}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+
+            // Draw Line
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.5);
+            doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
+
+            const headers = [
+                ["S.No", "Staff Name", "Month", "Basic", "Allowances", "Bonuses", "Deductions", "Net", "Status", "Date"]
+            ];
+
+            const rows = filteredSalaries.map((s, index) => [
+                index + 1,
+                s.StaffProfile?.User?.name || 'N/A',
+                s.month,
+                s.basicSalary.toLocaleString(),
+                s.allowances.toLocaleString(),
+                s.bonuses.toLocaleString(),
+                s.deductions.toLocaleString(),
+                s.amount.toLocaleString(),
+                s.status,
+                s.paymentDate ? format(new Date(s.paymentDate), 'dd/MM/yyyy') : 'Pending'
+            ]);
+
+            autoTable(doc, {
+                startY: 55,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [31, 41, 55],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    fontSize: 9,
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fontSize: 9,
+                    textColor: [50, 50, 50]
+                },
+                alternateRowStyles: {
+                    fillColor: [249, 250, 251]
+                },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center' },
+                    3: { halign: 'right' },
+                    4: { halign: 'right' },
+                    5: { halign: 'right' },
+                    6: { halign: 'right' },
+                    7: { halign: 'right' },
+                },
+                styles: {
+                    overflow: 'linebreak',
+                    cellPadding: 4,
+                    valign: 'middle'
+                },
+                didDrawPage: function (data) {
+                    let str = "Page " + doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(str, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
+                    doc.text("Official GreenView Hostels Records", 14, doc.internal.pageSize.height - 10);
+                }
+            });
+
+            doc.save(`Staff_Payroll_${selectedMonth.replace(' ', '_')}.pdf`);
+            toast.success("Payroll PDF Exported!");
+        } catch (error) {
+            toast.error("Failed to export PDF");
+            console.error(error);
+        } finally {
+            setIsExportingSalaries(false);
+        }
     };
 
     const handleGeneratePayroll = async () => {
@@ -290,7 +389,7 @@ const WardenSalariesPage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">
             {/* Premium Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
@@ -307,13 +406,26 @@ const WardenSalariesPage = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <Button
-                            variant="outline"
-                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600"
-                            onClick={handleExport}
-                        >
-                            <Download className="h-3.5 w-3.5 mr-2 text-gray-400" /> Export CSV
-                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600"
+                                    disabled={isExportingSalaries}
+                                >
+                                    {isExportingSalaries ? <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" /> : <Download className="h-3.5 w-3.5 mr-2 text-gray-400" />}
+                                    Export
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 rounded-xl p-2">
+                                <DropdownMenuItem onClick={handleExportCSV} className="font-bold text-[10px] uppercase tracking-wider p-3 rounded-lg cursor-pointer">
+                                    <FileText className="h-4 w-4 mr-2" /> Export CSV
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleExportPDF} className="font-bold text-[10px] uppercase tracking-wider p-3 rounded-lg cursor-pointer">
+                                    <FileText className="h-4 w-4 mr-2 text-rose-500" /> Export PDF
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         <Button
                             variant="outline"
                             className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-indigo-600 hover:bg-gray-50 transition-all shadow-sm"

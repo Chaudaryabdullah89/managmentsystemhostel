@@ -18,7 +18,8 @@ import {
     Plus,
     Edit,
     ArrowUpRight,
-    SearchX
+    SearchX,
+    Download
 } from "lucide-react"
 import Link from 'next/link'
 import {
@@ -40,6 +41,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter } from 'next/navigation'
 import useAuthStore from '@/hooks/Authstate'
 import { useWardenResidents } from '@/hooks/useWarden'
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { format } from "date-fns";
+import { toast } from "sonner";
 
 const WardenResidentsPage = () => {
     const { user } = useAuthStore()
@@ -60,6 +65,104 @@ const WardenResidentsPage = () => {
             )
         })
     }, [residents, searchTerm])
+
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleExportPDF = async () => {
+        if (!filteredResidents || filteredResidents.length === 0) {
+            toast.error("No residents found to export");
+            return;
+        }
+
+        setIsExporting(true);
+        try {
+            const doc = new jsPDF('landscape');
+            doc.setFont("helvetica", "bold");
+
+            // Header Section
+            doc.setFillColor(30, 58, 138); // blue-900
+            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text("RESIDENT DIRECTORY", doc.internal.pageSize.width / 2, 18, { align: "center" });
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Official Branch Record | Total Residents: ${filteredResidents.length}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Status: Active Directory`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+
+            // Draw Line
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.5);
+            doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
+
+            const headers = [
+                ["S.No", "Name", "UID", "Room", "Email", "Phone", "CNIC", "Join Date", "Status"]
+            ];
+
+            const rows = filteredResidents.map((res, index) => {
+                const activeBooking = res.Booking?.[0];
+                return [
+                    index + 1,
+                    res.name || 'N/A',
+                    res.uid || res.id.slice(-8).toUpperCase(),
+                    activeBooking?.Room?.roomNumber ? `Room ${activeBooking.Room.roomNumber}` : 'N/A',
+                    res.email || 'N/A',
+                    res.phone || 'N/A',
+                    res.cnic || 'N/A',
+                    format(new Date(res.createdAt), 'dd/MM/yyyy'),
+                    res.isActive ? 'Active' : 'Offline'
+                ];
+            });
+
+            autoTable(doc, {
+                startY: 55,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [30, 58, 138],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    fontSize: 8,
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fontSize: 8,
+                    textColor: [50, 50, 50]
+                },
+                alternateRowStyles: {
+                    fillColor: [248, 250, 252]
+                },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center' },
+                },
+                styles: {
+                    overflow: 'linebreak',
+                    cellPadding: 3,
+                    valign: 'middle'
+                },
+                didDrawPage: function (data) {
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text("Page " + doc.internal.getNumberOfPages(), doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
+                    doc.text("Official GreenView Resident Registry", 14, doc.internal.pageSize.height - 10);
+                }
+            });
+
+            doc.save(`Resident_Directory_${format(new Date(), 'dd_MM_yyyy')}.pdf`);
+            toast.success("Resident Directory Exported!");
+        } catch (error) {
+            toast.error("Failed to export residents");
+            console.error(error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     const handleSync = async () => {
         const promise = refetch()
@@ -111,6 +214,15 @@ const WardenResidentsPage = () => {
                             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Residents</span>
                             <span className="text-sm font-bold text-gray-900 leading-none">{residents?.filter(r => r.isActive).length || 0} Total</span>
                         </div>
+                        <Button
+                            variant="outline"
+                            className="h-10 rounded-xl border-gray-100 bg-white font-bold gap-2 text-xs uppercase tracking-widest"
+                            onClick={handleExportPDF}
+                            disabled={isExporting}
+                        >
+                            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4 text-gray-400" />}
+                            Export
+                        </Button>
                         <Button
                             variant="outline"
                             className="h-10 rounded-xl border-gray-100 bg-white font-bold gap-2 text-xs uppercase tracking-widest"

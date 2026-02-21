@@ -97,7 +97,7 @@ const GuestPayments = () => {
     );
 
     return (
-        <div className="min-h-screen bg-slate-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-slate-50/50 pb-20 font-sans tracking-tight print:hidden">
             <header className="bg-white/80 backdrop-blur-md border-b sticky top-0 z-50">
                 <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-3">

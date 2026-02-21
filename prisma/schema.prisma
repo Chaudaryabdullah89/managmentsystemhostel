@@ -117,6 +117,8 @@ model Hostel {
   staffTasks                  StaffTask[]
   User_User_hostelIdToHostel  User[]        @relation("User_hostelIdToHostel")
   maintanance                 maintanance[]
+  MessMenu                    MessMenu[]
+  Notice                      Notice[]
 }
 
 model OtpVerification {
@@ -345,6 +347,7 @@ model User {
   maintanance_maintanance_assignedToIdToUser maintanance[]      @relation("maintanance_assignedToIdToUser")
   maintanance_maintanance_userIdToUser       maintanance[]      @relation("maintanance_userIdToUser")
   refundRequests                             RefundRequest[]
+  notices                                    Notice[]           @relation("NoticeAuthor")
 }
 
 model StaffTask {
@@ -409,6 +412,24 @@ model resetPassword {
   userId    String   @unique
 
   @@index([email])
+}
+
+model MessMenu {
+  id            String   @id @default(cuid())
+  hostelId      String
+  dayOfWeek     String // e.g. "MONDAY", "TUESDAY"
+  breakfast     String?
+  breakfastTime String?
+  lunch         String?
+  lunchTime     String?
+  dinner        String?
+  dinnerTime    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  Hostel Hostel @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+
+  @@unique([hostelId, dayOfWeek])
 }
 
 enum TaskStatus {
@@ -512,6 +533,23 @@ enum RoomType {
   DOUBLE
   TRIPLE
   DORMITORY
+}
+
+model Notice {
+  id        String    @id @default(cuid())
+  title     String
+  content   String
+  priority  String    @default("MEDIUM")
+  category  String    @default("GENERAL")
+  authorId  String
+  hostelId  String?
+  isActive  Boolean   @default(true)
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  author User    @relation("NoticeAuthor", fields: [authorId], references: [id])
+  hostel Hostel? @relation(fields: [hostelId], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {

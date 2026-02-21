@@ -200,7 +200,7 @@ const HostelsPage = () => {
                         { label: 'Buildings', value: hostelsToDisplay.length, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
                         { label: 'Total BEDS', value: hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 0), icon: Bed, color: 'text-purple-600', bg: 'bg-purple-50' },
                         { label: 'Available', value: hostelsToDisplay.reduce((t, h) => t + h.roomStats.availableRooms, 0), icon: DoorOpen, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'How Full', value: `${Math.round((hostelsToDisplay.reduce((t, h) => t + h.roomStats.occupiedRooms, 0) / hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 1)) * 100)}%`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Occupied', value: `${Math.round((hostelsToDisplay.reduce((t, h) => t + h.roomStats.occupiedRooms, 0) / hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 1)) * 100)}%`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
                     ].map((s, i) => (
                         <Card key={i} className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white">
                             <CardContent className="p-5 flex items-center gap-4">
@@ -277,7 +277,7 @@ const HostelsPage = () => {
                                         {/* Occupancy Status */}
                                         <div className="flex-1 w-full max-w-sm lg:max-w-md hidden md:block px-4">
                                             <div className="flex justify-between items-end mb-1.5">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">How Full</span>
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Occupancy</span>
                                                 <span className="text-xs font-bold text-gray-900">{Math.round((hostel.roomStats.occupiedRooms / hostel.roomStats.totalRooms) * 100 || 0)}%</span>
                                             </div>
                                             <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100">

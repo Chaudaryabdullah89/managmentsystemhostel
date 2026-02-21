@@ -96,7 +96,9 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
 import SecurityRefundModal from "./SecurityRefundModal";
-
+import { useBookings } from "@/hooks/useBooking";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const PaymentManagementPage = () => {
     const router = useRouter();
@@ -111,6 +113,9 @@ const PaymentManagementPage = () => {
     const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
 
     // Edit & Delete States
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [isExportingDefaulters, setIsExportingDefaulters] = useState(false);
+    const [isExportingPayments, setIsExportingPayments] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [editFormData, setEditFormData] = useState({
@@ -124,6 +129,8 @@ const PaymentManagementPage = () => {
     const { data: refundRequests, isLoading: refundsLoading } = useRefundRequests();
     const { data: stats, isLoading: statsLoading } = useFinancialStats();
     const { data: hostelsData } = useHostel();
+    const { data: bookingsResponse } = useBookings();
+    const bookings = bookingsResponse || [];
     const updatePayment = useUpdatePayment();
     const deletePayment = useDeletePayment();
     const updateRefundStatus = useUpdateRefundStatus();
@@ -250,6 +257,222 @@ const PaymentManagementPage = () => {
         }
     };
 
+    const handleExportDefaultersList = async () => {
+        setIsExportingDefaulters(true);
+
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const currentDay = now.getDate();
+
+        // Let's establish what date to check for. Usually rent is expected by 5th or 10th. 
+        // If it's before the 5th of the month, technically no one is a defaulter for THIS month yet, 
+        // but they might be for the PREVIOUS month. 
+        // For simplicity, we just check if they have a PAID RENT for the current month.
+        // If we want to strictly say "only consider them defaulters if it's past the 5th/10th", we can do:
+        const isPastDueDay = currentDay > 5; // Assuming 5th is the due date
+        // If it's not past the due date, we check for last month's payment instead.
+        const targetMonth = isPastDueDay ? currentMonth : (currentMonth === 0 ? 11 : currentMonth - 1);
+        const targetYear = (isPastDueDay || currentMonth !== 0) ? currentYear : currentYear - 1;
+
+        const defaultersList = bookings.filter(b => {
+            // Respect UI hostel filter
+            if (filterHostel !== "All" && b.Room?.Hostel?.name !== filterHostel) return false;
+
+            // Must be currently staying
+            if (b.status !== "CHECKED_IN") return false;
+
+            // Check if paid for target month
+            const hasPaidForTargetMonth = b.Payment?.some(p => {
+                const pDate = new Date(p.date || p.createdAt);
+                return p.status === "PAID" && p.type === "RENT" && pDate.getMonth() === targetMonth && pDate.getFullYear() === targetYear;
+            });
+
+            return !hasPaidForTargetMonth;
+        });
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        try {
+            const doc = new jsPDF('landscape');
+            doc.setFont("helvetica", "bold");
+
+            // Header Section (Defaulters)
+            doc.setFillColor(153, 27, 27);
+            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text("RENT DEFAULTERS REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            const monthName = new Date(targetYear, targetMonth, 1).toLocaleString('default', { month: 'long' });
+            doc.text(`Defaulters for: ${monthName} ${targetYear} (Past 5th)`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Total Defaulters: ${defaultersList.length}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+
+            // --- New Payment Export Section ---
+            // This will be added later after the defaulters section.
+
+
+            // Draw Line
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.5);
+            doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
+
+            const headers = [
+                ["S.No", "Resident Name", "Phone", "Hostel", "Room", "Rent Amount", "Last Payment"]
+            ];
+
+            const rows = defaultersList.map((b, index) => {
+                const lastPayment = (b.Payment && b.Payment.length > 0) ? format(new Date(b.Payment[0].date), 'dd/MM/yyyy') : 'Never';
+                return [
+                    index + 1,
+                    b.User?.name || 'N/A',
+                    b.User?.phone || 'N/A',
+                    b.Room?.Hostel?.name || 'N/A',
+                    b.Room?.roomNumber || 'N/A',
+                    `PKR ${b.totalAmount ? b.totalAmount.toLocaleString() : 'N/A'}`,
+                    lastPayment
+                ];
+            });
+
+            autoTable(doc, {
+                startY: 55,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [185, 28, 28], // red-700
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    fontSize: 9,
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fontSize: 9,
+                    textColor: [50, 50, 50]
+                },
+                alternateRowStyles: {
+                    fillColor: [254, 242, 242] // red-50
+                },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center' }, // S.No
+                },
+                styles: {
+                    overflow: 'linebreak',
+                    cellPadding: 4,
+                    valign: 'middle'
+                },
+                didDrawPage: function (data) {
+                    let str = "Page " + doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(str, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
+                    doc.text("Official GreenView Hostels Records", 14, doc.internal.pageSize.height - 10);
+                }
+            });
+
+            doc.save(`Defaulters_Report_${format(now, 'MMM_yyyy')}.pdf`);
+            toast.success("Defaulters Report Exported 🚨");
+        } catch (error) {
+            toast.error("Failed to export Defaulters PDF");
+            console.error(error);
+        } finally {
+            setIsExportingDefaulters(false);
+        }
+    };
+
+    const handleExportPaymentsList = async () => {
+        setIsExportingPayments(true);
+        try {
+            const doc = new jsPDF('landscape');
+            doc.setFont("helvetica", "bold");
+
+            // Header Section
+            doc.setFillColor(37, 99, 235); // blue-600
+            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text("PAYMENTS REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Total Payments: ${filteredPayments.length}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Filter Status: ${filterStatus}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+
+            // Draw Line
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.5);
+            doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
+
+            const headers = [
+                ["S.No", "Date", "Resident Name", "Hostel", "Room", "Amount", "Status", "Method", "Type"]
+            ];
+
+            const rows = filteredPayments.map((p, index) => [
+                index + 1,
+                format(new Date(p.date || p.createdAt), 'dd/MM/yyyy'),
+                p.User?.name || 'N/A',
+                p.Booking?.Room?.Hostel?.name || 'N/A',
+                p.Booking?.Room?.roomNumber || 'N/A',
+                `PKR ${p.amount.toLocaleString()}`,
+                p.status,
+                p.method,
+                p.type
+            ]);
+
+            autoTable(doc, {
+                startY: 55,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [37, 99, 235], // blue-600
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    fontSize: 9,
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fontSize: 9,
+                    textColor: [50, 50, 50]
+                },
+                alternateRowStyles: {
+                    fillColor: [239, 246, 255] // blue-50
+                },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center' }, // S.No
+                },
+                styles: {
+                    overflow: 'linebreak',
+                    cellPadding: 4,
+                    valign: 'middle'
+                },
+                didDrawPage: function (data) {
+                    let str = "Page " + doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(str, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
+                    doc.text("Official GreenView Hostels Records", 14, doc.internal.pageSize.height - 10);
+                }
+            });
+
+            doc.save(`Payments_Report_${format(new Date(), 'dd_MM_yyyy')}.pdf`);
+            toast.success("Payments Report Exported!");
+        } catch (error) {
+            toast.error("Failed to export Payments PDF");
+            console.error(error);
+        } finally {
+            setIsExportingPayments(false);
+        }
+    };
+
     if (paymentsLoading || statsLoading) return (
         <div className="flex h-screen items-center justify-center bg-white font-sans">
             <div className="flex flex-col items-center gap-6">
@@ -266,7 +489,7 @@ const PaymentManagementPage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">
             {/* Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between">
@@ -282,9 +505,24 @@ const PaymentManagementPage = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <Button variant="outline" className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all shadow-sm">
-                            <Download className="h-3.5 w-3.5 mr-2 text-gray-400" /> Export
+                    <div className="flex  gap-3">
+                        <Button
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border-rose-200 bg-rose-50 font-bold text-[10px] uppercase tracking-wider text-rose-700 hover:bg-rose-100 transition-all shadow-sm flex items-center gap-2"
+                            onClick={handleExportDefaultersList}
+                            disabled={isExportingDefaulters}
+                        >
+                            {isExportingDefaulters ? <Loader2 className="h-3.5 w-3.5 text-rose-700 animate-spin" /> : <AlertCircle className="h-3.5 w-3.5 text-rose-700" />}
+                            DEFAULTERS
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2"
+                            onClick={handleExportPaymentsList}
+                            disabled={isExportingPayments}
+                        >
+                            {isExportingPayments ? <Loader2 className="h-3.5 w-3.5 text-indigo-700 animate-spin" /> : <Download className="h-3.5 w-3.5 text-indigo-700" />}
+                            EXPORT PAYMENTS
                         </Button>
                         <Button
                             className="h-9 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95"
@@ -295,6 +533,7 @@ const PaymentManagementPage = () => {
                     </div>
                 </div>
             </div>
+
 
             <main className="max-w-[1400px] mx-auto px-6 py-8 space-y-8">
                 {/* Stats */}
@@ -865,7 +1104,7 @@ const PaymentManagementPage = () => {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </div>
+        </div >
     );
 };
 

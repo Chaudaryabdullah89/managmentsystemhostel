@@ -19,7 +19,8 @@ import {
     MessageSquare,
     ClipboardList,
     Activity,
-    ShieldCheck
+    ShieldCheck,
+    Megaphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -331,6 +332,7 @@ const WardenDashboard = () => {
                                     },
                                     { label: 'Complaints', icon: MessageSquare, href: '/warden/complaints', color: 'text-rose-600', bg: 'bg-rose-50' },
                                     { label: 'Residents', icon: Users, href: '/warden/residents', color: 'text-blue-600', bg: 'bg-blue-50' },
+                                    { label: 'Notice Board', icon: Megaphone, href: '/warden/notices', color: 'text-indigo-600', bg: 'bg-indigo-50' },
                                     { label: 'Rooms', icon: Bed, href: '/warden/rooms', color: 'text-amber-600', bg: 'bg-amber-50' },
                                     { label: 'Service Hub', icon: History, href: '/warden/services', color: 'text-purple-600', bg: 'bg-purple-50' },
                                 ].map((item, i) => (

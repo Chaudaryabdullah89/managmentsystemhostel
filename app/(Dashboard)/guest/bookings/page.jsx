@@ -345,7 +345,7 @@ const GuestBookings = () => {
     const totalPayments = bookings?.reduce((acc, b) => acc + (b.Payment?.filter(p => p.status === 'PAID').reduce((s, p) => s + p.amount, 0) || 0), 0) || 0;
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-32 font-sans tracking-tight">
+        <div className="min-h-screen bg-slate-50/50 pb-20 font-sans print:hidden">
             {/* Minimal Premium Header (Admin style) */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">

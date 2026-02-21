@@ -58,6 +58,8 @@ import { useStaffList } from "@/hooks/useSalaries";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const ComplaintsPage = () => {
     const user = useAuthStore((state) => state.user);
@@ -147,6 +149,98 @@ const ComplaintsPage = () => {
         return matchesSearch && matchesStatus && matchesPriority && matchesWardenHostel;
     });
 
+    const [isExporting, setIsExporting] = useState(false);
+
+    const handleExportPDF = async () => {
+        if (!filteredComplaints || filteredComplaints.length === 0) {
+            toast.error("No complaints found to export");
+            return;
+        }
+
+        setIsExporting(true);
+        try {
+            const doc = new jsPDF('landscape');
+            doc.setFont("helvetica", "bold");
+
+            // Header Section
+            doc.setFillColor(31, 41, 55); // gray-800/black-ish
+            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text("GRIEVANCE REGISTRY REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Official Audit Record | Hostel: ${user?.Hostel?.name} | Records: ${filteredComplaints.length}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Resolution Rate: ${stats.resolutionRate}%`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+
+            // Draw Line
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.5);
+            doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
+
+            const headers = [
+                ["S.No", "Token ID", "Resident", "Category", "Priority", "Status", "Filed Date"]
+            ];
+
+            const rows = filteredComplaints.map((c, index) => [
+                index + 1,
+                c.uid || `GRV-${c.id.slice(-8).toUpperCase()}`,
+                c.User_Complaint_userIdToUser?.name || 'N/A',
+                c.category,
+                c.priority,
+                c.status,
+                format(new Date(c.createdAt), 'dd/MM/yyyy HH:mm')
+            ]);
+
+            autoTable(doc, {
+                startY: 55,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [31, 41, 55],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    fontSize: 8,
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fontSize: 8,
+                    textColor: [50, 50, 50]
+                },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center' },
+                    1: { cellWidth: 25 },
+                    6: { cellWidth: 35 }
+                },
+                styles: {
+                    overflow: 'linebreak',
+                    cellPadding: 3,
+                    valign: 'middle'
+                },
+                didDrawPage: function (data) {
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text("Page " + doc.internal.getNumberOfPages(), doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
+                    doc.text("Official GreenView Resolution Metadata", 14, doc.internal.pageSize.height - 10);
+                }
+            });
+
+            doc.save(`Grievance_Report_${format(new Date(), 'dd_MM_yyyy')}.pdf`);
+            toast.success("Grievance report exported successfully!");
+        } catch (error) {
+            toast.error("Failed to export grievance report");
+            console.error(error);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     const handleExport = () => {
         const headers = ["Token ID", "Resident", "Hostel", "Category", "Priority", "Status", "Filed Date"];
         const rows = filteredComplaints.map(complaint => [
@@ -209,9 +303,11 @@ const ComplaintsPage = () => {
                         </div>
                         <Button
                             className="h-9 px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95"
-                            onClick={handleExport}
+                            onClick={handleExportPDF}
+                            disabled={isExporting}
                         >
-                            <Download className="h-3.5 w-3.5 mr-2" /> Export Protocol
+                            {isExporting ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Download className="h-3.5 w-3.5 mr-2" />}
+                            Export Report
                         </Button>
                     </div>
                 </div>

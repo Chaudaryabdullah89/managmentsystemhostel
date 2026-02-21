@@ -11,6 +11,7 @@ import { useEffect } from "react"
 import useAuthStore, { checkAuth } from "@/hooks/Authstate"
 import { useBookings } from "@/hooks/useBooking"
 import { AlertCircle } from "lucide-react"
+import HeaderNotices from "@/components/Dashboard/HeaderNotices"
 
 
 export default function RootLayout({
@@ -49,16 +50,19 @@ export default function RootLayout({
             <div className="flex items-center justify-between w-full">
               <div></div>
 
-              <div className="flex items-center gap-2">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage />
-                  <AvatarFallback className="rounded-lg">
-                    {user?.name?.charAt(0) || "U"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-sm text-left">
-                  <p className="font-medium">{user?.name || "Loading..."}</p>
-                  <p className="text-xs text-muted-foreground">{user?.role || "Guest"}</p>
+              <div className="flex items-center gap-4">
+                <HeaderNotices />
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8 rounded-lg">
+                    <AvatarImage />
+                    <AvatarFallback className="rounded-lg">
+                      {user?.name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-sm text-left">
+                    <p className="font-medium">{user?.name || "Loading..."}</p>
+                    <p className="text-xs text-muted-foreground">{user?.role || "Guest"}</p>
+                  </div>
                 </div>
               </div>
             </div>

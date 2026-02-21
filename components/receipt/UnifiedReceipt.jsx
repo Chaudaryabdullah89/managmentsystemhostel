@@ -245,11 +245,12 @@ const UnifiedReceipt = ({ data, type, children }) => {
     };
 
     const handleAction = (actionType) => {
-        const win = window.open('', '_blank', 'width=500,height=800');
-        win.document.write(generateHTML());
-        win.document.close();
         if (actionType === 'print') {
-            win.onload = () => win.print();
+            window.print();
+        } else {
+            const win = window.open('', '_blank', 'width=500,height=800');
+            win.document.write(generateHTML());
+            win.document.close();
         }
     };
 
@@ -263,90 +264,144 @@ const UnifiedReceipt = ({ data, type, children }) => {
                 )}
             </DialogTrigger>
             <DialogContent className="max-w-[400px] p-0 overflow-hidden border-none shadow-2xl rounded-[2rem] bg-white font-sans">
-                <DialogHeader className="p-0">
-                    <div className={`${rd.colorClass} p-8 text-white relative overflow-hidden`}>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
-                        <div className="flex justify-between items-start relative z-10">
-                            <div className="flex flex-col gap-3">
-                                <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/10">
-                                    <rd.icon className="h-5 w-5" />
+                {/* INTERACTIVE UI */}
+                <div className="print:hidden">
+                    <DialogHeader className="p-0">
+                        <div className={`${rd.colorClass} p-8 text-white relative overflow-hidden`}>
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
+                            <div className="flex justify-between items-start relative z-10">
+                                <div className="flex flex-col gap-3">
+                                    <div className="h-10 w-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/10">
+                                        <rd.icon className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <DialogTitle className="text-lg font-bold uppercase tracking-tight text-white">{rd.title}</DialogTitle>
+                                        <DialogDescription className="text-[10px] font-bold text-white/60 uppercase tracking-[0.2em] mt-0.5">{rd.id}</DialogDescription>
+                                    </div>
                                 </div>
-                                <div>
-                                    <DialogTitle className="text-lg font-bold uppercase tracking-tight text-white">{rd.title}</DialogTitle>
-                                    <DialogDescription className="text-[10px] font-bold text-white/60 uppercase tracking-[0.2em] mt-0.5">{rd.id}</DialogDescription>
-                                </div>
+                                <Badge className="bg-white/20 text-white border-none text-[8px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                                    {rd.status}
+                                </Badge>
                             </div>
-                            <Badge className="bg-white/20 text-white border-none text-[8px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-                                {rd.status}
-                            </Badge>
                         </div>
-                    </div>
-                </DialogHeader>
+                    </DialogHeader>
 
-                <div className="p-8 space-y-6">
-                    {/* Compact Identity Info */}
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-1">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{type === 'expense' ? 'Entity' : 'Recipient'}</span>
-                            <p className="text-xs font-bold text-slate-900 truncate">{rd.customerName}</p>
-                            <p className="text-[9px] font-medium text-slate-400 truncate">{rd.customerDetail}</p>
+                    <div className="p-8 space-y-6">
+                        {/* Compact Identity Info */}
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-1">
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{type === 'expense' ? 'Entity' : 'Recipient'}</span>
+                                <p className="text-xs font-bold text-slate-900 truncate">{rd.customerName}</p>
+                                <p className="text-[9px] font-medium text-slate-400 truncate">{rd.customerDetail}</p>
+                            </div>
+                            <div className="space-y-1 text-right">
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{rd.contextLabel}</span>
+                                <p className="text-xs font-bold text-slate-900 truncate">{rd.contextValue}</p>
+                                <p className="text-[9px] font-medium text-slate-400 uppercase">
+                                    {isNaN(new Date(rd.date).getTime()) ? 'N/A' : format(new Date(rd.date), 'MMM dd, yyyy')}
+                                </p>
+                            </div>
                         </div>
-                        <div className="space-y-1 text-right">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{rd.contextLabel}</span>
-                            <p className="text-xs font-bold text-slate-900 truncate">{rd.contextValue}</p>
-                            <p className="text-[9px] font-medium text-slate-400 uppercase">
-                                {isNaN(new Date(rd.date).getTime()) ? 'N/A' : format(new Date(rd.date), 'MMM dd, yyyy')}
+
+                        {/* Minimalist Fee Ledger */}
+                        <div className="space-y-3 pt-2">
+                            <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em]">Transaction Ledger</span>
+                            <div className="space-y-2">
+                                {rd.items.map((item, i) => (
+                                    <div key={i} className="flex justify-between items-center py-2 border-b border-slate-50 last:border-none">
+                                        <span className="text-xs font-semibold text-slate-500">{item.label}</span>
+                                        <span className="text-xs font-bold text-slate-900">PKR {(Number(item.value) || 0).toLocaleString()}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Bold Total Section */}
+                        <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex flex-col items-center justify-center gap-1">
+                            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{rd.totalLabel}</span>
+                            <div className="text-2xl font-black text-slate-900 tracking-tighter">
+                                PKR {(Number(rd.totalAmount) || 0).toLocaleString()}
+                            </div>
+                        </div>
+
+                        {/* Secondary Note */}
+                        <div className="flex items-start gap-3 text-slate-400 bg-slate-50/50 p-4 rounded-xl">
+                            <Info className="h-4 w-4 shrink-0 mt-0.5" />
+                            <p className="text-[9px] leading-relaxed font-medium">
+                                {rd.footerNote} This document serves as a verified confirmation of the transaction described above.
                             </p>
                         </div>
                     </div>
 
-                    {/* Minimalist Fee Ledger */}
-                    <div className="space-y-3 pt-2">
-                        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.2em]">Transaction Ledger</span>
-                        <div className="space-y-2">
+                    <DialogFooter className="p-8 pt-0">
+                        <div className="grid grid-cols-2 gap-3 w-full">
+                            <Button
+                                variant="outline"
+                                onClick={() => handleAction('view')}
+                                className="h-11 rounded-xl border-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider hover:bg-slate-50 transition-all font-sans"
+                            >
+                                <ExternalLink className="h-3.5 w-3.5 mr-2 text-slate-400" /> View Large
+                            </Button>
+                            <Button
+                                onClick={() => handleAction('print')}
+                                className={`${rd.colorClass} h-11 rounded-xl text-white text-[10px] font-bold uppercase tracking-wider shadow-lg transition-all active:scale-95 font-sans border-none hover:opacity-90`}
+                            >
+                                <Printer className="h-3.5 w-3.5 mr-2 text-white" /> Download
+                            </Button>
+                        </div>
+                    </DialogFooter>
+                </div>
+
+                {/* PRINTABLE RECEIPT */}
+                <div className="hidden print:block bg-white text-black p-10 max-w-3xl mx-auto absolute top-0 left-0 w-full font-sans">
+                    <div className="border-b-2 border-black pb-8 mb-8 text-center flex flex-col items-center">
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-[0.2em] mb-2">{rd.brand}</p>
+                        <h1 className="text-3xl font-black text-black uppercase tracking-tight">{rd.title}</h1>
+                        <p className="text-sm font-bold text-gray-500 uppercase font-mono mt-3">{rd.id}</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase mt-1">
+                            {rd.date ? format(new Date(rd.date), 'MMM dd, yyyy') : format(new Date(), 'MMM dd, yyyy')}
+                        </p>
+                        <div className="mt-4 px-4 py-1.5 bg-gray-100 border border-gray-200 rounded-full text-xs font-black uppercase text-gray-700 tracking-wider inline-block">
+                            {rd.status}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-8 mb-10">
+                        <div>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">Entity / User</p>
+                            <p className="font-bold text-black uppercase text-sm">{rd.customerName}</p>
+                            <p className="text-xs text-gray-600 mt-1">{rd.customerDetail}</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">{rd.contextLabel}</p>
+                            <p className="font-bold text-black text-sm uppercase">{rd.contextValue}</p>
+                        </div>
+                    </div>
+
+                    <div className="mb-10 pt-4 border-t border-gray-200">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Summary Details</p>
+                        <div className="space-y-3 w-full">
                             {rd.items.map((item, i) => (
-                                <div key={i} className="flex justify-between items-center py-2 border-b border-slate-50 last:border-none">
-                                    <span className="text-xs font-semibold text-slate-500">{item.label}</span>
-                                    <span className="text-xs font-bold text-slate-900">PKR {(Number(item.value) || 0).toLocaleString()}</span>
+                                <div key={i} className="flex justify-between items-center py-3 border-b border-gray-100">
+                                    <span className="text-sm font-semibold text-gray-600 uppercase">{item.label}</span>
+                                    <span className="text-sm font-bold text-black font-mono">PKR {(Number(item.value) || 0).toLocaleString()}</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Bold Total Section */}
-                    <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex flex-col items-center justify-center gap-1">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{rd.totalLabel}</span>
-                        <div className="text-2xl font-black text-slate-900 tracking-tighter">
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 mb-10 flex flex-col items-center text-center">
+                        <span className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">{rd.totalLabel}</span>
+                        <div className="text-3xl font-black text-black tracking-tighter">
                             PKR {(Number(rd.totalAmount) || 0).toLocaleString()}
                         </div>
                     </div>
 
-                    {/* Secondary Note */}
-                    <div className="flex items-start gap-3 text-slate-400 bg-slate-50/50 p-4 rounded-xl">
-                        <Info className="h-4 w-4 shrink-0 mt-0.5" />
-                        <p className="text-[9px] leading-relaxed font-medium">
-                            {rd.footerNote} This document serves as a verified confirmation of the transaction described above.
-                        </p>
+                    <div className="mt-16 pt-8 border-t border-gray-200 text-center">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.1em]">{rd.footerNote}</p>
+                        <p className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.2em] mt-2">Verified Digital Ledger Record</p>
                     </div>
                 </div>
-
-                <DialogFooter className="p-8 pt-0">
-                    <div className="grid grid-cols-2 gap-3 w-full">
-                        <Button
-                            variant="outline"
-                            onClick={() => handleAction('view')}
-                            className="h-11 rounded-xl border-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider hover:bg-slate-50 transition-all font-sans"
-                        >
-                            <ExternalLink className="h-3.5 w-3.5 mr-2 text-slate-400" /> View Large
-                        </Button>
-                        <Button
-                            onClick={() => handleAction('print')}
-                            className={`${rd.colorClass} h-11 rounded-xl text-white text-[10px] font-bold uppercase tracking-wider shadow-lg transition-all active:scale-95 font-sans border-none hover:opacity-90`}
-                        >
-                            <Printer className="h-3.5 w-3.5 mr-2 text-white" /> Download
-                        </Button>
-                    </div>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     );

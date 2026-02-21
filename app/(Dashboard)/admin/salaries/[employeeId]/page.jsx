@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
     DollarSign,
     Calendar,
@@ -20,7 +20,9 @@ import {
     CreditCard,
     ArrowLeft,
     TrendingUp,
-    History
+    History,
+    ShieldCheck,
+    Loader2
 } from "lucide-react";
 import { Card, CardHeader, CardAction, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,156 +47,41 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
+import SalarySlip from "@/components/SalarySlip";
+import { useStaffSalaryHistory, useUpdateSalary } from "@/hooks/useSalaries";
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 const EmployeeSalaryHistoryPage = () => {
     const params = useParams();
+    const router = useRouter();
     const employeeId = params.employeeId;
-    const [filterYear, setFilterYear] = useState("2025");
+    const [filterYear, setFilterYear] = useState("all");
     const [filterStatus, setFilterStatus] = useState("all");
-    const [paymentNotes, setPaymentNotes] = useState("");
 
-    // Mock employee data - replace with actual API call
-    const employee = {
-        id: "EMP_001",
-        name: "Ali Ahmed",
-        role: "Manager",
-        phone: "0321-1111111",
-        email: "ali.ahmed@email.com",
-        cnic: "12345-1234567-1",
-        joinDate: "2023-01-15",
-        status: "Active",
-        hostel: {
-            id: "H001",
-            name: "GreenView Hostel 1"
-        },
-        currentSalary: {
-            basic: 50000,
-            allowances: 10000,
-            total: 60000
-        }
-    };
+    // Pay Salary state
+    const [selectedSalaryForPayment, setSelectedSalaryForPayment] = useState(null);
+    const [payFormData, setPayFormData] = useState({
+        paymentMethod: "BANK_TRANSFER",
+        paymentDate: format(new Date(), 'yyyy-MM-dd'),
+        notes: "",
+        transactionId: ""
+    });
 
-    // Mock salary history - replace with actual API call
-    const salaryHistory = [
-        {
-            id: "SAL_001",
-            month: "December 2025",
-            year: "2025",
-            dueDate: "2025-12-31",
-            paymentDate: null,
-            status: "Pending",
-            salary: {
-                basic: 50000,
-                allowances: 10000,
-                bonuses: 5000,
-                deductions: 2000,
-                total: 63000
-            },
-            paymentMethod: null,
-            transactionId: null,
-            paidBy: null
-        },
-        {
-            id: "SAL_002",
-            month: "November 2025",
-            year: "2025",
-            dueDate: "2025-11-30",
-            paymentDate: "2025-11-28",
-            status: "Paid",
-            salary: {
-                basic: 50000,
-                allowances: 10000,
-                bonuses: 0,
-                deductions: 2000,
-                total: 58000
-            },
-            paymentMethod: "Bank Transfer",
-            transactionId: "TRX-SAL-NOV-001",
-            paidBy: "Admin User"
-        },
-        {
-            id: "SAL_003",
-            month: "October 2025",
-            year: "2025",
-            dueDate: "2025-10-31",
-            paymentDate: "2025-10-30",
-            status: "Paid",
-            salary: {
-                basic: 50000,
-                allowances: 10000,
-                bonuses: 0,
-                deductions: 2000,
-                total: 58000
-            },
-            paymentMethod: "Cash",
-            transactionId: null,
-            paidBy: "Admin User"
-        },
-        {
-            id: "SAL_004",
-            month: "September 2025",
-            year: "2025",
-            dueDate: "2025-09-30",
-            paymentDate: "2025-09-29",
-            status: "Paid",
-            salary: {
-                basic: 50000,
-                allowances: 10000,
-                bonuses: 3000,
-                deductions: 2000,
-                total: 61000
-            },
-            paymentMethod: "Bank Transfer",
-            transactionId: "TRX-SAL-SEP-001",
-            paidBy: "Admin User"
-        },
-        {
-            id: "SAL_005",
-            month: "August 2025",
-            year: "2025",
-            dueDate: "2025-08-31",
-            paymentDate: "2025-08-30",
-            status: "Paid",
-            salary: {
-                basic: 50000,
-                allowances: 10000,
-                bonuses: 0,
-                deductions: 2000,
-                total: 58000
-            },
-            paymentMethod: "Bank Transfer",
-            transactionId: "TRX-SAL-AUG-001",
-            paidBy: "Admin User"
-        },
-        {
-            id: "SAL_006",
-            month: "July 2025",
-            year: "2025",
-            dueDate: "2025-07-31",
-            paymentDate: "2025-07-30",
-            status: "Paid",
-            salary: {
-                basic: 50000,
-                allowances: 10000,
-                bonuses: 0,
-                deductions: 2000,
-                total: 58000
-            },
-            paymentMethod: "Cash",
-            transactionId: null,
-            paidBy: "Admin User"
-        }
-    ];
+    const [selectedSalary, setSelectedSalary] = useState(null);
+    const [isSlipOpen, setIsSlipOpen] = useState(false);
+
+    const { data: staffData, isLoading } = useStaffSalaryHistory(employeeId);
+    const updateSalary = useUpdateSalary();
 
     const getStatusColor = (status) => {
         switch (status) {
-            case "Paid":
-                return "bg-green-100 text-green-700 border-green-200";
-            case "Pending":
-                return "bg-gray-100 text-gray-700 border-gray-200";
-            case "Overdue":
-                return "bg-red-100 text-red-700 border-red-200";
+            case "PAID":
+                return "bg-emerald-100 text-emerald-700 border-emerald-200";
+            case "PENDING":
+                return "bg-amber-100 text-amber-700 border-amber-200";
+            case "OVERDUE":
+                return "bg-rose-100 text-rose-700 border-rose-200";
             default:
                 return "bg-gray-100 text-gray-700 border-gray-200";
         }
@@ -202,450 +89,440 @@ const EmployeeSalaryHistoryPage = () => {
 
     const getStatusIcon = (status) => {
         switch (status) {
-            case "Paid":
+            case "PAID":
                 return <CheckCircle className="w-4 h-4" />;
-            case "Pending":
+            case "PENDING":
                 return <Clock className="w-4 h-4" />;
-            case "Overdue":
+            case "OVERDUE":
                 return <XCircle className="w-4 h-4" />;
             default:
                 return <Clock className="w-4 h-4" />;
         }
     };
 
-    const filteredHistory = salaryHistory.filter(record => {
-        const matchesYear = filterYear === "all" || record.year === filterYear;
+    if (isLoading) return (
+        <div className="flex h-screen items-center justify-center bg-white">
+            <div className="flex flex-col items-center gap-6">
+                <div className="relative">
+                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
+                    <DollarSign className="h-8 w-8 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                </div>
+                <p className="text-sm font-bold text-gray-900 uppercase tracking-widest">Loading Salary History...</p>
+            </div>
+        </div>
+    );
+
+    if (!staffData) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
+                <ShieldCheck className="w-16 h-16 text-gray-400 mb-4" />
+                <h1 className="text-2xl font-bold text-gray-800">Staff Record Not Found</h1>
+                <Button onClick={() => router.push('/admin/salaries')} className="mt-6 bg-indigo-600">Return to Salaries</Button>
+            </div>
+        )
+    }
+
+    const unformattedSalaryHistory = staffData.Salary || [];
+
+    // Process unique years
+    const uniqueYears = [...new Set(unformattedSalaryHistory.map(s => {
+        const yearMatch = s.month.match(/\d{4}/);
+        return yearMatch ? yearMatch[0] : null;
+    }).filter(Boolean))];
+
+    const filteredHistory = unformattedSalaryHistory.filter(record => {
+        const recordYearMatch = record.month.match(/\d{4}/);
+        const recordYear = recordYearMatch ? recordYearMatch[0] : null;
+
+        const matchesYear = filterYear === "all" || recordYear === filterYear;
         const matchesStatus = filterStatus === "all" || record.status === filterStatus;
         return matchesYear && matchesStatus;
     });
 
     const stats = {
-        totalPaid: salaryHistory.filter(s => s.status === "Paid").length,
-        totalPending: salaryHistory.filter(s => s.status === "Pending").length,
-        totalEarned: salaryHistory.filter(s => s.status === "Paid").reduce((sum, s) => sum + s.salary.total, 0),
-        pendingAmount: salaryHistory.filter(s => s.status === "Pending").reduce((sum, s) => sum + s.salary.total, 0),
-        averageSalary: Math.round(salaryHistory.reduce((sum, s) => sum + s.salary.total, 0) / salaryHistory.length)
+        totalPaid: unformattedSalaryHistory.filter(s => s.status === "PAID").length,
+        totalPending: unformattedSalaryHistory.filter(s => s.status === "PENDING").length,
+        totalEarned: unformattedSalaryHistory.filter(s => s.status === "PAID").reduce((sum, s) => sum + s.amount, 0),
+        pendingAmount: unformattedSalaryHistory.filter(s => s.status === "PENDING").reduce((sum, s) => sum + s.amount, 0),
+        averageSalary: unformattedSalaryHistory.length ? Math.round(unformattedSalaryHistory.reduce((sum, s) => sum + s.amount, 0) / unformattedSalaryHistory.length) : 0
     };
 
-    const uniqueYears = [...new Set(salaryHistory.map(s => s.year))];
+    const handleMarkAsPaid = async () => {
+        if (!selectedSalaryForPayment) return;
+        try {
+            await updateSalary.mutateAsync({
+                id: selectedSalaryForPayment.id,
+                status: 'PAID',
+                ...payFormData,
+                paymentDate: new Date(payFormData.paymentDate).toISOString()
+            });
+            setSelectedSalaryForPayment(null);
+            setPayFormData({
+                paymentMethod: "BANK_TRANSFER",
+                paymentDate: format(new Date(), 'yyyy-MM-dd'),
+                notes: "",
+                transactionId: ""
+            });
+        } catch (error) {
+            // Error is handled by hook
+        }
+    };
 
-    const handleMarkAsPaid = (salary) => {
-        console.log("Marking salary as paid:", salary.id);
-        alert(`Salary ${salary.id} marked as paid successfully!`);
-        setPaymentNotes("");
+    const handleExport = () => {
+        const headers = ["ID", "Month", "Basic Salary", "Allowances", "Bonuses", "Deductions", "Net Amount", "Status", "Payment Method", "Date"];
+        const rows = filteredHistory.map(s => [
+            s.id,
+            s.month,
+            s.basicSalary,
+            s.allowances,
+            s.bonuses,
+            s.deductions,
+            s.amount,
+            s.status,
+            s.paymentMethod || 'N/A',
+            s.paymentDate ? format(new Date(s.paymentDate), 'yyyy-MM-dd') : 'N/A'
+        ]);
+
+        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `${staffData.User.name.replace(' ', '_')}_Salary_History.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Personal salary history exported successfully");
     };
 
     return (
-        <div>
+        <div className="print:hidden min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center px-4 pt-4 gap-4">
-                <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <Link href="/admin/salaries">
-                            <Button variant="outline" size="sm" className="cursor-pointer">
-                                <ArrowLeft className="w-3 h-3 mr-1" />
-                                Back
-                            </Button>
-                        </Link>
-                        <h1 className="text-3xl font-bold">{employee.name}</h1>
-                        <Badge className="bg-gray-100 text-gray-700 border-gray-200 border">
-                            {employee.status}
-                        </Badge>
+            <div className="bg-white border-b sticky top-0 z-40 h-16">
+                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
+                    <div>
+                        <div className="flex items-center gap-3">
+                            <Link href="/admin/salaries">
+                                <Button variant="ghost" size="sm" className="h-8 px-2 shrink-0 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all font-bold text-[10px] uppercase tracking-wider">
+                                    <ArrowLeft className="w-3.5 h-3.5 mr-1" /> Back
+                                </Button>
+                            </Link>
+                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase flex items-center gap-3">
+                                {staffData.User.name}
+                                <Badge className="bg-emerald-50 text-emerald-600 border-none font-bold text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full shadow-sm">
+                                    {staffData.User.isActive ? "Active" : "Inactive"}
+                                </Badge>
+                            </h1>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                        <Link href={`/admin/dashboard`} className="text-sm text-muted-foreground hover:text-primary">
-                            Dashboard
-                        </Link>
-                        <ChevronRight className="w-3 h-3 text-muted-foreground" />
-                        <Link href={`/admin/salaries`} className="text-sm text-muted-foreground hover:text-primary">
-                            Salaries
-                        </Link>
-                        <ChevronRight className="w-3 h-3 text-muted-foreground" />
-                        <span className="text-sm text-muted-foreground">Salary History</span>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={handleExport}
+                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50"
+                        >
+                            <Download className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                            Export History
+                        </Button>
                     </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" className="cursor-pointer">
-                        <Download className="h-3 w-3 mr-2" />
-                        Download Report
-                    </Button>
                 </div>
             </div>
 
-            {/* Employee Info Card */}
-            <div className="p-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Employee Information</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                            <div className="flex items-start gap-3">
-                                <Briefcase className="w-5 h-5 text-gray-400 mt-1" />
-                                <div>
-                                    <p className="text-xs text-gray-500">Role</p>
-                                    <p className="text-sm font-semibold">{employee.role}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <Building2 className="w-5 h-5 text-gray-400 mt-1" />
-                                <div>
-                                    <p className="text-xs text-gray-500">Hostel</p>
-                                    <p className="text-sm font-semibold">{employee.hostel.name}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <Phone className="w-5 h-5 text-gray-400 mt-1" />
-                                <div>
-                                    <p className="text-xs text-gray-500">Phone</p>
-                                    <p className="text-sm font-semibold">{employee.phone}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3">
-                                <Mail className="w-5 h-5 text-gray-400 mt-1" />
-                                <div>
-                                    <p className="text-xs text-gray-500">Email</p>
-                                    <p className="text-sm font-semibold">{employee.email}</p>
-                                </div>
+            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
+                {/* Employee Info Card */}
+                <Card className="rounded-3xl border-gray-100 shadow-sm overflow-hidden bg-white hover:shadow-md transition-all">
+                    <CardHeader className="border-b bg-gradient-to-r from-gray-50/80 to-white pb-6 pt-8">
+                        <div className="flex items-center justify-between">
+                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-900 flex items-center gap-3">
+                                <User className="h-5 w-5 text-indigo-600" /> Employee Record
+                            </CardTitle>
+                            <div className="flex gap-2">
+                                <Badge className="bg-indigo-50 text-indigo-600 border-none px-3 py-1 text-[10px] tracking-wider uppercase font-black uppercase shadow-sm">
+                                    ID: {staffData.id.slice(0, 8)}
+                                </Badge>
                             </div>
                         </div>
-                        <Separator className="my-4" />
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <p className="text-xs text-gray-500">CNIC</p>
-                                <p className="text-sm font-semibold">{employee.cnic}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-gray-500">Join Date</p>
-                                <p className="text-sm font-semibold">{employee.joinDate}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-gray-500">Current Monthly Salary</p>
-                                <p className="text-lg font-bold text-green-600">PKR {employee.currentSalary.total.toLocaleString()}</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 px-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium">Total Paid</CardTitle>
-                        <CardAction>
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                        </CardAction>
                     </CardHeader>
-                    <CardContent>
-                        <p className="text-2xl font-bold text-green-600">{stats.totalPaid}</p>
-                        <p className="text-gray-600 text-sm">Months</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium">Pending</CardTitle>
-                        <CardAction>
-                            <Clock className="h-4 w-4 text-gray-500" />
-                        </CardAction>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-2xl font-bold">{stats.totalPending}</p>
-                        <p className="text-gray-600 text-sm">Months</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium">Total Earned</CardTitle>
-                        <CardAction>
-                            <DollarSign className="h-4 w-4 text-green-500" />
-                        </CardAction>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-2xl font-bold text-green-600">PKR {stats.totalEarned.toLocaleString()}</p>
-                        <p className="text-gray-600 text-sm">All time</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium">Pending Amount</CardTitle>
-                        <CardAction>
-                            <DollarSign className="h-4 w-4 text-gray-500" />
-                        </CardAction>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-2xl font-bold">PKR {stats.pendingAmount.toLocaleString()}</p>
-                        <p className="text-gray-600 text-sm">Unpaid</p>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="text-sm font-medium">Average Salary</CardTitle>
-                        <CardAction>
-                            <TrendingUp className="h-4 w-4 text-gray-500" />
-                        </CardAction>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-2xl font-bold">PKR {stats.averageSalary.toLocaleString()}</p>
-                        <p className="text-gray-600 text-sm">Per month</p>
-                    </CardContent>
-                </Card>
-            </div>
-
-            {/* Filters */}
-            <div className="p-4">
-                <Card>
-                    <CardContent className="pt-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <Label>Filter by Year</Label>
-                                <Select value={filterYear} onValueChange={setFilterYear}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select year" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Years</SelectItem>
-                                        {uniqueYears.map((year) => (
-                                            <SelectItem key={year} value={year}>
-                                                {year}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                    <CardContent className="pt-8 pb-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="h-10 w-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shrink-0">
+                                        <Briefcase className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Designation</p>
+                                        <p className="text-sm font-bold text-gray-900 mt-0.5 uppercase">{staffData.designation}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
+                                        <Building2 className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Hostel</p>
+                                        <p className="text-sm font-bold text-gray-900 mt-0.5 uppercase">{staffData.User.Hostel_User_hostelIdToHostel?.name || "All Locations"}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <Label>Filter by Status</Label>
-                                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select status" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="all">All Status</SelectItem>
-                                        <SelectItem value="Paid">Paid</SelectItem>
-                                        <SelectItem value="Pending">Pending</SelectItem>
-                                        <SelectItem value="Overdue">Overdue</SelectItem>
-                                    </SelectContent>
-                                </Select>
+
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="h-10 w-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
+                                        <Phone className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Phone</p>
+                                        <p className="text-sm font-bold text-gray-900 mt-0.5 tracking-wide">{staffData.User.phone || "Not Provided"}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="h-10 w-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center shrink-0">
+                                        <Mail className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Email</p>
+                                        <p className="text-sm font-bold text-gray-900 mt-0.5">{staffData.User.email}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex items-end">
-                                <p className="text-sm text-gray-600">
-                                    Showing <span className="font-semibold">{filteredHistory.length}</span> of <span className="font-semibold">{salaryHistory.length}</span> records
+
+                            <div className="space-y-4">
+                                <div>
+                                    <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase">CNIC / ID</p>
+                                    <p className="text-sm font-bold text-gray-900 mt-0.5 tracking-wider">{staffData.User.cnic || "N/A"}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase">Join Date</p>
+                                    <p className="text-sm font-bold text-gray-900 mt-0.5">{format(new Date(staffData.joiningDate), 'PPP')}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col justify-center items-start lg:items-end border-l border-gray-100 pl-8">
+                                <p className="text-[10px] font-black tracking-widest text-gray-400 uppercase mb-2">Base Salary</p>
+                                <p className="text-3xl font-black text-indigo-600 tracking-tighter">
+                                    <span className="text-sm mr-1 font-bold">PKR</span>
+                                    {staffData.basicSalary.toLocaleString()}
                                 </p>
+                                <Badge className="mt-2 bg-emerald-50 text-emerald-600 border-none font-bold text-[9px] uppercase tracking-widest px-3 py-1 rounded-full">+ PKR {staffData.allowances.toLocaleString()} allowances</Badge>
                             </div>
                         </div>
                     </CardContent>
                 </Card>
-            </div>
 
-            {/* Salary History Timeline */}
-            <div className="p-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <History className="w-5 h-5" />
-                            Salary History
-                        </CardTitle>
-                        <CardDescription>
-                            Complete payment history for {employee.name}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-4">
-                            {filteredHistory.map((record) => (
-                                <div key={record.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                                    {/* Record Header */}
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <h3 className="text-lg font-semibold text-gray-900">
-                                                    {record.month}
-                                                </h3>
-                                                <Badge className={`${getStatusColor(record.status)} border flex items-center gap-1`}>
-                                                    {getStatusIcon(record.status)}
-                                                    {record.status}
-                                                </Badge>
-                                            </div>
-                                            <p className="text-sm text-gray-500">
-                                                Salary ID: {record.id} • Due Date: {record.dueDate}
-                                            </p>
+                {/* Stats Ledger */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {[
+                        { label: 'Paid Cycles', value: stats.totalPaid, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Pending Cycles', value: stats.totalPending, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Total Disbursed', value: `PKR ${(stats.totalEarned / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                        { label: 'Due Amount', value: `PKR ${(stats.pendingAmount / 1000).toFixed(1)}k`, icon: History, color: 'text-rose-600', bg: 'bg-rose-50' },
+                        { label: 'Avg Salary', value: `PKR ${(stats.averageSalary / 1000).toFixed(1)}k`, icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
+                    ].map((s, i) => (
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-md transition-shadow relative overflow-hidden group">
+                            <div className={`h-10 w-10 rounded-xl ${s.bg} ${s.color} flex items-center justify-center mb-4 transition-transform group-hover:scale-110`}>
+                                <s.icon className="h-4 w-4" />
+                            </div>
+                            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{s.label}</h4>
+                            <p className="text-xl font-bold text-gray-900 tracking-tight">{s.value}</p>
+                            <div className={`absolute top-0 right-0 w-24 h-24 ${s.bg} rounded-full -translate-y-12 translate-x-12 opacity-50 pointer-events-none group-hover:scale-150 transition-transform duration-700`}></div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Ledger Config */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-2 flex flex-col md:flex-row items-center gap-3 w-full max-w-2xl mx-auto">
+                    <div className="w-full md:w-1/2 flex items-center pr-2 border-b md:border-b-0 md:border-r border-gray-100 pb-2 md:pb-0">
+                        <Calendar className="h-4 w-4 ml-4 mr-3 text-gray-400 shrink-0" />
+                        <Select value={filterYear} onValueChange={setFilterYear}>
+                            <SelectTrigger className="border-none shadow-none h-11 w-full bg-transparent font-bold text-[10px] uppercase tracking-widest hover:bg-gray-50 rounded-xl">
+                                <SelectValue placeholder="Fiscal Year" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                                <SelectItem value="all" className="font-bold text-[10px] uppercase tracking-wider">All Years</SelectItem>
+                                {uniqueYears.map((year) => (
+                                    <SelectItem key={year} value={year} className="font-bold text-[10px] uppercase tracking-wider">
+                                        {year}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="w-full md:w-1/2 flex items-center pr-2">
+                        <CreditCard className="h-4 w-4 ml-4 mr-3 text-gray-400 shrink-0" />
+                        <Select value={filterStatus} onValueChange={setFilterStatus}>
+                            <SelectTrigger className="border-none shadow-none h-11 w-full bg-transparent font-bold text-[10px] uppercase tracking-widest hover:bg-gray-50 rounded-xl">
+                                <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                                <SelectItem value="all" className="font-bold text-[10px] uppercase tracking-wider">All Statuses</SelectItem>
+                                <SelectItem value="PAID" className="font-bold text-[10px] uppercase tracking-wider text-emerald-600">Paid</SelectItem>
+                                <SelectItem value="PENDING" className="font-bold text-[10px] uppercase tracking-wider text-amber-600">Pending</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+
+                {/* Salary Timeline Sequence */}
+                <div className="space-y-4">
+                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2 border-b border-gray-100 pb-2 max-w-max">
+                        <History className="h-4 w-4 text-indigo-600" /> Payment Ledger
+                    </h3>
+
+                    {filteredHistory.map((record) => (
+                        <Card key={record.id} className="border-gray-100 rounded-3xl overflow-hidden hover:shadow-lg transition-all group/card bg-white relative">
+                            <div className={`absolute top-0 left-0 w-1.5 h-full ${record.status === 'PAID' ? 'bg-emerald-500' : 'bg-amber-500'} opacity-70 flex`} />
+
+                            <CardContent className="p-6">
+                                <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-center">
+                                    {/* Left Core */}
+                                    <div className="flex-1 space-y-3">
+                                        <div className="flex items-center gap-3">
+                                            <h3 className="text-2xl font-black tracking-tight text-gray-900 uppercase">
+                                                {record.month}
+                                            </h3>
+                                            <Badge className={`${getStatusColor(record.status)} border px-3 py-1 rounded-full flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest`}>
+                                                {getStatusIcon(record.status)}
+                                                {record.status}
+                                            </Badge>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-2xl font-bold text-gray-900">
-                                                PKR {record.salary.total.toLocaleString()}
-                                            </p>
-                                            <p className="text-sm text-gray-500">Net Salary</p>
+                                        <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                            <span>#ID: {record.id.slice(0, 8)}</span>
                                         </div>
                                     </div>
 
-                                    {/* Salary Breakdown */}
-                                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-                                        <p className="text-sm font-semibold text-gray-700 mb-3">Salary Breakdown</p>
-                                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                                    {/* Middle Financials */}
+                                    <div className="flex-[2] w-full bg-gray-50/50 rounded-2xl p-4 border border-gray-100">
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                             <div>
-                                                <span className="text-gray-500">Basic Salary:</span>
-                                                <p className="font-medium">PKR {record.salary.basic.toLocaleString()}</p>
+                                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1">Base Salary</span>
+                                                <p className="font-bold text-gray-900 tracking-tight">PKR {record.basicSalary.toLocaleString()}</p>
                                             </div>
                                             <div>
-                                                <span className="text-gray-500">Allowances:</span>
-                                                <p className="font-medium">PKR {record.salary.allowances.toLocaleString()}</p>
+                                                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest block mb-1">Additives</span>
+                                                <p className="font-bold text-emerald-600 tracking-tight">
+                                                    +{record.allowances.toLocaleString()} <span className="opacity-50">+</span> {record.bonuses.toLocaleString()}
+                                                </p>
                                             </div>
                                             <div>
-                                                <span className="text-gray-500">Bonuses:</span>
-                                                <p className="font-medium text-green-600">+ PKR {record.salary.bonuses.toLocaleString()}</p>
+                                                <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest block mb-1">Deductions</span>
+                                                <p className="font-bold text-rose-600 tracking-tight">- PKR {record.deductions.toLocaleString()}</p>
                                             </div>
-                                            <div>
-                                                <span className="text-gray-500">Deductions:</span>
-                                                <p className="font-medium text-red-600">- PKR {record.salary.deductions.toLocaleString()}</p>
-                                            </div>
-                                            <div>
-                                                <span className="text-gray-500">Net Total:</span>
-                                                <p className="font-bold text-lg">PKR {record.salary.total.toLocaleString()}</p>
+                                            <div className="border-l border-gray-200 pl-4">
+                                                <span className="text-[9px] font-black text-indigo-500 uppercase tracking-widest block mb-1">Total Net</span>
+                                                <p className="font-black text-lg text-indigo-600 tracking-tight">PKR {record.amount.toLocaleString()}</p>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Payment Details */}
-                                    {record.status === "Paid" ? (
-                                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
-                                            <div className="flex items-start gap-2">
-                                                <CheckCircle className="w-4 h-4 text-green-600 mt-0.5" />
-                                                <div className="flex-1">
-                                                    <p className="text-sm text-green-700 font-medium">
-                                                        Payment Completed
-                                                    </p>
-                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2 text-xs text-green-600">
-                                                        <div>
-                                                            <span className="font-medium">Date:</span> {record.paymentDate}
-                                                        </div>
-                                                        <div>
-                                                            <span className="font-medium">Method:</span> {record.paymentMethod}
-                                                        </div>
-                                                        {record.transactionId && (
-                                                            <div>
-                                                                <span className="font-medium">Transaction:</span> {record.transactionId}
-                                                            </div>
-                                                        )}
-                                                        <div>
-                                                            <span className="font-medium">By:</span> {record.paidBy}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-4">
-                                            <div className="flex items-center gap-2">
-                                                <Clock className="w-4 h-4 text-gray-500" />
-                                                <p className="text-sm text-gray-600">Payment pending</p>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Actions */}
-                                    <div className="flex items-center justify-between pt-3 border-t">
-                                        <div className="flex gap-2">
-                                            <UnifiedReceipt data={{ ...record, employee }} type="salary">
-                                                <Button variant="outline" size="sm" className="cursor-pointer">
-                                                    <Receipt className="w-3 h-3 mr-1" />
-                                                    View Receipt
-                                                </Button>
-                                            </UnifiedReceipt>
-                                        </div>
-
-                                        {record.status === "Pending" && (
+                                    {/* Right Actions */}
+                                    <div className="flex flex-col items-end gap-3 min-w-[140px]">
+                                        {record.status === "PENDING" && (
                                             <Dialog>
                                                 <DialogTrigger asChild>
-                                                    <Button size="sm" className="cursor-pointer bg-green-600 hover:bg-green-700">
-                                                        <Check className="w-3 h-3 mr-1" />
-                                                        Mark as Paid
+                                                    <Button onClick={() => setSelectedSalaryForPayment(record)} className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 rounded-xl font-bold uppercase text-[10px] tracking-widest">
+                                                        <Check className="w-3.5 h-3.5 mr-2" /> Pay Salary
                                                     </Button>
                                                 </DialogTrigger>
-                                                <DialogContent>
-                                                    <DialogHeader>
-                                                        <DialogTitle>Mark Salary as Paid</DialogTitle>
-                                                        <DialogDescription>
-                                                            Confirm salary payment for {record.month}
-                                                        </DialogDescription>
-                                                    </DialogHeader>
-                                                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-                                                        <div className="space-y-2 text-sm">
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-600">Employee:</span>
-                                                                <span className="font-medium">{employee.name}</span>
-                                                            </div>
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-600">Month:</span>
-                                                                <span className="font-medium">{record.month}</span>
-                                                            </div>
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-600">Amount:</span>
-                                                                <span className="font-bold text-green-600">PKR {record.salary.total.toLocaleString()}</span>
-                                                            </div>
+                                                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
+                                                    <div className="bg-emerald-600 p-10 text-white text-center relative overflow-hidden">
+                                                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                                                        <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
+                                                            <ShieldCheck className="h-8 w-8" />
                                                         </div>
+                                                        <h2 className="text-2xl font-bold uppercase tracking-tight">Pay Salary</h2>
+                                                        <p className="text-[10px] text-emerald-100 font-bold tracking-widest mt-2 uppercase">Authorizing PKR {selectedSalaryForPayment?.amount.toLocaleString()} for {selectedSalaryForPayment?.month}</p>
                                                     </div>
-                                                    <div className="space-y-4">
-                                                        <div>
-                                                            <Label>Payment Method</Label>
-                                                            <Select>
-                                                                <SelectTrigger>
-                                                                    <SelectValue placeholder="Select payment method" />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    <SelectItem value="cash">Cash</SelectItem>
-                                                                    <SelectItem value="bank">Bank Transfer</SelectItem>
-                                                                    <SelectItem value="cheque">Cheque</SelectItem>
-                                                                </SelectContent>
-                                                            </Select>
+                                                    <div className="p-10 space-y-6">
+                                                        <div className="space-y-2">
+                                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Payment Method</Label>
+                                                            <select
+                                                                className="w-full h-11 rounded-xl border-gray-100 bg-gray-50 text-[10px] font-bold uppercase px-4 outline-none focus:ring-1 focus:ring-emerald-500"
+                                                                value={payFormData.paymentMethod}
+                                                                onChange={e => setPayFormData({ ...payFormData, paymentMethod: e.target.value })}
+                                                            >
+                                                                <option value="BANK_TRANSFER">Bank Transfer</option>
+                                                                <option value="CASH">Cash</option>
+                                                                <option value="ONLINE">Online Transfer</option>
+                                                                <option value="CHEQUE">Cheque</option>
+                                                            </select>
                                                         </div>
-                                                        <div>
-                                                            <Label>Payment Date</Label>
-                                                            <Input type="date" />
-                                                        </div>
-                                                        <div>
-                                                            <Label>Transaction ID (Optional)</Label>
-                                                            <Input placeholder="Enter transaction ID" />
-                                                        </div>
-                                                        <div>
-                                                            <Label>Notes (Optional)</Label>
-                                                            <Textarea
-                                                                placeholder="Add payment notes..."
-                                                                value={paymentNotes}
-                                                                onChange={(e) => setPaymentNotes(e.target.value)}
-                                                                rows={3}
+                                                        <div className="space-y-2">
+                                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Transaction ID (Optional)</Label>
+                                                            <Input
+                                                                value={payFormData.transactionId}
+                                                                onChange={e => setPayFormData({ ...payFormData, transactionId: e.target.value })}
+                                                                className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11"
                                                             />
                                                         </div>
+                                                        <div className="space-y-2">
+                                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Payment Date</Label>
+                                                            <Input type="date" value={payFormData.paymentDate} onChange={e => setPayFormData({ ...payFormData, paymentDate: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11" />
+                                                        </div>
+                                                        <div className="flex gap-4 pt-4">
+                                                            <DialogTrigger asChild>
+                                                                <Button variant="ghost" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400">Cancel</Button>
+                                                            </DialogTrigger>
+                                                            <Button className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-wider rounded-xl shadow-lg flex justify-center items-center" onClick={handleMarkAsPaid} disabled={updateSalary.isPending}>
+                                                                {updateSalary.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Payment'}
+                                                            </Button>
+                                                        </div>
                                                     </div>
-                                                    <DialogFooter>
-                                                        <Button
-                                                            onClick={() => handleMarkAsPaid(record)}
-                                                            className="cursor-pointer bg-green-600 hover:bg-green-700"
-                                                        >
-                                                            <CheckCircle className="w-4 h-4 mr-2" />
-                                                            Confirm Payment
-                                                        </Button>
-                                                    </DialogFooter>
                                                 </DialogContent>
                                             </Dialog>
                                         )}
+                                        <Button
+                                            variant="outline"
+                                            className="w-full h-11 border-gray-200 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-100 rounded-xl font-bold uppercase text-[10px] tracking-widest transition-all"
+                                            onClick={() => {
+                                                const formattedSalary = {
+                                                    ...record,
+                                                    StaffProfile: { User: { name: staffData.User.name, email: staffData.User.email }, designation: staffData.designation }
+                                                };
+                                                setSelectedSalary(formattedSalary);
+                                                setIsSlipOpen(true);
+                                            }}
+                                        >
+                                            <Receipt className="w-3.5 h-3.5 mr-2" />
+                                            View Slip
+                                        </Button>
                                     </div>
                                 </div>
-                            ))}
 
-                            {filteredHistory.length === 0 && (
-                                <div className="text-center py-12 text-gray-500">
-                                    <History className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                                    <p className="text-lg font-medium">No salary records found</p>
-                                    <p className="text-sm">Try adjusting your filters</p>
-                                </div>
-                            )}
+                                {/* Info Footer for Paid Status */}
+                                {record.status === "PAID" && record.paymentMethod && (
+                                    <div className="mt-4 pt-4 border-t border-gray-50 flex flex-wrap gap-4 items-center">
+                                        <div className="flex bg-emerald-50 rounded-lg py-1 px-3 items-center">
+                                            <CheckCircle className="w-3.5 h-3.5 text-emerald-600 mr-1.5" />
+                                            <span className="text-[10px] font-black tracking-widest text-emerald-700 uppercase">Settled on {format(new Date(record.paymentDate || new Date()), 'PP')}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <Building2 className="w-3.5 h-3.5 text-gray-400" />
+                                            <span className="text-[10px] font-black tracking-widest text-gray-500 uppercase">Via {record.paymentMethod.replace('_', ' ')}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    ))}
+
+                    {filteredHistory.length === 0 && (
+                        <div className="bg-white border border-dashed border-gray-200 rounded-[2rem] p-24 text-center">
+                            <History className="h-16 w-16 text-gray-200 mx-auto mb-6" />
+                            <h3 className="text-xl font-bold text-gray-900 uppercase tracking-tight">No Ledgers Found</h3>
+                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">Adjust your filters or verify node assignments.</p>
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
+                    )}
+                </div>
+            </main>
+
+            {/* Slip Dialog */}
+            <Dialog open={isSlipOpen} onOpenChange={setIsSlipOpen}>
+                <DialogContent className="max-w-4xl p-0 bg-transparent border-none shadow-none">
+                    <SalarySlip salary={selectedSalary} />
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

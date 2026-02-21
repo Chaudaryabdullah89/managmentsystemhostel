@@ -6,6 +6,7 @@ export const SalaryQueryKeys = {
     list: (filters) => ['salaries', 'list', filters],
     byId: (id) => ['salaries', 'detail', id],
     staff: (hostelId) => ['staff', 'list', { hostelId }],
+    staffHistory: (staffId) => ['staff', 'salaryHistory', staffId],
 };
 
 export function useStaffList(hostelId) {
@@ -18,6 +19,20 @@ export function useStaffList(hostelId) {
             if (!data.success) throw new Error(data.error);
             return data.data;
         }
+    });
+}
+
+export function useStaffSalaryHistory(staffId) {
+    return useQuery({
+        queryKey: SalaryQueryKeys.staffHistory(staffId),
+        queryFn: async () => {
+            if (!staffId) return null;
+            const response = await fetch(`/api/salaries/staff/${staffId}`);
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            return data.data;
+        },
+        enabled: !!staffId
     });
 }
 

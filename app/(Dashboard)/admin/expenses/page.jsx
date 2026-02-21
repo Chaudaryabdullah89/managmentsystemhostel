@@ -63,6 +63,8 @@ import { useHostel } from "@/hooks/usehostel";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { toast } from "sonner";
 import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const ExpensesPage = () => {
     const { user } = useAuthStore();
@@ -74,6 +76,7 @@ const ExpensesPage = () => {
     const [selectedExpense, setSelectedExpense] = useState(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isExportingExpenses, setIsExportingExpenses] = useState(false);
 
     const currentMonthLabel = format(new Date(), 'MMMM yyyy');
 
@@ -166,7 +169,7 @@ const ExpensesPage = () => {
         });
     }, [expenses, searchQuery]);
 
-    const handleExport = () => {
+    const handleExportCSV = () => {
         const headers = ["ID", "Date", "Hostel", "Title", "Category", "Amount", "Status"];
         const rows = filteredExpenses.map(exp => [
             `EXP-${exp.id.slice(-8).toUpperCase()}`,
@@ -188,7 +191,96 @@ const ExpensesPage = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success("Expenses exported successfully");
+        toast.success("Expenses CSV Exported!");
+    };
+
+    const handleExportPDF = async () => {
+        setIsExportingExpenses(true);
+        try {
+            const doc = new jsPDF('landscape');
+            doc.setFont("helvetica", "bold");
+            const stats = statsData?.summary || { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalCount: 0 };
+
+            // Header Section
+            doc.setFillColor(79, 70, 229); // indigo-600
+            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text("EXPENSE REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Period: ${activeTab === 'current' ? currentMonthLabel : 'All Time'} | Record Count: ${filteredExpenses.length}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Total Expense: PKR ${stats.totalAmount.toLocaleString()}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+
+            // Draw Line
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.5);
+            doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
+
+            const headers = [
+                ["S.No", "Expense ID", "Date", "Hostel", "Title", "Category", "Amount", "Status"]
+            ];
+
+            const rows = filteredExpenses.map((exp, index) => [
+                index + 1,
+                `EXP-${exp.id.slice(-8).toUpperCase()}`,
+                format(new Date(exp.date), 'dd/MM/yyyy'),
+                exp.Hostel?.name || 'N/A',
+                exp.title,
+                exp.category,
+                `PKR ${exp.amount.toLocaleString()}`,
+                exp.status
+            ]);
+
+            autoTable(doc, {
+                startY: 55,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [67, 56, 202], // indigo-700
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    fontSize: 9,
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fontSize: 9,
+                    textColor: [50, 50, 50]
+                },
+                alternateRowStyles: {
+                    fillColor: [245, 247, 255]
+                },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center' },
+                },
+                styles: {
+                    overflow: 'linebreak',
+                    cellPadding: 4,
+                    valign: 'middle'
+                },
+                didDrawPage: function (data) {
+                    let str = "Page " + doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(str, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
+                    doc.text("Official GreenView Expense Tracking", 14, doc.internal.pageSize.height - 10);
+                }
+            });
+
+            doc.save(`Expense_Report_${format(new Date(), 'MMM_yyyy')}.pdf`);
+            toast.success("Expense Report Exported! \uD83D\uDCC4");
+        } catch (error) {
+            toast.error("Failed to export PDF");
+            console.error(error);
+        } finally {
+            setIsExportingExpenses(false);
+        }
     };
 
     if (expensesLoading || statsLoading) return (
@@ -204,7 +296,7 @@ const ExpensesPage = () => {
     const stats = statsData?.summary || { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalCount: 0 };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">
             {/* Premium Header - Synchronized Design */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
@@ -222,16 +314,25 @@ const ExpensesPage = () => {
                     <div className="flex items-center gap-3">
                         <Button
                             variant="outline"
-                            className="h-9 px-4 rounded-xl border-gray-200 font-bold text-[10px] uppercase tracking-wider text-gray-600"
-                            onClick={handleExport}
+                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 flex items-center gap-2"
+                            onClick={handleExportCSV}
                         >
-                            <Download className="h-3.5 w-3.5 mr-2 text-gray-400" /> Export CSV
+                            <Download className="h-3.5 w-3.5 text-gray-400" /> Export CSV
                         </Button>
                         <Button
-                            className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all"
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2"
+                            onClick={handleExportPDF}
+                            disabled={isExportingExpenses}
+                        >
+                            {isExportingExpenses ? <Loader2 className="h-3.5 w-3.5 text-indigo-700 animate-spin" /> : <Download className="h-3.5 w-3.5 text-indigo-700" />}
+                            EXPORT EXPENSES
+                        </Button>
+                        <Button
+                            className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all flex items-center gap-2"
                             onClick={() => setIsAddOpen(true)}
                         >
-                            <Plus className="h-3.5 w-3.5 mr-2" /> Add Expense
+                            <Plus className="h-3.5 w-3.5" /> Add Expense
                         </Button>
                     </div>
                 </div>

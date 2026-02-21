@@ -34,7 +34,8 @@ import {
     MessageSquare,
     ClipboardList,
     Layers,
-    Activity
+    Activity,
+    Megaphone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -64,14 +65,9 @@ const AdminDashboard = () => {
     };
 
     if (reportsLoading || complaintsLoading || financialsLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-blue-600 rounded-full animate-spin" />
-                    <Activity className="h-8 w-8 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
-                </div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Dashboard...</p>
-            </div>
+        <div className="flex flex-col items-center justify-center min-h-screen py-20">
+            <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-4" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Dashboard...</p>
         </div>
     );
 
@@ -324,6 +320,7 @@ const AdminDashboard = () => {
                                     { label: 'Bookings', icon: ClipboardList, href: '/admin/bookings', color: 'text-orange-600', bg: 'bg-orange-50' },
                                     { label: 'Payments', icon: DollarSign, href: '/admin/payments', color: 'text-emerald-600', bg: 'bg-emerald-50' },
                                     { label: 'Complaints', icon: MessageSquare, href: '/admin/complaints', color: 'text-rose-600', bg: 'bg-rose-50' },
+                                    { label: 'Notice Board', icon: Megaphone, href: '/admin/notices', color: 'text-indigo-600', bg: 'bg-indigo-50' },
                                     { label: 'Expenses', icon: Receipt, href: '/admin/expenses', color: 'text-blue-600', bg: 'bg-blue-50' },
                                     { label: 'Maintenance', icon: History, href: '/admin/maintenances', color: 'text-amber-600', bg: 'bg-amber-50' },
                                     { label: 'Salaries', icon: Wallet, href: '/admin/salaries', color: 'text-purple-600', bg: 'bg-purple-50' },

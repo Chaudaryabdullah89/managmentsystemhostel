@@ -31,6 +31,7 @@ import {
     ArrowUpRight,
     UserCheck,
     Printer,
+    Loader2,
     Hash,
     Building,
     User as UserIcon,
@@ -47,13 +48,25 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useBookings } from "@/hooks/useBooking";
 import { useHostel } from "@/hooks/usehostel";
+import { useRoom } from "@/hooks/useRoom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { QueryKeys } from '@/lib/queryclient';
 import { format } from "date-fns";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const useSyncAutomation = () => {
     const queryClient = useQueryClient();
@@ -86,7 +99,9 @@ const GlobalBookingsPage = () => {
     const [hostelFilter, setHostelFilter] = useState("All");
 
     const bookings = bookingsResponse || [];
-    const hostels = hostelsResponse?.hostels || [];
+    const hostels = hostelsResponse?.data || [];
+    const { data: roomsResponse } = useRoom();
+    const rooms = roomsResponse?.data || [];
 
     const getStatusStyle = (status) => {
         switch (status) {
@@ -127,6 +142,159 @@ const GlobalBookingsPage = () => {
     const pendingBookings = bookings.filter(b => b.status === "PENDING").length;
     const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
 
+    // Export Data Configuration
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportConfig, setExportConfig] = useState({
+        hostelId: "All",
+        status: "All",
+        roomId: "All",
+        dateFrom: "",
+        dateTo: "",
+        searchQuery: ""
+    });
+
+    const handleExportPoliceVerification = async () => {
+        setIsExporting(true);
+
+        // Filter the raw bookings based on the EXPORT config
+        const customExportList = bookings.filter(b => {
+            const passStatus = exportConfig.status === "All" || b.status === exportConfig.status;
+            const passHostel = exportConfig.hostelId === "All" || b.Room?.Hostel?.name === exportConfig.hostelId;
+            const passRoom = exportConfig.roomId === "All" || b.roomId === exportConfig.roomId;
+
+            // Date Range Logic
+            let passDate = true;
+            if (exportConfig.dateFrom) {
+                passDate = passDate && new Date(b.checkIn) >= new Date(exportConfig.dateFrom);
+            }
+            if (exportConfig.dateTo) {
+                const toDate = new Date(exportConfig.dateTo);
+                toDate.setHours(23, 59, 59, 999);
+                passDate = passDate && new Date(b.checkIn) <= toDate;
+            }
+
+            // Search Logic
+            let passSearch = true;
+            if (exportConfig.searchQuery) {
+                const q = exportConfig.searchQuery.toLowerCase();
+                // Safely check fields accounting for null or undefined strings
+                passSearch =
+                    (b.User?.name?.toLowerCase()?.includes(q)) ||
+                    (b.User?.cnic?.toLowerCase()?.includes(q)) ||
+                    (b.Room?.roomNumber?.toLowerCase()?.includes(q));
+            }
+
+            return passStatus && passHostel && passRoom && passDate && passSearch;
+        });
+
+        // Setup mock delay for animation
+        await new Promise(resolve => setTimeout(resolve, 2500));
+
+        try {
+            const doc = new jsPDF('landscape');
+
+            // PDF Styling and Typography
+            doc.setFont("helvetica", "bold");
+
+            // Header Section
+            // Dark blue background rect for header
+            doc.setFillColor(30, 58, 138);
+            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+
+            // Header Text
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text("TENANT / RESIDENT VERIFICATION REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text("(POLICE COPY)", doc.internal.pageSize.width / 2, 26, { align: "center" });
+
+            // Metadata Section Below Header
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Total Records: ${customExportList.length}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+
+            // Draw Line
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.5);
+            doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
+
+            const headers = [
+                ["S.No", "Resident Name", "Father/Guardian", "CNIC", "Phone", "Address", "City", "Hostel", "Room", "Check-In", "Emg Contact", "Emg Phone", "Status"]
+            ];
+
+            const rows = customExportList.map((b, index) => {
+                const profile = b.User?.ResidentProfile || {};
+                return [
+                    index + 1,
+                    b.User?.name || 'N/A',
+                    profile.guardianName || 'N/A',
+                    b.User?.cnic || 'N/A',
+                    b.User?.phone || 'N/A',
+                    profile.address || b.User?.address || 'N/A',
+                    profile.city || b.User?.city || 'N/A',
+                    b.Room?.Hostel?.name || 'N/A',
+                    b.Room?.roomNumber || 'N/A',
+                    b.checkIn ? format(new Date(b.checkIn), 'dd/MM/yyyy') : 'N/A',
+                    profile.emergencyContact || 'N/A',
+                    profile.guardianPhone || 'N/A',
+                    b.status
+                ];
+            });
+
+            autoTable(doc, {
+                startY: 55,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [59, 130, 246], // Blue-500
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    fontSize: 8,
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fontSize: 8,
+                    textColor: [50, 50, 50]
+                },
+                alternateRowStyles: {
+                    fillColor: [248, 250, 252] // Slate-50
+                },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center' }, // S.No
+                    5: { cellWidth: 30 }, // Address
+                },
+                styles: {
+                    overflow: 'linebreak',
+                    cellPadding: 3,
+                    valign: 'middle'
+                },
+                didDrawPage: function (data) {
+                    // Footer
+                    let str = "Page " + doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(str, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
+                    doc.text("Official GreenView Hostels Records", 14, doc.internal.pageSize.height - 10);
+                }
+            });
+
+            doc.save(`Police_Verification_Report_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+            toast.success("PDF Verification Report Exported ✨");
+        } catch (error) {
+            toast.error("Failed to export PDF");
+            console.error(error);
+        } finally {
+            setIsExporting(false);
+            setIsExportDialogOpen(false); // Close Modal on done
+        }
+    };
+
     if (isLoading) return (
         <div className="flex h-screen items-center justify-center bg-white font-sans">
             <div className="flex flex-col items-center gap-6">
@@ -146,7 +314,7 @@ const GlobalBookingsPage = () => {
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
             {/* Minimal Premium Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
+                <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-blue-600 rounded-full" />
                         <div className="flex flex-col">
@@ -163,9 +331,13 @@ const GlobalBookingsPage = () => {
                         <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9" onClick={() => syncAutomation.mutate()}>
                             <RefreshCw className={`h-4 w-4 text-gray-500 ${syncAutomation.isPending ? 'animate-spin' : ''}`} />
                         </Button>
-                        <Button variant="outline" className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all">
-                            <Download className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                            Export
+                        <Button
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2"
+                            onClick={() => setIsExportDialogOpen(true)}
+                        >
+                            <ShieldCheck className="h-3.5 w-3.5 text-indigo-700" />
+                            GET VERIFIED PDF
                         </Button>
                         <Button
                             className="h-9 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95"
@@ -178,7 +350,7 @@ const GlobalBookingsPage = () => {
                 </div>
             </div>
 
-            <div className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
+            <div className="max-w-[1400px] mx-auto px-6 py-8 space-y-8">
                 {/* Statistics Overview */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
@@ -434,6 +606,135 @@ const GlobalBookingsPage = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Export Wizard Dialog */}
+            <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+                <DialogContent className="sm:max-w-md rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl">
+                    <div className="bg-indigo-600 p-8 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="mx-auto h-16 w-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20 mb-4 rotate-3">
+                            <ShieldCheck className="h-8 w-8 text-white stroke-[1.5]" />
+                        </div>
+                        <h2 className="text-xl font-black text-white uppercase tracking-tight relative z-10">Export Verification Data</h2>
+                        <p className="text-indigo-100 text-[11px] font-bold uppercase tracking-widest mt-1 relative z-10">Generate official PDF records</p>
+                    </div>
+
+                    <div className="p-8 space-y-6 bg-white overflow-y-auto max-h-[60vh]">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Select Hostel</Label>
+                                <select
+                                    className="w-full h-12 rounded-xl bg-gray-50 border border-gray-100 px-4 text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                    value={exportConfig.hostelId}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, hostelId: e.target.value }))}
+                                >
+                                    <option value="All">All Entities</option>
+                                    {hostels.map(h => (
+                                        <option key={h.id} value={h.name}>{h.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Select Room</Label>
+                                <select
+                                    className="w-full h-12 rounded-xl bg-gray-50 border border-gray-100 px-4 text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                    value={exportConfig.roomId}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, roomId: e.target.value }))}
+                                >
+                                    <option value="All">All Rooms</option>
+                                    {rooms
+                                        .filter(r => exportConfig.hostelId === "All" || r.Hostel?.name === exportConfig.hostelId)
+                                        .map(r => (
+                                            <option key={r.id} value={r.id}>Room {r.roomNumber} ({r.type})</option>
+                                        ))
+                                    }
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Booking Status</Label>
+                                <select
+                                    className="w-full h-12 rounded-xl bg-gray-50 border border-gray-100 px-4 text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                    value={exportConfig.status}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, status: e.target.value }))}
+                                >
+                                    <option value="All">All Residents</option>
+                                    <option value="CHECKED_IN">Currently In-House</option>
+                                    <option value="CONFIRMED">Confirmed / Verified</option>
+                                    <option value="PENDING">Pending Approval</option>
+                                    <option value="CHECKED_OUT">Archived / Past</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">From Date</Label>
+                                <Input
+                                    type="date"
+                                    className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                                    value={exportConfig.dateFrom}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, dateFrom: e.target.value }))}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">To Date</Label>
+                                <Input
+                                    type="date"
+                                    className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                                    value={exportConfig.dateTo}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, dateTo: e.target.value }))}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Search Keyword (Name/CNIC/Room)</Label>
+                            <Input
+                                placeholder="Filter records by name or ID..."
+                                className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                                value={exportConfig.searchQuery}
+                                onChange={(e) => setExportConfig(prev => ({ ...prev, searchQuery: e.target.value }))}
+                            />
+                        </div>
+
+                        <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 flex gap-3">
+                            <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
+                            <p className="text-[10px] text-amber-700 font-medium leading-relaxed italic">
+                                Unified Data Export: This configuration allows full override. You can generate reports for specific date ranges and branches regardless of your current dashboard view.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3 justify-end">
+                        <Button
+                            variant="ghost"
+                            className="h-12 px-6 rounded-xl font-bold text-[10px] uppercase tracking-widest text-gray-500 hover:bg-gray-100"
+                            onClick={() => setIsExportDialogOpen(false)}
+                            disabled={isExporting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            className="h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2"
+                            onClick={handleExportPoliceVerification}
+                            disabled={isExporting}
+                        >
+                            {isExporting ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Processing PDF...
+                                </>
+                            ) : (
+                                <>
+                                    <FileText className="h-4 w-4" />
+                                    Generate Output
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

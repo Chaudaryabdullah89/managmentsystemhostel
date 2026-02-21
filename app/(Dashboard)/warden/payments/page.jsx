@@ -103,6 +103,9 @@ import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
 import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
 import SecurityRefundModal from "./SecurityRefundModal";
+import { useBookings } from "@/hooks/useBooking";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const PaymentManagementPage = () => {
     const router = useRouter();
@@ -126,11 +129,17 @@ const PaymentManagementPage = () => {
         notes: ""
     });
 
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [isExportingDefaulters, setIsExportingDefaulters] = useState(false);
+    const [isExportingPayments, setIsExportingPayments] = useState(false);
+
     const { user } = useAuthStore();
     const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ hostelId: user?.hostelId, limit: 1000 });
     const { data: refundRequests, isLoading: refundsLoading } = useRefundRequests();
     const { data: stats, isLoading: statsLoading } = useFinancialStats(user?.hostelId);
     const { data: hostelsData } = useHostel();
+    const { data: bookingsResponse } = useBookings({ hostelId: user?.hostelId });
+    const bookings = bookingsResponse || [];
     const updatePayment = useUpdatePayment();
     const deletePayment = useDeletePayment();
     const updateRefundStatus = useUpdateRefundStatus();
@@ -257,6 +266,140 @@ const PaymentManagementPage = () => {
         }
     };
 
+    const handleExportDefaultersList = async () => {
+        setIsExportingDefaulters(true);
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const currentDay = now.getDate();
+        const isPastDueDay = currentDay > 5;
+        const targetMonth = isPastDueDay ? currentMonth : (currentMonth === 0 ? 11 : currentMonth - 1);
+        const targetYear = (isPastDueDay || currentMonth !== 0) ? currentYear : currentYear - 1;
+
+        const defaultersList = bookings.filter(b => {
+            if (b.status !== "CHECKED_IN") return false;
+            const hasPaidForTargetMonth = b.Payment?.some(p => {
+                const pDate = new Date(p.date || p.createdAt);
+                return p.status === "PAID" && p.type === "RENT" && pDate.getMonth() === targetMonth && pDate.getFullYear() === targetYear;
+            });
+            return !hasPaidForTargetMonth;
+        });
+
+        try {
+            const doc = new jsPDF('landscape');
+            doc.setFont("helvetica", "bold");
+            doc.setFillColor(153, 27, 27);
+            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text("RENT DEFAULTERS REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            const monthName = new Date(targetYear, targetMonth, 1).toLocaleString('default', { month: 'long' });
+            doc.text(`Defaulters for: ${monthName} ${targetYear}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Total Defaulters: ${defaultersList.length}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.5);
+            doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
+
+            const headers = [["S.No", "Resident Name", "Phone", "Room", "Rent Amount", "Last Payment"]];
+            const rows = defaultersList.map((b, index) => [
+                index + 1,
+                b.User?.name || 'N/A',
+                b.User?.phone || 'N/A',
+                b.Room?.roomNumber || 'N/A',
+                `PKR ${b.totalAmount?.toLocaleString() || 'N/A'}`,
+                (b.Payment && b.Payment.length > 0) ? format(new Date(b.Payment[0].date), 'dd/MM/yyyy') : 'Never'
+            ]);
+
+            autoTable(doc, {
+                startY: 55,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: { fillColor: [185, 28, 28], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9, halign: 'center' },
+                bodyStyles: { fontSize: 9, textColor: [50, 50, 50] },
+                alternateRowStyles: { fillColor: [254, 242, 242] },
+                didDrawPage: (data) => {
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text("Page " + doc.internal.getNumberOfPages(), doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
+                }
+            });
+
+            doc.save(`Defaulters_Report_${monthName}_${targetYear}.pdf`);
+            toast.success("Defaulters report exported!");
+        } catch (error) {
+            toast.error("Export failed");
+        } finally {
+            setIsExportingDefaulters(false);
+        }
+    };
+
+    const handleExportPaymentsList = async () => {
+        setIsExportingPayments(true);
+        try {
+            const doc = new jsPDF('landscape');
+            doc.setFont("helvetica", "bold");
+            doc.setFillColor(37, 99, 235);
+            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text("PAYMENTS REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Total Payments: ${filteredPayments.length}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Status: ${filterStatus}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.5);
+            doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
+
+            const headers = [["S.No", "Date", "Resident Name", "Room", "Amount", "Status", "Method", "Type"]];
+            const rows = filteredPayments.map((p, index) => [
+                index + 1,
+                format(new Date(p.date || p.createdAt), 'dd/MM/yyyy'),
+                p.User?.name || 'N/A',
+                p.Booking?.Room?.roomNumber || 'N/A',
+                `PKR ${p.amount.toLocaleString()}`,
+                p.status,
+                p.method,
+                p.type
+            ]);
+
+            autoTable(doc, {
+                startY: 55,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9, halign: 'center' },
+                didDrawPage: (data) => {
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text("Page " + doc.internal.getNumberOfPages(), doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
+                }
+            });
+
+            doc.save(`Payments_Report_${format(new Date(), 'dd_MM_yyyy')}.pdf`);
+            toast.success("Payments report exported!");
+        } catch (error) {
+            toast.error("Export failed");
+        } finally {
+            setIsExportingPayments(false);
+        }
+    };
+
     if (paymentsLoading || statsLoading) return (
         <div className="flex h-screen items-center justify-center bg-white font-sans">
             <div className="flex flex-col items-center gap-6">
@@ -273,7 +416,7 @@ const PaymentManagementPage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">
             {/* Minimal Premium Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between">
@@ -289,7 +432,11 @@ const PaymentManagementPage = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <Button variant="outline" className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all shadow-sm">
+                        <Button
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all shadow-sm"
+                            onClick={() => setIsExportDialogOpen(true)}
+                        >
                             <Download className="h-3.5 w-3.5 mr-2 text-gray-400" /> Export
                         </Button>
                         <Button
@@ -751,6 +898,55 @@ const PaymentManagementPage = () => {
 
 
             </main>
+
+            {/* Export Dialog */}
+            <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white ring-1 ring-gray-100">
+                    <div className="bg-indigo-600 p-10 text-white text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
+                            <Download className="h-8 w-8 text-white" />
+                        </div>
+                        <h2 className="text-2xl font-bold uppercase tracking-tight">Export Records</h2>
+                        <p className="text-[10px] text-indigo-100 font-bold tracking-widest mt-2 uppercase">Financial Reporting Protocol</p>
+                    </div>
+                    <div className="p-10 space-y-4">
+                        <Button
+                            onClick={handleExportPaymentsList}
+                            disabled={isExportingPayments}
+                            className="w-full h-14 rounded-2xl bg-white border-2 border-indigo-50 hover:border-indigo-600 text-indigo-600 hover:bg-indigo-50 transition-all flex items-center justify-between px-6 group shadow-sm"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="h-10 w-10 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                    <FileText className="h-5 w-5" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[11px] font-black uppercase tracking-tight leading-none mb-1">Payments Ledger</p>
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Full transaction history</p>
+                                </div>
+                            </div>
+                            {isExportingPayments ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-4 w-4 text-gray-300 group-hover:translate-x-1" />}
+                        </Button>
+
+                        <Button
+                            onClick={handleExportDefaultersList}
+                            disabled={isExportingDefaulters}
+                            className="w-full h-14 rounded-2xl bg-white border-2 border-rose-50 hover:border-rose-600 text-rose-600 hover:bg-rose-50 transition-all flex items-center justify-between px-6 group shadow-sm"
+                        >
+                            <div className="flex items-center gap-4">
+                                <div className="h-10 w-10 bg-rose-100 rounded-xl flex items-center justify-center group-hover:bg-rose-600 group-hover:text-white transition-colors">
+                                    <AlertCircle className="h-5 w-5" />
+                                </div>
+                                <div className="text-left">
+                                    <p className="text-[11px] font-black uppercase tracking-tight leading-none mb-1">Defaulters List</p>
+                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Active rent discrepancies</p>
+                                </div>
+                            </div>
+                            {isExportingDefaulters ? <Loader2 className="h-4 w-4 animate-spin" /> : <ChevronRight className="h-4 w-4 text-gray-300 group-hover:translate-x-1" />}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Rejection Protocol Dialog */}
             <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>

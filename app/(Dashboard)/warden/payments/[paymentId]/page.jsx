@@ -308,9 +308,9 @@ const PaymentDetailPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-32 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50/50 pb-32 font-sans tracking-tight print:bg-transparent print:pb-0">
             {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16 shadow-sm shadow-black/5">
+            <div className="bg-white border-b sticky top-0 z-50 h-16 shadow-sm shadow-black/5 print:hidden">
                 <div className="max-w-[1600px] mx-auto px-8 h-full flex items-center justify-between">
                     <div className="flex items-center gap-5">
                         <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9" onClick={() => router.back()}>
@@ -469,7 +469,7 @@ const PaymentDetailPage = () => {
                 </div>
             </div>
 
-            <main className="max-w-[1600px] mx-auto px-8 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <main className="max-w-[1600px] mx-auto px-8 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8 print:hidden">
                 {/* Left Column */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Amount Summary Card */}
@@ -703,6 +703,68 @@ const PaymentDetailPage = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Printable Receipt */}
+            <div className="hidden print:block bg-white text-black p-8 max-w-3xl mx-auto">
+                {/* Header */}
+                <div className="border-b-2 border-gray-900 pb-6 mb-6 flex justify-between items-start">
+                    <div>
+                        <h1 className="text-2xl font-black uppercase tracking-tight text-gray-900">Hostel Management</h1>
+                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">Official Payment Receipt</p>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Receipt No.</p>
+                        <p className="text-sm font-bold text-gray-900 font-mono">{payment.id.slice(-12).toUpperCase()}</p>
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Date</p>
+                        <p className="text-sm font-bold text-gray-900">{format(new Date(payment.date), 'MMM dd, yyyy')}</p>
+                    </div>
+                </div>
+
+                {/* Resident Details */}
+                <div className="grid grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">Billed To</h3>
+                        <p className="font-bold text-gray-900 uppercase text-sm">{payment.User?.name || payment.Booking?.User?.name || 'N/A'}</p>
+                        <p className="text-xs text-gray-600 mt-1">Phone: {payment.User?.phone || payment.Booking?.User?.phone || 'N/A'}</p>
+                        <p className="text-xs text-gray-600 mt-0.5">Email: {payment.User?.email || payment.Booking?.User?.email || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">Payment Info</h3>
+                        <p className="font-bold text-gray-900 uppercase text-sm">Status: {payment.status}</p>
+                        <p className="text-xs text-gray-600 mt-1">Method: {payment.method?.replace('_', ' ')}</p>
+                        <p className="text-xs text-gray-600 mt-0.5">Reference: {payment.Booking?.Room?.Hostel?.name || 'N/A'}, Room {payment.Booking?.Room?.roomNumber || 'N/A'}</p>
+                    </div>
+                </div>
+
+                {/* Payment Breakdown */}
+                <div className="mb-8">
+                    <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">Transaction Details</h3>
+                    <table className="w-full text-left text-sm mb-4">
+                        <thead>
+                            <tr className="border-b border-gray-200">
+                                <th className="py-2 text-xs font-bold text-gray-400 uppercase tracking-widest">Description</th>
+                                <th className="py-2 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Amount (PKR)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr className="border-b border-gray-100">
+                                <td className="py-3 font-medium">{payment.type?.replace('_', ' ') || 'SERVICE'} FEE</td>
+                                <td className="py-3 text-right font-mono">{Number(payment.amount).toLocaleString()}</td>
+                            </tr>
+                            <tr>
+                                <td className="py-3 font-bold text-gray-900">Total Paid</td>
+                                <td className="py-3 text-right font-bold font-mono text-gray-900">{Number(payment.amount).toLocaleString()}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Footer */}
+                <div className="mt-16 pt-8 border-t border-gray-200 text-center">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Thank you for your business</p>
+                    <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest mt-1">This is a system generated receipt and does not require a physical signature.</p>
+                </div>
+            </div>
         </div>
     );
 };

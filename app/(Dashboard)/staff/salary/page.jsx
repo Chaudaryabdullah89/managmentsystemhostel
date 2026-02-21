@@ -48,7 +48,7 @@ const StaffSalaryPage = () => {
     const latest = salaries?.[0];
 
     return (
-        <div className="min-h-screen bg-white pb-20 font-sans tracking-tight selection:bg-black selection:text-white">
+        <div className="min-h-screen bg-white pb-20 font-sans tracking-tight selection:bg-black selection:text-white print:hidden">
             {/* Header */}
             <header className="bg-white border-b sticky top-0 z-40 bg-white/80 backdrop-blur-md">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">

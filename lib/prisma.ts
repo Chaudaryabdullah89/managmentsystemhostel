@@ -1,18 +1,15 @@
-// lib/prisma.ts - Trigger Refresh
 import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = global as unknown as { prisma_clean?: PrismaClient };
+const prismaClientSingleton = () => {
+    return new PrismaClient();
+};
 
-// Configure Prisma client with connection pooling support for Neon
-export const prisma =
-    globalForPrisma.prisma_clean ??
-    new PrismaClient({
-        log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-    });
+const globalForPrisma = globalThis as unknown as {
+    prisma: ReturnType<typeof prismaClientSingleton> | undefined;
+};
 
-// Handle graceful shutdown and connection management
-if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.prisma_clean = prisma;
-}
+export const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 export default prisma;

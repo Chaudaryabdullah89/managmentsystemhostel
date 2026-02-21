@@ -90,6 +90,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAllSalaries, useGeneratePayroll, useUpdateSalary, useDeleteSalary, useStaffList, useCreateSalary } from "@/hooks/useSalaries";
 import { useHostel } from "@/hooks/usehostel";
 import { format } from "date-fns";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
 import SalarySlip from "@/components/SalarySlip";
 
@@ -110,6 +112,7 @@ const SalariesPage = () => {
     const [isPayDialogOpen, setIsPayDialogOpen] = useState(false);
     const [isAddSalaryDialogOpen, setIsAddSalaryDialogOpen] = useState(false);
     const [isResolveDialogOpen, setIsResolveDialogOpen] = useState(false);
+    const [isExportingSalaries, setIsExportingSalaries] = useState(false);
     const [selectedSalary, setSelectedSalary] = useState(null);
 
     const [resolveFormData, setResolveFormData] = useState({
@@ -175,7 +178,7 @@ const SalariesPage = () => {
         return { total, paid, pending, count: data.length };
     }, [salaries]);
 
-    const handleExport = () => {
+    const handleExportCSV = () => {
         const headers = ["ID", "Staff Name", "Month", "Basic Salary", "Allowances", "Bonuses", "Deductions", "Net Amount", "Status", "Payment Method", "Date"];
         const rows = filteredSalaries.map(s => [
             s.id,
@@ -201,7 +204,94 @@ const SalariesPage = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        toast.success("Payroll data exported successfully");
+        toast.success("Payroll CSV Exported!");
+    };
+
+    const handleExportPDF = async () => {
+        setIsExportingSalaries(true);
+        try {
+            const doc = new jsPDF('landscape');
+            doc.setFont("helvetica", "bold");
+
+            // Header Section
+            doc.setFillColor(31, 41, 55); // gray-800
+            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text("STAFF PAYROLL REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Month: ${selectedMonth} | Total Staff: ${filteredSalaries.length}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Total Amount: PKR ${stats.total.toLocaleString()}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+
+            // Draw Line
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.5);
+            doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
+
+            const headers = [
+                ["S.No", "Staff Name", "Month", "Basic", "Allowances", "Bonuses", "Deductions", "Net", "Status", "Date"]
+            ];
+
+            const rows = filteredSalaries.map((s, index) => [
+                index + 1,
+                s.StaffProfile?.User?.name || 'N/A',
+                s.month,
+                s.basicSalary.toLocaleString(),
+                s.allowances.toLocaleString(),
+                s.bonuses.toLocaleString(),
+                s.deductions.toLocaleString(),
+                s.amount.toLocaleString(),
+                s.status,
+                s.paymentDate ? format(new Date(s.paymentDate), 'dd/MM/yy') : 'N/A'
+            ]);
+
+            autoTable(doc, {
+                startY: 55,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [31, 41, 55],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    fontSize: 8,
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fontSize: 8,
+                    textColor: [50, 50, 50]
+                },
+                alternateRowStyles: {
+                    fillColor: [249, 250, 251]
+                },
+                styles: {
+                    overflow: 'linebreak',
+                    cellPadding: 3,
+                    valign: 'middle'
+                },
+                didDrawPage: function (data) {
+                    let str = "Page " + doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(str, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
+                    doc.text("Official GreenView Staff Records", 14, doc.internal.pageSize.height - 10);
+                }
+            });
+
+            doc.save(`Payroll_Report_${selectedMonth.replace(' ', '_')}.pdf`);
+            toast.success("Payroll PDF Exported! \uD83D\uDCC4");
+        } catch (error) {
+            toast.error("Failed to export PDF");
+            console.error(error);
+        } finally {
+            setIsExportingSalaries(false);
+        }
     };
 
     const handleGeneratePayroll = async () => {
@@ -296,7 +386,7 @@ const SalariesPage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">
             {/* Premium Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
@@ -315,17 +405,26 @@ const SalariesPage = () => {
                     <div className="flex items-center gap-3">
                         <Button
                             variant="outline"
-                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600"
-                            onClick={handleExport}
+                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 flex items-center gap-2"
+                            onClick={handleExportCSV}
                         >
-                            <Download className="h-3.5 w-3.5 mr-2 text-gray-400" /> Export CSV
+                            <Download className="h-3.5 w-3.5 text-gray-400" /> Export CSV
                         </Button>
                         <Button
                             variant="outline"
-                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-indigo-600 hover:bg-gray-50 transition-all shadow-sm"
+                            className="h-9 px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2"
+                            onClick={handleExportPDF}
+                            disabled={isExportingSalaries}
+                        >
+                            {isExportingSalaries ? <Loader2 className="h-3.5 w-3.5 text-indigo-700 animate-spin" /> : <Download className="h-3.5 w-3.5 text-indigo-700" />}
+                            EXPORT PAYROLL
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-indigo-600 hover:bg-gray-50 transition-all shadow-sm flex items-center gap-2"
                             onClick={() => setIsAddSalaryDialogOpen(true)}
                         >
-                            <Plus className="h-3.5 w-3.5 mr-2" /> Add Salary
+                            <Plus className="h-3.5 w-3.5 text-indigo-600" /> Add Salary
                         </Button>
                         <Button
                             className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all"
@@ -565,6 +664,10 @@ const SalariesPage = () => {
                                             <DropdownMenuContent align="end" className="w-48 rounded-xl p-2">
                                                 <DropdownMenuItem onClick={() => { setSelectedSalary(salary); setIsSlipDialogOpen(true); }} className="font-bold text-[10px] uppercase tracking-wider p-3 rounded-lg cursor-pointer">
                                                     <FileText className="h-4 w-4 mr-2" /> View Salary Slip
+                                                </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuItem onClick={() => router.push(`/admin/salaries/${salary.staffId}`)} className="font-bold text-[10px] uppercase tracking-wider p-3 rounded-lg cursor-pointer">
+                                                    <History className="h-4 w-4 mr-2" /> View Salary History
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem onClick={() => handleEditOpen(salary)} className="font-bold text-[10px] uppercase tracking-wider p-3 rounded-lg cursor-pointer">

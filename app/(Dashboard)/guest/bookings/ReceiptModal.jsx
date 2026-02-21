@@ -152,10 +152,7 @@ const ReceiptModal = ({ children, booking }) => {
     };
 
     const handlePrint = () => {
-        const printWindow = window.open('', '_blank', 'width=850,height=900');
-        printWindow.document.write(generateReceiptHTML());
-        printWindow.document.close();
-        printWindow.onload = () => printWindow.print();
+        window.print();
     };
 
     const handleViewInvoice = () => {
@@ -175,7 +172,7 @@ const ReceiptModal = ({ children, booking }) => {
             </DialogTrigger>
             <DialogContent className="max-w-[460px] p-0 overflow-hidden border-none shadow-xl rounded-2xl bg-white">
                 <DialogHeader className="p-0">
-                    <div className="bg-slate-50 border-b border-slate-100 p-6 flex items-center justify-between">
+                    <div className="print:hidden bg-slate-50 border-b border-slate-100 p-6 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center border border-indigo-100 shadow-sm shadow-indigo-100">
                                 <FileText className="h-5 w-5 text-white" />
@@ -191,7 +188,7 @@ const ReceiptModal = ({ children, booking }) => {
                     </div>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto max-h-[75vh] p-6 space-y-6">
+                <div className="print:hidden flex-1 overflow-y-auto max-h-[75vh] p-6 space-y-6">
                     {/* Compact Term Card */}
                     <div className="bg-indigo-600 rounded-2xl p-6 shadow-xl shadow-indigo-100 overflow-hidden relative">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 blur-xl" />
@@ -260,7 +257,7 @@ const ReceiptModal = ({ children, booking }) => {
                     </div>
                 </div>
 
-                <DialogFooter className="p-6 pt-2">
+                <DialogFooter className="p-6 pt-2 print:hidden">
                     <div className="grid grid-cols-2 gap-3 w-full">
                         <Button
                             variant="outline"
@@ -277,6 +274,76 @@ const ReceiptModal = ({ children, booking }) => {
                         </Button>
                     </div>
                 </DialogFooter>
+
+                {/* Printable Receipt Block */}
+                <div className="hidden print:block p-8 bg-white text-black font-sans w-full max-w-3xl mx-auto absolute top-0 left-0 bg-white">
+                    {/* Header */}
+                    <div className="border-b-2 border-black pb-6 mb-6 flex justify-between items-start">
+                        <div>
+                            <h1 className="text-2xl font-black uppercase tracking-tight text-indigo-600">GreenView Hostel</h1>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">Agreement Details</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Official Record</p>
+                            <p className="text-sm font-bold text-black font-mono">Booking ID: {booking.id?.toUpperCase().slice(-8) || 'N/A'}</p>
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Issued</p>
+                            <p className="text-sm font-bold text-black">{format(new Date(), 'MMM dd, yyyy')}</p>
+                        </div>
+                    </div>
+
+                    {/* Resident Details */}
+                    <div className="grid grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">Resident Name</h3>
+                            <p className="font-bold text-black uppercase text-sm">{booking.User?.name || 'N/A'}</p>
+                            <p className="text-xs text-gray-600 mt-1">{booking.User?.email || ''}</p>
+                        </div>
+                        <div className="text-right">
+                            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">Hostel Name</h3>
+                            <p className="font-bold text-black uppercase text-sm">{booking.Room?.Hostel?.name || 'N/A'}</p>
+                            <p className="text-xs text-indigo-600 font-bold mt-1">Room {booking.Room?.roomNumber || 'N/A'}</p>
+                        </div>
+                    </div>
+
+                    {/* Fee Details */}
+                    <div className="mb-8">
+                        <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">Fee details</h3>
+                        <table className="w-full text-left text-sm mb-4">
+                            <tbody>
+                                <tr className="border-b border-gray-100">
+                                    <td className="py-3 font-medium text-gray-600">Monthly Rent</td>
+                                    <td className="py-3 text-right font-bold text-black">PKR {Number(booking.totalAmount || 0).toLocaleString()}</td>
+                                </tr>
+                                <tr className="border-b border-gray-100">
+                                    <td className="py-3 font-medium text-gray-600">Security Deposit (Refundable)</td>
+                                    <td className="py-3 text-right font-bold text-black">PKR {Number(booking.securityDeposit || 0).toLocaleString()}</td>
+                                </tr>
+                                <tr>
+                                    <td className="py-4 font-black text-black">1st Month Advance Payment</td>
+                                    <td className="py-4 text-right font-black uppercase text-black">{isAdvancePaid ? 'Paid' : 'Not Paid'}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Booking Dates */}
+                    <div className="grid grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">Check-In Date</h3>
+                            <p className="font-bold text-black text-sm">{booking.startDate ? format(new Date(booking.startDate), 'MMM dd, yyyy') : 'N/A'}</p>
+                        </div>
+                        <div className="text-right">
+                            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">End Date</h3>
+                            <p className="font-bold text-black text-sm">{booking.endDate ? format(new Date(booking.endDate), 'MMM dd, yyyy') : 'Ongoing'}</p>
+                        </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div className="mt-16 pt-8 border-t border-gray-200 text-center">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">This document serves as an official summary of your stay at GreenView Hostel.</p>
+                        <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest mt-1">Digitally Verified Payment Record</p>
+                    </div>
+                </div>
             </DialogContent>
         </Dialog>
     );

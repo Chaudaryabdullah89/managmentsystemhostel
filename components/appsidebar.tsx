@@ -18,6 +18,8 @@ import {
     Search,
     ClipboardList,
     ChevronRight,
+    Utensils,
+    Megaphone,
     type LucideIcon,
 } from "lucide-react"
 import useAuthStore from "@/hooks/Authstate"
@@ -50,7 +52,10 @@ const items: Record<string, NavItem[]> = {
         { title: "Reports", url: "/admin/reports", icon: FileText, role: "admin" },
         { title: "Audit & Search", url: "/admin/audit", icon: Search, role: "admin" },
         { title: "Complaints", url: "/admin/complaints", icon: MessageSquare, role: "admin" },
+
+        { title: "Notice Board", url: "/admin/notices", icon: Megaphone, role: "admin" },
         { title: "Expenses", url: "/admin/expenses", icon: DollarSign, role: "admin" },
+        { title: "Mess Menu", url: "/admin/mess", icon: Utensils, role: "admin" },
         { title: "Profile", url: "/admin/profile", icon: User, role: "admin" },
     ],
     warden: [
@@ -59,15 +64,19 @@ const items: Record<string, NavItem[]> = {
         { title: "Rooms", url: "/warden/rooms", icon: Bed, role: "warden" },
         { title: "Bookings", url: "/warden/bookings", icon: Calendar, role: "warden" },
         { title: "Payments", url: "/warden/payments", icon: CreditCard, role: "warden" },
+        { title: "Salaries", url: "/warden/salaries", icon: DollarSign, role: "warden" },
         { title: "Residents", url: "/warden/residents", icon: Users, role: "warden" },
-        // { title: "Staff Tasks", url: "/warden/tasks", icon: ClipboardList, role: "warden" },
         { title: "Complaints", url: "/warden/complaints", icon: MessageSquare, role: "warden" },
+        { title: "Notice Board", url: "/warden/notices", icon: Megaphone, role: "warden" },
+        { title: "Expenses", url: "/warden/expenses", icon: DollarSign, role: "warden" },
+        { title: "Mess Menu", url: "/warden/mess", icon: Utensils, role: "warden" },
         { title: "My Profile", url: "/warden/profile", icon: User, role: "warden" },
     ],
     guest: [
         { title: "Dashboard", url: "/guest/dashboard", icon: LayoutDashboard, role: "guest" },
         { title: "My Bookings", url: "/guest/bookings", icon: Calendar, role: "guest" },
         { title: "Payments", url: "/guest/payments", icon: CreditCard, role: "guest" },
+        { title: "Mess Schedule", url: "/guest/mess", icon: Utensils, role: "guest" },
         { title: "Services & Support", url: "/guest/support", icon: LifeBuoy, role: "guest" },
         { title: "Profile", url: "/guest/profile", icon: User, role: "guest" },
     ],
@@ -134,7 +143,20 @@ export function AppSidebar() {
             <SidebarContent className="px-3 py-3 overflow-y-auto">
                 <nav className="space-y-0.5">
                     {navItems.map((item) => {
-                        const isActive = pathname === item.url || pathname.startsWith(item.url + "/")
+                        // An item is active if the pathname exactly matches it,
+                        // OR if the pathname starts with this URL — BUT only when
+                        // no other nav item has a longer (more specific) URL that
+                        // also matches. This prevents /admin/hostels from lighting
+                        // up when you're on /admin/hostels/rooms.
+                        const isActive = pathname === item.url || (
+                            pathname.startsWith(item.url + "/") &&
+                            !navItems.some(
+                                (other) =>
+                                    other.url !== item.url &&
+                                    other.url.startsWith(item.url) &&
+                                    (pathname === other.url || pathname.startsWith(other.url + "/"))
+                            )
+                        )
                         const Icon = item.icon
 
                         return (
