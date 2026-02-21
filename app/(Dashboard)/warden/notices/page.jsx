@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 import {
     Megaphone, Plus, Search, MoreVertical, Clock,
-    Calendar, Trash2, Edit3, Loader2, CheckCircle2,
+    Calendar, Trash2, Edit3, Loader2, CheckCircle2, 
     Inbox, Bell
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -125,8 +125,8 @@ const WardenNoticePage = () => {
                             <form onSubmit={handleCreate} className="space-y-5 pt-4">
                                 <div className="space-y-2">
                                     <Label className="text-xs font-medium text-slate-500 ml-1">Title</Label>
-                                    <Input
-                                        required
+                                    <Input 
+                                        required 
                                         className="rounded-xl border-slate-100 bg-slate-50/50 focus:bg-white transition-all"
                                         placeholder="Headline of the notice..."
                                         value={formData.title}
@@ -135,8 +135,8 @@ const WardenNoticePage = () => {
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-xs font-medium text-slate-500 ml-1">Content</Label>
-                                    <Textarea
-                                        required
+                                    <Textarea 
+                                        required 
                                         className="min-h-[120px] rounded-xl border-slate-100 bg-slate-50/50 focus:bg-white resize-none"
                                         placeholder="Detailed message..."
                                         value={formData.content}
@@ -159,8 +159,8 @@ const WardenNoticePage = () => {
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-xs font-medium text-slate-500 ml-1">Expiry Date</Label>
-                                        <Input
-                                            type="date"
+                                        <Input 
+                                            type="date" 
                                             className="rounded-xl border-slate-100"
                                             value={formData.expiresAt}
                                             onChange={e => setFormData({ ...formData, expiresAt: e.target.value })}
@@ -204,7 +204,7 @@ const WardenNoticePage = () => {
                                     <Badge variant="outline" className={`rounded-lg px-2.5 py-0.5 text-[10px] font-bold tracking-wide uppercase border-none ${getPriorityStyles(notice.priority)}`}>
                                         {notice.priority}
                                     </Badge>
-
+                                    
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -266,8 +266,8 @@ const WardenNoticePage = () => {
                     <form onSubmit={handleUpdate} className="space-y-5 pt-4">
                         <div className="space-y-2">
                             <Label className="text-xs font-medium text-slate-500">Title</Label>
-                            <Input
-                                required
+                            <Input 
+                                required 
                                 className="rounded-xl"
                                 value={formData.title}
                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
@@ -275,8 +275,8 @@ const WardenNoticePage = () => {
                         </div>
                         <div className="space-y-2">
                             <Label className="text-xs font-medium text-slate-500">Content</Label>
-                            <Textarea
-                                required
+                            <Textarea 
+                                required 
                                 className="min-h-[120px] rounded-xl resize-none"
                                 value={formData.content}
                                 onChange={e => setFormData({ ...formData, content: e.target.value })}

@@ -44,142 +44,136 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="py-10 flex items-center justify-center px-8 relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100" style={{ minHeight: '100vh' }}>
+        <div className="min-h-screen flex bg-white font-sans antialiased text-slate-900 relative overflow-hidden">
 
-            {/* Dot grid */}
-            <div
-                className="absolute inset-0 opacity-[0.03] pointer-events-none"
-                style={{
-                    backgroundImage: "radial-gradient(circle at 1px 1px, #1d4ed8 1px, transparent 0)",
-                    backgroundSize: "36px 36px",
-                }}
-            />
+            {/* Subtle Grid Background */}
+            <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-40 pointer-events-none" />
 
-            {/* Ambient glows */}
-            <div className="absolute -top-52 left-1/4 w-[700px] h-[500px] bg-blue-300/20 rounded-full blur-[160px] pointer-events-none" />
-            <div className="absolute -bottom-52 right-1/4 w-[600px] h-[500px] bg-indigo-300/20 rounded-full blur-[140px] pointer-events-none" />
+            {/* LEFT SIDE — Structured Visual */}
+            <div className="hidden lg:flex w-1/2 relative items-center justify-center overflow-hidden">
 
-            {/* Decorative rings */}
-            <div className="absolute top-16 left-16 w-20 h-20 rounded-2xl border border-blue-200/60 rotate-12 pointer-events-none" />
-            <div className="absolute bottom-20 right-16 w-28 h-28 rounded-full border border-indigo-200/60 pointer-events-none" />
-            <div className="absolute top-1/2 right-12 w-10 h-10 rounded-xl border border-blue-300/40 rotate-45 pointer-events-none" />
+                {/* Soft lighting */}
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/10 blur-3xl rounded-full" />
+                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-500/10 blur-3xl rounded-full" />
 
-            {/* Card */}
-            <div className="relative w-full max-w-[420px]">
-                <div className="bg-white/85 backdrop-blur-2xl border border-white/60 rounded-[32px] shadow-[0_32px_80px_-12px_rgba(37,99,235,0.12)] overflow-hidden">
+                {/* Floating Glass Panels */}
+                <div className="relative w-[420px] h-[420px]">
 
-                    {/* Top accent bar */}
-                    <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600" />
+                    <div className="absolute top-0 left-0 w-64 h-40 bg-white/70 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-xl" />
 
-                    <div className="px-10 pt-10 pb-10">
+                    <div className="absolute bottom-10 right-0 w-72 h-44 bg-white/70 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-xl" />
 
-                        {/* Brand */}
-                        <div className="flex flex-col items-center mb-9">
-                            <div className="relative mb-5">
-                                <div className="absolute inset-0 rounded-2xl bg-blue-500/15 blur-xl scale-150" />
-                                <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-xl shadow-blue-500/25">
-                                    <Building2 className="h-8 w-8 text-white" />
-                                </div>
-                            </div>
-                            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">GreenView Hostels</h1>
-                            <p className="text-[11px] font-bold text-blue-600 uppercase tracking-[0.2em] mt-1.5">Management Portal</p>
-                        </div>
-
-                        {/* Heading */}
-                        <div className="mb-7">
-                            <h2 className="text-xl font-bold text-gray-900">Welcome back 👋</h2>
-                            <p className="text-sm text-gray-400 mt-1">Sign in to access your dashboard</p>
-                        </div>
-
-                        {/* Form */}
-                        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-
-                            {/* Email */}
-                            <div className="space-y-1.5">
-                                <label htmlFor="email" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    Email
-                                </label>
-                                <div className="relative group">
-                                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 group-focus-within:text-blue-600 transition-colors duration-200" />
-                                    <input
-                                        id="email"
-                                        type="email"
-                                        autoComplete="email"
-                                        placeholder="you@greenview.com"
-                                        value={formData.email}
-                                        onChange={(e) => { setFormData(p => ({ ...p, email: e.target.value })); setError(''); }}
-                                        className="w-full h-12 pl-10 pr-4 rounded-2xl bg-gray-50/80 border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-300 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Password */}
-                            <div className="space-y-1.5">
-                                <div className="flex items-center justify-between">
-                                    <label htmlFor="password" className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                        Password
-                                    </label>
-                                    <Link href="/auth/forgot-password" className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">
-                                        Forgot password?
-                                    </Link>
-                                </div>
-                                <div className="relative group">
-                                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 group-focus-within:text-blue-600 transition-colors duration-200" />
-                                    <input
-                                        id="password"
-                                        type={showPassword ? "text" : "password"}
-                                        autoComplete="current-password"
-                                        placeholder="••••••••••"
-                                        value={formData.password}
-                                        onChange={(e) => { setFormData(p => ({ ...p, password: e.target.value })); setError(''); }}
-                                        className="w-full h-12 pl-10 pr-11 rounded-2xl bg-gray-50/80 border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-300 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(v => !v)}
-                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors"
-                                    >
-                                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Remember me */}
-                            <div className="flex items-center gap-2">
-                                <input id="remember" type="checkbox" className="h-4 w-4 rounded accent-blue-600 cursor-pointer" />
-                                <label htmlFor="remember" className="text-sm text-gray-500 cursor-pointer select-none">Remember me</label>
-                            </div>
-
-                            {/* Error */}
-                            {error && (
-                                <div className="flex items-center gap-2.5 px-4 py-3 rounded-2xl bg-red-50 border border-red-100">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-red-400 flex-shrink-0" />
-                                    <p className="text-sm font-medium text-red-500">{error}</p>
-                                </div>
-                            )}
-
-                            {/* Submit */}
-                            <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full h-12 mt-1 rounded-2xl font-bold text-sm text-white bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-                            >
-                                {isLoading ? (
-                                    <><Loader2 className="h-4 w-4 animate-spin" /><span>Signing in...</span></>
-                                ) : (
-                                    <><span>Sign In</span><ArrowRight className="h-4 w-4" /></>
-                                )}
-                            </button>
-                        </form>
-
-                        {/* Footer note */}
-
+                    <div className="absolute top-32 left-24 w-80 h-52 bg-slate-900 rounded-3xl shadow-2xl flex items-center justify-center">
+                        <Building2 className="h-10 w-10 text-white opacity-90" />
                     </div>
+
                 </div>
 
-                <p className="text-center text-[11px] text-gray-400 mt-6">
-                    © 2024 GreenView Hostels · All rights reserved
-                </p>
+            </div>
+
+            {/* RIGHT SIDE — LOGIN */}
+            <div className="flex w-full lg:w-1/2 items-center justify-center p-6 lg:p-16 relative z-10">
+
+                <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-10 shadow-[0_30px_80px_rgba(0,0,0,0.04)]">
+
+                    {/* Brand */}
+                    <div className="flex items-center gap-3 mb-10">
+                        <div className="w-12 h-12 bg-slate-950 rounded-2xl flex items-center justify-center">
+                            <Building2 className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-lg font-bold tracking-tight">GreenView</h1>
+                            <p className="text-[10px] uppercase tracking-widest text-slate-400">
+                                Management Node
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="mb-8">
+                        <h2 className="text-xl font-semibold">Sign In</h2>
+                        <p className="text-sm text-slate-500 mt-1">
+                            Enter your credentials to continue
+                        </p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+
+                        {/* Email */}
+                        <div>
+                            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                Email Address
+                            </label>
+                            <div className="relative mt-2">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <input
+                                    type="email"
+                                    placeholder="you@greenview.io"
+                                    value={formData.email}
+                                    onChange={(e) =>
+                                        setFormData((p) => ({ ...p, email: e.target.value }))
+                                    }
+                                    className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Password */}
+                        <div>
+                            <div className="flex items-center justify-between">
+                                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                    Password
+                                </label>
+                                <Link
+                                    href="/auth/forgot-password"
+                                    className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                                >
+                                    Forgot?
+                                </Link>
+                            </div>
+
+                            <div className="relative mt-2">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    value={formData.password}
+                                    onChange={(e) =>
+                                        setFormData((p) => ({ ...p, password: e.target.value }))
+                                    }
+                                    className="w-full h-12 pl-12 pr-12 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                >
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                        <Eye className="h-4 w-4" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Submit */}
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full h-12 mt-4 rounded-xl bg-slate-950 text-white text-sm font-semibold hover:bg-slate-800 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
+                        >
+                            {isLoading ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <>
+                                    Authenticate <ArrowRight className="h-4 w-4" />
+                                </>
+                            )}
+                        </button>
+
+                    </form>
+
+                </div>
             </div>
         </div>
     );
