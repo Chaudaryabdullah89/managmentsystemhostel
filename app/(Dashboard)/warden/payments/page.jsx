@@ -24,6 +24,7 @@ import {
     Receipt,
     Building2,
     RefreshCw,
+    MessageSquare,
     LayoutGrid,
     Table as TableIcon,
     ArrowUpRight,

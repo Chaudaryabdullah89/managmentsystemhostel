@@ -365,30 +365,7 @@ const SearchPage = () => {
                 )}
             </main>
 
-            {/* Simple Status Bar */}
-            <div className="fixed bottom-0 w-full z-40 px-6 pb-4 pointer-events-none left-0">
-                <div className="max-w-[1200px] mx-auto bg-slate-900/90 backdrop-blur-xl text-white h-12 rounded-2xl shadow-2xl flex items-center justify-between px-6 pointer-events-auto">
-                    <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-2 text-indigo-400">
-                            <Activity className="w-3.5 h-3.5" />
-                            <span className="text-[10px] font-black tracking-widest uppercase">System Ready</span>
-                        </div>
-                        <div className="h-3 w-px bg-white/10 hidden md:block"></div>
-                        <div className="hidden md:flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[10px] font-bold uppercase text-gray-400 tracking-[0.2em]">Data Up to Date</span>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        {results && (
-                            <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">
-                                {Object.values(results).flat().length} Results found
-                            </span>
-                        )}
-                        <Badge className="bg-white/10 text-white border-none text-[8px] font-bold uppercase py-0.5">V3.2.0</Badge>
-                    </div>
-                </div>
-            </div>
+
         </div>
     );
 };
