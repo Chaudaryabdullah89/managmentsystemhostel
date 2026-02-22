@@ -17,7 +17,7 @@ export async function POST(req: Request) {
             where: {
                 email,
                 otp,
-                type: "EMAIL_UPDATE",
+                // type: "EMAIL_UPDATE",
                 expiresAt: { gt: new Date() }
             },
             orderBy: { createdAt: 'desc' }
