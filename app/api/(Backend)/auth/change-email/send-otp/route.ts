@@ -24,7 +24,7 @@ export async function POST(req: Request) {
                 email,
                 otp,
                 expiresAt,
-                type: "EMAIL_UPDATE"
+                // type: "EMAIL_UPDATE"
             }
         });
 
