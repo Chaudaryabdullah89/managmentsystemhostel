@@ -38,6 +38,7 @@ import {
     UserPlus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Loader from "@/components/ui/Loader";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -199,6 +200,37 @@ const UserRecordPage = () => {
                         <Button
                             variant="outline"
                             className="h-9 md:h-10 flex-1 md:flex-none px-3 md:px-5 rounded-xl md:rounded-2xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
+                            onClick={() => {
+                                if (!filteredUsers || filteredUsers.length === 0) {
+                                    toast.error("No users found to export");
+                                    return;
+                                }
+                                const headers = ["Name", "Email", "Phone", "Role", "CNIC", "Status"];
+                                const rows = filteredUsers.map(u => [
+                                    u.name,
+                                    u.email,
+                                    u.phone || 'N/A',
+                                    u.role,
+                                    u.cnic || 'N/A',
+                                    u.isActive ? 'Active' : 'Inactive'
+                                ]);
+                                const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+                                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                                const link = document.createElement("a");
+                                const url = URL.createObjectURL(blob);
+                                link.setAttribute("href", url);
+                                link.setAttribute("download", `User_Directory_${format(new Date(), 'yyyyMMdd')}.csv`);
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                toast.success("User directory exported");
+                            }}
+                        >
+                            <FileText className="h-3.5 w-3.5 md:h-4 md:w-4 text-gray-400" /> Export <span className="hidden xs:inline">Directory</span>
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="h-9 md:h-10 flex-1 md:flex-none px-3 md:px-5 rounded-xl md:rounded-2xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center justify-center gap-2"
                             onClick={() => setIsCreateDialogOpen(true)}
                         >
                             <Plus className="h-3.5 w-3.5 md:h-4 md:w-4" /> Quick Add
@@ -245,9 +277,9 @@ const UserRecordPage = () => {
                 {/* User List */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {usersLoading ? (
-                        Array(6).fill(0).map((_, i) => (
-                            <div key={i} className="h-64 bg-gray-100 animate-pulse rounded-3xl" />
-                        ))
+                        <div className="col-span-full">
+                            <Loader label="Syncing Records" subLabel="Fetching personnel data from all nodes" icon={Fingerprint} fullScreen={false} />
+                        </div>
                     ) : filteredUsers.map(user => {
                         const styles = getRoleStyles(user.role);
                         return (

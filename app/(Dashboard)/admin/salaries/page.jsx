@@ -2,94 +2,42 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 import {
-    DollarSign,
-    Calendar,
-    CheckCircle2,
-    XCircle,
-    AlertCircle,
-    Clock,
-    Search,
-    Filter,
-    Download,
-    Eye,
-    User,
-    Building2,
-    CreditCard,
-    TrendingUp,
-    Briefcase,
-    Plus,
-    ShieldCheck,
-    PieChart,
-    Wallet,
-    History,
-    FileText,
-    Boxes,
-    Scan,
-    ArrowRight,
-    Send,
-    Loader2,
-    ExternalLink,
-    CheckCircle,
-    Settings2,
-    Trash2,
-    Save,
-    MoreVertical,
-    ChevronRight,
-    ArrowUpRight,
-    UserCheck,
-    Coins,
-    Calculator,
-    Zap,
-    MessageSquare,
+    DollarSign, Calendar, CheckCircle2, XCircle, AlertCircle,
+    Clock, Search, Filter, Download, Eye, User, Building2,
+    CreditCard, TrendingUp, Briefcase, Plus, ShieldCheck,
+    PieChart, Wallet, History, FileText, Boxes, Scan,
+    ArrowRight, Send, Loader2, ExternalLink, CheckCircle,
+    Settings2, Trash2, Save, MoreVertical, ChevronRight,
+    ArrowUpRight, UserCheck, Coins, Calculator, Zap,
+    MessageSquare, Wallet2, Mail, Users, Star, MapPin, Activity, ClipboardList
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-    DropdownMenuLabel,
-    DropdownMenuSeparator
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+    DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from "@/components/ui/tabs";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-    DialogFooter
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter
 } from "@/components/ui/dialog";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+    AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useAllSalaries, useGeneratePayroll, useUpdateSalary, useDeleteSalary, useStaffList, useCreateSalary } from "@/hooks/useSalaries";
+import {
+    useAllSalaries, useGeneratePayroll, useUpdateSalary,
+    useDeleteSalary, useStaffList, useCreateSalary
+} from "@/hooks/useSalaries";
 import { useHostel } from "@/hooks/usehostel";
-import { format } from "date-fns";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
@@ -159,10 +107,13 @@ const SalariesPage = () => {
     const filteredSalaries = useMemo(() => {
         const data = salaries || [];
         return data.filter(item => {
+            const name = item.StaffProfile?.User?.name?.toLowerCase() || "";
+            const email = item.StaffProfile?.User?.email?.toLowerCase() || "";
+            const id = item.id?.toLowerCase() || "";
             const matchesSearch = !searchQuery ||
-                item.StaffProfile?.User?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                item.StaffProfile?.User?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                item.id.toLowerCase().includes(searchQuery.toLowerCase());
+                name.includes(searchQuery.toLowerCase()) ||
+                email.includes(searchQuery.toLowerCase()) ||
+                id.includes(searchQuery.toLowerCase());
 
             const matchesHostel = filterHostel === "All" || item.StaffProfile?.User?.hostelId === filterHostel;
             const matchesStatus = filterStatus === "All" || item.status === filterStatus;
@@ -173,10 +124,11 @@ const SalariesPage = () => {
 
     const stats = useMemo(() => {
         const data = salaries || [];
-        const total = data.reduce((acc, curr) => acc + curr.amount, 0);
-        const paid = data.filter(s => s.status === 'PAID').reduce((acc, curr) => acc + curr.amount, 0);
-        const pending = data.filter(s => s.status === 'PENDING').reduce((acc, curr) => acc + curr.amount, 0);
-        return { total, paid, pending, count: data.length };
+        const total = data.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+        const paidVolume = data.filter(s => s.status === 'PAID').reduce((acc, curr) => acc + (curr.amount || 0), 0);
+        const pendingReserve = data.filter(s => s.status === 'PENDING').reduce((acc, curr) => acc + (curr.amount || 0), 0);
+        const appealCount = data.filter(s => s.appealStatus === 'PENDING').length;
+        return { total, paidVolume, pendingReserve, count: data.length, appealCount };
     }, [salaries]);
 
     const handleExportCSV = () => {
@@ -214,8 +166,7 @@ const SalariesPage = () => {
             const doc = new jsPDF('landscape');
             doc.setFont("helvetica", "bold");
 
-            // Header Section
-            doc.setFillColor(31, 41, 55); // gray-800
+            doc.setFillColor(31, 41, 55);
             doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
             doc.setTextColor(255, 255, 255);
             doc.setFontSize(18);
@@ -230,7 +181,6 @@ const SalariesPage = () => {
             doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
             doc.text(`Total Amount: PKR ${stats.total.toLocaleString()}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
 
-            // Draw Line
             doc.setDrawColor(220, 220, 220);
             doc.setLineWidth(0.5);
             doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
@@ -243,11 +193,11 @@ const SalariesPage = () => {
                 index + 1,
                 s.StaffProfile?.User?.name || 'N/A',
                 s.month,
-                s.basicSalary.toLocaleString(),
-                s.allowances.toLocaleString(),
-                s.bonuses.toLocaleString(),
-                s.deductions.toLocaleString(),
-                s.amount.toLocaleString(),
+                (s.basicSalary || 0).toLocaleString(),
+                (s.allowances || 0).toLocaleString(),
+                (s.bonuses || 0).toLocaleString(),
+                (s.deductions || 0).toLocaleString(),
+                (s.amount || 0).toLocaleString(),
                 s.status,
                 s.paymentDate ? format(new Date(s.paymentDate), 'dd/MM/yy') : 'N/A'
             ]);
@@ -257,26 +207,11 @@ const SalariesPage = () => {
                 head: headers,
                 body: rows,
                 theme: 'grid',
-                headStyles: {
-                    fillColor: [31, 41, 55],
-                    textColor: [255, 255, 255],
-                    fontStyle: 'bold',
-                    fontSize: 8,
-                    halign: 'center'
-                },
-                bodyStyles: {
-                    fontSize: 8,
-                    textColor: [50, 50, 50]
-                },
-                alternateRowStyles: {
-                    fillColor: [249, 250, 251]
-                },
-                styles: {
-                    overflow: 'linebreak',
-                    cellPadding: 3,
-                    valign: 'middle'
-                },
-                didDrawPage: function (data) {
+                headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8, halign: 'center' },
+                bodyStyles: { fontSize: 8, textColor: [50, 50, 50] },
+                alternateRowStyles: { fillColor: [249, 250, 251] },
+                styles: { overflow: 'linebreak', cellPadding: 3, valign: 'middle' },
+                didDrawPage: (data) => {
                     let str = "Page " + doc.internal.getNumberOfPages();
                     doc.setFontSize(8);
                     doc.setTextColor(150, 150, 150);
@@ -286,10 +221,9 @@ const SalariesPage = () => {
             });
 
             doc.save(`Payroll_Report_${selectedMonth.replace(' ', '_')}.pdf`);
-            toast.success("Payroll PDF Exported! \uD83D\uDCC4");
+            toast.success("Payroll PDF Exported!");
         } catch (error) {
             toast.error("Failed to export PDF");
-            console.error(error);
         } finally {
             setIsExportingSalaries(false);
         }
@@ -298,9 +232,7 @@ const SalariesPage = () => {
     const handleGeneratePayroll = async () => {
         try {
             await generatePayroll.mutateAsync({ month: currentMonth });
-        } catch (error) {
-            // Error handled by hook
-        }
+        } catch (error) { }
     };
 
     const handleEditOpen = (salary) => {
@@ -374,368 +306,388 @@ const SalariesPage = () => {
         } catch (error) { }
     };
 
-    if (salariesLoading) return <Loader label="Loading Salaries" subLabel="Fetching payroll records..." icon={Coins} fullScreen={false} />;
+    if (salariesLoading) return (
+        <div className="flex h-screen items-center justify-center bg-gray-50">
+            <div className="flex flex-col items-center gap-4">
+                <div className="h-10 w-10 border-[3px] border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Payroll...</p>
+            </div>
+        </div>
+    );
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">
-            {/* Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
-                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <div className="h-8 w-1 bg-indigo-600 rounded-full shrink-0" />
-                        <div className="flex flex-col">
-                            <h1 className="text-base md:text-lg font-bold text-gray-900 tracking-tight uppercase">Staff Payroll</h1>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Payroll System</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
-                            </div>
+            {/* Header - Staff Management Style */}
+            <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-1.5 bg-indigo-600 rounded-full" />
+                        <div>
+                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Staff Payroll</h1>
+                            <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} distribution records</p>
                         </div>
                     </div>
+                    <div className="flex items-center gap-3">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                            <Input
+                                placeholder="Search namesake or ID..."
+                                className="h-9 pl-9 w-[220px] rounded-xl border-gray-200 bg-gray-50 text-xs font-medium"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                        <Select value={filterHostel} onValueChange={setFilterHostel}>
+                            <SelectTrigger className="h-9 w-[160px] rounded-xl border-gray-200 bg-white text-[10px] font-bold uppercase tracking-wider">
+                                <SelectValue placeholder="All Hostels" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
+                                <SelectItem value="All" className="text-[10px] font-bold uppercase">All Hostels</SelectItem>
+                                {hostels.map(h => (
+                                    <SelectItem key={h.id} value={h.id} className="text-[10px] font-bold uppercase">{h.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
 
-                    <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <Button
-                                variant="outline"
-                                className="h-9 px-3 md:px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 flex-1 sm:flex-none flex items-center justify-center gap-2"
-                                onClick={handleExportCSV}
-                            >
-                                <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Export</span> CSV
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="h-9 px-3 md:px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex-1 sm:flex-none flex items-center justify-center gap-2"
-                                onClick={handleExportPDF}
-                                disabled={isExportingSalaries}
-                            >
-                                {isExportingSalaries ? <Loader2 className="h-3.5 w-3.5 text-indigo-700 animate-spin" /> : <Download className="h-3.5 w-3.5 text-indigo-700" />}
-                                <span className="hidden xs:inline">EXPORT</span> PAYROLL
-                            </Button>
-                        </div>
-                        <div className="flex items-center gap-2 w-full sm:w-auto">
-                            <Button
-                                variant="outline"
-                                className="h-9 px-3 md:px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-indigo-600 hover:bg-gray-50 transition-all shadow-sm flex-1 sm:flex-none flex items-center justify-center gap-2"
-                                onClick={() => setIsAddSalaryDialogOpen(true)}
-                            >
-                                <Plus className="h-3.5 w-3.5 text-indigo-600" /> <span className="hidden xs:inline">Add</span> Salary
-                            </Button>
-                            <Button
-                                className="h-9 px-4 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all flex-1 sm:flex-none"
-                                onClick={handleGeneratePayroll}
-                                disabled={generatePayroll.isPending}
-                            >
-                                {generatePayroll.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-1 md:mr-2" /> : <Zap className="h-4 w-4 mr-1 md:mr-2" />}
-                                <span className="hidden xs:inline">Gen.</span> {currentMonth.split(' ')[0]} Payroll
-                            </Button>
-                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 bg-white">
+                                    <MoreVertical className="h-4 w-4 text-gray-400" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-xl border-gray-100 p-2">
+                                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-gray-400 p-3">Payroll Actions</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={handleGeneratePayroll} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
+                                    <Calculator className="h-4 w-4 text-indigo-600" /> Auto Generate
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsAddSalaryDialogOpen(true)} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
+                                    <Plus className="h-4 w-4 text-emerald-600" /> Manual Record
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={handleExportPDF} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer text-rose-600">
+                                    <FileText className="h-4 w-4" /> Export as PDF
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleExportCSV} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer text-emerald-600">
+                                    <Boxes className="h-4 w-4" /> Export as CSV
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
             </div>
 
-            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
-                {/* Metrics Matrix */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+                {/* Overview Stats - Staff Management Card Style */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Total Payroll', value: `PKR ${(stats.total / 1000).toFixed(1)}k`, icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Paid This Month', value: `PKR ${(stats.paid / 1000).toFixed(1)}k`, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Pending Salaries', value: `PKR ${(stats.pending / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Total Staff', value: stats.count, icon: UserCheck, color: 'text-purple-600', bg: 'bg-purple-50' }
+                        { label: "Gross Payroll", value: `PKR ${(stats.total / 1000).toFixed(1)}k`, icon: Wallet, color: "text-gray-700", bg: "bg-white", iconBg: "bg-gray-100" },
+                        { label: "Paid Volume", value: `PKR ${(stats.paidVolume / 1000).toFixed(1)}k`, icon: CheckCircle2, color: "text-indigo-600", bg: "bg-indigo-50", iconBg: "bg-indigo-100" },
+                        { label: "Appeals Pending", value: stats.appealCount, icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50", iconBg: "bg-amber-100" },
+                        { label: "Active Cycles", value: stats.count, icon: Calendar, color: "text-emerald-600", bg: "bg-emerald-50", iconBg: "bg-emerald-100" },
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-3 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-shadow text-center sm:text-left">
-                            <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
-                                <stat.icon className="h-5 w-5" />
+                        <div key={i} className={`${stat.bg} border border-gray-100 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
+                            <div>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                                <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
                             </div>
-                            <div className="flex flex-col min-w-0">
-                                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
-                                <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate">{stat.value}</span>
+                            <div className={`h-12 w-12 ${stat.iconBg} rounded-2xl flex items-center justify-center`}>
+                                <stat.icon className={`h-6 w-6 ${stat.color}`} />
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* Operations Bar */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm">
-                    <div className="flex-1 relative w-full group">
-                        <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                            placeholder="Search by Staff Name or ID..."
-                            className="w-full h-11 md:h-12 pl-10 md:pl-12 bg-transparent border-none shadow-none font-bold text-xs md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                {/* Pending Appeals Alert */}
+                {stats.appealCount > 0 && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <MessageSquare className="h-5 w-5 text-amber-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-amber-900">{stats.appealCount} payroll appeals need staff resolution</p>
+                                <p className="text-xs text-amber-700 font-medium mt-0.5">Staff members have reported discrepancies in their payouts</p>
+                            </div>
+                        </div>
+                        <Button
+                            onClick={() => { setActiveTab("appeals"); }}
+                            className="h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded-xl gap-2 flex-shrink-0"
+                        >
+                            Review Appeals <ArrowUpRight className="h-3.5 w-3.5" />
+                        </Button>
+                    </div>
+                )}
+
+                {/* Ledger Grid */}
+                <div>
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3 p-1.5 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                            <Button
+                                variant="ghost"
+                                onClick={() => setActiveTab('current')}
+                                className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}
+                            >
+                                Active Cycle
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setActiveTab('appeals')}
+                                className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'appeals' ? 'bg-rose-600 text-white shadow-lg' : 'text-gray-400 hover:text-rose-600'}`}
+                            >
+                                Appeals Desk
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setActiveTab('history')}
+                                className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}
+                            >
+                                History Ledger
+                            </Button>
+                        </div>
+                        <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} records shown</p>
                     </div>
 
-                    <div className="h-8 w-px bg-gray-100 mx-2 hidden md:block" />
+                    <Tabs value={activeTab} className="mt-0 space-y-0">
+                        <TabsContent value="current" className="mt-0">
+                            {filteredSalaries.length === 0 ? (
+                                <div className="text-center py-20 bg-white border border-dashed border-gray-200 rounded-3xl">
+                                    <Wallet className="h-12 w-12 text-gray-200 mx-auto mb-4" />
+                                    <p className="text-sm font-bold text-gray-400">No payroll records for this cycle</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+                                    {filteredSalaries.map(salary => (
+                                        <div key={salary.id} className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all group">
+                                            {/* Card Header */}
+                                            <div className="p-6 border-b border-gray-50">
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-12 w-12 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-2xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0 shadow-lg shadow-indigo-200">
+                                                            {salary.StaffProfile?.User?.name?.charAt(0) || "S"}
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center gap-2">
+                                                                <h3 className="text-sm font-bold text-gray-900">{salary.StaffProfile?.User?.name}</h3>
+                                                                {salary.status === "PAID" && (
+                                                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                                                )}
+                                                            </div>
+                                                            <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">{salary.StaffProfile?.designation}</p>
+                                                            <div className="flex items-center gap-2 mt-0.5">
+                                                                <p className="text-[9px] text-gray-400 font-medium uppercase">{salary.month}</p>
+                                                                <div className="h-1 w-1 rounded-full bg-gray-200" />
+                                                                <div className="flex items-center gap-0.5">
+                                                                    <CreditCard className="h-2.5 w-2.5 text-gray-400" />
+                                                                    <span className="text-[9px] font-bold text-gray-600">{salary.paymentMethod?.replace('_', ' ') || "PENDING"}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <Badge className={`${salary.status === 'PAID' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200'} text-[8px] font-black uppercase border`}>
+                                                        {salary.status}
+                                                    </Badge>
+                                                </div>
 
-                    <div className="flex items-center gap-1 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none">
-                                    <Filter className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    <span className="truncate">{filterStatus === 'All' ? 'Status: All' : filterStatus}</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[200px] rounded-xl">
-                                {["All", "PAID", "PENDING", "PARTIAL", "FAILED"].map(s => (
-                                    <DropdownMenuItem key={s} onClick={() => setFilterStatus(s)} className="text-[10px] font-bold uppercase tracking-wider">
-                                        {s}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                                <div className="flex items-center gap-1.5 mt-3 text-[10px] text-gray-400 font-medium">
+                                                    <Building2 className="h-3 w-3" />
+                                                    {salary.StaffProfile?.User?.Hostel_User_hostelIdToHostel?.name || "Global / Unassigned"}
+                                                </div>
+                                            </div>
 
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none">
-                                    <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    <span className="truncate">{filterHostel === 'All' ? 'All Hostels' : hostels.find(h => h.id === filterHostel)?.name}</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[240px] rounded-xl">
-                                <DropdownMenuItem onClick={() => setFilterHostel("All")}>All Hostels</DropdownMenuItem>
-                                {hostels.map(h => (
-                                    <DropdownMenuItem key={h.id} onClick={() => setFilterHostel(h.id)} className="text-[10px] font-bold uppercase tracking-wider">
-                                        {h.name}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </div>
+                                            {/* Stats Grid */}
+                                            <div className="px-6 py-4 grid grid-cols-3 gap-3">
+                                                <div className="text-center">
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Basic</p>
+                                                    <p className="text-sm font-bold text-gray-900">{(salary.basicSalary || 0).toLocaleString()}</p>
+                                                </div>
+                                                <div className="text-center border-x border-gray-100">
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Adjust.</p>
+                                                    <p className="text-sm font-bold text-emerald-600">{(salary.bonuses || 0).toLocaleString()}</p>
+                                                </div>
+                                                <div className="text-center">
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Net Pay</p>
+                                                    <p className="text-sm font-bold text-gray-900">{(salary.amount || 0).toLocaleString()}</p>
+                                                </div>
+                                            </div>
 
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
-                    <TabsList className="bg-white border border-gray-100 p-1 rounded-xl h-11 w-full lg:w-auto shadow-sm overflow-x-auto scrollbar-hide flex justify-start lg:justify-center">
-                        <TabsTrigger value="current" className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white shrink-0">
-                            <Zap className="h-3.5 w-3.5 mr-2" /> This Month <span className="hidden xs:inline">({currentMonth})</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="appeals" className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-rose-600 data-[state=active]:text-white shrink-0">
-                            <MessageSquare className="h-3.5 w-3.5 mr-2" /> <span className="hidden xs:inline">Staff</span> Appeals
-                            {salaries?.filter(s => s.appealStatus === 'PENDING').length > 0 && (
-                                <span className="ml-2 bg-white text-rose-600 rounded-full px-1.5 py-0.5 text-[8px] font-black">
-                                    {salaries?.filter(s => s.appealStatus === 'PENDING').length}
-                                </span>
+                                            {/* Payout Bar */}
+                                            <div className="px-6 pb-4">
+                                                <div className="flex items-center justify-between mb-1.5">
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Disbursement Progress</span>
+                                                    <span className="text-[10px] font-bold text-gray-900 tracking-tight">PKR {(salary.amount || 0).toLocaleString()}</span>
+                                                </div>
+                                                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-700"
+                                                        style={{ width: `${Math.min(((salary.amount || 0) / (salary.basicSalary || 1)) * 100, 100)}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Actions */}
+                                            <div className="px-6 pb-6 flex items-center gap-2">
+                                                {salary.status === 'PENDING' ? (
+                                                    <Button
+                                                        className="flex-1 h-9 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-xl gap-1.5 shadow-lg shadow-indigo-100 transition-all active:scale-95"
+                                                        onClick={() => handlePayOpen(salary)}
+                                                    >
+                                                        <Coins className="h-3.5 w-3.5" /> Pay Staff
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        className="flex-1 h-9 bg-white border border-gray-200 hover:bg-gray-50 text-gray-900 text-[10px] font-bold rounded-xl gap-1.5 transition-all"
+                                                        onClick={() => {
+                                                            setSelectedSalary(salary);
+                                                            setIsSlipDialogOpen(true);
+                                                        }}
+                                                    >
+                                                        <Eye className="h-3.5 w-3.5" /> View Slip
+                                                    </Button>
+                                                )}
+
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 hover:border-indigo-300 hover:bg-indigo-50">
+                                                            <MoreVertical className="h-4 w-4 text-gray-400" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-52 rounded-2xl p-2 shadow-xl border-gray-100">
+                                                        <DropdownMenuItem onClick={() => { setSelectedSalary(salary); setIsSlipDialogOpen(true); }} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
+                                                            <FileText className="h-4 w-4" /> Complete Slip
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleEditOpen(salary)} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
+                                                            <Settings2 className="h-4 w-4" /> Adjust Ledger
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem onClick={() => { setSelectedSalary(salary); setIsDeleteDialogOpen(true); }} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase text-rose-600 hover:bg-rose-50 cursor-pointer">
+                                                            <Trash2 className="h-4 w-4" /> Evict Record
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
-                        </TabsTrigger>
-                        <TabsTrigger value="history" className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white shrink-0">
-                            <History className="h-3.5 w-3.5 mr-2" /> All Time
-                        </TabsTrigger>
-                    </TabsList>
+                        </TabsContent>
 
-                    <TabsContent value="appeals" className="space-y-4">
-                        {salaries?.filter(s => s.appealStatus !== 'NONE').length === 0 ? (
-                            <div className="bg-white border border-dashed border-gray-200 rounded-[2rem] p-24 text-center">
-                                <MessageSquare className="h-16 w-16 text-gray-200 mx-auto mb-6" />
-                                <h3 className="text-xl font-bold text-gray-900 uppercase">No Active Appeals</h3>
-                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">All salary records are currently verified by node personnel.</p>
-                            </div>
-                        ) : (
-                            salaries?.filter(s => s.appealStatus !== 'NONE').map(salary => (
-                                <div key={salary.id} className="bg-white border border-rose-100 rounded-2xl p-6 flex flex-col items-center gap-6 hover:shadow-md transition-all group relative overflow-hidden">
-                                    <div className="flex w-full justify-between items-start">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-12 w-12 rounded-xl bg-rose-50 flex items-center justify-center text-rose-600 font-black">
-                                                <AlertCircle className="h-6 w-6" />
-                                            </div>
-                                            <div>
-                                                <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight">{salary.StaffProfile?.User?.name} • {salary.month}</h4>
-                                                <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest mt-1">Appeal Status: {salary.appealStatus}</p>
-                                            </div>
-                                        </div>
-                                        <Badge className="bg-rose-100 text-rose-600 hover:bg-rose-100 px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest">
-                                            DISCREPANCY CLAIMED
-                                        </Badge>
+                        <TabsContent value="appeals" className="mt-0">
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                                {salaries?.filter(s => s.appealStatus && s.appealStatus !== 'NONE').length === 0 ? (
+                                    <div className="col-span-full py-20 bg-white border border-dashed border-gray-200 rounded-3xl text-center">
+                                        <MessageSquare className="h-12 w-12 text-gray-200 mx-auto mb-4" />
+                                        <p className="text-sm font-bold text-gray-400">No active staff appeals</p>
                                     </div>
-
-                                    <div className="w-full bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                                        <div className="flex items-start gap-3">
-                                            <div className="h-8 w-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center shrink-0">
-                                                <User className="h-4 w-4 text-gray-400" />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Staff Observation</span>
-                                                <p className="text-xs font-bold text-gray-700 italic leading-relaxed uppercase">{salary.appealText || "No context provided."}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {salary.appealResponse && (
-                                        <div className="w-full bg-indigo-50/30 rounded-2xl p-6 border border-indigo-100/50">
-                                            <div className="flex items-start gap-3">
-                                                <div className="h-8 w-8 rounded-lg bg-white border border-indigo-100 flex items-center justify-center shrink-0">
-                                                    <ShieldCheck className="h-4 w-4 text-indigo-600" />
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">Admin Resolution</span>
-                                                    <p className="text-xs font-bold text-indigo-900 leading-relaxed uppercase">{salary.appealResponse}</p>
+                                ) : (
+                                    salaries?.filter(s => s.appealStatus && s.appealStatus !== 'NONE').map(salary => (
+                                        <div key={salary.id} className="bg-white border-2 border-rose-50 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                                            <div className="p-6 bg-rose-50/30 border-b border-rose-50">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-10 w-10 bg-rose-100 rounded-xl flex items-center justify-center">
+                                                            <AlertCircle className="h-5 w-5 text-rose-600" />
+                                                        </div>
+                                                        <div>
+                                                            <h4 className="text-sm font-bold text-gray-900">{salary.StaffProfile?.User?.name}</h4>
+                                                            <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Discrepancy Reported</p>
+                                                        </div>
+                                                    </div>
+                                                    <Badge className="bg-rose-600 text-white border-none text-[8px] font-black uppercase px-2.5 py-1">
+                                                        {salary.appealStatus}
+                                                    </Badge>
                                                 </div>
                                             </div>
+                                            <div className="p-6 space-y-4">
+                                                <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Staff Message</p>
+                                                    <p className="text-xs font-bold text-gray-700 italic">"{salary.appealText || "No context provided."}"</p>
+                                                </div>
+                                                {salary.appealResponse && (
+                                                    <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+                                                        <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-2">Admin Resolution</p>
+                                                        <p className="text-xs font-bold text-emerald-900">{salary.appealResponse}</p>
+                                                    </div>
+                                                )}
+                                                <div className="flex items-center gap-3 pt-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        className="flex-1 h-10 rounded-xl border-gray-200 text-[10px] font-bold uppercase"
+                                                        onClick={() => { setSelectedSalary(salary); setIsSlipDialogOpen(true); }}
+                                                    >
+                                                        <Eye className="h-3.5 w-3.5 mr-2" /> View Slip
+                                                    </Button>
+                                                    {salary.appealStatus === 'PENDING' && (
+                                                        <Button
+                                                            className="flex-1 h-10 bg-gray-900 hover:bg-black text-white rounded-xl text-[10px] font-bold uppercase gap-2"
+                                                            onClick={() => { setSelectedSalary(salary); setIsResolveDialogOpen(true); }}
+                                                        >
+                                                            <Settings2 className="h-3.5 w-3.5" /> Resolve Appeal
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    )}
-
-                                    <div className="flex w-full justify-end gap-3 pt-4 border-t border-gray-50">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-10 rounded-xl px-6 font-black text-[10px] uppercase tracking-widest border-gray-100"
-                                            onClick={() => {
-                                                setSelectedSalary(salary);
-                                                setIsSlipDialogOpen(true);
-                                            }}
-                                        >
-                                            <FileText className="h-3.5 w-3.5 mr-2" /> View Slip
-                                        </Button>
-                                        {salary.appealStatus === 'PENDING' && (
-                                            <Button
-                                                className="h-10 rounded-xl px-6 bg-black text-white hover:bg-gray-800 font-black text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all"
-                                                onClick={() => {
-                                                    setSelectedSalary(salary);
-                                                    setIsResolveDialogOpen(true);
-                                                }}
-                                            >
-                                                <Settings2 className="h-3.5 w-3.5 mr-2" /> Resolve Appeal
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </TabsContent>
-
-                    <TabsContent value="current" className="space-y-4">
-                        {filteredSalaries.map(salary => (
-                            <div key={salary.id} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-8 hover:shadow-md transition-shadow group relative overflow-hidden">
-                                <div className={`absolute top-0 left-0 w-1 md:w-1.5 h-full ${salary.status === 'PAID' ? 'bg-emerald-500' : 'bg-amber-500'} opacity-70`} />
-
-                                <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0 w-full lg:w-auto">
-                                    <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 group-hover:bg-indigo-600 transition-colors shrink-0">
-                                        <Briefcase className="h-5 w-5 md:h-6 md:w-6 text-gray-400 group-hover:text-white transition-colors" />
-                                    </div>
-                                    <div className="flex flex-col min-w-0 flex-1">
-                                        <h4 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight truncate">{salary.StaffProfile?.User?.name}</h4>
-                                        <div className="flex items-center flex-wrap gap-2 md:gap-3 mt-0.5 md:mt-1">
-                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">{salary.StaffProfile?.designation}</span>
-                                            <div className="h-0.5 w-0.5 rounded-full bg-gray-200" />
-                                            <span className="text-[9px] md:text-[10px] font-bold text-emerald-600 uppercase tracking-widest truncate max-w-[150px]">{salary.StaffProfile?.User?.Hostel_User_hostelIdToHostel?.name || 'All Hostels'}</span>
-                                        </div>
-                                    </div>
-                                    <div className="lg:hidden">
-                                        <Badge variant="outline" className={`px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest ${salary.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
-                                            {salary.status}
-                                        </Badge>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 flex-1 w-full lg:w-auto">
-                                    <div>
-                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5 md:mb-1">Basic</span>
-                                        <p className="text-[11px] md:text-sm font-bold text-gray-900 truncate">PKR {salary.basicSalary.toLocaleString()}</p>
-                                    </div>
-                                    <div>
-                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5 md:mb-1">Adjust.</span>
-                                        <p className="text-[11px] md:text-sm font-bold text-emerald-600 truncate">+{salary.bonuses.toLocaleString()} <span className="text-rose-500 ml-1">-{salary.deductions.toLocaleString()}</span></p>
-                                    </div>
-                                    <div>
-                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-0.5 md:mb-1">Net Pay</span>
-                                        <p className="text-xs md:text-sm font-black text-gray-900 truncate">PKR {salary.amount.toLocaleString()}</p>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-3 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t lg:border-none border-gray-50">
-                                    <Badge variant="outline" className={`hidden lg:inline-flex px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${salary.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
-                                        {salary.status}
-                                    </Badge>
-
-                                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                                        {salary.status === 'PENDING' && (
-                                            <Button
-                                                onClick={() => handlePayOpen(salary)}
-                                                className="h-9 md:h-10 flex-1 sm:flex-none px-4 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider"
-                                            >
-                                                Pay Staff
-                                            </Button>
-                                        )}
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button size="icon" variant="ghost" className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-gray-50 border border-gray-100 shrink-0">
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-48 rounded-xl p-2">
-                                                <DropdownMenuItem onClick={() => { setSelectedSalary(salary); setIsSlipDialogOpen(true); }} className="font-bold text-[10px] uppercase tracking-wider p-3 rounded-lg cursor-pointer flex items-center gap-2">
-                                                    <FileText className="h-4 w-4" /> View Salary Slip
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem onClick={() => router.push(`/admin/salaries/${salary.staffId}`)} className="font-bold text-[10px] uppercase tracking-wider p-3 rounded-lg cursor-pointer flex items-center gap-2">
-                                                    <History className="h-4 w-4" /> View Salary History
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem onClick={() => handleEditOpen(salary)} className="font-bold text-[10px] uppercase tracking-wider p-3 rounded-lg cursor-pointer flex items-center gap-2">
-                                                    <Settings2 className="h-4 w-4" /> Edit Salary
-                                                </DropdownMenuItem>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem onClick={() => { setSelectedSalary(salary); setIsDeleteDialogOpen(true); }} className="font-bold text-[10px] uppercase tracking-wider p-3 rounded-lg cursor-pointer text-rose-600 hover:bg-rose-50 flex items-center gap-2">
-                                                    <Trash2 className="h-4 w-4" /> Delete Salary
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
-                                </div>
+                                    ))
+                                )}
                             </div>
-                        ))}
+                        </TabsContent>
+                    </Tabs>
+                </div>
+            </div>
 
-                        {filteredSalaries.length === 0 && (
-                            <div className="bg-white border border-dashed border-gray-200 rounded-[2rem] p-24 text-center">
-                                <Calculator className="h-16 w-16 text-gray-200 mx-auto mb-6" />
-                                <h3 className="text-xl font-bold text-gray-900 uppercase">No records found</h3>
-                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">Generate payroll for {currentMonth} to see staff records.</p>
-                                <Button onClick={handleGeneratePayroll} className="mt-8 bg-indigo-600 text-white hover:bg-indigo-700 rounded-xl px-8 h-12 font-bold uppercase text-[10px] tracking-widest">
-                                    Generate Payroll Now
-                                </Button>
-                            </div>
-                        )}
-                    </TabsContent>
-                </Tabs>
-            </main>
+            {/* Slip Dialog */}
+            <Dialog open={isSlipDialogOpen} onOpenChange={setIsSlipDialogOpen}>
+                <DialogContent className="max-w-3xl p-0 bg-transparent border-none overflow-y-auto max-h-[95vh]">
+                    {selectedSalary && (
+                        <SalarySlip
+                            salary={selectedSalary}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
 
             {/* Edit Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
-                    <div className="bg-indigo-600 p-10 text-white text-center relative overflow-hidden">
+                    <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
                         <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
-                        <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
-                            <Calculator className="h-8 w-8" />
+                        <div className="flex items-center gap-3 relative z-10">
+                            <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                                <Calculator className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Adjust Ledger</h2>
+                                <p className="text-[10px] text-indigo-100 font-medium">for {selectedSalary?.StaffProfile?.User?.name}</p>
+                            </div>
                         </div>
-                        <h2 className="text-2xl font-bold uppercase tracking-tight">Edit Salary</h2>
-                        <p className="text-[10px] text-indigo-100 font-bold tracking-widest mt-2 uppercase">Adjusting components for {selectedSalary?.StaffProfile?.User?.name}</p>
                     </div>
-                    <div className="p-10 space-y-6">
+                    <div className="p-8 space-y-5">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Basic Salary</Label>
-                                <Input type="number" value={editFormData.basicSalary} onChange={e => setEditFormData({ ...editFormData, basicSalary: Number(e.target.value) })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11" />
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Basic Salary</Label>
+                                <Input type="number" value={editFormData.basicSalary} onChange={e => setEditFormData({ ...editFormData, basicSalary: Number(e.target.value) })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Allowances</Label>
-                                <Input type="number" value={editFormData.allowances} onChange={e => setEditFormData({ ...editFormData, allowances: Number(e.target.value) })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11" />
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Allowances</Label>
+                                <Input type="number" value={editFormData.allowances} onChange={e => setEditFormData({ ...editFormData, allowances: Number(e.target.value) })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">Bonuses</Label>
-                                <Input type="number" value={editFormData.bonuses} onChange={e => setEditFormData({ ...editFormData, bonuses: Number(e.target.value) })} className="rounded-xl border-emerald-100 bg-emerald-50/50 font-bold h-11 text-emerald-600" />
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Bonuses</Label>
+                                <Input type="number" value={editFormData.bonuses} onChange={e => setEditFormData({ ...editFormData, bonuses: Number(e.target.value) })} className="rounded-xl border-emerald-50 bg-emerald-50/30 font-bold h-11 text-emerald-600 focus:ring-0" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-rose-500">Deductions</Label>
-                                <Input type="number" value={editFormData.deductions} onChange={e => setEditFormData({ ...editFormData, deductions: Number(e.target.value) })} className="rounded-xl border-rose-100 bg-rose-50/50 font-bold h-11 text-rose-600" />
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-rose-500">Deductions</Label>
+                                <Input type="number" value={editFormData.deductions} onChange={e => setEditFormData({ ...editFormData, deductions: Number(e.target.value) })} className="rounded-xl border-rose-50 bg-rose-50/30 font-bold h-11 text-rose-600 focus:ring-0" />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Notes</Label>
-                            <Textarea value={editFormData.notes} onChange={e => setEditFormData({ ...editFormData, notes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24" placeholder="Specify reason for adjustments..." />
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Adjustment Memo</Label>
+                            <Textarea value={editFormData.notes} onChange={e => setEditFormData({ ...editFormData, notes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Specify reason for adjustments..." />
                         </div>
-                        <div className="flex gap-4 pt-4">
-                            <Button variant="ghost" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-                            <Button className="flex-1 h-11 bg-indigo-600 text-white font-bold text-[10px] uppercase tracking-wider rounded-xl shadow-lg" onClick={handleEditSubmit} disabled={updateSalary.isPending}>
-                                {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
+                        <div className="flex gap-3 pt-2">
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                            <Button className="flex-1 h-11 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-100" onClick={handleEditSubmit} disabled={updateSalary.isPending}>
+                                {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Adjustment'}
                             </Button>
                         </div>
                     </div>
@@ -745,35 +697,40 @@ const SalariesPage = () => {
             {/* Pay Dialog */}
             <Dialog open={isPayDialogOpen} onOpenChange={setIsPayDialogOpen}>
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
-                    <div className="bg-emerald-600 p-10 text-white text-center relative overflow-hidden">
+                    <div className="bg-emerald-600 p-8 text-white relative overflow-hidden">
                         <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
-                        <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
-                            <ShieldCheck className="h-8 w-8" />
+                        <div className="flex items-center gap-3 relative z-10">
+                            <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                                <ShieldCheck className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Pay Authorization</h2>
+                                <p className="text-[10px] text-emerald-100 font-medium">for {selectedSalary?.StaffProfile?.User?.name}</p>
+                            </div>
                         </div>
-                        <h2 className="text-2xl font-bold uppercase tracking-tight">Pay Salary</h2>
-                        <p className="text-[10px] text-emerald-100 font-bold tracking-widest mt-2 uppercase">Authorizing PKR {selectedSalary?.amount.toLocaleString()} Payment</p>
                     </div>
-                    <div className="p-10 space-y-6">
+                    <div className="p-8 space-y-5">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Payment Method</Label>
-                            <select
-                                className="w-full h-11 rounded-xl border-gray-100 bg-gray-50 text-[10px] font-bold uppercase px-4"
-                                value={payFormData.paymentMethod}
-                                onChange={e => setPayFormData({ ...payFormData, paymentMethod: e.target.value })}
-                            >
-                                <option value="BANK_TRANSFER">Bank Transfer</option>
-                                <option value="CASH">Cash</option>
-                                <option value="ONLINE">Online Transfer</option>
-                                <option value="CHEQUE">Cheque</option>
-                            </select>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Payment Method</Label>
+                            <Select value={payFormData.paymentMethod} onValueChange={v => setPayFormData({ ...payFormData, paymentMethod: v })}>
+                                <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-[10px] uppercase focus:ring-0">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                                    <SelectItem value="BANK_TRANSFER" className="text-[10px] font-bold uppercase tracking-widest">Bank Transfer</SelectItem>
+                                    <SelectItem value="CASH" className="text-[10px] font-bold uppercase tracking-widest">Cash</SelectItem>
+                                    <SelectItem value="ONLINE" className="text-[10px] font-bold uppercase tracking-widest">Online Transfer</SelectItem>
+                                    <SelectItem value="CHEQUE" className="text-[10px] font-bold uppercase tracking-widest">Cheque</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Payment Date</Label>
-                            <Input type="date" value={payFormData.paymentDate} onChange={e => setPayFormData({ ...payFormData, paymentDate: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11" />
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Authorization Date</Label>
+                            <Input type="date" value={payFormData.paymentDate} onChange={e => setPayFormData({ ...payFormData, paymentDate: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
                         </div>
-                        <div className="flex gap-4 pt-4">
-                            <Button variant="ghost" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400" onClick={() => setIsPayDialogOpen(false)}>Cancel</Button>
-                            <Button className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-wider rounded-xl shadow-lg" onClick={handlePaySubmit} disabled={updateSalary.isPending}>
+                        <div className="flex gap-3 pt-4">
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsPayDialogOpen(false)}>Cancel</Button>
+                            <Button className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-100" onClick={handlePaySubmit} disabled={updateSalary.isPending}>
                                 {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Payment'}
                             </Button>
                         </div>
@@ -781,83 +738,53 @@ const SalariesPage = () => {
                 </DialogContent>
             </Dialog>
 
-            {/* Delete Alert */}
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent className="rounded-[2rem] border-none p-10 max-w-md">
-                    <AlertDialogHeader>
-                        <div className="h-16 w-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 border border-rose-100">
-                            <Trash2 className="h-8 w-8 text-rose-600" />
-                        </div>
-                        <AlertDialogTitle className="text-xl font-bold uppercase tracking-tight">Delete Salary Record?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-sm font-medium text-gray-500 leading-relaxed mt-2 uppercase tracking-wide text-[10px]">
-                            This operation will delete the salary record. Total amounts will be recalculated.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="mt-10 gap-3">
-                        <AlertDialogCancel className="h-12 px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest border-gray-100">Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteConfirm} className="h-12 px-8 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-rose-600/20">Confirm Delete</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            {/* Add Salary Entry Dialog */}
+            {/* Manual Entry Dialog */}
             <Dialog open={isAddSalaryDialogOpen} onOpenChange={setIsAddSalaryDialogOpen}>
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
-                    <div className="bg-indigo-600 p-10 text-white text-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
-                        <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
-                            <Plus className="h-8 w-8 text-white" />
+                    <div className="bg-gray-900 p-8 text-white relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/5 skew-x-12 translate-x-20" />
+                        <div className="flex items-center gap-3 relative z-10">
+                            <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md">
+                                <Plus className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Manual Ingress</h2>
+                                <p className="text-[10px] text-gray-400 font-medium">Authorize specific staff ledger entry</p>
+                            </div>
                         </div>
-                        <h2 className="text-2xl font-bold uppercase tracking-tight">Add Salary Entry</h2>
-                        <p className="text-[10px] text-indigo-100 font-bold tracking-widest mt-2 uppercase">Manually add a staff member salary to the record</p>
                     </div>
-                    <div className="p-10 space-y-6">
+                    <div className="p-8 space-y-5">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Staff Selection</Label>
-                            <select
-                                className="w-full h-11 rounded-xl border-gray-100 bg-gray-50 text-[10px] font-bold uppercase px-4 focus:ring-1 focus:ring-indigo-600 outline-none"
-                                value={addSalaryForm.staffId}
-                                onChange={e => setAddSalaryForm({ ...addSalaryForm, staffId: e.target.value })}
-                            >
-                                <option value="">Select Staff Member</option>
-                                {staffList?.map(staff => (
-                                    <option key={staff.id} value={staff.id}>
-                                        {staff.User.name} ({staff.designation})
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Month</Label>
-                            <Input
-                                placeholder="e.g. February 2026"
-                                value={addSalaryForm.month}
-                                onChange={e => setAddSalaryForm({ ...addSalaryForm, month: e.target.value })}
-                                className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 uppercase text-[10px] focus:ring-1 focus:ring-indigo-600"
-                            />
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Target Personnel</Label>
+                            <Select value={addSalaryForm.staffId} onValueChange={v => setAddSalaryForm({ ...addSalaryForm, staffId: v })}>
+                                <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-xs focus:ring-0">
+                                    <SelectValue placeholder="Choose staff member..." />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl max-h-[300px]">
+                                    {staffList?.map(s => (
+                                        <SelectItem key={s.id} value={s.id} className="text-xs font-bold">{s.User?.name} — {s.designation}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-emerald-500">Custom Bonuses</Label>
-                                <Input type="number" value={addSalaryForm.customBonuses} onChange={e => setAddSalaryForm({ ...addSalaryForm, customBonuses: Number(e.target.value) })} className="rounded-xl border-emerald-100 bg-emerald-50 font-bold h-11 text-emerald-600" />
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Bonus Component</Label>
+                                <Input type="number" value={addSalaryForm.customBonuses} onChange={e => setAddSalaryForm({ ...addSalaryForm, customBonuses: Number(e.target.value) })} className="rounded-xl border-emerald-50 bg-emerald-50/30 font-bold h-11 text-emerald-600" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-rose-500">Custom Deductions</Label>
-                                <Input type="number" value={addSalaryForm.customDeductions} onChange={e => setAddSalaryForm({ ...addSalaryForm, customDeductions: Number(e.target.value) })} className="rounded-xl border-rose-100 bg-rose-50 font-bold h-11 text-rose-600" />
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-rose-500">Deduction Component</Label>
+                                <Input type="number" value={addSalaryForm.customDeductions} onChange={e => setAddSalaryForm({ ...addSalaryForm, customDeductions: Number(e.target.value) })} className="rounded-xl border-rose-50 bg-rose-50/30 font-bold h-11 text-rose-600" />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Notes</Label>
-                            <Textarea value={addSalaryForm.customNotes} onChange={e => setAddSalaryForm({ ...addSalaryForm, customNotes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-20" placeholder="Reason for manual entry..." />
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Fiscal Memo</Label>
+                            <Textarea value={addSalaryForm.customNotes} onChange={e => setAddSalaryForm({ ...addSalaryForm, customNotes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Add relevant notes for this entry..." />
                         </div>
-                        <div className="flex gap-4 pt-4">
-                            <Button variant="ghost" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400" onClick={() => setIsAddSalaryDialogOpen(false)}>Cancel</Button>
-                            <Button
-                                className="flex-1 h-11 bg-indigo-600 text-white font-bold text-[10px] uppercase tracking-wider rounded-xl shadow-lg flex items-center justify-center gap-2 transition-all hover:bg-indigo-700 active:scale-95"
-                                onClick={handleAddSalarySubmit}
-                                disabled={createSalary.isPending || !addSalaryForm.staffId || !addSalaryForm.month}
-                            >
-                                {createSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-3.5 w-3.5" /> Save Salary</>}
+                        <div className="flex gap-3 pt-2">
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsAddSalaryDialogOpen(false)}>Cancel</Button>
+                            <Button className="flex-1 h-11 bg-gray-900 hover:bg-black text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-xl" onClick={handleAddSalarySubmit} disabled={createSalary.isPending}>
+                                {createSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Authorize Entry'}
                             </Button>
                         </div>
                     </div>
@@ -867,55 +794,63 @@ const SalariesPage = () => {
             {/* Resolve Appeal Dialog */}
             <Dialog open={isResolveDialogOpen} onOpenChange={setIsResolveDialogOpen}>
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
-                    <div className="bg-rose-600 p-10 text-white text-center relative overflow-hidden">
+                    <div className="bg-rose-600 p-8 text-white relative overflow-hidden">
                         <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
-                        <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
-                            <ShieldCheck className="h-8 w-8" />
+                        <div className="flex items-center gap-3 relative z-10">
+                            <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                                <MessageSquare className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Appeal Resolution</h2>
+                                <p className="text-[10px] text-rose-100 font-medium">for {selectedSalary?.StaffProfile?.User?.name}</p>
+                            </div>
                         </div>
-                        <h2 className="text-2xl font-bold uppercase tracking-tight">Audit Resolution</h2>
-                        <p className="text-[10px] text-rose-100 font-bold tracking-widest mt-2 uppercase">Responding to {selectedSalary?.StaffProfile?.User?.name}'s Claim</p>
                     </div>
-                    <div className="p-10 space-y-6">
+                    <div className="p-8 space-y-5">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Resolution Status</Label>
-                            <Select
-                                value={resolveFormData.appealStatus}
-                                onValueChange={v => setResolveFormData({ ...resolveFormData, appealStatus: v })}
-                            >
-                                <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-black text-[10px] uppercase tracking-widest">
-                                    <SelectValue placeholder="SELECT STATUS" />
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Fiscal Status</Label>
+                            <Select value={resolveFormData.appealStatus} onValueChange={v => setResolveFormData({ ...resolveFormData, appealStatus: v })}>
+                                <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-[10px] uppercase focus:ring-0">
+                                    <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="RESOLVED">RESOLVED</SelectItem>
-                                    <SelectItem value="REJECTED">REJECTED</SelectItem>
+                                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                                    <SelectItem value="RESOLVED" className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Resolved</SelectItem>
+                                    <SelectItem value="REJECTED" className="text-[10px] font-bold uppercase tracking-widest text-rose-600">Rejected</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Official Response</Label>
-                            <Textarea
-                                value={resolveFormData.appealResponse}
-                                onChange={e => setResolveFormData({ ...resolveFormData, appealResponse: e.target.value })}
-                                className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24"
-                                placeholder="Explain the audit outcome..."
-                            />
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Administrative Response</Label>
+                            <Textarea value={resolveFormData.appealResponse} onChange={e => setResolveFormData({ ...resolveFormData, appealResponse: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-32 focus:ring-0" placeholder="Enter details about the resolution..." />
                         </div>
-                        <div className="flex gap-4 pt-4">
-                            <Button variant="ghost" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400" onClick={() => setIsResolveDialogOpen(false)}>Abort</Button>
-                            <Button className="flex-1 h-11 bg-rose-600 text-white font-bold text-[10px] uppercase tracking-wider rounded-xl shadow-lg" onClick={handleResolveSubmit} disabled={updateSalary.isPending}>
-                                {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply Resolution'}
+                        <div className="flex gap-3 pt-4">
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsResolveDialogOpen(false)}>Cancel</Button>
+                            <Button className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-rose-100" onClick={handleResolveSubmit} disabled={updateSalary.isPending}>
+                                {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Finalize Resolution'}
                             </Button>
                         </div>
                     </div>
                 </DialogContent>
             </Dialog>
 
-            {/* Salary Slip Dialog */}
-            <Dialog open={isSlipDialogOpen} onOpenChange={setIsSlipDialogOpen}>
-                <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white bg-transparent">
-                    <SalarySlip salary={selectedSalary} />
-                </DialogContent>
-            </Dialog>
+            {/* Delete Alert */}
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent className="rounded-3xl border-none shadow-2xl p-8 max-w-sm text-center">
+                    <div className="h-16 w-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <Trash2 className="h-8 w-8 text-rose-600" />
+                    </div>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-xl font-bold uppercase tracking-tight">Evict Ledger Entry?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed mt-2">
+                            This operation will permanently remove the salary record from the system. This is irreversible.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex flex-col sm:flex-row gap-3 mt-8">
+                        <AlertDialogCancel className="h-11 w-full rounded-xl bg-gray-50 border-none font-bold text-[10px] uppercase tracking-widest">Abort</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm} className="h-11 w-full rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-rose-100">Confirm Eviction</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

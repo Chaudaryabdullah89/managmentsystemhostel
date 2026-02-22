@@ -63,6 +63,7 @@ import { toast } from "sonner";
 import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import Loader from "@/components/ui/Loader";
 
 const WardenExpensesPage = () => {
     const { user } = useAuthStore();
@@ -127,7 +128,29 @@ const WardenExpensesPage = () => {
             toast.error(error.message || "Failed to save expense");
         }
     };
+    const handleExportCSV = () => {
+        const headers = ["ID", "Date", "Title", "Category", "Amount", "Status"];
+        const rows = filteredExpenses.map(exp => [
+            `EXP-${exp.id.slice(-8).toUpperCase()}`,
+            format(new Date(exp.date), 'yyyy-MM-dd'),
+            exp.title.replace(',', ''),
+            exp.category,
+            exp.amount,
+            exp.status
+        ]);
 
+        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Expenses_${user?.Hostel?.name.replace(/\s+/g, '_')}_${format(new Date(), 'yyyyMMdd')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Branch Expenses Exported!");
+    };
     const filteredExpenses = useMemo(() => {
         if (!expenses) return [];
         return expenses.filter(exp => {
@@ -195,11 +218,7 @@ const WardenExpensesPage = () => {
         }
     };
 
-    if (expensesLoading || statsLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white">
-            <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-        </div>
-    );
+    if (expensesLoading || statsLoading) return <Loader label="Loading Ledger" subLabel="Fetching branch expenditures..." icon={Receipt} fullScreen={false} />;
 
     const stats = statsData?.summary || { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalCount: 0 };
 
@@ -211,10 +230,23 @@ const WardenExpensesPage = () => {
                         <div className="h-8 w-1 bg-indigo-600 rounded-full shrink-0" />
                         <div className="flex flex-col min-w-0">
                             <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase truncate">Expenses</h1>
-                            <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400 truncate">Branch: {user?.Hostel?.name}</p>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 truncate">Branch: {user?.Hostel?.name}</span>
+                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
+                            </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                    <div className="flex flex-wrap items-center gap-2 md:gap-3 shrink-0">
+                        <Button
+                            variant="outline"
+                            className="h-8 md:h-9 px-3 md:px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600"
+                            onClick={handleExportCSV}
+                        >
+                            <Download className="h-3.5 w-3.5 mr-2" />
+                            <span className="hidden md:inline">Export CSV</span>
+                            <span className="md:hidden">CSV</span>
+                        </Button>
                         <Button
                             variant="outline"
                             className="hidden sm:flex h-8 md:h-9 px-3 md:px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 shadow-sm"
@@ -271,10 +303,10 @@ const WardenExpensesPage = () => {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 md:space-y-8 min-w-0">
                     <TabsList className="bg-white border border-gray-100 p-1 rounded-xl md:rounded-2xl h-11 md:h-12 w-full md:w-auto">
                         <TabsTrigger value="current" className="flex-1 md:flex-none h-full px-6 md:px-12 rounded-lg md:rounded-xl font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
-                            Current
+                            <Zap className="h-3.5 w-3.5 mr-2" /> Current <span className="hidden xs:inline">({currentMonthLabel})</span>
                         </TabsTrigger>
                         <TabsTrigger value="history" className="flex-1 md:flex-none h-full px-6 md:px-12 rounded-lg md:rounded-xl font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
-                            History
+                            <History className="h-3.5 w-3.5 mr-2" /> All Time
                         </TabsTrigger>
                     </TabsList>
 
@@ -285,6 +317,7 @@ const WardenExpensesPage = () => {
                                 className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col lg:flex-row items-center gap-4 lg:gap-8 hover:shadow-md cursor-pointer transition-all min-w-0 relative group"
                                 onClick={() => { setSelectedExpense(expense); setIsDetailOpen(true); }}
                             >
+                                <div className={`absolute left-0 top-0 bottom-0 w-1 md:w-1.5 ${expense.status === 'PAID' ? 'bg-emerald-500' : 'bg-amber-500'} opacity-70`} />
                                 <div className="flex items-center gap-4 md:gap-6 flex-1 w-full min-w-0">
                                     <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0 group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors">
                                         <Receipt className="h-5 w-5 md:h-6 md:w-6 text-gray-400 group-hover:text-indigo-600" />
@@ -323,6 +356,56 @@ const WardenExpensesPage = () => {
                                 <Receipt className="h-10 w-10 md:h-12 md:w-12 text-gray-100 mx-auto mb-4" />
                                 <h3 className="text-sm md:text-lg font-black text-gray-900 uppercase tracking-widest">No Records Found</h3>
                                 <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">There are no expense records matching your current filter.</p>
+                            </div>
+                        )}
+                    </TabsContent>
+
+                    <TabsContent value="history" className="space-y-3 md:space-y-4 outline-none">
+                        {filteredExpenses.length > 0 ? filteredExpenses.map((expense) => (
+                            <div
+                                key={expense.id}
+                                className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col lg:flex-row items-center gap-4 lg:gap-8 hover:shadow-md cursor-pointer transition-all min-w-0 relative group"
+                                onClick={() => { setSelectedExpense(expense); setIsDetailOpen(true); }}
+                            >
+                                <div className={`absolute left-0 top-0 bottom-0 w-1 md:w-1.5 ${expense.status === 'PAID' ? 'bg-emerald-500' : 'bg-amber-500'} opacity-70`} />
+                                <div className="flex items-center gap-4 md:gap-6 flex-1 w-full min-w-0">
+                                    <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shrink-0 group-hover:bg-indigo-50 group-hover:border-indigo-100 transition-colors">
+                                        <Receipt className="h-5 w-5 md:h-6 md:w-6 text-gray-400 group-hover:text-indigo-600" />
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <h4 className="text-[13px] md:text-base font-bold text-gray-900 uppercase tracking-tight truncate">{expense.title}</h4>
+                                        <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">{expense.category}</span>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 flex-[1.5] w-full min-w-0 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l lg:pl-8 border-gray-50">
+                                    <div className="flex flex-col">
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Timeline</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <Calendar className="h-3 w-3 text-blue-400 shrink-0" />
+                                            <p className="text-[10px] md:text-xs font-bold text-gray-600 uppercase truncate">{format(new Date(expense.date), 'MMM dd, yyyy')}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Amount</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <DollarSign className="h-3 w-3 text-rose-400 shrink-0" />
+                                            <p className="text-[10px] md:text-xs font-black text-rose-600 uppercase truncate">PKR {expense.amount.toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                    <div className="col-span-2 md:col-span-1 flex items-center justify-between md:justify-start">
+                                        <Badge variant="outline" className={`px-3 md:px-4 py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest ${expense.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'} shadow-sm`}>
+                                            {expense.status}
+                                        </Badge>
+                                        <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-gray-300 md:ml-auto group-hover:translate-x-1 transition-transform" />
+                                    </div>
+                                </div>
+                            </div>
+                        )) : (
+                            <div className="py-20 md:py-32 text-center bg-white border border-dashed border-gray-100 rounded-[2.5rem] px-6">
+                                <Receipt className="h-10 w-10 md:h-12 md:w-12 text-gray-100 mx-auto mb-4" />
+                                <h3 className="text-sm md:text-lg font-black text-gray-900 uppercase tracking-widest">No History Found</h3>
+                                <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">There are no archived expense records matching your current filter.</p>
                             </div>
                         )}
                     </TabsContent>
@@ -396,6 +479,83 @@ const WardenExpensesPage = () => {
                             {createExpense.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Authorize Entry'}
                         </Button>
                     </div>
+                </DialogContent>
+            </Dialog>
+            {/* Expense Details Dialog */}
+            <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+                <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[2.5rem] border-none shadow-3xl bg-white">
+                    {selectedExpense && (
+                        <>
+                            <div className={`p-10 text-white relative overflow-hidden ${selectedExpense.status === 'PAID' ? 'bg-emerald-600' : 'bg-slate-900'}`}>
+                                <div className="absolute top-0 right-0 w-64 h-full bg-white/10 skew-x-12 translate-x-32" />
+                                <div className="flex justify-between items-start relative z-10">
+                                    <div className="flex flex-col gap-4">
+                                        <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/10">
+                                            <Receipt className="h-6 w-6" />
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-bold uppercase tracking-tight">{selectedExpense.title}</h2>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <Badge className="bg-white/20 text-white border-none text-[8px] font-bold uppercase tracking-widest">{selectedExpense.category}</Badge>
+                                                <div className="h-1 w-1 rounded-full bg-white/50" />
+                                                <span className="text-[10px] font-bold text-white/70 uppercase tracking-widest">{selectedExpense.Hostel?.name}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right flex flex-col items-end gap-2">
+                                        <div>
+                                            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">Amount</span>
+                                            <div className="text-3xl font-bold tracking-tighter">PKR {selectedExpense.amount.toLocaleString()}</div>
+                                        </div>
+                                        <UnifiedReceipt data={selectedExpense} type="expense">
+                                            <Button variant="outline" className="h-8 bg-white/10 border-white/20 text-white hover:bg-white/20 font-bold text-[8px] uppercase tracking-widest rounded-lg">
+                                                <Download className="h-3 w-3 mr-1" /> Receipt
+                                            </Button>
+                                        </UnifiedReceipt>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-10 space-y-8">
+                                <div className="grid grid-cols-2 gap-8">
+                                    <div className="space-y-6">
+                                        <div className="space-y-1">
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Expense ID</span>
+                                            <Badge className="bg-gray-100 text-gray-700 border-none text-[10px] font-mono font-bold px-2 py-0.5 w-fit">
+                                                EXP-{selectedExpense.id.slice(-8).toUpperCase()}
+                                            </Badge>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Date Added</span>
+                                            <p className="text-sm font-bold text-gray-900">{format(new Date(selectedExpense.date), 'PPPP')}</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-6">
+                                        <div className="space-y-1">
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Submitted By</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedExpense.User_Expense_submittedByIdToUser?.name} ({selectedExpense.User_Expense_submittedByIdToUser?.role})</p>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Hostel Branch</span>
+                                            <p className="text-sm font-bold text-gray-900">{selectedExpense.Hostel?.city} Network</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-3">Description</span>
+                                    <p className="text-sm font-medium text-gray-700 leading-relaxed">
+                                        "{selectedExpense.description || 'No description provided.'}"
+                                    </p>
+                                </div>
+
+                                <div className="w-full h-12 bg-gray-100 rounded-xl flex items-center justify-center gap-3">
+                                    <ShieldCheck className={`h-4 w-4 ${selectedExpense.status === 'PAID' ? 'text-emerald-500' : 'text-gray-400'}`} />
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status: {selectedExpense.status}</span>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>

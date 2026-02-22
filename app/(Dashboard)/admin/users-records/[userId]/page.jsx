@@ -76,8 +76,8 @@ import { useUserById, useUserDetailedProfile, useUserUpdate } from "@/hooks/useu
 import { useResetPassword, useDeleteUser } from "@/hooks/useUsers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
-import { toast } from "sonner";
 import ActivityFeed from "@/components/admin/ActivityFeed";
+import Loader from "@/components/ui/Loader";
 
 const DetailItem = ({ icon: Icon, label, value, color = "text-indigo-600" }) => (
     <div className="flex items-start gap-4">
@@ -222,12 +222,7 @@ const UserDetailsPage = () => {
     }, [userDetails]);
 
     if (userLoading || detailsLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="h-12 w-12 border-[3px] border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading User Details...</p>
-            </div>
-        </div>
+        <Loader label="Syncing Personnel..." subLabel="Fetching detailed profile records" icon={Scan} fullScreen={true} />
     );
 
     if (!user) return (
@@ -450,7 +445,28 @@ const UserDetailsPage = () => {
                                                 <AlertCircle className="h-5 w-5 text-amber-500" />
                                             </div>
                                             <div className="pt-4">
-                                                <Button className="w-full h-12 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold text-[10px] uppercase tracking-widest border border-gray-200/50 shadow-none">
+                                                <Button
+                                                    className="w-full h-12 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold text-[10px] uppercase tracking-widest border border-gray-200/50 shadow-none"
+                                                    onClick={() => {
+                                                        const headers = ["Activity", "Description", "Date", "Status"];
+                                                        const rows = activityFeed.map(e => [
+                                                            e.title,
+                                                            e.description,
+                                                            format(e.date, 'yyyy-MM-dd HH:mm'),
+                                                            e.status
+                                                        ]);
+                                                        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+                                                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                                                        const link = document.createElement("a");
+                                                        const url = URL.createObjectURL(blob);
+                                                        link.setAttribute("href", url);
+                                                        link.setAttribute("download", `User_History_${user.name.replace(/\s+/g, '_')}_${format(new Date(), 'yyyyMMdd')}.csv`);
+                                                        document.body.appendChild(link);
+                                                        link.click();
+                                                        document.body.removeChild(link);
+                                                        toast.success("History exported successfully");
+                                                    }}
+                                                >
                                                     Download User History
                                                 </Button>
                                             </div>

@@ -20,6 +20,7 @@ import {
     ChevronRight,
     Utensils,
     Megaphone,
+    Wallet,
     type LucideIcon,
 } from "lucide-react"
 import useAuthStore from "@/hooks/Authstate"
@@ -30,6 +31,7 @@ import {
     SidebarHeader,
     useSidebar,
 } from "@/components/ui/sidebar"
+import { Button } from "@/components/ui/button"
 
 type NavItem = {
     title: string
@@ -46,13 +48,12 @@ const items: Record<string, NavItem[]> = {
         { title: "All Rooms", url: "/admin/hostels/rooms", icon: Bed, role: "admin" },
         { title: "All Bookings", url: "/admin/bookings", icon: Calendar, role: "admin" },
         { title: "All Payments", url: "/admin/payments", icon: CreditCard, role: "admin" },
-        { title: "Salaries", url: "/admin/salaries", icon: DollarSign, role: "admin" },
-        // { title: "Staff" , url: "/admin/staff", icon: Users, role: "admin" },
+        { title: "Salaries (Staff)", url: "/admin/salaries", icon: DollarSign, role: "admin" },
+        { title: "Salaries (Warden)", url: "/admin/warden-salaries", icon: Users, role: "admin" },
         { title: "Users Records", url: "/admin/users-records", icon: Users, role: "admin" },
         { title: "Reports", url: "/admin/reports", icon: FileText, role: "admin" },
         { title: "Audit & Search", url: "/admin/audit", icon: Search, role: "admin" },
         { title: "Complaints", url: "/admin/complaints", icon: MessageSquare, role: "admin" },
-
         { title: "Notice Board", url: "/admin/notices", icon: Megaphone, role: "admin" },
         { title: "Expenses", url: "/admin/expenses", icon: DollarSign, role: "admin" },
         { title: "Mess Menu", url: "/admin/mess", icon: Utensils, role: "admin" },
@@ -64,7 +65,8 @@ const items: Record<string, NavItem[]> = {
         { title: "Rooms", url: "/warden/rooms", icon: Bed, role: "warden" },
         { title: "Bookings", url: "/warden/bookings", icon: Calendar, role: "warden" },
         { title: "Payments", url: "/warden/payments", icon: CreditCard, role: "warden" },
-        { title: "Salaries", url: "/warden/salaries", icon: DollarSign, role: "warden" },
+        { title: "Staff Salaries", url: "/warden/salaries", icon: DollarSign, role: "warden" },
+        { title: "My Salary", url: "/warden/my-salary", icon: Wallet, role: "warden" },
         { title: "Residents", url: "/warden/residents", icon: Users, role: "warden" },
         { title: "Complaints", url: "/warden/complaints", icon: MessageSquare, role: "warden" },
         { title: "Notice Board", url: "/warden/notices", icon: Megaphone, role: "warden" },
@@ -83,7 +85,6 @@ const items: Record<string, NavItem[]> = {
     staff: [
         { title: "Dashboard", url: "/staff/dashboard", icon: LayoutDashboard, role: "staff" },
         { title: "My Salary", url: "/staff/salary", icon: DollarSign, role: "staff" },
-        // { title: "Complaints", url: "/staff/complaints", icon: ClipboardList, role: "staff" },
         { title: "My Profile", url: "/staff/profile", icon: User, role: "staff" },
     ],
 }
@@ -112,10 +113,8 @@ export function AppSidebar() {
 
     return (
         <Sidebar>
-            {/* ── Header ── */}
             <SidebarHeader className="p-0 border-b-0">
                 <div className="px-5 pt-5 pb-4">
-                    {/* Brand */}
                     <div className="flex items-center gap-3 mb-5">
                         <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-md shadow-blue-500/20 flex-shrink-0">
                             <Building2 className="h-4.5 w-4.5 text-white" style={{ height: 18, width: 18 }} />
@@ -134,12 +133,9 @@ export function AppSidebar() {
                         </span>
                     </div>
                 </div>
-
-                {/* Thin separator */}
                 <div className="h-px bg-gray-100 mx-4" />
             </SidebarHeader>
 
-            {/* ── Nav ── */}
             <SidebarContent className="px-3 py-3 overflow-y-auto">
                 <nav className="space-y-0.5">
                     {navItems.map((item) => {

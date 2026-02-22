@@ -637,25 +637,7 @@ export default function RegisterUserPage() {
                 </div>
             </div>
 
-            {/* Bottom status bar */}
-            <div className="fixed bottom-0 left-0 w-full z-40 px-6 pb-4 pointer-events-none">
-                <div className="max-w-[900px] mx-auto bg-indigo-600/90 backdrop-blur-xl text-white h-12 rounded-2xl shadow-2xl flex items-center justify-between px-6 pointer-events-auto">
-                    <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-2">
-                            <Zap className="w-3.5 h-3.5 text-white" />
-                            <span className="text-[10px] font-bold tracking-widest uppercase">Authorized Registration</span>
-                        </div>
-                        <div className="h-3 w-px bg-white/20" />
-                        <div className="flex items-center gap-2">
-                            <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-200">
-                                {currentUser?.role} · {currentUser?.name}
-                            </span>
-                        </div>
-                    </div>
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-gray-300">Step {step} of {STEPS.length}</span>
-                </div>
-            </div>
+
         </div>
     );
 }

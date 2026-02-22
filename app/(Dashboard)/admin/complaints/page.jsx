@@ -137,7 +137,7 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
                         <div className="p-5 bg-emerald-50 rounded-2xl border border-emerald-100">
                             <div className="flex items-center gap-2 mb-2">
                                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700">Resolution Notes</span>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700">Resolution Details</span>
                             </div>
                             <p className="text-sm text-emerald-800 font-medium leading-relaxed">{complaint.resolutionNotes}</p>
                         </div>
@@ -146,9 +146,9 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
                     {/* Action Controls */}
                     {(complaint.status === "PENDING" || complaint.status === "IN_PROGRESS") && (
                         <div className="space-y-4 pt-2 border-t border-gray-100">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Update Complaint</p>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Update Status</p>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400">Assign Staff</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400">Assign To Staff</Label>
                                 <Select defaultValue={complaint.assignedToId} onValueChange={setAssignedStaffId}>
                                     <SelectTrigger className="h-10 rounded-xl border-gray-100 text-xs font-bold uppercase tracking-wider shadow-sm focus:ring-indigo-300">
                                         <SelectValue placeholder="Select staff member..." />
@@ -165,7 +165,7 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
                             <div className="space-y-2">
                                 <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400">Resolution Notes</Label>
                                 <Textarea
-                                    placeholder="Add resolution details..."
+                                    placeholder="Write details of the fix here..."
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
                                     className="min-h-[80px] text-xs font-medium rounded-xl border-gray-100 resize-none focus:ring-indigo-300"
@@ -190,7 +190,7 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
 
                     {/* Chat Thread */}
                     <div className="space-y-4 pt-2 border-t border-gray-100">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Communication Thread</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Message Thread</p>
                         <div className="space-y-3 max-h-[240px] overflow-y-auto pr-1">
                             {complaint.comments?.length > 0 ? complaint.comments.map((c) => {
                                 const isAdmin = c.User.role !== "RESIDENT" && c.User.role !== "GUEST";
@@ -296,7 +296,7 @@ const ComplaintsPage = () => {
                         <div className="flex flex-col">
                             <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Complaints</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Complaint Management</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Complaint List</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
                                 <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Monitoring</span>
                             </div>
@@ -305,7 +305,7 @@ const ComplaintsPage = () => {
                     <div className="flex items-center gap-3">
                         <Button variant="outline" onClick={handleExport}
                             className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-2">
-                            <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Export Registry</span> <span className="xs:hidden">Export</span>
+                            <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Export List</span> <span className="xs:hidden">Export</span>
                         </Button>
                     </div>
                 </div>
@@ -315,10 +315,10 @@ const ComplaintsPage = () => {
                 {/* ── Stat Cards ── */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 animate-in slide-in-from-bottom-6 fade-in duration-500 fill-mode-both">
                     {[
-                        { label: "Total Complaints", value: stats.total, icon: MessageSquare, color: "text-indigo-600", bg: "bg-indigo-50" },
+                        { label: "Total Received", value: stats.total, icon: MessageSquare, color: "text-indigo-600", bg: "bg-indigo-50" },
                         { label: "Pending", value: stats.pending, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
                         { label: "Urgent Cases", value: stats.urgent, icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50" },
-                        { label: "Resolution Rate", value: `${stats.resolutionRate}%`, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+                        { label: "Fix Rate", value: `${stats.resolutionRate}%`, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-3 md:gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default text-center sm:text-left">
                             <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -457,7 +457,7 @@ const ComplaintsPage = () => {
                                             <Building2 className="h-3.5 w-3.5 text-indigo-400" />
                                             <span className="text-xs font-bold text-gray-900 uppercase truncate">{complaint.Hostel?.name ?? "N/A"}</span>
                                         </div>
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5">{complaint.category} Issue</span>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5">{complaint.category}</span>
                                     </div>
 
                                     {/* Date + Priority inline panel */}
@@ -537,8 +537,8 @@ const ComplaintsPage = () => {
                                     <ShieldCheck className="h-5 w-5 text-white" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <h4 className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-200">System Status</h4>
-                                    <p className="text-[10px] md:text-[11px] font-bold mt-0.5">Audit surveillance active</p>
+                                    <h4 className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-200">System Monitoring</h4>
+                                    <p className="text-[10px] md:text-[11px] font-bold mt-0.5">Live tracking active</p>
                                 </div>
                             </div>
                             <div className="h-6 w-px bg-white/10 hidden md:block" />
@@ -552,12 +552,12 @@ const ComplaintsPage = () => {
                                     <span className="text-[9px] md:text-[10px] font-bold text-white uppercase mt-1">{complaints.length}</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-200 tracking-widest truncate">Efficiency Rate</span>
+                                    <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-200 tracking-widest truncate">Solved Rate</span>
                                     <span className="text-[9px] md:text-[10px] font-bold text-white uppercase mt-1">{stats.resolutionRate}%</span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 md:pr-6 relative z-10 w-full md:w-auto justify-center md:justify-end border-t md:border-none border-white/10 pt-4 md:pt-0">
-                                <span className="text-[8px] md:text-[9px] font-bold uppercase text-white tracking-widest">Network Pulse</span>
+                                <span className="text-[8px] md:text-[9px] font-bold uppercase text-white tracking-widest">Network Status</span>
                                 <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
                             </div>
                         </div>

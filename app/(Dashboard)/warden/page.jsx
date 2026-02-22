@@ -104,6 +104,24 @@ const WardenDashboard = () => {
                         </Button>
                         <Button
                             className="h-8 md:h-9 px-3 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all shrink-0"
+                            onClick={() => {
+                                if (!hostelData || hostelData.length === 0) {
+                                    toast.error("No data available to export");
+                                    return;
+                                }
+                                const headers = ["Hostel Name", "Occupancy (%)", "Revenue (PKR)", "Rooms"];
+                                const rows = hostelData.map(h => [h.name, h.occupancy, h.revenue, h.rooms]);
+                                const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+                                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                                const link = document.createElement("a");
+                                const url = URL.createObjectURL(blob);
+                                link.setAttribute("href", url);
+                                link.setAttribute("download", `Hostel_Performance_${format(new Date(), 'yyyyMMdd')}.csv`);
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                toast.success("Performance report exported");
+                            }}
                         >
                             <Download className="h-3.5 w-3.5 md:mr-2" />
                             <span className="hidden md:inline">Export</span>

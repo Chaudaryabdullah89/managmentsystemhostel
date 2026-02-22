@@ -45,6 +45,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import Loader from "@/components/ui/Loader";
 
 const WardenResidentsPage = () => {
     const { user } = useAuthStore()

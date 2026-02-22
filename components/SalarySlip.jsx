@@ -153,7 +153,7 @@ const SalarySlip = ({ salary }) => {
                                     </div>
 
                                     <span className={`text-base font-bold tracking-tight tabular-nums ${item.color}`}>
-                                        {item.value >= 0 ? "+" : ""}{item.value.toLocaleString()}
+                                        {item.value >= 0 ? "+" : ""}{(item.value || 0).toLocaleString()}
                                     </span>
                                 </div>
                             ))}
@@ -168,7 +168,7 @@ const SalarySlip = ({ salary }) => {
                                 </div>
 
                                 <span className="text-3xl font-bold tracking-tighter tabular-nums">
-                                    PKR {salary.amount.toLocaleString()}
+                                    PKR {(salary.amount || 0).toLocaleString()}
                                 </span>
                             </div>
                         </div>
@@ -263,29 +263,29 @@ const SalarySlip = ({ salary }) => {
                         <tbody>
                             <tr className="border-b border-gray-100">
                                 <td className="py-3 font-medium">Basic Salary</td>
-                                <td className="py-3 text-right font-mono">{Number(salary.basicSalary).toLocaleString()}</td>
+                                <td className="py-3 text-right font-mono">{(Number(salary.basicSalary) || 0).toLocaleString()}</td>
                             </tr>
                             {Number(salary.allowances) > 0 && (
                                 <tr className="border-b border-gray-100">
                                     <td className="py-3 font-medium">Allowances</td>
-                                    <td className="py-3 text-right font-mono text-emerald-600">+{Number(salary.allowances).toLocaleString()}</td>
+                                    <td className="py-3 text-right font-mono text-emerald-600">+{(Number(salary.allowances) || 0).toLocaleString()}</td>
                                 </tr>
                             )}
                             {Number(salary.bonuses) > 0 && (
                                 <tr className="border-b border-gray-100">
                                     <td className="py-3 font-medium">Bonuses</td>
-                                    <td className="py-3 text-right font-mono text-emerald-600">+{Number(salary.bonuses).toLocaleString()}</td>
+                                    <td className="py-3 text-right font-mono text-emerald-600">+{(Number(salary.bonuses) || 0).toLocaleString()}</td>
                                 </tr>
                             )}
                             {Number(salary.deductions) > 0 && (
                                 <tr className="border-b border-gray-100">
                                     <td className="py-3 font-medium">Deductions</td>
-                                    <td className="py-3 text-right font-mono text-rose-600">-{Number(salary.deductions).toLocaleString()}</td>
+                                    <td className="py-3 text-right font-mono text-rose-600">-{(Number(salary.deductions) || 0).toLocaleString()}</td>
                                 </tr>
                             )}
                             <tr>
                                 <td className="py-4 font-black tracking-tight text-gray-900 uppercase">Net Payable</td>
-                                <td className="py-4 text-right font-black tracking-tighter font-mono text-gray-900 text-xl">PKR {Number(salary.amount).toLocaleString()}</td>
+                                <td className="py-4 text-right font-black tracking-tighter font-mono text-gray-900 text-xl">PKR {(Number(salary.amount) || 0).toLocaleString()}</td>
                             </tr>
                         </tbody>
                     </table>

@@ -6,10 +6,9 @@ import {
     Download, Wallet, Search, Filter, Mail, CreditCard,
     AlertCircle, MessageSquare, ChevronRight, Zap
 } from 'lucide-react';
-import { useAllSalaries } from '@/hooks/useSalaries';
+import { useWardenPayments } from '@/hooks/useWardenSalaries';
 import useAuthStore from '@/hooks/Authstate';
-import { format } from "date-fns";
-import Loader from "@/components/ui/Loader";
+import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -20,15 +19,13 @@ import {
 } from "@/components/ui/dialog";
 import SalarySlip from '@/components/SalarySlip';
 
-const StaffSalaryPage = () => {
+const WardenSalaryPortal = () => {
     const { user } = useAuthStore();
     const [selectedSalary, setSelectedSalary] = useState(null);
     const [isSlipOpen, setIsSlipOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
-    const { data: salaries, isLoading } = useAllSalaries({
-        userId: user?.id
-    });
+    const { data: salaries, isLoading } = useWardenPayments(user?.id);
 
     const filteredSalaries = useMemo(() => {
         if (!salaries) return [];
@@ -39,7 +36,12 @@ const StaffSalaryPage = () => {
     }, [salaries, searchQuery]);
 
     if (isLoading) return (
-        <Loader label="Loading Records" subLabel="Fetching personal salary ledger" icon={History} fullScreen={true} />
+        <div className="flex h-screen items-center justify-center bg-gray-50/50 font-sans">
+            <div className="flex flex-col items-center gap-4">
+                <div className="h-10 w-10 border-[3px] border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Records...</p>
+            </div>
+        </div>
     );
 
     const latest = salaries?.[0];
@@ -182,26 +184,7 @@ const StaffSalaryPage = () => {
                     </div>
                 </div>
 
-                {/* Advice Corner */}
-                <div className="bg-gradient-to-br from-indigo-900 to-black rounded-[2.5rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full -ml-20 -mb-20 blur-3xl" />
 
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="space-y-4 text-center md:text-left">
-                            <div className="h-12 w-12 bg-white/10 rounded-2xl flex items-center justify-center mb-2 mx-auto md:mx-0 backdrop-blur-md">
-                                <MessageSquare className="h-6 w-6 text-white" />
-                            </div>
-                            <h2 className="text-2xl font-black tracking-tight uppercase leading-tight">Billing Discrepancy?</h2>
-                            <p className="text-indigo-200 text-xs font-bold uppercase tracking-widest max-w-sm">
-                                If you identify any mismatch in your disbursement cycle, please initiate an appeal via the administration portal immediately.
-                            </p>
-                        </div>
-                        <Button className="h-14 px-10 rounded-2xl bg-white hover:bg-indigo-50 text-indigo-900 font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all hover:scale-105 active:scale-95 shrink-0">
-                            Contact Admin Node
-                        </Button>
-                    </div>
-                </div>
             </main>
 
             {/* Slip Dialog */}
@@ -214,4 +197,4 @@ const StaffSalaryPage = () => {
     );
 };
 
-export default StaffSalaryPage;
+export default WardenSalaryPortal;

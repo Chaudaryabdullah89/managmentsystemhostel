@@ -14,13 +14,17 @@ export async function GET() {
         phone: true,
         image: true,
         city: true,
-        address: true
+        address: true,
+        hostelId: true,
+        basicSalary: true,
+        allowances: true
       }
     });
 
     return NextResponse.json({
       success: true,
-      data: wardens
+      data: wardens, // For backward compatibility with existing components
+      users: wardens // For consistency with newer logic
     });
   } catch (error) {
     console.error("[API] GET /api/users/warden - Error:", error);
