@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff, Loader2, Building2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import Cookies from 'js-cookie';
+import useAuthStore from '@/hooks/Authstate';
 
 export default function LoginPage() {
     const router = useRouter();
+    const { setToken, setUser } = useAuthStore();
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({ email: '', password: '' });
@@ -33,9 +35,29 @@ export default function LoginPage() {
                 setError(data.message || 'Invalid email or password.');
                 return;
             }
-            Cookies.set('token', data.token, { expires: 7, secure: true, sameSite: 'strict' });
+
+            // Set session and update store
+            Cookies.set('token', data.token, { expires: 7, secure: process.env.NODE_ENV === 'production', sameSite: 'strict' });
+            setToken(data.token);
+            if (data.User) {
+                await setUser({ ...data.User, id: data.User.id });
+            }
+
             toast.success('Welcome back!');
-            setTimeout(() => router.push('/admin/dashboard'), 400);
+
+            // Role-based redirection
+            const role = data.User?.role;
+            let redirectPath = '/admin/dashboard';
+
+            if (role === 'WARDEN') {
+                redirectPath = '/warden';
+            } else if (role === 'STAFF') {
+                redirectPath = '/staff/dashboard';
+            } else if (role === 'RESIDENT' || role === 'GUEST') {
+                redirectPath = '/guest/dashboard';
+            }
+
+            setTimeout(() => router.push(redirectPath), 400);
         } catch {
             setError('Something went wrong. Please try again.');
         } finally {

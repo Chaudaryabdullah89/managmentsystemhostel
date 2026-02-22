@@ -111,7 +111,7 @@ const MaintenancePage = () => {
         setIsUpdateDialogOpen(true);
     };
 
-    if (isLoading) return <Loader label="Analyzing Health Logs" subLabel={`Retrieving maintenance protocols for Unit_${roomData?.data?.roomNumber || '...'}`} icon={Wrench} />;
+    if (isLoading) return <Loader label="Loading Maintenance Records" subLabel="Fetching records..." icon={Wrench} fullScreen={false} />;
 
     const logs = roomData?.data?.maintanance || [];
 

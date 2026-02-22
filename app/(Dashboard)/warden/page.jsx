@@ -59,7 +59,7 @@ const WardenDashboard = () => {
     };
 
     if (reportsLoading || complaintsLoading || financialsLoading) return (
-        <Loader label="Synchronizing Warden Node" subLabel="Accessing facility registry" icon={Activity} />
+        <Loader label="Loading Dashboard" subLabel="Fetching latest data..." icon={Activity} fullScreen={false} />
     );
 
     const stats = reportData?.overall || {

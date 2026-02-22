@@ -108,7 +108,7 @@ const LaundryPage = () => {
         setIsUpdateDialogOpen(true);
     };
 
-    if (isLoading) return <Loader label="Syncing Fabric Care" subLabel={`Retrieving inventory manifest for Unit_${roomData?.data?.roomNumber || '...'}`} icon={Shirt} />;
+    if (isLoading) return <Loader label="Loading Laundry Records" subLabel="Fetching laundry batches..." icon={Shirt} fullScreen={false} />;
 
     const logs = roomData?.data?.LaundryLog || [];
 

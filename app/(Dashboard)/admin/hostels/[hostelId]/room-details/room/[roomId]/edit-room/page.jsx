@@ -110,7 +110,7 @@ const EditRoomPage = () => {
         }
     };
 
-    if (isFetching) return <Loader label="Syncing Unit Config" subLabel={`Retrieving artifact manifest for Unit ${roomNumber || '...'}`} icon={LayoutGrid} />;
+    if (isFetching) return <Loader label="Loading Room Details" subLabel="Fetching room configuration..." icon={LayoutGrid} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/30 pb-20">

@@ -145,7 +145,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
         }
     };
 
-    if (roomsLoading || hostelLoading) return <Loader label="Accessing Registry" subLabel={`Retrieving Unit Registry for ${hostel?.name || 'Asset'}`} icon={Building2} />;
+    if (roomsLoading || hostelLoading) return <Loader label="Loading Rooms" subLabel="Fetching room list..." icon={Building2} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">

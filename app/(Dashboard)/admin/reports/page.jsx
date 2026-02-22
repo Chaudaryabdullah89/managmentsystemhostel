@@ -45,7 +45,7 @@ const ReportsPage = () => {
     const [selectedPeriod, setSelectedPeriod] = useState("month");
     const { data, isLoading } = useReports(selectedPeriod);
 
-    if (isLoading) return <Loader label="Compiling Analytics" subLabel="Accessing financial insights node" icon={Activity} />;
+    if (isLoading) return <Loader label="Loading Reports" subLabel="Fetching analytics data..." icon={Activity} fullScreen={false} />;
 
     const stats = data?.overall || {
         totalRevenue: 0,

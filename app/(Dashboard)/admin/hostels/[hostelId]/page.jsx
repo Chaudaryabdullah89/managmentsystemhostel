@@ -45,7 +45,7 @@ const HostelOverviewPage = () => {
     const { data, isLoading } = useHostelById(hostelId);
     const hostel = data?.hostel;
 
-    if (isLoading) return <Loader label="Loading Hostel Details" subLabel="Getting the latest information" icon={Building2} />;
+    if (isLoading) return <Loader label="Loading Hostel Details" subLabel="Fetching the latest information..." icon={Building2} fullScreen={false} />;
 
     if (!hostel) return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50/50 font-sans">

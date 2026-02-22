@@ -216,7 +216,7 @@ const AddGuestPage = () => {
         router.push(`/admin/hostels/${hostelId}/room-details/room/${roomId}`);
     };
 
-    if (roomLoading) return <Loader label="Syncing Deployment Registry" subLabel="Initializing Guest Deployment Protocol" icon={UserPlus} />;
+    if (roomLoading) return <Loader label="Loading Room Details" subLabel="Fetching room and availability info..." icon={UserPlus} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/30 pb-20 font-sans">

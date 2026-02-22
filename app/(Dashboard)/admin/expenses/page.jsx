@@ -284,7 +284,7 @@ const ExpensesPage = () => {
         }
     };
 
-    if (expensesLoading || statsLoading) return <Loader label="Auditing Expenses" subLabel="Synchronizing fiscal records" icon={Receipt} />;
+    if (expensesLoading || statsLoading) return <Loader label="Loading Expenses" subLabel="Fetching expense records..." icon={Receipt} fullScreen={false} />;
 
     const stats = statsData?.summary || { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalCount: 0 };
 

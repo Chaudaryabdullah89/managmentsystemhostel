@@ -268,7 +268,7 @@ const ComplaintsPage = () => {
     };
 
     if (isComplaintsLoading || isStatsLoading) return (
-        <Loader label="Accessing Grievance Registry" subLabel="Synchronizing incident reports" />
+        <Loader label="Loading Complaints" subLabel="Fetching complaint records..." fullScreen={false} />
     );
 
     return (

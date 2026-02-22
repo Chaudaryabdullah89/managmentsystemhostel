@@ -104,7 +104,7 @@ const CleaningPage = () => {
         setIsUpdateDialogOpen(true);
     };
 
-    if (isLoading) return <Loader label="Syncing Hygiene Audit" subLabel={`Verifying cleaning sessions for Unit_${roomData?.data?.roomNumber || '...'}`} icon={Sparkle} />;
+    if (isLoading) return <Loader label="Loading Cleaning Logs" subLabel="Fetching cleaning sessions..." icon={Sparkle} fullScreen={false} />;
 
     const logs = roomData?.data?.CleaningLog || [];
 

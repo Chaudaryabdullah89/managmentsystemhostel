@@ -160,7 +160,7 @@ const TasksPage = () => {
         return matchesSearch && matchesStatus && matchesPriority;
     });
 
-    if (isTasksLoading) return <Loader label="Synchronizing Directives" subLabel="Accessing Task Registry Node" />;
+    if (isTasksLoading) return <Loader label="Loading Tasks" subLabel="Fetching task list..." fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight leading-relaxed">

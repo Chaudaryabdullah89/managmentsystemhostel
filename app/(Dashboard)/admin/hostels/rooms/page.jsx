@@ -150,12 +150,12 @@ const GlobalRoomsPage = () => {
         <div className="flex h-screen items-center justify-center bg-white font-sans">
             <div className="flex flex-col items-center gap-6">
                 <div className="relative">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-black rounded-full animate-spin" />
-                    <Building2 className="h-8 w-8 text-black absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
+                    <Building2 className="h-8 w-8 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                 </div>
                 <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 tracking-tight">Synchronizing Portfolio...</p>
-                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Retrieving Property Master Records</p>
+                    <p className="text-lg font-bold text-gray-900 tracking-tight">Loading Rooms...</p>
+                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Fetching Rooms Data</p>
                 </div>
             </div>
         </div>

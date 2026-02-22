@@ -247,7 +247,7 @@ const AdminMessMenu = () => {
         }
     };
 
-    if (isHostelsLoading) return <Loader label="Accessing Mess Node" subLabel="Synchronizing nutritional records" icon={Utensils} />;
+    if (isHostelsLoading) return <Loader label="Loading Mess Menu" subLabel="Fetching meal schedule..." icon={Utensils} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">

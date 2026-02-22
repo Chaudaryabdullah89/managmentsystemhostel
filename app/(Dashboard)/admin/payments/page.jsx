@@ -475,7 +475,7 @@ const PaymentManagementPage = () => {
     };
 
     if (paymentsLoading || statsLoading) return (
-        <Loader label="Synchronizing Payments" subLabel="Accessing financial registry node" icon={Wallet} />
+        <Loader label="Loading Payments" subLabel="Fetching payment records..." icon={Wallet} fullScreen={false} />
     );
 
     return (

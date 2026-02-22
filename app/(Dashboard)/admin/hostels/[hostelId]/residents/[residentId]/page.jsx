@@ -202,7 +202,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
         }
     }
 
-    if (isLoading) return <Loader label="Retrieving Profile" subLabel="Accessing Resident Directory and History" icon={User} />;
+    if (isLoading) return <Loader label="Loading Resident Profile" subLabel="Fetching resident details..." icon={User} fullScreen={false} />;
 
     if (!resident) return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">

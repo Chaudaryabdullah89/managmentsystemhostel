@@ -132,7 +132,7 @@ const HostelsPage = () => {
         }
     };
 
-    if (hostelsloading) return <Loader label="Compiling Properties" subLabel="Accessing infrastructure registry node" icon={Building2} />;
+    if (hostelsloading) return <Loader label="Loading Hostels" subLabel="Fetching branch list..." icon={Building2} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50">

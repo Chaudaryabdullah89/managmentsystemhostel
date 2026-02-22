@@ -136,7 +136,7 @@ const ResidentsContent = () => {
         String(resident.id).toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    if (isLoading) return <Loader label="Loading Residents" subLabel={`Fetching records for ${decodeURIComponent(params?.hostelId || hostelId)}`} icon={Users} />;
+    if (isLoading) return <Loader label="Loading Residents" subLabel="Fetching resident list..." icon={Users} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50">

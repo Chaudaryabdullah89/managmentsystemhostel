@@ -66,7 +66,7 @@ const AdminDashboard = () => {
     };
 
     if (reportsLoading || complaintsLoading || financialsLoading) return (
-        <Loader label="Synchronizing Dashboard" subLabel="Accessing management registry node" icon={ClipboardList} />
+        <Loader label="Loading Dashboard" subLabel="Fetching latest metrics..." icon={ClipboardList} fullScreen={false} />
     );
 
     const stats = reportData?.overall || {

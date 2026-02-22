@@ -145,7 +145,7 @@ const UserEditPage = () => {
         }
     };
 
-    if (isLoading) return <Loader label="Accessing User Registry" subLabel="Synchronizing profile data" icon={UserCog} />;
+    if (isLoading) return <Loader label="Loading User Profile" subLabel="Fetching user details..." icon={UserCog} fullScreen={false} />;
 
     if (!user) {
         return (

@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 async function check() {
     const users = await prisma.user.findMany({
         where: { role: 'WARDEN' },
-        select: { id: true, name: true, hostelId: true }
+        select: { id: true, name: true, email: true, hostelId: true }
     });
     console.log('WARDENS:', JSON.stringify(users, null, 2));
 

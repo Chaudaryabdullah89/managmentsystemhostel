@@ -374,7 +374,7 @@ const SalariesPage = () => {
         } catch (error) { }
     };
 
-    if (salariesLoading) return <Loader label="Synchronizing Payroll" subLabel="Accessing financial records node" icon={Coins} />;
+    if (salariesLoading) return <Loader label="Loading Salaries" subLabel="Fetching payroll records..." icon={Coins} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">

@@ -296,7 +296,7 @@ const GlobalBookingsPage = () => {
         }
     };
 
-    if (isLoading) return <Loader label="Compiling Bookings" subLabel="Accessing reservation registry node" icon={Calendar} />;
+    if (isLoading) return <Loader label="Loading Bookings" subLabel="Fetching reservation records..." icon={Calendar} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">

@@ -284,7 +284,7 @@ const ComplaintsPage = () => {
         toast.success("Complaints exported successfully");
     };
 
-    if (isComplaintsLoading || isStatsLoading) return <Loader label="Auditing Complaints" subLabel="Accessing grievance registry node" icon={MessageSquare} />;
+    if (isComplaintsLoading || isStatsLoading) return <Loader label="Loading Complaints" subLabel="Fetching complaint records..." icon={MessageSquare} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">

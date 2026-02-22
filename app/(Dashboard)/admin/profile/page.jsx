@@ -193,7 +193,7 @@ const ProfilePage = () => {
         return <Monitor className="w-5 h-5 text-gray-400" />;
     };
 
-    if (isLoading) return <Loader label="Accessing Identity Vault" subLabel="Synchronizing user credentials" icon={User} />;
+    if (isLoading) return <Loader label="Loading Profile" subLabel="Fetching your account details..." icon={User} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">

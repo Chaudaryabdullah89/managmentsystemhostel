@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge"
 import { useSingleRoomByHostelId } from "@/hooks/useRoom";
 import useAuthStore from "@/hooks/Authstate";
 import { format } from "date-fns";
+import Loader from "@/components/ui/Loader";
 
 const WardenRoomDetailsPage = () => {
     const params = useParams();
@@ -37,18 +38,12 @@ const WardenRoomDetailsPage = () => {
     const room = roomResponse?.data;
 
     if (isLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
-                    <BedDouble className="h-8 w-8 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 tracking-tight">Loading Room Details...</p>
-                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Fetching room information</p>
-                </div>
-            </div>
-        </div>
+        <Loader
+            label="Loading Room Details"
+            subLabel="Fetching information..."
+            icon={BedDouble}
+            fullScreen={false}
+        />
     );
 
     if (!room) return (
@@ -279,38 +274,7 @@ const WardenRoomDetailsPage = () => {
                     </div>
                 </div>
 
-                {/* Status Footer */}
-                <div className="pt-10">
-                    <div className="bg-white border border-gray-100 rounded-[2.5rem] p-5 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm relative overflow-hidden group hover:shadow-md transition-all">
-                        <div className="flex items-center gap-6 px-4">
-                            <div className="h-12 w-12 rounded-2xl bg-indigo-50 flex items-center justify-center border border-indigo-100 group-hover:bg-indigo-600 transition-colors">
-                                <ShieldCheck className="h-6 w-6 text-indigo-600 group-hover:text-white transition-colors" />
-                            </div>
-                            <div className="flex flex-col">
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Room Status</h4>
-                                <p className="text-[11px] font-bold mt-0.5 text-gray-900 uppercase">Room {room.roomNumber} • Active & Verified</p>
-                            </div>
-                        </div>
 
-                        <div className="h-8 w-px bg-gray-100 hidden md:block" />
-
-                        <div className="flex-1 flex flex-wrap items-center gap-12 px-8">
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-black uppercase text-gray-400 tracking-widest">Room ID</span>
-                                <span className="text-[10px] font-bold text-indigo-600 uppercase mt-1 tracking-tighter">#{roomId?.slice(-12).toUpperCase()}</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-black uppercase text-gray-400 tracking-widest">Managed By</span>
-                                <span className="text-[10px] font-bold text-gray-700 uppercase mt-1 italic">Warden</span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 pr-8">
-                            <span className="text-[9px] font-black uppercase text-emerald-600 tracking-widest">Online</span>
-                            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.4)]" />
-                        </div>
-                    </div>
-                </div>
             </main>
         </div>
     );
