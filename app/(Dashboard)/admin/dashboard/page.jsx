@@ -325,7 +325,7 @@ const AdminDashboard = () => {
                                     { label: 'Grievances', icon: MessageSquare, href: '/admin/complaints', color: 'text-rose-600', bg: 'bg-rose-50' },
                                     { label: 'Notices', icon: Megaphone, href: '/admin/notices', color: 'text-indigo-600', bg: 'bg-indigo-50' },
                                     { label: 'Expenses', icon: Receipt, href: '/admin/expenses', color: 'text-blue-600', bg: 'bg-blue-50' },
-                                    { label: 'Asset Log', icon: History, href: '/admin/maintenances', color: 'text-amber-600', bg: 'bg-amber-50' },
+                                    // { label: 'Asset Log', icon: History, href: '/admin/maintenances', color: 'text-amber-600', bg: 'bg-amber-50' },
                                     { label: 'Salaries', icon: Wallet, href: '/admin/salaries', color: 'text-purple-600', bg: 'bg-purple-50' },
                                 ].map((item, i) => (
                                     <Link key={i} href={item.href}>

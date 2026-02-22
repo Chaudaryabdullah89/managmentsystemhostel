@@ -266,6 +266,24 @@ model Salary {
   StaffProfile   StaffProfile   @relation(fields: [staffId], references: [id])
 }
 
+model WardenPayment {
+  id            String   @id @default(cuid())
+  wardenId      String
+  amount        Float
+  basicSalary   Float    @default(0)
+  bonuses       Float    @default(0)
+  deductions    Float    @default(0)
+  month         String
+  status        String   @default("PAID")
+  paymentMethod String   @default("BANK_TRANSFER")
+  paymentDate   DateTime @default(now())
+  notes         String?
+  type          String   @default("WARDEN_SALARY")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  Warden        User     @relation(fields: [wardenId], references: [id])
+}
+
 model Session {
   id         String    @id @default(cuid())
   userId     String
@@ -348,6 +366,7 @@ model User {
   maintanance_maintanance_userIdToUser       maintanance[]      @relation("maintanance_userIdToUser")
   refundRequests                             RefundRequest[]
   notices                                    Notice[]           @relation("NoticeAuthor")
+  WardenPayment                              WardenPayment[]
 }
 
 model StaffTask {
