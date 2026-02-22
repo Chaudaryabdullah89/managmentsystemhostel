@@ -297,7 +297,7 @@ export default function PaymentNotificationModal({ booking, children }) {
                                     <SelectItem value="BANK_TRANSFER" className="rounded-lg text-[10px] font-bold py-2">Bank Transfer</SelectItem>
                                     <SelectItem value="EASYPAISA" className="rounded-lg text-[10px] font-bold py-2">EasyPaisa</SelectItem>
                                     <SelectItem value="JAZZCASH" className="rounded-lg text-[10px] font-bold py-2">JazzCash</SelectItem>
-                                    <SelectItem value="CASH" className="rounded-lg text-[10px] font-bold py-2">Manual Cash</SelectItem>
+                                    {/* <SelectItem value="CASH" className="rounded-lg text-[10px] font-bold py-2">Manual Cash</SelectItem> */}
                                 </SelectContent>
                             </Select>
                         </div>
