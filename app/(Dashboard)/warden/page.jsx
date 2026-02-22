@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useReports } from "@/hooks/useReports";
-import { useComplaints } from "@/hooks/usecomplaints";
+import { useComplaints, useUpdateComplaint } from "@/hooks/usecomplaints";
 import { useAllPayments, useFinancialStats } from "@/hooks/usePayment";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -48,6 +48,16 @@ const WardenDashboard = () => {
         limit: 5,
         hostelId: user?.hostelId
     });
+    const { data: pendingComplaints } = useComplaints({
+        hostelId: user?.hostelId,
+        status: "PENDING"
+    });
+
+    const updateMutation = useUpdateComplaint();
+
+    const handleResolve = (id) => {
+        updateMutation.mutate({ id, status: 'RESOLVED', resolutionNotes: 'Resolved from dashboard' });
+    };
 
     const handleRefresh = async () => {
         const promise = refetchReports();
@@ -366,6 +376,48 @@ const WardenDashboard = () => {
                                         </div>
                                     </Link>
                                 ))}
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 md:space-y-6">
+                            <div className="flex items-center gap-3 px-2">
+                                <div className="h-5 w-1 bg-rose-600 rounded-full" />
+                                <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Priority Actions</h3>
+                            </div>
+                            <div className="bg-white border border-rose-100 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 shadow-sm space-y-4">
+                                {pendingComplaints?.length > 0 ? pendingComplaints.filter(c => c.priority === 'URGENT').slice(0, 3).map((complaint) => (
+                                    <div key={complaint.id} className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                                    <h4 className="text-[10px] md:text-[11px] font-bold text-gray-900 uppercase truncate">{complaint.title}</h4>
+                                                </div>
+                                                <p className="text-[8px] md:text-[9px] text-gray-500 font-medium line-clamp-1 mb-2">Room {complaint.roomNumber}</p>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="h-7 px-3 bg-white border border-gray-100 text-[8px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white hover:border-emerald-600 rounded-lg transition-all"
+                                                    onClick={() => handleResolve(complaint.id)}
+                                                    disabled={updateMutation.isPending}
+                                                >
+                                                    {updateMutation.isPending ? 'Updating...' : 'Resolve'}
+                                                </Button>
+                                            </div>
+                                            <Badge className="bg-rose-50 text-rose-600 border-none text-[7px] font-black uppercase rounded-full px-2 py-0">Urgent</Badge>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="py-8 text-center">
+                                        <CheckCircle2 className="h-8 w-8 text-emerald-100 mx-auto mb-2" />
+                                        <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">No urgent tasks</p>
+                                    </div>
+                                )}
+                                <Link href="/warden/complaints" className="block">
+                                    <Button variant="ghost" className="w-full h-10 text-[8px] font-black uppercase tracking-widest text-gray-400 hover:text-rose-600 hover:bg-gray-50 rounded-xl">
+                                        View All Pending
+                                    </Button>
+                                </Link>
                             </div>
                         </div>
 

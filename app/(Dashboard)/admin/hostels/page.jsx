@@ -170,6 +170,32 @@ const HostelsPage = () => {
                         >
                             <RefreshCw className={`h-4 w-4 text-gray-500 ${isFetchingHostels ? 'animate-spin' : ''}`} />
                         </Button>
+                        <Button
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border-gray-200 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 gap-2 shrink-0 hidden sm:flex"
+                            onClick={() => {
+                                if (!hostelsToDisplay || hostelsToDisplay.length === 0) {
+                                    toast.error("No properties found to export");
+                                    return;
+                                }
+                                const headers = ["ID", "Name", "Type", "Status", "City", "Total Rooms", "Occupied", "Available"];
+                                const rows = hostelsToDisplay.map(h => [
+                                    h.id, h.name, h.type, h.status, h.location.city, h.roomStats.totalRooms, h.roomStats.occupiedRooms, h.roomStats.availableRooms
+                                ]);
+                                const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+                                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                                const link = document.createElement("a");
+                                link.href = URL.createObjectURL(blob);
+                                link.setAttribute("download", `Branch_Registry_${new Date().toISOString().split('T')[0]}.csv`);
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                toast.success("Branch registry exported successfully");
+                            }}
+                        >
+                            <Download className="h-4 w-4" />
+                            <span className="hidden md:inline">Export Registry</span>
+                        </Button>
                         <Link href="/admin/hostels/createhostel?role=admin">
                             <Button className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 px-4 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm gap-2 whitespace-nowrap">
                                 <Plus className="h-4 w-4" />

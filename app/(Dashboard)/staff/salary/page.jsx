@@ -68,8 +68,36 @@ const StaffSalaryPage = () => {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <Button className="h-9 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest gap-2 shadow-lg shadow-indigo-100 transition-all active:scale-95">
-                            <Zap className="h-4 w-4" /> Export All
+                        <Button
+                            className="h-9 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest gap-2 shadow-lg shadow-indigo-100 transition-all active:scale-95"
+                            onClick={() => {
+                                if (!salaries || salaries.length === 0) {
+                                    toast.error("No salary records found to export");
+                                    return;
+                                }
+                                const headers = ["Month/Cycle", "Reference ID", "Amount (PKR)", "Basic Salary", "Bonuses", "Deductions", "Status", "Payment Date"];
+                                const rows = salaries.map(s => [
+                                    s.month,
+                                    s.id.toUpperCase(),
+                                    s.amount,
+                                    s.basicSalary,
+                                    s.bonuses,
+                                    s.deductions,
+                                    s.status,
+                                    s.paymentDate ? format(new Date(s.paymentDate), 'yyyy-MM-dd') : 'N/A'
+                                ]);
+                                const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+                                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                                const link = document.createElement("a");
+                                link.href = URL.createObjectURL(blob);
+                                link.setAttribute("download", `Salary_Report_${user?.name?.replace(/\s+/g, '_')}_${format(new Date(), 'yyyyMMdd')}.csv`);
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                toast.success("Salary history exported successfully");
+                            }}
+                        >
+                            <Download className="h-4 w-4" /> Export All
                         </Button>
                     </div>
                 </div>

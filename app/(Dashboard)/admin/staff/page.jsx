@@ -6,7 +6,7 @@ import {
     Users, Search, ClipboardList, CheckCircle2, AlertCircle,
     Clock, Zap, ChevronRight, UserCheck, Building2, Filter,
     BarChart3, TrendingUp, Star, Flame, Activity, X,
-    UserPlus, ArrowUpRight, MapPin, Calendar
+    UserPlus, ArrowUpRight, MapPin, Calendar, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -120,6 +120,36 @@ const AdminStaffPage = () => {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
+                        <Button
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border-gray-200 font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 gap-2 shrink-0 hidden lg:flex"
+                            onClick={() => {
+                                if (!staffMembers || staffMembers.length === 0) {
+                                    toast.error("No staff records found to export");
+                                    return;
+                                }
+                                const headers = ["Name", "Designation", "Department", "Hostel", "Tasks Handled", "Rating"];
+                                const rows = staffMembers.map(s => [
+                                    s.User?.name,
+                                    s.designation,
+                                    s.department || 'N/A',
+                                    s.User?.Hostel_User_hostelIdToHostel?.name || 'Unassigned',
+                                    s.totalTasksHandled || 0,
+                                    s.performanceRating || 5.0
+                                ]);
+                                const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+                                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                                const link = document.createElement("a");
+                                link.href = URL.createObjectURL(blob);
+                                link.setAttribute("download", `Staff_Directory_${format(new Date(), 'yyyyMMdd')}.csv`);
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                toast.success("Staff directory exported successfully");
+                            }}
+                        >
+                            <Download className="h-4 w-4" /> Export List
+                        </Button>
                         <Select value={selectedHostel} onValueChange={setSelectedHostel}>
                             <SelectTrigger className="h-9 w-[160px] rounded-xl border-gray-200 bg-white text-[10px] font-bold uppercase tracking-wider">
                                 <SelectValue placeholder="All Hostels" />
