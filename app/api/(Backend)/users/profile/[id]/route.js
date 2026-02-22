@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req, { params }) {
     const { id } = await params;
     console.log(`[API] GET /api/users/profile/${id} - Fetching profile`);
 
@@ -30,6 +30,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
                         address: true,
                         email: true,
                         phone: true,
+
                     }
                 }
             }
