@@ -30,7 +30,8 @@ import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
 import Loader from "@/components/ui/Loader";
 
-// ─── Status & Priority helpers ────────────────────────────────────────────────
+// ─── Status & Priority helpers ───────────────────────────────
+// ─────────────────
 const getStatusStyle = (status) => {
     switch (status) {
         case "RESOLVED": return "bg-emerald-50 text-emerald-700 border-emerald-100";

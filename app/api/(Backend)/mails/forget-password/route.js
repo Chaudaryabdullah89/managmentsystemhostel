@@ -31,7 +31,7 @@ export async function POST(req) {
         const token = sign({ id: user.id, email: user.email }, secret, { expiresIn: "1h" });
         const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
         const resetLink = `${baseUrl}/auth/reset-password?token=${hashedToken}&email=${user.email}&userId=${user.id}`;
 
         const html = `

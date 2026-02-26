@@ -36,7 +36,8 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts",
     "app/api/(Backend)/auth/user/[Id]/route.js",
-    "contexts/AuthContext.jsx"
+    "contexts/AuthContext.jsx",
+    "app/api/(Backend)/users/profile/[id]/route.js"
   ],
   "exclude": [
     "node_modules"

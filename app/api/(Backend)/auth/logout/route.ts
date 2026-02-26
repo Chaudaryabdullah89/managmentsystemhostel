@@ -4,10 +4,10 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: NextRequest) {
     try {
         const token = request.cookies.get('token')?.value;
-        console.log(`[API] POST /api/auth/logout - Processing logout request`);
+
 
         if (token) {
-            console.log(`[API] POST /api/auth/logout - Invalidating active session token`);
+
             await prisma.session.updateMany({
                 where: {
                     token: token
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
                 }
             });
         } else {
-            console.log(`[API] POST /api/auth/logout - No token found in cookies`);
+            // console.log(`[API] POST /api/auth/logout - No token found in cookies`);
         }
 
 
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
             { status: 200 }
         );
         response.cookies.delete('token');
-        console.log(`[API] POST /api/auth/logout - Logout successful, cookie deleted`);
+        // console.log(`[API] POST /api/auth/logout - Logout successful, cookie deleted`);
         return response;
     } catch (error) {
         console.error('Logout error:', error);
