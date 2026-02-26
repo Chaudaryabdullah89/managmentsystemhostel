@@ -56,7 +56,7 @@ async function main() {
     const admin = await prisma.user.create({
         data: {
             name: 'Super Admin',
-            email: 'admin@hostel.com',
+            email: '1@gmail.com',
             password: defaultPassword,
             role: 'ADMIN',
             phone: '0300-1111111',
@@ -305,7 +305,7 @@ async function main() {
         await prisma.expense.create({
             data: {
                 hostelId: hostel.id,
-                userId: admin.id,
+                submittedById: admin.id,
                 title: 'Electricity Bill',
                 amount: 12000,
                 category: 'Utilities',

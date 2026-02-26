@@ -26,22 +26,26 @@ model Booking {
 }
 
 model Complaint {
-  id           String             @id @default(cuid())
-  userId       String
-  hostelId     String?
-  subject      String
-  description  String
-  status       ComplaintStatus    @default(PENDING)
-  priority     ComplaintPriority  @default(MEDIUM)
-  category     ComplaintCategory?
-  assignedToId String?
-  resolvedAt   DateTime?
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  assignedTo   User?              @relation("Complaint_assignedToIdToUser", fields: [assignedToId], references: [id])
-  Hostel       Hostel?            @relation(fields: [hostelId], references: [id])
-  User         User               @relation("Complaint_userIdToUser", fields: [userId], references: [id])
-  comments     ComplaintComment[]
+  id                                String             @id @default(cuid())
+  userId                            String
+  hostelId                          String?
+  description                       String
+  status                            ComplaintStatus    @default(PENDING)
+  priority                          ComplaintPriority  @default(MEDIUM)
+  category                          ComplaintCategory?
+  assignedToId                      String?
+  resolvedAt                        DateTime?
+  createdAt                         DateTime           @default(now())
+  updatedAt                         DateTime           @updatedAt
+  User_Complaint_assignedToIdToUser User?              @relation("Complaint_assignedToIdToUser", fields: [assignedToId], references: [id])
+  Hostel                            Hostel?            @relation(fields: [hostelId], references: [id])
+  User_Complaint_userIdToUser       User               @relation("Complaint_userIdToUser", fields: [userId], references: [id])
+  comments                          ComplaintComment[]
+  roomNumber                        String?
+  uid                               String?            @unique
+  title                             String?
+  resolutionNotes                   String?
+  images                            String[]
 }
 
 model ComplaintComment {
@@ -57,7 +61,7 @@ model ComplaintComment {
 model Expense {
   id                               String        @id @default(cuid())
   hostelId                         String
-  userId                           String
+  submittedById                    String
   title                            String
   amount                           Float
   category                         String
@@ -65,15 +69,16 @@ model Expense {
   description                      String?
   date                             DateTime      @default(now())
   receiptImage                     String?
+  receiptUrl                       String?
   approvedById                     String?
   rejectedById                     String?
   rejectionReason                  String?
   createdAt                        DateTime      @default(now())
   updatedAt                        DateTime      @updatedAt
-  User_Expense_approvedByIdToUser  User?         @relation("Expense_approvedByIdToUser", fields: [approvedById], references: [id])
+  User_Expense_approvedByIdToUser  User?         @relation("Expense_Expense_approvedByIdToUser", fields: [approvedById], references: [id])
   Hostel                           Hostel        @relation(fields: [hostelId], references: [id])
-  User_Expense_rejectedByIdToUser  User?         @relation("Expense_rejectedByIdToUser", fields: [rejectedById], references: [id])
-  User_Expense_submittedByIdToUser User          @relation("Expense_userIdToUser", fields: [userId], references: [id])
+  User_Expense_rejectedByIdToUser  User?         @relation("Expense_Expense_rejectedByIdToUser", fields: [rejectedById], references: [id])
+  User_Expense_submittedByIdToUser User          @relation("Expense_Expense_submittedByIdToUser", fields: [submittedById], references: [id])
 }
 
 model Hostel {
@@ -105,18 +110,18 @@ model Hostel {
   image            String?
   street           String?
 
-  Booking                     Booking[]
-  Complaint                   Complaint[]
-  Expense                     Expense[]
-  User_Hostel_managerIdToUser User?           @relation("Hostel_managerIdToUser", fields: [managerId], references: [id])
-  MessMenu                    MessMenu[]
-  Notice                      Notice[]
-  Room                        Room[]
-  StaffTask                   StaffTask[]
-  User_User_hostelIdToHostel  User[]          @relation("User_hostelIdToHostel")
-  maintanance                 maintanance[]
-  payments                    Payment[]
-  refundRequests              RefundRequest[]
+  Booking                    Booking[]
+  Complaint                  Complaint[]
+  Expense                    Expense[]
+  Manager                    User?           @relation("Hostel_managerIdToUser", fields: [managerId], references: [id])
+  MessMenu                   MessMenu[]
+  Notice                     Notice[]
+  Room                       Room[]
+  StaffTask                  StaffTask[]
+  User_User_hostelIdToHostel User[]          @relation("User_hostelIdToHostel")
+  maintanance                maintanance[]
+  payments                   Payment[]
+  refundRequests             RefundRequest[]
 }
 
 model OtpVerification {
@@ -124,6 +129,7 @@ model OtpVerification {
   email     String
   otp       String
   expiresAt DateTime
+  type      String?  @default("EMAIL_VERIFICATION")
   createdAt DateTime @default(now())
 }
 
@@ -179,6 +185,10 @@ model ResidentProfile {
   bloodGroup       String?
   emergencyContact String?
   address          String?
+  city             String?
+  currentHostelId  String?
+  currentRoomId    String?
+  documents        String[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   User             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -196,7 +206,7 @@ model Room {
   features         String[]
   amenities        String[]
   description      String?
-  image            String?
+  images           String[]
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   floor            Int           @default(1)
@@ -220,6 +230,7 @@ model CleaningLog {
   cleanedBy String
   status    String   @default("COMPLETED")
   notes     String?
+  hostelId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   Room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
@@ -232,6 +243,8 @@ model LaundryLog {
   deliveredAt DateTime?
   status      String    @default("COLLECTED") // COLLECTED, PROCESSING, DELIVERED
   notes       String?
+  hostelId    String?
+  itemsCount  Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   Room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
@@ -249,6 +262,7 @@ model Salary {
   allowances     Float        @default(0)
   bonuses        Float        @default(0)
   deductions     Float        @default(0)
+  paymentMethod  String?      @default("CASH")
   notes          String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -275,11 +289,16 @@ model WardenPayment {
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  token      String   @unique
+  userId     String
+  expiresAt  DateTime
+  device     String?
+  ipAddress  String?
+  lastActive DateTime @default(now())
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model StaffProfile {
@@ -289,12 +308,16 @@ model StaffProfile {
   department        String
   joiningDate       DateTime          @default(now())
   basicSalary       Float
+  allowances        Float?            @default(0)
+  shift             String?
+  documents         String[]
   bankName          String?
   accountNumber     String?
   ifscCode          String?
   address           String?
   emergencyContact  String?
   status            String            @default("ACTIVE")
+  totalTasksHandled Int               @default(0)
   lastSalaryProcess DateTime?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
@@ -340,9 +363,9 @@ model User {
   Complaint_Complaint_assignedToIdToUser     Complaint[]        @relation("Complaint_assignedToIdToUser")
   Complaint_Complaint_userIdToUser           Complaint[]        @relation("Complaint_userIdToUser")
   complaintComments                          ComplaintComment[]
-  Expense_User_approvedByIdToUser            Expense[]          @relation("Expense_approvedByIdToUser")
-  Expense_User_rejectedByIdToUser            Expense[]          @relation("Expense_rejectedByIdToUser")
-  Expense_User_userIdToUser                  Expense[]          @relation("Expense_userIdToUser")
+  Expense_Expense_approvedByIdToUser         Expense[]          @relation("Expense_Expense_approvedByIdToUser")
+  Expense_Expense_rejectedByIdToUser         Expense[]          @relation("Expense_Expense_rejectedByIdToUser")
+  Expense_Expense_submittedByIdToUser        Expense[]          @relation("Expense_Expense_submittedByIdToUser")
   Hostel_Hostel_managerIdToUser              Hostel[]           @relation("Hostel_managerIdToUser")
   Payment                                    Payment[]
   ResidentProfile                            ResidentProfile?
@@ -376,7 +399,7 @@ model StaffTask {
   updatedAt    DateTime      @updatedAt
   assignedTo   User?         @relation("Task_AssignedTo", fields: [assignedToId], references: [id])
   createdBy    User          @relation("Task_CreatedBy", fields: [createdById], references: [id])
-  Hostel       Hostel        @relation(fields: [hostelId], references: [id])
+  hostel       Hostel        @relation(fields: [hostelId], references: [id])
   comments     TaskComment[]
 
   @@index([hostelId])
@@ -394,23 +417,25 @@ model TaskComment {
 }
 
 model maintanance {
-  id             String    @id @default(cuid())
-  title          String
-  description    String
-  status         String    @default("PENDING")
-  priority       String    @default("MEDIUM")
-  hostelId       String
-  roomId         String?
-  userId         String
-  assignedToId   String?
-  resolvedAt     DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  assignedTo     User?     @relation("maintanance_assignedToIdToUser", fields: [assignedToId], references: [id])
-  Hostel         Hostel    @relation(fields: [hostelId], references: [id], onDelete: Cascade)
-  Room           Room?     @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  User           User      @relation("maintanance_userIdToUser", fields: [userId], references: [id])
-  maintanance_id String?
+  id              String    @id @default(cuid())
+  title           String
+  description     String
+  status          String    @default("PENDING")
+  priority        String    @default("MEDIUM")
+  hostelId        String
+  roomId          String?
+  userId          String
+  assignedToId    String?
+  resolvedAt      DateTime?
+  resolutionNotes String?
+  images          String[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  assignedTo      User?     @relation("maintanance_assignedToIdToUser", fields: [assignedToId], references: [id])
+  Hostel          Hostel    @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  Room            Room?     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  User            User      @relation("maintanance_userIdToUser", fields: [userId], references: [id])
+  maintanance_id  String?
 }
 
 model resetPassword {
@@ -501,9 +526,11 @@ enum ComplaintPriority {
 enum ComplaintCategory {
   MAINTENANCE
   CLEANING
+  CLEANLINESS
   MESS
   SECURITY
   INTERNET
+  NOISE
   OTHER
 }
 

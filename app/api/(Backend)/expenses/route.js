@@ -37,6 +37,21 @@ export async function POST(request) {
     try {
         const body = await request.json();
         console.log("Inbound Expense Ingress:", body);
+
+        // Validate user existence to prevent P2003 Foreign Key Violation
+        if (body.submittedById) {
+            const userExists = await prisma.user.findUnique({
+                where: { id: body.submittedById },
+                select: { id: true }
+            });
+            if (!userExists) {
+                return NextResponse.json({
+                    success: false,
+                    error: "The submitting user does not exist. Your session may be stale. Please log out and log back in."
+                }, { status: 401 });
+            }
+        }
+
         const expense = await ExpenseServices.createExpense(body);
         return NextResponse.json({ success: true, data: expense });
     } catch (error) {
