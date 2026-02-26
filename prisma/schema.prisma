@@ -9,6 +9,7 @@ datasource db {
 
 model Booking {
   id              String        @id @default(cuid())
+  uid             String?       @unique
   userId          String
   roomId          String
   checkIn         DateTime
@@ -23,6 +24,12 @@ model Booking {
   Hostel          Hostel?       @relation(fields: [hostelId], references: [id])
   hostelId        String?
   Payment         Payment[]
+
+  @@index([userId])
+  @@index([hostelId])
+  @@index([status])
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
 }
 
 model Complaint {
@@ -46,6 +53,12 @@ model Complaint {
   title                             String?
   resolutionNotes                   String?
   images                            String[]
+
+  @@index([userId])
+  @@index([hostelId])
+  @@index([status])
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
 }
 
 model ComplaintComment {
@@ -79,6 +92,8 @@ model Expense {
   Hostel                           Hostel        @relation(fields: [hostelId], references: [id])
   User_Expense_rejectedByIdToUser  User?         @relation("Expense_Expense_rejectedByIdToUser", fields: [rejectedById], references: [id])
   User_Expense_submittedByIdToUser User          @relation("Expense_Expense_submittedByIdToUser", fields: [submittedById], references: [id])
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
 }
 
 model Hostel {
@@ -122,6 +137,8 @@ model Hostel {
   maintanance                maintanance[]
   payments                   Payment[]
   refundRequests             RefundRequest[]
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
 }
 
 model OtpVerification {
@@ -158,6 +175,13 @@ model Payment {
   bookingId      String?
   Booking        Booking?        @relation(fields: [bookingId], references: [id])
   refundRequests RefundRequest[]
+
+  @@index([userId])
+  @@index([bookingId])
+  @@index([hostelId])
+  @@index([status])
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
 }
 
 model RefundRequest {
@@ -221,6 +245,8 @@ model Room {
   cleaning         CleaningLog[]
   laundry          LaundryLog[]
   maintanance      maintanance[]
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
 }
 
 model CleaningLog {
@@ -267,6 +293,8 @@ model Salary {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   StaffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
 }
 
 model WardenPayment {
@@ -380,6 +408,8 @@ model User {
   refundRequests                             RefundRequest[]
   notices                                    Notice[]           @relation("NoticeAuthor")
   WardenPayment                              WardenPayment[]
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
 }
 
 model StaffTask {
@@ -429,6 +459,7 @@ model maintanance {
   resolvedAt      DateTime?
   resolutionNotes String?
   images          String[]
+  uid             String?   @unique
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   assignedTo      User?     @relation("maintanance_assignedToIdToUser", fields: [assignedToId], references: [id])
@@ -436,6 +467,11 @@ model maintanance {
   Room            Room?     @relation(fields: [roomId], references: [id], onDelete: Cascade)
   User            User      @relation("maintanance_userIdToUser", fields: [userId], references: [id])
   maintanance_id  String?
+
+  @@index([userId])
+  @@index([roomId])
+  @@index([hostelId])
+  @@index([status])
 }
 
 model resetPassword {
@@ -476,6 +512,8 @@ model Notice {
   updatedAt   DateTime  @updatedAt
   author      User      @relation("NoticeAuthor", fields: [authorId], references: [id])
   hostel      Hostel?   @relation(fields: [hostelId], references: [id])
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
 }
 
 enum UserRole {

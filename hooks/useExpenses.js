@@ -9,6 +9,8 @@ export const ExpenseQueryKeys = {
 
 export function useExpenses(filters = {}) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ExpenseQueryKeys.list(filters),
         queryFn: async () => {
             const params = new URLSearchParams();
@@ -25,6 +27,8 @@ export function useExpenses(filters = {}) {
 
 export function useExpenseStats(hostelId = 'all') {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ExpenseQueryKeys.stats(hostelId),
         queryFn: async () => {
             const response = await fetch(`/api/expenses?stats=true&hostelId=${hostelId}`);
@@ -49,11 +53,7 @@ export function useCreateExpense() {
             return data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ExpenseQueryKeys.all() });
             toast.success("Expense record successfully archived");
-        },
-        onError: (error) => {
-            toast.error(error.message || "Archive protocol failed");
         },
     });
 }
@@ -71,12 +71,26 @@ export function useUpdateExpenseStatus() {
             if (!data.success) throw new Error(data.error);
             return data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ExpenseQueryKeys.all() });
-            toast.success("Authorization state updated");
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["expenses"] });
+            const previousData = queryClient.getQueryData(["expenses"]);
+            queryClient.setQueryData(["expenses"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
         },
-        onError: (error) => {
-            toast.error(error.message || "Status authorization failed");
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["expenses"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["expenses"] });
+        },
+        onSuccess: () => {
+            toast.success("Authorization state updated");
         },
     });
 }

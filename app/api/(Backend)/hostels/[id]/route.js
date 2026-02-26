@@ -1,6 +1,10 @@
+import { checkRole } from '@/lib/checkRole';
 import prisma from "@/lib/prisma";
 const { NextResponse } = require("next/server");
 export async function GET(request, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { id } = await params;
         const hostel = await prisma.hostel.findUnique({

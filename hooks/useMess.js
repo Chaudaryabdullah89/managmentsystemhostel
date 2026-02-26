@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 // Fetch mess menu for a specific hostel
 export const useMessMenu = (hostelId) => {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ["messMenu", hostelId],
         queryFn: async () => {
             const response = await fetch(`/api/mess${hostelId ? `?hostelId=${hostelId}` : ''}`);

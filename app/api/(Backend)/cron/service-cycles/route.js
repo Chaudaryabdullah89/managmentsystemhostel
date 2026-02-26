@@ -1,7 +1,12 @@
+import { NextResponse } from 'next/server';
+import { checkRole } from '@/lib/checkRole';
 import prisma from "@/lib/prisma";
 import crypto from "crypto";
 
 export async function GET(req) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     const authHeader = req.headers.get('authorization');
     if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         return new Response('Unauthorized', { status: 401 });

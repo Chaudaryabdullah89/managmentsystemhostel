@@ -1,7 +1,11 @@
+import { checkRole } from '@/lib/checkRole';
 const { prisma } = require("@/lib/prisma");
 const { NextResponse } = require("next/server");
 
 export async function GET(request, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
 
     try {
         const { id } = await params

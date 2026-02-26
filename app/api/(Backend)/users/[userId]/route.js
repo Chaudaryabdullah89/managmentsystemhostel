@@ -1,7 +1,11 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function GET(request, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { userId } = await params;
 
@@ -119,6 +123,9 @@ export async function PATCH(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { userId } = await params;
         await prisma.user.delete({ where: { id: userId } });

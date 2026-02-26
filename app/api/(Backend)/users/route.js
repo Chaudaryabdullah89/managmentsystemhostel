@@ -1,3 +1,4 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
@@ -6,6 +7,9 @@ import { sendEmail } from "@/lib/utils/sendmail";
 import { welcomeEmail } from "@/lib/utils/emailTemplates";
 
 export async function GET(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { searchParams } = new URL(request.url);
         const role = searchParams.get("role");
@@ -65,6 +69,9 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         const { name, email, password, phone, role, hostelId, cnic, designation, basicSalary } = body;

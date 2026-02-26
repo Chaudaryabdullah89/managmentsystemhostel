@@ -1,7 +1,11 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import ExpenseServices from "@/lib/services/expenseservices/expenseservices";
 
 export async function GET(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { searchParams } = new URL(request.url);
         const stats = searchParams.get("stats");
@@ -34,6 +38,9 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         console.log("Inbound Expense Ingress:", body);

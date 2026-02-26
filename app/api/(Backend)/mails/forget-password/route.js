@@ -1,3 +1,4 @@
+import { checkRole } from '@/lib/checkRole';
 
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/utils/sendmail";
@@ -6,6 +7,9 @@ import crypto from "crypto";
 import { sign } from "jsonwebtoken";
 
 export async function POST(req) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { email } = await req.json();
         console.log(`[API] POST /api/mails/forget-password - Request received for email: ${email}`);

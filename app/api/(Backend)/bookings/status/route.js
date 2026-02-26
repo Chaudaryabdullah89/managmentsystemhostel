@@ -1,3 +1,4 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import BookingServices from "@/lib/services/bookingservices/bookingservices";
 import { sendEmail } from "@/lib/utils/sendmail";
@@ -7,6 +8,9 @@ import { prisma } from "@/lib/prisma";
 const bookingServices = new BookingServices();
 
 export async function PUT(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         const { id, status, notes } = body;

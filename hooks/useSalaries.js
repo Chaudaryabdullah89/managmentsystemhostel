@@ -11,6 +11,8 @@ export const SalaryQueryKeys = {
 
 export function useStaffList(hostelId) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: SalaryQueryKeys.staff(hostelId),
         queryFn: async () => {
             const url = hostelId ? `/api/staff?hostelId=${hostelId}` : "/api/staff";
@@ -24,6 +26,8 @@ export function useStaffList(hostelId) {
 
 export function useStaffSalaryHistory(staffId) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: SalaryQueryKeys.staffHistory(staffId),
         queryFn: async () => {
             if (!staffId) return null;
@@ -53,14 +57,13 @@ export function useCreateSalary() {
             queryClient.invalidateQueries({ queryKey: SalaryQueryKeys.all() });
             toast.success(data.message || "Salary node initialized");
         },
-        onError: (error) => {
-            toast.error(error.message || "Failed to create salary entry");
-        },
     });
 }
 
 export function useAllSalaries(filters = {}) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: SalaryQueryKeys.list(filters),
         queryFn: async () => {
             const params = new URLSearchParams();
@@ -93,9 +96,6 @@ export function useGeneratePayroll() {
             queryClient.invalidateQueries({ queryKey: SalaryQueryKeys.all() });
             toast.success(data.message || "Payroll generated successfully");
         },
-        onError: (error) => {
-            toast.error(error.message || "Failed to generate payroll");
-        },
     });
 }
 
@@ -112,12 +112,27 @@ export function useUpdateSalary() {
             if (!data.success) throw new Error(data.error);
             return data.salary;
         },
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["salaries"] });
+            const previousData = queryClient.getQueryData(["salaries"]);
+            queryClient.setQueryData(["salaries"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
+        },
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["salaries"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["salaries"] });
+        },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: SalaryQueryKeys.all() });
             toast.success(`Salary for ${data.StaffProfile.User.name} updated`);
-        },
-        onError: (error) => {
-            toast.error(error.message || "Failed to update salary");
         },
     });
 }
@@ -133,12 +148,26 @@ export function useDeleteSalary() {
             if (!data.success) throw new Error(data.error);
             return data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: SalaryQueryKeys.all() });
-            toast.success("Salary record removed");
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["salaries"] });
+            const previousData = queryClient.getQueryData(["salaries"]);
+            queryClient.setQueryData(["salaries"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
         },
-        onError: (error) => {
-            toast.error(error.message || "Failed to delete salary");
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["salaries"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["salaries"] });
+        },
+        onSuccess: () => {
+            toast.success("Salary record removed");
         },
     });
 }
@@ -157,11 +186,7 @@ export function useSubmitAppeal() {
             return data.salary;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: SalaryQueryKeys.all() });
             toast.success("Appeal submitted for node verification");
-        },
-        onError: (error) => {
-            toast.error(error.message || "Appeal submission failed");
         },
     });
 }

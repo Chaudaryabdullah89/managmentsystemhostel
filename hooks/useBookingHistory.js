@@ -8,6 +8,8 @@ import { toast } from "sonner"
  */
 export function useBookingHistory(userId) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ['bookingHistory', userId],
         queryFn: async () => {
             if (!userId) return []

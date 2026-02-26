@@ -8,6 +8,8 @@ export const NoticeQueryKeys = {
 
 export function useNotices(filters = {}) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: [...NoticeQueryKeys.all, filters],
         queryFn: async () => {
             const params = new URLSearchParams(filters);
@@ -33,11 +35,7 @@ export function useCreateNotice() {
             return data.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: NoticeQueryKeys.all });
             toast.success("Notice published successfully");
-        },
-        onError: (error) => {
-            toast.error(error.message || "Failed to publish notice");
         },
     });
 }
@@ -55,12 +53,26 @@ export function useUpdateNotice() {
             if (!data.success) throw new Error(data.error);
             return data.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: NoticeQueryKeys.all });
-            toast.success("Notice updated");
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["notices"] });
+            const previousData = queryClient.getQueryData(["notices"]);
+            queryClient.setQueryData(["notices"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
         },
-        onError: (error) => {
-            toast.error(error.message || "Failed to update notice");
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["notices"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["notices"] });
+        },
+        onSuccess: () => {
+            toast.success("Notice updated");
         },
     });
 }
@@ -76,12 +88,26 @@ export function useDeleteNotice() {
             if (!data.success) throw new Error(data.error);
             return data.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: NoticeQueryKeys.all });
-            toast.success("Notice removed");
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["notices"] });
+            const previousData = queryClient.getQueryData(["notices"]);
+            queryClient.setQueryData(["notices"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
         },
-        onError: (error) => {
-            toast.error(error.message || "Failed to remove notice");
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["notices"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["notices"] });
+        },
+        onSuccess: () => {
+            toast.success("Notice removed");
         },
     });
 }

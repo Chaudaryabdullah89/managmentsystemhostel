@@ -29,9 +29,6 @@ export function useCreatePayment() {
             }
             toast.success("Payment recorded successfully");
         },
-        onError: (error) => {
-            toast.error(error.message || "Failed to record payment");
-        },
     });
 }
 
@@ -51,7 +48,9 @@ export function useAllPayments(filters = {}) {
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
             return data;
-        }
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
     });
 }
 
@@ -64,7 +63,9 @@ export function useFinancialStats(hostelId) {
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
             return data.stats;
-        }
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
     });
 }
 
@@ -88,13 +89,12 @@ export function useReconcilePayment() {
             }
             toast.success("Bulk reconciliation completed successfully");
         },
-        onError: (error) => {
-            toast.error(error.message || "Reconciliation cycle failed");
-        },
     });
 }
 export function usePaymentById(id) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: PaymentQueryKeys.byId(id),
         queryFn: async () => {
             if (!id) return null;
@@ -120,6 +120,24 @@ export function useUpdatePayment() {
             if (!data.success) throw new Error(data.error);
             return data.payment;
         },
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["payments"] });
+            const previousData = queryClient.getQueryData(["payments"]);
+            queryClient.setQueryData(["payments"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
+        },
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["payments"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["payments"] });
+        },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: PaymentQueryKeys.all() });
             queryClient.invalidateQueries({ queryKey: PaymentQueryKeys.byId(data.id) });
@@ -128,9 +146,6 @@ export function useUpdatePayment() {
                 queryClient.invalidateQueries({ queryKey: BookingQueryKeys.all() });
             }
             toast.success(`Payment ${data.id.slice(-6).toUpperCase()} updated successfully`);
-        },
-        onError: (error) => {
-            toast.error(error.message || "Failed to update payment");
         },
     });
 }
@@ -146,6 +161,24 @@ export function useDeletePayment() {
             if (!data.success) throw new Error(data.error);
             return data;
         },
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["payments"] });
+            const previousData = queryClient.getQueryData(["payments"]);
+            queryClient.setQueryData(["payments"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
+        },
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["payments"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["payments"] });
+        },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: PaymentQueryKeys.all() });
             const bookingQuery = queryClient.getQueriesData({ queryKey: BookingQueryKeys.all() });
@@ -153,9 +186,6 @@ export function useDeletePayment() {
                 queryClient.invalidateQueries({ queryKey: BookingQueryKeys.all() });
             }
             toast.success("Payment deleted successfully");
-        },
-        onError: (error) => {
-            toast.error(error.message || "Failed to delete payment");
         },
     });
 }

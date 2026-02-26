@@ -1,9 +1,13 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import TaskServices from "@/lib/services/taskservices/taskservices";
 
 const taskServices = new TaskServices();
 
 export async function GET(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { searchParams } = new URL(request.url);
         const hostelId = searchParams.get('hostelId');
@@ -29,6 +33,9 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         const task = await taskServices.createTask(body);
@@ -39,6 +46,9 @@ export async function POST(request) {
 }
 
 export async function PUT(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         const { id, ...data } = body;

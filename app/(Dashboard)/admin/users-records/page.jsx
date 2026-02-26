@@ -62,6 +62,7 @@ import { useAllUsers, useCreateUser, useUpdateAnyUser, useDeleteUser, useResetPa
 import { useHostel } from "@/hooks/usehostel";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { format } from "date-fns";
 
 const UserRecordPage = () => {
     const router = useRouter();

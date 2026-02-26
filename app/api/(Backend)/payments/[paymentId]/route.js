@@ -1,3 +1,4 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import PaymentServices from "@/lib/services/paymentservices/paymentservices";
 import { sendEmail } from "@/lib/utils/sendmail";
@@ -7,6 +8,9 @@ import { prisma } from "@/lib/prisma";
 const paymentServices = new PaymentServices();
 
 export async function GET(request, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { paymentId } = await params;
         const payment = await paymentServices.getPaymentById(paymentId);
@@ -73,6 +77,9 @@ export async function PATCH(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { paymentId } = await params;
         await paymentServices.deletePayment(paymentId);

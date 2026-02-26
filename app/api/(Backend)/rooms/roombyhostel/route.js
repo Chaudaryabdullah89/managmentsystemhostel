@@ -1,8 +1,12 @@
+import { checkRole } from '@/lib/checkRole';
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import RoomServices from "../../../../../lib/services/roomservices/roomservices";
 
 export async function GET(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { searchParams } = new URL(request.url);
         const hostelId = searchParams.get('hostelId');

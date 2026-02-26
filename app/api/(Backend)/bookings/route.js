@@ -1,3 +1,4 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import BookingServices from "@/lib/services/bookingservices/bookingservices";
 import { sendEmail } from "@/lib/utils/sendmail";
@@ -5,6 +6,9 @@ import { bookingCreatedEmail } from "@/lib/utils/emailTemplates";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get("userId");
@@ -28,6 +32,9 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         const booking = await new BookingServices().createBooking(body);

@@ -1,3 +1,4 @@
+import { checkRole } from '@/lib/checkRole';
 
 import { NextResponse } from "next/server";
 import BookingServices from "@/lib/services/bookingservices/bookingservices";
@@ -5,6 +6,9 @@ import BookingServices from "@/lib/services/bookingservices/bookingservices";
 const bookingServices = new BookingServices();
 
 export async function GET(request, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { bookingId } = await params;
         if (!bookingId) {
@@ -24,6 +28,9 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { bookingId } = await params;
         const data = await request.json();

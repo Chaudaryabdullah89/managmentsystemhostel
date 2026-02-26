@@ -8,6 +8,8 @@ export const RefundQueryKeys = {
 
 export function useRefundRequests(filters = {}) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: RefundQueryKeys.list(filters),
         queryFn: async () => {
             const params = new URLSearchParams();
@@ -36,8 +38,25 @@ export function useUpdateRefundStatus() {
             if (!data.success) throw new Error(data.error);
             return data.refundRequest;
         },
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["refunds"] });
+            const previousData = queryClient.getQueryData(["refunds"]);
+            queryClient.setQueryData(["refunds"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
+        },
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["refunds"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["refunds"] });
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: RefundQueryKeys.all() });
             toast.success("Refund status updated");
         },
         onError: (error) => {

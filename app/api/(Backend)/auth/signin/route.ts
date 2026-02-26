@@ -1,6 +1,7 @@
 import AuthService from "@/lib/services/AuthServices/authservices";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
+import { rateLimiter } from "@/lib/rateLimit";
 
 interface LoginData {
     email: string;
@@ -9,6 +10,15 @@ interface LoginData {
 
 export async function POST(request: NextRequest) {
     const authService = new AuthService()
+    const rateLimitCheck = rateLimiter(request, 5, 2 * 60 * 1000); // 5 requests per 2 minutes
+
+    if (!rateLimitCheck.success) {
+        return NextResponse.json(
+            { success: false, message: rateLimitCheck.error },
+            { status: rateLimitCheck.status }
+        );
+    }
+
     const data = await request.json()
     const { email, password } = data
     const ipAddress = request.headers.get("x-forwarded-for") || "127.0.0.1";

@@ -1,7 +1,11 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function GET(req) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { searchParams } = new URL(req.url);
         const query = searchParams.get('query');
@@ -141,7 +145,7 @@ export async function GET(req) {
                     ]
                 },
                 include: {
-                    User_maintanance_userIdToUser: {
+                    User: {
                         select: {
                             id: true,
                             uid: true,

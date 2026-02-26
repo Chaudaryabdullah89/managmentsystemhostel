@@ -97,11 +97,7 @@ export const useTerminateSessions = () => {
             return response.json();
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["sessions"] });
             toast.success("Session terminated");
-        },
-        onError: (err: any) => {
-            toast.error(err.message || "Failed to terminate session");
         },
     });
 };
@@ -117,11 +113,7 @@ export const useTerminateAllSessions = () => {
             return response.json();
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["sessions"] });
             toast.success("All sessions terminated");
-        },
-        onError: (err: any) => {
-            toast.error(err.message || "Failed to terminate sessions");
         },
     });
 };
@@ -143,6 +135,8 @@ export const useuserbyrole = (role: string) => {
 
 export const useUserDetailedProfile = (id: string) => {
     const { data, isLoading, error, refetch, isFetching } = useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: QueryKeys.userDetailedProfile(id),
         queryFn: async () => {
             if (!id) return null;

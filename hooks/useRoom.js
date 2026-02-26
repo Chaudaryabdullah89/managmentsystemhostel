@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 
 export function useRoom() {
     const { data, isLoading, isPending } = useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: [...QueryKeys.Roomlist()],
         queryFn: async () => {
             const response = await fetch("/api/rooms");
@@ -16,6 +18,8 @@ export function useRoom() {
 }
 export function useRoomById(id) {
     const { data, isLoading, isPending } = useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: [...QueryKeys.Roombyid(id)],
         queryFn: async () => {
             const response = await fetch(`  /api/rooms/${id}`);
@@ -28,6 +32,8 @@ export function useRoomById(id) {
 
 export function useRoomByHostelId(id) {
     const { data, isLoading, isPending } = useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: [...QueryKeys.Roombyhostelid(id)],
         queryFn: async () => {
             const response = await fetch(`/api/rooms/roombyhostel?hostelId=${id}`);
@@ -39,6 +45,8 @@ export function useRoomByHostelId(id) {
 }
 export function useSingleRoomByHostelId(hostelId, roomid) {
     const { data, isLoading, isPending } = useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: [...QueryKeys.singleRoombyHostelId(hostelId, roomid)],
         queryFn: async () => {
             const response = await fetch(`/api/rooms/singleroombyhostelId?hostelId=${hostelId}&roomid=${roomid}`);
@@ -62,7 +70,6 @@ export function useCreateMaintenance() {
             return response.json();
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: QueryKeys.Roomlist() });
             toast.success("Maintenance request submitted successfully");
         },
         onError: (error) => {
@@ -84,7 +91,6 @@ export function useCreateCleaningLog() {
             return response.json();
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: QueryKeys.Roomlist() });
             toast.success("Cleaning log added successfully");
         },
     });
@@ -103,7 +109,6 @@ export function useCreateLaundryLog() {
             return response.json();
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: QueryKeys.Roomlist() });
             toast.success("Laundry log recorded successfully");
         },
     });
@@ -120,6 +125,24 @@ export function useUpdateMaintenance() {
             });
             if (!response.ok) throw new Error("Failed to update maintenance record");
             return response.json();
+        },
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["rooms"] });
+            const previousData = queryClient.getQueryData(["rooms"]);
+            queryClient.setQueryData(["rooms"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
+        },
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["rooms"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["rooms"] });
         },
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: [QueryKeys.Rooms] });
@@ -143,8 +166,25 @@ export function useUpdateCleaningLog() {
             if (!response.ok) throw new Error("Failed to update cleaning log");
             return response.json();
         },
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["rooms"] });
+            const previousData = queryClient.getQueryData(["rooms"]);
+            queryClient.setQueryData(["rooms"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
+        },
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["rooms"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["rooms"] });
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [QueryKeys.Rooms] });
             toast.success("Cleaning protocol updated");
         },
     });
@@ -162,8 +202,25 @@ export function useUpdateLaundryLog() {
             if (!response.ok) throw new Error("Failed to update laundry log");
             return response.json();
         },
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["rooms"] });
+            const previousData = queryClient.getQueryData(["rooms"]);
+            queryClient.setQueryData(["rooms"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
+        },
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["rooms"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["rooms"] });
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [QueryKeys.Rooms] });
             toast.success("Laundry log updated");
         },
     });

@@ -9,6 +9,8 @@ export const TaskQueryKeys = {
 
 export function useTasks(filters: any = {}) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: [...TaskQueryKeys.all, filters],
         queryFn: async () => {
             const cleanFilters = Object.fromEntries(
@@ -25,6 +27,8 @@ export function useTasks(filters: any = {}) {
 
 export function useTaskById(id: string) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ["tasks", id],
         queryFn: async () => {
             const response = await fetch(`/api/tasks/${id}`);
@@ -50,11 +54,7 @@ export function useCreateTask() {
             return data.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: TaskQueryKeys.all });
             toast.success("Task created successfully");
-        },
-        onError: (error: any) => {
-            toast.error(error.message || "Failed to create task");
         },
     });
 }
@@ -72,12 +72,26 @@ export function useUpdateTask() {
             if (!data.success) throw new Error(data.error);
             return data.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: TaskQueryKeys.all });
-            toast.success("Task updated");
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: TaskQueryKeys.all });
+            const previousData = queryClient.getQueryData(TaskQueryKeys.all);
+            queryClient.setQueryData(TaskQueryKeys.all, (old: any) => {
+                if (!old || !Array.isArray(old)) return old;
+                return old.map((item: any) => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
         },
-        onError: (error: any) => {
-            toast.error(error.message || "Failed to update task");
+        onError: (err: any, newRecord: any, context: any) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(TaskQueryKeys.all, context.previousData);
+            }
+            toast.error(err.message || "Failed to update task");
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: TaskQueryKeys.all });
+        },
+        onSuccess: () => {
+            toast.success("Task updated");
         },
     });
 }
@@ -96,11 +110,7 @@ export function useAddTaskComment() {
             return data.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: TaskQueryKeys.all });
             toast.success("Comment added");
-        },
-        onError: (error: any) => {
-            toast.error(error.message || "Failed to add comment");
         },
     });
 }

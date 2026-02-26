@@ -1,3 +1,4 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { sendEmail } from "@/lib/utils/sendmail";
@@ -138,6 +139,9 @@ export async function PATCH(request, context) {
 }
 
 export async function DELETE(request, context) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { id } = await context.params;
         await prisma.salary.delete({ where: { id } });

@@ -1,3 +1,4 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { format } from "date-fns";
@@ -5,6 +6,9 @@ import { sendEmail } from "@/lib/utils/sendmail";
 import { monthlyRentEmail } from "@/lib/utils/emailTemplates";
 
 export async function GET(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { searchParams } = new URL(request.url);
         const status = searchParams.get("status");
@@ -64,6 +68,9 @@ export async function GET(request) {
 
 // Generate Payroll for the month
 export async function POST(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         const { month, staffId, customAmount, customBonuses, customDeductions, customNotes } = body;

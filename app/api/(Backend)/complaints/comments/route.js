@@ -1,9 +1,13 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import ComplaintServices from "@/lib/services/complaintservices/complaintservices";
 
 const complaintServices = new ComplaintServices();
 
 export async function POST(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         const { complaintId, userId, message } = body;

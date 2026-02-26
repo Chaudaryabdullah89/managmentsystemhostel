@@ -1,8 +1,12 @@
+import { checkRole } from '@/lib/checkRole';
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(req, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     const { id } = await params;
     console.log(`[API] GET /api/users/profile/${id} - Fetching profile`);
 

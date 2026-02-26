@@ -1,3 +1,4 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { format } from "date-fns";
@@ -6,6 +7,9 @@ import { monthlyRentEmail } from "@/lib/utils/emailTemplates";
 
 // GET /api/warden-salary
 export async function GET(request) {
+    const auth = await checkRole(['WARDEN', 'ADMIN', 'SUPER_ADMIN']);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { searchParams } = new URL(request.url);
         const wardenId = searchParams.get("wardenId");
@@ -52,6 +56,9 @@ export async function GET(request) {
 
 // POST /api/warden-salary
 export async function POST(request) {
+    const auth = await checkRole(['WARDEN', 'ADMIN', 'SUPER_ADMIN']);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         const {
@@ -210,6 +217,9 @@ export async function POST(request) {
 
 // DELETE /api/warden-salary
 export async function DELETE(request) {
+    const auth = await checkRole(['WARDEN', 'ADMIN', 'SUPER_ADMIN']);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { searchParams } = new URL(request.url);
         const id = searchParams.get("id");

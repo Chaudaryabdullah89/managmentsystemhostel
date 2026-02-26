@@ -8,6 +8,8 @@ export const WardenSalaryQueryKeys = {
 
 export function useAllWardenSalaries(filters = {}) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: WardenSalaryQueryKeys.all(filters),
         queryFn: async () => {
             const params = new URLSearchParams();
@@ -25,6 +27,8 @@ export function useAllWardenSalaries(filters = {}) {
 
 export function useWardenPayments(wardenId) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: WardenSalaryQueryKeys.byWardenId(wardenId),
         queryFn: async () => {
             if (!wardenId) return null;
@@ -54,9 +58,6 @@ export function usePayWarden() {
             queryClient.invalidateQueries({ queryKey: ['warden-salaries'] });
             toast.success(data.message || "Payment processed successfully");
         },
-        onError: (error) => {
-            toast.error(error.message || "Failed to process payment");
-        },
     });
 }
 
@@ -77,9 +78,6 @@ export function useGenerateWardenPayroll() {
             queryClient.invalidateQueries({ queryKey: ['warden-salaries'] });
             toast.success(data.message || "Warden Payroll generated successfully");
         },
-        onError: (error) => {
-            toast.error(error.message || "Failed to generate payroll");
-        },
     });
 }
 
@@ -94,12 +92,26 @@ export function useDeleteWardenSalary() {
             if (!data.success) throw new Error(data.error);
             return data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['warden-salaries'] });
-            toast.success("Salary record removed");
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["salaries"] });
+            const previousData = queryClient.getQueryData(["salaries"]);
+            queryClient.setQueryData(["salaries"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
         },
-        onError: (error) => {
-            toast.error(error.message || "Failed to delete record");
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["salaries"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["salaries"] });
+        },
+        onSuccess: () => {
+            toast.success("Salary record removed");
         },
     });
 }
@@ -117,12 +129,26 @@ export function useUpdateWardenSalary() {
             if (!resData.success) throw new Error(resData.error);
             return resData;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['warden-salaries'] });
-            toast.success("Salary updated successfully");
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["salaries"] });
+            const previousData = queryClient.getQueryData(["salaries"]);
+            queryClient.setQueryData(["salaries"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
         },
-        onError: (error) => {
-            toast.error(error.message || "Failed to update salary");
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["salaries"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["salaries"] });
+        },
+        onSuccess: () => {
+            toast.success("Salary updated successfully");
         },
     });
 }

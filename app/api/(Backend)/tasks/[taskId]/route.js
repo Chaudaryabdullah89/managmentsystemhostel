@@ -1,9 +1,13 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import TaskServices from "@/lib/services/taskservices/taskservices";
 
 const taskServices = new TaskServices();
 
 export async function GET(request, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { taskId } = params;
         const task = await taskServices.getTasks({ id: taskId });
@@ -17,6 +21,9 @@ export async function GET(request, { params }) {
 }
 
 export async function POST(request, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { taskId } = params;
         const body = await request.json();

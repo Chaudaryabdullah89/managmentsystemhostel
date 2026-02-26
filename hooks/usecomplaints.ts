@@ -21,11 +21,15 @@ export function useComplaints(filters: any = {}) {
             if (!data.success) throw new Error(data.error);
             return data.data;
         },
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        gcTime: 10 * 60 * 1000, // 10 minutes
     });
 }
 
 export function useComplaintById(id: string) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ["complaints", id],
         queryFn: async () => {
             const response = await fetch(`/api/complaints/${id}`);
@@ -51,11 +55,7 @@ export function useCreateComplaint() {
             return data.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ComplaintQueryKeys.all });
             toast.success("Grievance logged successfully");
-        },
-        onError: (error: any) => {
-            toast.error(error.message || "Failed to log grievance");
         },
     });
 }
@@ -73,12 +73,37 @@ export function useUpdateComplaint() {
             if (!data.success) throw new Error(data.error);
             return data.data;
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ComplaintQueryKeys.all });
-            toast.success("Complaint status updated");
+        onMutate: async (newComplaintObj) => {
+            // Cancel any outgoing refetches to prevent them overwriting our optimistic update
+            await queryClient.cancelQueries({ queryKey: ComplaintQueryKeys.all });
+
+            // Snapshot the previous value
+            const previousComplaints = queryClient.getQueryData(ComplaintQueryKeys.all);
+
+            // Optimistically update to the new value by mapping over cache or returning it if not array. We must gracefully fall back.
+            queryClient.setQueriesData({ queryKey: ComplaintQueryKeys.all }, (oldData: any) => {
+                if (!oldData || !Array.isArray(oldData)) return oldData;
+                return oldData.map((c: any) =>
+                    c.id === newComplaintObj.id ? { ...c, ...newComplaintObj } : c
+                );
+            });
+
+            // Return a context object with the snapshotted value
+            return { previousComplaints };
         },
-        onError: (error: any) => {
+        onError: (error: any, newComplaintObj, context) => {
+            // If the mutation fails, use the context returned from onMutate to roll back
+            if (context?.previousComplaints) {
+                queryClient.setQueriesData({ queryKey: ComplaintQueryKeys.all }, context.previousComplaints);
+            }
             toast.error(error.message || "Failed to update complaint");
+        },
+        onSettled: () => {
+            // Always refetch after error or success to ensure strict synchronization
+            queryClient.invalidateQueries({ queryKey: ComplaintQueryKeys.all });
+        },
+        onSuccess: () => {
+            toast.success("Complaint status updated");
         },
     });
 }
@@ -97,11 +122,7 @@ export function useAddComplaintComment() {
             return data.data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ComplaintQueryKeys.all });
             toast.success("Message sent");
-        },
-        onError: (error: any) => {
-            toast.error(error.message || "Failed to send message");
         },
     });
 }

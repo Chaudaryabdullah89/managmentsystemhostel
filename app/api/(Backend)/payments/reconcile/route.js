@@ -1,9 +1,13 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import PaymentServices from "@/lib/services/paymentservices/paymentservices";
 
 const paymentServices = new PaymentServices();
 
 export async function POST(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { bookingId, amount, userId, method, notes } = await request.json();
 

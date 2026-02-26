@@ -9,6 +9,8 @@ import { toast } from "sonner"
 export function useMaintenances({ status = "", start = "", end = "" } = {}) {
     const queryKey = ['maintenances', status, start, end]
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey,
         queryFn: async () => {
             const params = new URLSearchParams()

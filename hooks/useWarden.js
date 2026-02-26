@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 
 export const useWardenStats = (userId) => {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ["warden", "stats", userId],
         queryFn: async () => {
             const response = await fetch(`/api/warden/stats?userId=${userId}`);
@@ -15,6 +17,8 @@ export const useWardenStats = (userId) => {
 
 export const useWardenResidents = (userId) => {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ["warden", "residents", userId],
         queryFn: async () => {
             const response = await fetch(`/api/warden/residents?userId=${userId}`);
@@ -28,6 +32,8 @@ export const useWardenResidents = (userId) => {
 
 export const useWardenRooms = (userId) => {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ["warden", "rooms", userId],
         queryFn: async () => {
             const response = await fetch(`/api/warden/rooms?userId=${userId}`);
@@ -41,6 +47,8 @@ export const useWardenRooms = (userId) => {
 
 export const useWardenLogs = (userId, type) => {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ["warden", "logs", userId, type],
         queryFn: async () => {
             const response = await fetch(`/api/warden/logs?userId=${userId}&type=${type}`);
@@ -54,6 +62,8 @@ export const useWardenLogs = (userId, type) => {
 
 export const useWardenDueServices = (userId) => {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ["warden", "services", "due", userId],
         queryFn: async () => {
             const response = await fetch(`/api/warden/services/due?userId=${userId}`);

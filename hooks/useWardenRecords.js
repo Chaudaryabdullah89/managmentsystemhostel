@@ -8,6 +8,8 @@ import { toast } from "sonner"
  */
 export function useWardenRecords(wardenId) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ['wardenRecords', wardenId],
         queryFn: async () => {
             if (!wardenId) return { complaints: [], maintenance: [], hostels: [] }

@@ -8,6 +8,8 @@ import { toast } from "sonner"
  */
 export function usePayments(userId) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: ['payments', userId],
         queryFn: async () => {
             if (!userId) return []
@@ -37,9 +39,6 @@ export function useCreatePayment() {
             queryClient.invalidateQueries({ queryKey: ['payments'] });
             queryClient.invalidateQueries({ queryKey: ['bookings'] });
             toast.success("Payment notification submitted successfully");
-        },
-        onError: (error) => {
-            toast.error(error.message || "Failed to submit payment");
         },
     });
 }

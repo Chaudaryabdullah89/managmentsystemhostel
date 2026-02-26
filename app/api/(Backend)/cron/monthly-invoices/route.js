@@ -1,8 +1,13 @@
+import { NextResponse } from 'next/server';
+import { checkRole } from '@/lib/checkRole';
 import prisma from "@/lib/prisma";
 import crypto from "crypto";
 import { sendEmail } from "@/lib/utils/sendmail";
 
 export async function GET(req) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     const authHeader = req.headers.get('authorization');
     // You can set a CRON_SECRET in your env to protect this route
     if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {

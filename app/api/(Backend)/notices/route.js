@@ -1,9 +1,13 @@
+import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import NoticeService from "@/lib/services/noticeservices/noticeservices";
 
 const noticeService = new NoticeService();
 
 export async function GET(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { searchParams } = new URL(request.url);
         let hostelId = searchParams.get('hostelId');
@@ -35,6 +39,9 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         const notice = await noticeService.createNotice(body);
@@ -45,6 +52,9 @@ export async function POST(request) {
 }
 
 export async function PUT(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         const { id, ...data } = body;
@@ -56,6 +66,9 @@ export async function PUT(request) {
 }
 
 export async function DELETE(request) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');

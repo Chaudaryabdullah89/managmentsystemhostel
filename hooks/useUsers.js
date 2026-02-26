@@ -9,6 +9,8 @@ export const UserQueryKeys = {
 
 export function useUserDetails(id) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: UserQueryKeys.byId(id),
         queryFn: async () => {
             if (!id) return null;
@@ -23,6 +25,8 @@ export function useUserDetails(id) {
 
 export function useAllUsers(filters = {}) {
     return useQuery({
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
         queryKey: UserQueryKeys.list(filters),
         queryFn: async () => {
             const params = new URLSearchParams();
@@ -54,9 +58,6 @@ export function useCreateUser() {
             queryClient.invalidateQueries({ queryKey: UserQueryKeys.all() });
             toast.success(`User ${data.name} initialized successfully`);
         },
-        onError: (error) => {
-            toast.error(error.message || "Failed to create user node");
-        },
     });
 }
 export function useUpdateUser(id) {
@@ -72,8 +73,25 @@ export function useUpdateUser(id) {
             if (!data.success) throw new Error(data.error);
             return data.user;
         },
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["users"] });
+            const previousData = queryClient.getQueryData(["users"]);
+            queryClient.setQueryData(["users"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
+        },
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["users"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: UserQueryKeys.all() });
             toast.success("Identity synchronized successfully");
         },
         onError: (error) => {
@@ -95,8 +113,25 @@ export function useUpdateAnyUser() {
             if (!resData.success) throw new Error(resData.error);
             return resData.user;
         },
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["users"] });
+            const previousData = queryClient.getQueryData(["users"]);
+            queryClient.setQueryData(["users"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
+        },
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["users"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: UserQueryKeys.all() });
             toast.success("User record updated");
         },
         onError: (error) => {
@@ -137,8 +172,25 @@ export function useDeleteUser() {
             if (!data.success) throw new Error(data.error);
             return data;
         },
+        onMutate: async (newRecord) => {
+            await queryClient.cancelQueries({ queryKey: ["users"] });
+            const previousData = queryClient.getQueryData(["users"]);
+            queryClient.setQueryData(["users"], (old) => {
+                if (!old || !Array.isArray(old)) return old;
+                // Basic snapshot fallback
+                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            });
+            return { previousData };
+        },
+        onError: (err, newRecord, context) => {
+            if (context?.previousData) {
+                queryClient.setQueryData(["users"], context.previousData);
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["users"] });
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: UserQueryKeys.all() });
             toast.success("User node purged from registry");
         },
         onError: (error) => {
