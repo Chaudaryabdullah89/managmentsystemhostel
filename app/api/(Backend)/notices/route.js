@@ -29,6 +29,7 @@ export async function GET(request) {
         const notices = await noticeService.getNotices(filter);
         return NextResponse.json({ success: true, data: notices });
     } catch (error) {
+        console.error("[API] GET /api/notices - Error:", error);
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }

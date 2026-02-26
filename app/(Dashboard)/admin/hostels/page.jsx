@@ -23,6 +23,7 @@ import {
     CheckCircle2,
     Clock,
     Layers,
+    Download,
     Navigation,
     DoorOpen,
     ArrowLeft,

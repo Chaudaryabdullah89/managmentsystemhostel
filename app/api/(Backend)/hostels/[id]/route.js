@@ -15,7 +15,7 @@ export async function GET(request, { params }) {
                         type: true
                     }
                 },
-                User_Hostel_managerIdToUser: {
+                Manager: {
                     select: {
                         id: true,
                         name: true,

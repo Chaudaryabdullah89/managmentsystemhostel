@@ -82,7 +82,7 @@ export async function POST(request) {
             if (!staff) return NextResponse.json({ success: false, error: "Staff not found" }, { status: 404 });
 
             const existing = await prisma.salary.findFirst({
-                where: { staffId, month }
+                where: { staffProfileId: staffId, month }
             });
 
             if (existing) return NextResponse.json({ success: false, error: `Salary for ${staff.User.name} already exists for ${month}` }, { status: 400 });
@@ -95,7 +95,7 @@ export async function POST(request) {
 
             const newSalary = await prisma.salary.create({
                 data: {
-                    staffId,
+                    staffProfileId: staffId,
                     month,
                     amount,
                     basicSalary,
@@ -154,17 +154,17 @@ export async function POST(request) {
 
         for (const staff of staffList) {
             const existing = await prisma.salary.findFirst({
-                where: { staffId: staff.id, month: month }
+                where: { staffProfileId: staff.id, month: month }
             });
 
             if (!existing) {
                 await prisma.salary.create({
                     data: {
-                        staffId: staff.id,
+                        staffProfileId: staff.id,
                         month: month,
-                        amount: staff.basicSalary + staff.allowances,
-                        basicSalary: staff.basicSalary,
-                        allowances: staff.allowances,
+                        amount: (staff.basicSalary || 0) + (staff.allowances || 0),
+                        basicSalary: staff.basicSalary || 0,
+                        allowances: staff.allowances || 0,
                         bonuses: 0,
                         deductions: 0,
                         status: 'PENDING',

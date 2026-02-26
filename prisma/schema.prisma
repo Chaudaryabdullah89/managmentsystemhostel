@@ -20,8 +20,9 @@ model Booking {
   updatedAt       DateTime      @updatedAt
   Room            Room          @relation(fields: [roomId], references: [id])
   User            User          @relation(fields: [userId], references: [id])
-  hostel          Hostel?       @relation(fields: [hostelId], references: [id])
+  Hostel          Hostel?       @relation(fields: [hostelId], references: [id])
   hostelId        String?
+  Payment         Payment[]
 }
 
 model Complaint {
@@ -54,66 +55,68 @@ model ComplaintComment {
 }
 
 model Expense {
-  id              String        @id @default(cuid())
-  hostelId        String
-  userId          String
-  title           String
-  amount          Float
-  category        String
-  date            DateTime      @default(now())
-  status          ExpenseStatus @default(PENDING)
-  description     String?
-  receipt         String?
-  approvedById    String?
-  rejectedById    String?
-  rejectionReason String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  approvedBy      User?         @relation("Expense_approvedByIdToUser", fields: [approvedById], references: [id])
-  Hostel          Hostel        @relation(fields: [hostelId], references: [id])
-  rejectedBy      User?         @relation("Expense_rejectedByIdToUser", fields: [rejectedById], references: [id])
-  submittedBy     User          @relation("Expense_userIdToUser", fields: [userId], references: [id])
+  id                               String        @id @default(cuid())
+  hostelId                         String
+  userId                           String
+  title                            String
+  amount                           Float
+  category                         String
+  status                           ExpenseStatus @default(PENDING)
+  description                      String?
+  date                             DateTime      @default(now())
+  receiptImage                     String?
+  approvedById                     String?
+  rejectedById                     String?
+  rejectionReason                  String?
+  createdAt                        DateTime      @default(now())
+  updatedAt                        DateTime      @updatedAt
+  User_Expense_approvedByIdToUser  User?         @relation("Expense_approvedByIdToUser", fields: [approvedById], references: [id])
+  Hostel                           Hostel        @relation(fields: [hostelId], references: [id])
+  User_Expense_rejectedByIdToUser  User?         @relation("Expense_rejectedByIdToUser", fields: [rejectedById], references: [id])
+  User_Expense_submittedByIdToUser User          @relation("Expense_userIdToUser", fields: [userId], references: [id])
 }
 
 model Hostel {
-  id                         String          @id @default(cuid())
-  name                       String
-  address                    String
-  floors                     Int             @default(1)
-  rooms                      Int             @default(0)
-  managerId                  String?
-  createdAt                  DateTime        @default(now())
-  updatedAt                  DateTime        @updatedAt
-  city                       String?
-  completeAddress            String?
-  contact                    String?
-  country                    String?
-  description                String?
-  email                      String?
-  image                      String?
-  laundry                    String?
-  mess                       String?
-  state                      String?
-  status                     String          @default("Active")
-  street                     String?
-  zip                        String?
-  type                       String          @default("BOYS")
-  cleaningInterval           Int             @default(24)
-  laundryInterval            Int             @default(48)
-  montlypayment              Float?          @default(0)
-  pricePerNight              Float?          @default(0)
-  Booking                    Booking[]
-  Complaint                  Complaint[]
-  Expense                    Expense[]
-  Manager                    User?           @relation("Hostel_managerIdToUser", fields: [managerId], references: [id])
-  Payment                    Payment[]
-  RefundRequest              RefundRequest[]
-  Room                       Room[]
-  User_User_hostelIdToHostel User[]          @relation("User_hostelIdToHostel")
-  maintanance                maintanance[]
-  StaffTask                  StaffTask[]
-  MessMenu                   MessMenu[]
-  Notice                     Notice[]
+  id               String   @id @default(cuid())
+  name             String
+  type             String   @default("BOYS")
+  address          String
+  city             String?
+  state            String?
+  country          String?  @default("Pakistan")
+  phone            String?
+  email            String?
+  description      String?
+  floors           Int      @default(1)
+  rooms            Int?     @default(0)
+  managerId        String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  completeAddress  String?
+  laundryAvailable Boolean? @default(false)
+  messAvailable    Boolean? @default(false)
+  monthlyRent      Float?   @default(0)
+  perNightRent     Float?   @default(0)
+  status           String?  @default("ACTIVE")
+  wardens          String[]
+  zip              String?
+  cleaningInterval Int?     @default(24)
+  laundryInterval  Int?     @default(48)
+  image            String?
+  street           String?
+
+  Booking                     Booking[]
+  Complaint                   Complaint[]
+  Expense                     Expense[]
+  User_Hostel_managerIdToUser User?           @relation("Hostel_managerIdToUser", fields: [managerId], references: [id])
+  MessMenu                    MessMenu[]
+  Notice                      Notice[]
+  Room                        Room[]
+  StaffTask                   StaffTask[]
+  User_User_hostelIdToHostel  User[]          @relation("User_hostelIdToHostel")
+  maintanance                 maintanance[]
+  payments                    Payment[]
+  refundRequests              RefundRequest[]
 }
 
 model OtpVerification {
@@ -121,28 +124,34 @@ model OtpVerification {
   email     String
   otp       String
   expiresAt DateTime
-  type      String
   createdAt DateTime @default(now())
-
-  @@index([email])
 }
 
 model Payment {
-  id            String        @id @default(cuid())
-  userId        String
-  amount        Float
-  status        PaymentStatus @default(PENDING)
-  method        PaymentMethod @default(CASH)
-  month         String?
-  type          PaymentType?
-  receiptImage  String?
-  transactionId String?
-  paymentDate   DateTime      @default(now())
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  User          User          @relation(fields: [userId], references: [id])
-  hostel        Hostel?       @relation(fields: [hostelId], references: [id])
-  hostelId      String?
+  id             String          @id @default(cuid())
+  userId         String
+  amount         Float
+  status         PaymentStatus   @default(PENDING)
+  method         PaymentMethod   @default(CASH)
+  type           PaymentType?
+  transactionId  String?
+  date           DateTime        @default(now())
+  paymentDate    DateTime        @default(now())
+  dueDate        DateTime?
+  month          String?
+  year           Int?
+  uid            String?         @unique
+  notes          String?
+  receiptUrl     String?
+  receiptImage   String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  User           User            @relation(fields: [userId], references: [id])
+  hostelId       String?
+  hostel         Hostel?         @relation(fields: [hostelId], references: [id])
+  bookingId      String?
+  Booking        Booking?        @relation(fields: [bookingId], references: [id])
+  refundRequests RefundRequest[]
 }
 
 model RefundRequest {
@@ -154,45 +163,54 @@ model RefundRequest {
   status      RefundStatus @default(PENDING)
   processedAt DateTime?
   adminNotes  String?
+  paymentId   String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  Hostel      Hostel       @relation(fields: [hostelId], references: [id])
-  User        User         @relation(fields: [userId], references: [id])
+  Hostel      Hostel       @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  User        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Payment     Payment?     @relation(fields: [paymentId], references: [id])
 }
 
 model ResidentProfile {
-  id               String    @id @default(cuid())
-  userId           String    @unique
-  emergencyContact String?
-  guardianName     String?
-  guardianPhone    String?
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  guardianName     String
+  guardianPhone    String
   bloodGroup       String?
-  medicalInfo      String?
-  institution      String?
-  occupation       String?
-  checkInDate      DateTime  @default(now())
-  checkOutDate     DateTime?
-  User             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emergencyContact String?
+  address          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  User             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Room {
-  id          String        @id @default(cuid())
-  hostelId    String
-  roomNumber  String
-  type        RoomType
-  capacity    Int
-  occupied    Int           @default(0)
-  price       Float
-  status      RoomStatus    @default(AVAILABLE)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  images      String[]
-  amenities   String[]
-  Booking     Booking[]
-  Hostel      Hostel        @relation(fields: [hostelId], references: [id])
-  maintanance maintanance[]
-  cleaning    CleaningLog[]
-  laundry     LaundryLog[]
+  id               String        @id @default(cuid())
+  hostelId         String
+  roomNumber       String
+  type             RoomType
+  status           RoomStatus    @default(AVAILABLE)
+  capacity         Int
+  occupied         Int           @default(0)
+  price            Float
+  features         String[]
+  amenities        String[]
+  description      String?
+  image            String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  floor            Int           @default(1)
+  monthlyrent      Float?
+  pricepernight    Float?
+  cleaningInterval Int?          @default(24)
+  lastCleaningAt   DateTime?
+  lastLaundryAt    DateTime?
+  laundryInterval  Int?          @default(48)
+  Booking          Booking[]
+  Hostel           Hostel        @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  cleaning         CleaningLog[]
+  laundry          LaundryLog[]
+  maintanance      maintanance[]
 }
 
 model CleaningLog {
@@ -202,6 +220,8 @@ model CleaningLog {
   cleanedBy String
   status    String   @default("COMPLETED")
   notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   Room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
 }
 
@@ -212,76 +232,72 @@ model LaundryLog {
   deliveredAt DateTime?
   status      String    @default("COLLECTED") // COLLECTED, PROCESSING, DELIVERED
   notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   Room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
 }
 
 model Salary {
-  id             String         @id @default(cuid())
-  staffId        String
-  month          String
+  id             String       @id @default(cuid())
+  staffProfileId String
   amount         Float
-  basicSalary    Float
-  allowances     Float          @default(0)
-  bonuses        Float          @default(0)
-  deductions     Float          @default(0)
-  status         PaymentStatus  @default(PENDING)
+  month          String
+  status         String       @default("UNPAID")
   paymentDate    DateTime?
-  paymentMethod  PaymentMethod?
+  transactionId  String?
+  basicSalary    Float        @default(0)
+  allowances     Float        @default(0)
+  bonuses        Float        @default(0)
+  deductions     Float        @default(0)
   notes          String?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-  appealResponse String?
-  appealStatus   String?        @default("NONE")
-  appealText     String?
-  StaffProfile   StaffProfile   @relation(fields: [staffId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  StaffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id], onDelete: Cascade)
 }
 
 model WardenPayment {
-  id             String   @id @default(cuid())
-  wardenId       String
-  amount         Float
-  basicSalary    Float    @default(0)
-  bonuses        Float    @default(0)
-  deductions     Float    @default(0)
-  month          String
-  status         String   @default("PAID")
-  paymentMethod  String   @default("BANK_TRANSFER")
-  paymentDate    DateTime @default(now())
-  notes          String?
-  type           String   @default("WARDEN_SALARY")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  appealResponse String?
-  appealStatus   String?  @default("NONE")
-  appealText     String?
-  Warden         User     @relation(fields: [wardenId], references: [id])
+  id            String    @id @default(cuid())
+  wardenId      String
+  amount        Float
+  month         String
+  status        String    @default("UNPAID")
+  paymentDate   DateTime?
+  notes         String?
+  basicSalary   Float     @default(0)
+  allowances    Float     @default(0)
+  bonuses       Float     @default(0)
+  deductions    Float     @default(0)
+  paymentMethod String?   @default("CASH")
+  type          String?   @default("WARDEN_SALARY")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  Warden        User      @relation(fields: [wardenId], references: [id], onDelete: Cascade)
 }
 
 model Session {
-  id         String    @id @default(cuid())
-  userId     String
-  token      String?   @unique
-  device     String?
-  ipAddress  String?
-  lastActive DateTime  @default(now())
-  expiresAt  DateTime?
-  isActive   Boolean   @default(true)
-  createdAt  DateTime  @default(now())
-  User       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model StaffProfile {
   id                String            @id @default(cuid())
   userId            String            @unique
   designation       String
-  department        String?
-  shift             String?
-  basicSalary       Float             @default(0)
-  allowances        Float             @default(0)
+  department        String
   joiningDate       DateTime          @default(now())
-  documents         Json?
-  totalTasksHandled Int               @default(0)
-  performanceRating Float             @default(5.0)
+  basicSalary       Float
+  bankName          String?
+  accountNumber     String?
+  ifscCode          String?
+  address           String?
+  emergencyContact  String?
+  status            String            @default("ACTIVE")
+  lastSalaryProcess DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
   Salary            Salary[]
   User              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   attendance        StaffAttendance[]
@@ -324,9 +340,9 @@ model User {
   Complaint_Complaint_assignedToIdToUser     Complaint[]        @relation("Complaint_assignedToIdToUser")
   Complaint_Complaint_userIdToUser           Complaint[]        @relation("Complaint_userIdToUser")
   complaintComments                          ComplaintComment[]
-  Expense_Expense_approvedByIdToUser         Expense[]          @relation("Expense_approvedByIdToUser")
-  Expense_Expense_rejectedByIdToUser         Expense[]          @relation("Expense_rejectedByIdToUser")
-  Expense_Expense_submittedByToUser          Expense[]          @relation("Expense_userIdToUser")
+  Expense_User_approvedByIdToUser            Expense[]          @relation("Expense_approvedByIdToUser")
+  Expense_User_rejectedByIdToUser            Expense[]          @relation("Expense_rejectedByIdToUser")
+  Expense_User_userIdToUser                  Expense[]          @relation("Expense_userIdToUser")
   Hostel_Hostel_managerIdToUser              Hostel[]           @relation("Hostel_managerIdToUser")
   Payment                                    Payment[]
   ResidentProfile                            ResidentProfile?
@@ -360,8 +376,11 @@ model StaffTask {
   updatedAt    DateTime      @updatedAt
   assignedTo   User?         @relation("Task_AssignedTo", fields: [assignedToId], references: [id])
   createdBy    User          @relation("Task_CreatedBy", fields: [createdById], references: [id])
-  hostel       Hostel        @relation(fields: [hostelId], references: [id])
+  Hostel       Hostel        @relation(fields: [hostelId], references: [id])
   comments     TaskComment[]
+
+  @@index([hostelId])
+  @@index([assignedToId])
 }
 
 model TaskComment {
@@ -370,47 +389,42 @@ model TaskComment {
   userId    String
   message   String
   createdAt DateTime  @default(now())
-  Task      StaffTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  StaffTask StaffTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
   User      User      @relation(fields: [userId], references: [id])
 }
 
 model maintanance {
-  id                                  String    @id @default(cuid())
-  hostelId                            String
-  title                               String
-  description                         String?
-  status                              String    @default("PENDING")
-  assignedToId                        String?
-  resolutionNotes                     String?
-  resolvedAt                          DateTime?
-  images                              String[]
-  createdAt                           DateTime  @default(now())
-  updatedAt                           DateTime  @updatedAt
-  userId                              String?
-  priority                            String    @default("MEDIUM")
-  roomId                              String?
-  uid                                 String?   @unique
-  User_maintanance_assignedToIdToUser User?     @relation("maintanance_assignedToIdToUser", fields: [assignedToId], references: [id])
-  Hostel                              Hostel    @relation(fields: [hostelId], references: [id])
-  Room                                Room?     @relation(fields: [roomId], references: [id])
-  User_maintanance_userIdToUser       User?     @relation("maintanance_userIdToUser", fields: [userId], references: [id])
+  id             String    @id @default(cuid())
+  title          String
+  description    String
+  status         String    @default("PENDING")
+  priority       String    @default("MEDIUM")
+  hostelId       String
+  roomId         String?
+  userId         String
+  assignedToId   String?
+  resolvedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  assignedTo     User?     @relation("maintanance_assignedToIdToUser", fields: [assignedToId], references: [id])
+  Hostel         Hostel    @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+  Room           Room?     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  User           User      @relation("maintanance_userIdToUser", fields: [userId], references: [id])
+  maintanance_id String?
 }
 
 model resetPassword {
   id        String   @id @default(cuid())
-  email     String   @unique
-  token     String   @unique
+  email     String
+  otp       String
   expiresAt DateTime
   createdAt DateTime @default(now())
-  userId    String   @unique
-
-  @@index([email])
 }
 
 model MessMenu {
   id            String   @id @default(cuid())
   hostelId      String
-  dayOfWeek     String // e.g. "MONDAY", "TUESDAY"
+  dayOfWeek     String
   breakfast     String?
   breakfastTime String?
   lunch         String?
@@ -423,23 +437,29 @@ model MessMenu {
 }
 
 model Notice {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   content     String
+  priority    String    @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  category    String    @default("GENERAL") // GENERAL, MAINTENANCE, SECURITY, EVENT
   targetRoles String[] // e.g. ["GUEST", "WARDEN"]
   hostelId    String? // Null means global notice
   authorId    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  Author      User     @relation("NoticeAuthor", fields: [authorId], references: [id])
-  Hostel      Hostel?  @relation(fields: [hostelId], references: [id])
+  expiresAt   DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  author      User      @relation("NoticeAuthor", fields: [authorId], references: [id])
+  hostel      Hostel?   @relation(fields: [hostelId], references: [id])
 }
 
 enum UserRole {
+  SUPER_ADMIN
   ADMIN
   WARDEN
   GUEST
   STAFF
+  RESIDENT
 }
 
 enum BookingStatus {
@@ -447,8 +467,8 @@ enum BookingStatus {
   CONFIRMED
   CANCELLED
   CHECKED_IN
-  CHECKED_OUT
   REJECTED
+  COMPLETED
 }
 
 enum RoomType {
@@ -462,13 +482,13 @@ enum RoomStatus {
   AVAILABLE
   OCCUPIED
   MAINTENANCE
+  CLEANING
 }
 
 enum ComplaintStatus {
   PENDING
   IN_PROGRESS
   RESOLVED
-  REJECTED
 }
 
 enum ComplaintPriority {
@@ -481,7 +501,7 @@ enum ComplaintPriority {
 enum ComplaintCategory {
   MAINTENANCE
   CLEANING
-  NOISE
+  MESS
   SECURITY
   INTERNET
   OTHER
@@ -491,26 +511,29 @@ enum ExpenseStatus {
   PENDING
   APPROVED
   REJECTED
+  PAID
 }
 
 enum PaymentStatus {
   PENDING
   PAID
   FAILED
-  REFUNDED
+  OVERDUE
 }
 
 enum PaymentMethod {
   CASH
   BANK_TRANSFER
-  JAZZCASH
-  EASYPAISA
+  ONLINE
 }
 
 enum PaymentType {
-  SECURITY_DEPOSIT
   MONTHLY_RENT
-  GUEST_STAY
+  SECURITY_DEPOSIT
+  RENT
+  LATE_FEE
+  SECURITY_REFUND
+  ADVANCE
   OTHER
 }
 
@@ -518,6 +541,7 @@ enum RefundStatus {
   PENDING
   APPROVED
   REJECTED
+  PROCESSED
 }
 
 enum TaskStatus {
@@ -531,4 +555,5 @@ enum TaskPriority {
   LOW
   MEDIUM
   HIGH
+  URGENT
 }

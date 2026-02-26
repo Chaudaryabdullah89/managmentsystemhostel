@@ -61,6 +61,7 @@ async function main() {
             role: 'ADMIN',
             phone: '0300-1111111',
             isActive: true,
+            updatedAt: new Date()
         }
     });
     console.log('✅ Admin created.');
@@ -77,14 +78,16 @@ async function main() {
             country: 'Pakistan',
             floors: 4,
             rooms: 40,
-            montlypayment: 15000,
-            pricePerNight: 500,
+            monthlyRent: 15000,
+            perNightRent: 500,
             description: 'Modern boys hostel with high-speed internet and attached bathrooms.',
-            status: 'Active',
-            contact: '0300-2222222',
+            status: 'ACTIVE',
+            phone: '0300-2222222',
             email: 'greenview@hostel.com',
-            laundry: 'Included',
-            mess: 'Included'
+            laundryAvailable: true,
+            messAvailable: true,
+            completeAddress: '123 Main St, Lahore, Punjab, Pakistan',
+            updatedAt: new Date()
         },
         {
             name: 'Rosewood Girls Hostel',
@@ -95,14 +98,16 @@ async function main() {
             country: 'Pakistan',
             floors: 5,
             rooms: 50,
-            montlypayment: 18000,
-            pricePerNight: 600,
+            monthlyRent: 18000,
+            perNightRent: 600,
             description: 'Safe and secure girls hostel with 24/7 power backup and security.',
-            status: 'Active',
-            contact: '0300-3333333',
+            status: 'ACTIVE',
+            phone: '0300-3333333',
             email: 'rosewood@hostel.com',
-            laundry: 'Included',
-            mess: 'Included'
+            laundryAvailable: true,
+            messAvailable: true,
+            completeAddress: '456 Park Avenue, Karachi, Sindh, Pakistan',
+            updatedAt: new Date()
         },
         {
             name: 'Elite Mixed Hostel',
@@ -113,14 +118,16 @@ async function main() {
             country: 'Pakistan',
             floors: 3,
             rooms: 30,
-            montlypayment: 20000,
-            pricePerNight: 800,
+            monthlyRent: 20000,
+            perNightRent: 800,
             description: 'Premium mixed hostel with separate wings and luxury amenities.',
-            status: 'Active',
-            contact: '0300-4444444',
+            status: 'ACTIVE',
+            phone: '0300-4444444',
             email: 'elite@hostel.com',
-            laundry: 'Paid',
-            mess: 'Included'
+            laundryAvailable: false,
+            messAvailable: true,
+            completeAddress: '789 Commercial Rd, Islamabad, Punjab, Pakistan',
+            updatedAt: new Date()
         }
     ];
 
@@ -144,6 +151,7 @@ async function main() {
                 phone: `0311-000000${i + 1}`,
                 hostelId: hostels[i].id,
                 isActive: true,
+                updatedAt: new Date()
             }
         });
 
@@ -159,23 +167,27 @@ async function main() {
 
     // 5. Create Rooms
     console.log('🚪 Creating Rooms...');
-    const roomTypes = ['SINGLE', 'DOUBLE', 'TRIPLE', 'QUAD'];
+    const roomTypes = ['SINGLE', 'DOUBLE', 'TRIPLE'];
     const rooms = [];
     for (const hostel of hostels) {
         for (let i = 1; i <= 10; i++) { // 10 rooms per hostel for seeding
             const rType = roomTypes[Math.floor(Math.random() * roomTypes.length)];
             const capacity = roomTypes.indexOf(rType) + 1;
-            const price = (hostel.montlypayment || 15000) * (1 + (capacity - 1) * 0.5);
+            const monthlyRent = (hostel.montlyrent || 15000) * (1 + (capacity - 1) * 0.5);
 
             const room = await prisma.room.create({
                 data: {
                     hostelId: hostel.id,
                     roomNumber: `${Math.floor((i - 1) / 5) + 1}0${(i - 1) % 5 + 1}`,
+                    floor: Math.floor((i - 1) / 5) + 1,
                     type: rType,
                     capacity: capacity,
-                    price: price,
+                    price: monthlyRent,
+                    monthlyrent: monthlyRent,
+                    pricepernight: monthlyRent / 30, // Approximate daily rate
                     status: 'AVAILABLE',
                     amenities: ['WiFi', 'Cabinet', 'Bed', 'Fan'],
+                    updatedAt: new Date()
                 }
             });
             rooms.push(room);
@@ -201,15 +213,15 @@ async function main() {
                 name: residentNames[i],
                 email: `resident${i + 1}@example.com`,
                 password: defaultPassword,
-                role: 'GUEST',
+                role: 'RESIDENT',
                 phone: `0322-111111${i + 1}`,
                 hostelId: hostel.id,
                 isActive: true,
+                updatedAt: new Date(),
                 ResidentProfile: {
                     create: {
                         guardianName: 'Guardian Name',
                         guardianPhone: '0333-0000000',
-                        institution: 'Local University',
                         bloodGroup: 'B+',
                         emergencyContact: '0333-9999999'
                     }
@@ -228,8 +240,9 @@ async function main() {
                 hostelId: hostel.id,
                 checkIn: checkIn,
                 status: 'CONFIRMED',
-                totalAmount: room.price,
-                securityDeposit: 5000
+                totalAmount: room.monthlyrent,
+                securityDeposit: 5000,
+                updatedAt: new Date()
             }
         });
 
@@ -244,12 +257,13 @@ async function main() {
             data: {
                 userId: resident.id,
                 hostelId: hostel.id,
-                amount: room.price,
+                amount: room.monthlyrent,
                 status: 'PAID',
                 method: 'CASH',
                 month: 'March 2026',
                 type: 'MONTHLY_RENT',
-                paymentDate: new Date()
+                paymentDate: new Date(),
+                updatedAt: new Date()
             }
         });
     }
