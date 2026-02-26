@@ -46,6 +46,7 @@ import { useAllPayments, useFinancialStats } from "@/hooks/usePayment";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import Loader from "@/components/ui/Loader";
+import { RevenueExpenseChart, HostelPerformanceChart, OccupancyDonutChart, ComplaintStatusChart } from "@/components/ui/Charts";
 
 const AdminDashboard = () => {
     const [selectedPeriod, setSelectedPeriod] = useState("month");
@@ -205,6 +206,67 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     ))}
+                </div>
+
+                {/* ── Analytics Charts Section ── */}
+                <div className="space-y-4">
+                    <div className="flex items-center gap-3 px-1">
+                        <div className="h-5 w-1 bg-purple-600 rounded-full" />
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Analytics</h3>
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-auto">Last 6 Months</span>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        {/* Revenue vs Expenses Area Chart */}
+                        <div className="lg:col-span-2 bg-white border border-gray-100 rounded-[2rem] p-5 md:p-6 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Revenue vs Expenses</span>
+                                    <span className="text-sm font-black text-gray-900 mt-0.5">6-Month Trend</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest">
+                                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-blue-500" />Revenue</span>
+                                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-rose-500" />Expenses</span>
+                                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500" />Profit</span>
+                                </div>
+                            </div>
+                            <RevenueExpenseChart data={trends} />
+                        </div>
+
+                        {/* Right column: Occupancy + Complaint doughnut */}
+                        <div className="space-y-4">
+                            <div className="bg-white border border-gray-100 rounded-[2rem] p-5 shadow-sm">
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Occupancy Rate</span>
+                                <div className="flex items-center justify-center">
+                                    <OccupancyDonutChart occupancyRate={stats.occupancyRate} />
+                                </div>
+                                <div className="flex items-center justify-center gap-4 text-[9px] font-black uppercase tracking-widest mt-2">
+                                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-blue-500" />Occupied</span>
+                                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-gray-200" />Vacant</span>
+                                </div>
+                            </div>
+                            <div className="bg-white border border-gray-100 rounded-[2rem] p-5 shadow-sm">
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Complaint Breakdown</span>
+                                <ComplaintStatusChart stats={complaintStats} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Hostel bar chart */}
+                    {hostels.length > 0 && (
+                        <div className="bg-white border border-gray-100 rounded-[2rem] p-5 md:p-6 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Property Revenue vs Expenses</span>
+                                    <span className="text-sm font-black text-gray-900 mt-0.5">Hostel Performance Comparison</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest">
+                                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-blue-500" />Revenue</span>
+                                    <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-rose-500" />Expenses</span>
+                                </div>
+                            </div>
+                            <HostelPerformanceChart hostels={hostels} />
+                        </div>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

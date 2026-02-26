@@ -251,6 +251,24 @@ const PaymentDetailPage = () => {
                     <div className="flex items-center gap-3">
                         <Button
                             variant="outline"
+                            onClick={async () => {
+                                try {
+                                    const { generateInvoicePDF } = await import('@/lib/generateInvoicePDF');
+                                    await generateInvoicePDF({ payment, booking: payment.Booking, user: payment.User });
+                                    toast.success('PDF receipt downloaded');
+                                } catch (err) {
+                                    console.error(err);
+                                    toast.error('Failed to generate PDF');
+                                }
+                            }}
+                            className="h-9 px-5 rounded-xl border-gray-100 text-gray-600 font-bold text-[9px] uppercase tracking-widest hover:bg-gray-50 transition-all bg-white"
+                        >
+                            <Download className="h-3.5 w-3.5 mr-2" />
+                            Download PDF
+                        </Button>
+
+                        <Button
+                            variant="outline"
                             onClick={() => window.print()}
                             className="h-9 px-5 rounded-xl border-gray-100 text-gray-600 font-bold text-[9px] uppercase tracking-widest hover:bg-gray-50 transition-all bg-white"
                         >

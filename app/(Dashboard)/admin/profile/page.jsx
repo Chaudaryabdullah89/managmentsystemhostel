@@ -478,60 +478,116 @@ const ProfilePage = () => {
 
                             </TabsContent>
 
-                            <TabsContent value="sessions" className="m-0 space-y-4 animate-in fade-in duration-500">
-                                <div className="flex items-center justify-between px-2">
+                            <TabsContent
+                                value="sessions"
+                                className="m-0 space-y-4 animate-in fade-in duration-300"
+                            >
+                                {/* Header */}
+                                <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-8 w-1 bg-black rounded-full" />
-                                        <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight italic">Active Node Access</h2>
+                                        <div className="h-7 w-1 bg-black rounded-full" />
+                                        <h2 className="text-base font-semibold text-gray-900">
+                                            Active Sessions
+                                        </h2>
                                     </div>
+
                                     <Button
                                         variant="ghost"
                                         onClick={() => terminateAllSessions.mutate()}
                                         disabled={terminateAllSessions.isPending}
-                                        className="rounded-xl font-bold text-[8px] uppercase tracking-widest text-gray-400 hover:text-black hover:bg-white h-9 border border-transparent hover:border-gray-100 transition-all"
+                                        className="h-8 px-4 text-xs font-medium text-gray-500 
+                 hover:text-black hover:bg-gray-50 
+                 rounded-lg transition-all"
                                     >
                                         {terminateAllSessions.isPending ? "Terminating..." : "Terminate All"}
                                     </Button>
                                 </div>
-                                <div className="grid grid-cols-1 gap-3">
+
+                                {/* Sessions List */}
+                                <div className="space-y-3">
                                     {sessionsData?.sessions?.map((session, idx) => (
-                                        <div key={idx} className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between hover:shadow-md transition-shadow group relative overflow-hidden">
-                                            <div className={`absolute top-0 left-0 w-1 h-full ${session.isActive ? 'bg-emerald-500' : 'bg-gray-200'} opacity-70`} />
-                                            <div className="flex items-center gap-5">
-                                                <div className={`h-12 w-12 rounded-xl ${session.isActive ? 'bg-black text-white shadow-lg shadow-black/10' : 'bg-gray-50 text-gray-400'} flex items-center justify-center transition-all border border-gray-100`}>
+                                        <div
+                                            key={idx}
+                                            className="relative bg-white border border-gray-100 
+                   rounded-xl p-4 flex items-center justify-between 
+                   hover:shadow-sm transition-all group"
+                                        >
+                                            {/* Left indicator */}
+                                            <div
+                                                className={`absolute left-0 top-0 h-full w-1 rounded-l-xl 
+            ${session.isActive ? "bg-green-500" : "bg-gray-200"}`}
+                                            />
+
+                                            <div className="flex items-center gap-4">
+                                                {/* Device Icon */}
+                                                <div
+                                                    className={`h-10 w-10 rounded-lg flex items-center justify-center border
+              ${session.isActive
+                                                            ? "bg-black text-white border-black"
+                                                            : "bg-gray-50 text-gray-400 border-gray-100"
+                                                        }`}
+                                                >
                                                     {getDeviceIcon(session.device)}
                                                 </div>
-                                                <div className="space-y-1">
+
+                                                {/* Info */}
+                                                <div>
                                                     <div className="flex items-center gap-2">
-                                                        <h4 className="text-sm font-bold text-gray-900 uppercase tracking-tight italic leading-none">{session.device || 'GLOBAL_NODE'}</h4>
-                                                        {session.isActive && <Badge className="bg-emerald-500 text-white font-bold text-[7px] uppercase tracking-widest border-none px-1.5 py-0.5">THIS_SESSION</Badge>}
+                                                        <h4 className="text-sm font-semibold text-gray-900">
+                                                            {session.device || "Unknown Device"}
+                                                        </h4>
+
+                                                        {session.isActive && (
+                                                            <span className="text-[10px] px-2 py-0.5 bg-green-100 text-green-600 rounded-md">
+                                                                Current
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                    <div className="flex items-center gap-6 font-sans">
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Vector IP</span>
-                                                            <span className="text-[11px] font-bold text-gray-600 font-mono tracking-tighter">{session.ipAddress || '0.0.0.0'}</span>
+
+                                                    <div className="flex gap-6 mt-1 text-xs text-gray-500">
+                                                        <div>
+                                                            <span className="block text-[10px] text-gray-400">
+                                                                IP
+                                                            </span>
+                                                            <span className="font-mono text-gray-700">
+                                                                {session.ipAddress || "0.0.0.0"}
+                                                            </span>
                                                         </div>
-                                                        <div className="flex flex-col">
-                                                            <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Time Trace</span>
-                                                            <span className="text-[11px] font-bold text-gray-600 font-mono tracking-tighter uppercase">{format(new Date(session.lastActive), 'MMM dd | HH:mm')}</span>
+
+                                                        <div>
+                                                            <span className="block text-[10px] text-gray-400">
+                                                                Last Active
+                                                            </span>
+                                                            <span className="font-mono text-gray-700">
+                                                                {format(new Date(session.lastActive), "MMM dd | HH:mm")}
+                                                            </span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            {/* Terminate Button */}
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
                                                 onClick={() => terminateSession.mutate(session.id)}
                                                 disabled={terminateSession.isPending}
-                                                className="h-10 w-10 rounded-xl hover:bg-rose-50 hover:text-rose-500 text-gray-200 transition-all opacity-0 group-hover:opacity-100 active:scale-95"
+                                                className="h-9 w-9 rounded-lg text-gray-300 
+                     hover:text-red-500 hover:bg-red-50 
+                     opacity-0 group-hover:opacity-100 
+                     transition-all"
                                             >
                                                 <LogOut className="h-4 w-4" />
                                             </Button>
                                         </div>
                                     ))}
+
+                                    {/* Empty state */}
                                     {(!sessionsData || sessionsData.sessions?.length === 0) && (
-                                        <div className="p-16 text-center border-2 border-dashed border-gray-100 rounded-3xl">
-                                            <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest italic">No active sessions located</p>
+                                        <div className="p-12 text-center border border-dashed border-gray-200 rounded-xl">
+                                            <p className="text-xs text-gray-400">
+                                                No active sessions found
+                                            </p>
                                         </div>
                                     )}
                                 </div>
