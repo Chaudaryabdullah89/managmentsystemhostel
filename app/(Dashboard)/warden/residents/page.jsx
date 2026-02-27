@@ -48,14 +48,14 @@ const ResidentActions = ({ resident, params, hostelId, router, updateStatus }) =
         <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-gray-100 shadow-2xl">
             <DropdownMenuItem asChild className="p-3 gap-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-gray-600 cursor-pointer">
                 <Link href={`/warden/residents/${resident.id}`}>
-                    <User className="h-4 w-4" /> Access Profile
+                    <User className="h-4 w-4" /> View
                 </Link>
             </DropdownMenuItem>
             <DropdownMenuItem
                 className="p-3 gap-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-gray-600 cursor-pointer"
                 onClick={() => router.push(`/warden/residents/${resident.id}?action=edit`)}
             >
-                <Edit className="h-4 w-4" /> Configure Node
+                <Edit className="h-4 w-4" /> Edit
             </DropdownMenuItem>
             <div className="h-px bg-gray-50 my-1 mx-2" />
             <DropdownMenuItem
@@ -64,23 +64,23 @@ const ResidentActions = ({ resident, params, hostelId, router, updateStatus }) =
             >
                 <AlertDialog>
                     <AlertDialogTrigger className="w-full text-left flex items-center gap-3">
-                        <Trash className="h-4 w-4" /> Decommission Node
+                        <Trash className="h-4 w-4" /> Remove
                     </AlertDialogTrigger>
                     <AlertDialogContent className="rounded-3xl border-none shadow-2xl overflow-hidden p-0 max-w-lg mx-4 sm:mx-0">
                         <div className="bg-gray-950 p-8 text-white">
                             <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center mb-4"><Trash size={20} className="text-rose-500" /></div>
-                            <AlertDialogTitle className="text-xl font-black tracking-tight mb-2 uppercase">Purge Resident Node?</AlertDialogTitle>
+                            <AlertDialogTitle className="text-xl font-black tracking-tight mb-2 uppercase">Remove?</AlertDialogTitle>
                             <AlertDialogDescription className="text-gray-400 font-black text-[10px] uppercase tracking-widest">
-                                Wiping <span className="text-white font-black">{resident.name}</span> from the registry. This will terminate their active occupancy protocol. Permanent action.
+                                This will remove <span className="text-white font-black">{resident.name}</span> and end stay.
                             </AlertDialogDescription>
                         </div>
                         <div className="p-6 flex items-center justify-end gap-3 bg-white">
-                            <AlertDialogCancel className="rounded-xl border-gray-100 bg-gray-50 font-black px-6 h-11 uppercase tracking-widest text-[9px] text-gray-500">Abort</AlertDialogCancel>
+                            <AlertDialogCancel className="rounded-xl border-gray-100 bg-gray-50 font-black px-6 h-11 uppercase tracking-widest text-[9px] text-gray-500">Cancel</AlertDialogCancel>
                             <AlertDialogAction
                                 className="bg-rose-600 hover:bg-rose-700 rounded-xl font-black px-6 h-11 uppercase tracking-widest text-[9px] shadow-sm"
                                 onClick={() => updateStatus({ id: resident.bookingId, status: 'CANCELLED' })}
                             >
-                                Execute Purge
+                                Confirm
                             </AlertDialogAction>
                         </div>
                     </AlertDialogContent>
@@ -136,7 +136,7 @@ const ResidentsContent = () => {
         String(resident.id).toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    if (isLoading) return <Loader label="Loading Residents" subLabel="Fetching resident list..." icon={Users} fullScreen={false} />;
+    if (isLoading) return <Loader label="Loading" subLabel="Fetching resident list..." icon={Users} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50">
@@ -151,15 +151,15 @@ const ResidentsContent = () => {
                         <div className="flex flex-col min-w-0">
                             <h1 className="text-sm md:text-lg font-black text-gray-900 tracking-tight flex items-center gap-2 truncate">
                                 <User className="h-4 w-4 md:h-5 md:w-5 text-indigo-600" />
-                                <span className="truncate">Resident Registry</span>
+                                <span className="truncate">Residents</span>
                             </h1>
-                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest truncate mt-0.5">My Hostel</p>
+                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest truncate mt-0.5">Hostel</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="hidden sm:flex flex-col items-end mr-2 md:mr-4">
-                            <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Active nodes</span>
-                            <span className="text-xs md:text-sm font-black text-gray-900 leading-none">{residents.filter(r => r.status === 'Active').length} UNIT_PPL</span>
+                            <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Active</span>
+                            <span className="text-xs md:text-sm font-black text-gray-900 leading-none">{residents.filter(r => r.status === 'Active').length} People</span>
                         </div>
                         <Button
                             variant="outline"
@@ -167,7 +167,7 @@ const ResidentsContent = () => {
                             onClick={() => refetch()}
                         >
                             <RefreshCw className={`h-3.5 w-3.5 text-gray-400 ${isFetching ? 'animate-spin' : ''}`} />
-                            <span className="hidden xs:inline">Sync Data</span>
+                            <span className="hidden xs:inline">Refresh</span>
                         </Button>
                     </div>
                 </div>
@@ -179,7 +179,7 @@ const ResidentsContent = () => {
                     <div className="relative flex-1 group w-full">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                         <Input
-                            placeholder="TRACE (ID, NAME, ROOM)..."
+                            placeholder="Search..."
                             className="h-12 pl-11 bg-white border-gray-100 rounded-2xl shadow-sm text-[11px] md:text-sm font-black focus:ring-1 focus:ring-indigo-600 placeholder:text-gray-300 uppercase tracking-tight"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -192,7 +192,7 @@ const ResidentsContent = () => {
                         </Button>
                         <Button className="h-12 flex-1 sm:flex-none px-6 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-sm" onClick={() => router.push(`/warden/residents/register`)}>
                             <Plus className="h-4 w-4" />
-                            PROVISION
+                            Add Resident
                         </Button>
                     </div>
                 </div>
@@ -204,13 +204,13 @@ const ResidentsContent = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow className="bg-gray-50/50 hover:bg-gray-50/50 border-b border-gray-100">
-                                    <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Resident Details</TableHead>
-                                    <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Contact Trace</TableHead>
-                                    <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Access Node</TableHead>
-                                    <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">ID Card</TableHead>
-                                    <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Commencement</TableHead>
+                                    <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Resident</TableHead>
+                                    <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Contact</TableHead>
+                                    <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Room</TableHead>
+                                    <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">CNIC</TableHead>
+                                    <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Joined</TableHead>
                                     <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</TableHead>
-                                    <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Ops</TableHead>
+                                    <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody className="divide-y divide-gray-50">
@@ -249,7 +249,7 @@ const ResidentsContent = () => {
                                         <TableCell className="py-4 px-6">
                                             <div className="flex items-center gap-2 bg-indigo-50/50 px-3 py-1.5 rounded-xl border border-indigo-100 w-fit">
                                                 <Home className="h-3.5 w-3.5 text-indigo-600" />
-                                                <span className="text-[10px] font-black text-indigo-700 uppercase">SYS {resident.room}</span>
+                                                <span className="text-[10px] font-black text-indigo-700 uppercase">Room {resident.room}</span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="py-4 px-6">
@@ -294,10 +294,10 @@ const ResidentsContent = () => {
 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 flex flex-col gap-1">
-                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Access Node</span>
+                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Room</span>
                                         <div className="flex items-center gap-2">
                                             <Home className="h-3 w-3 text-indigo-600" />
-                                            <span className="text-[10px] font-black text-gray-900">SYS {resident.room}</span>
+                                            <span className="text-[10px] font-black text-gray-900">Room {resident.room}</span>
                                         </div>
                                     </div>
                                     <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 flex flex-col gap-1">
@@ -312,15 +312,15 @@ const ResidentsContent = () => {
 
                                 <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 space-y-2">
                                     <div className="flex items-center justify-between text-[9px] font-black uppercase">
-                                        <span className="text-gray-400">Contact Trace</span>
+                                        <span className="text-gray-400">Contact</span>
                                         <span className="text-gray-900">{resident.contact}</span>
                                     </div>
                                     <div className="flex items-center justify-between text-[9px] font-black uppercase">
-                                        <span className="text-gray-400">Commencement</span>
+                                        <span className="text-gray-400">Joined On</span>
                                         <span className="text-gray-900">{new Date(resident.joinDate).toLocaleDateString()}</span>
                                     </div>
                                     <div className="flex items-center justify-between text-[9px] font-black uppercase">
-                                        <span className="text-gray-400">ID Verification</span>
+                                        <span className="text-gray-400">CNIC</span>
                                         <span className="text-gray-900 font-mono">{resident.cnic}</span>
                                     </div>
                                 </div>
@@ -331,8 +331,8 @@ const ResidentsContent = () => {
                     {filteredResidents.length === 0 && (
                         <div className="py-20 flex flex-col items-center border-t border-gray-50 border-dashed mx-6">
                             <User className="h-10 w-10 text-gray-200 mb-4 animate-pulse" />
-                            <h3 className="text-base font-black text-gray-900 uppercase">No Matches</h3>
-                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1 text-center">No resident nodes detected for the current query</p>
+                            <h3 className="text-base font-black text-gray-900 uppercase">Empty</h3>
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1 text-center">We couldn't find any residents matching your search.</p>
                         </div>
                     )}
                 </Card>
@@ -349,7 +349,7 @@ export default function ResidentsPage() {
             <div className="flex h-screen items-center justify-center bg-white">
                 <div className="flex flex-col items-center gap-6">
                     <div className="h-24 w-24 border-[3px] border-gray-100 border-t-blue-500 rounded-full animate-spin" />
-                    <p className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">Loading Residents</p>
+                    <p className="text-xl font-black text-gray-900 tracking-tighter uppercase italic">Loading</p>
                 </div>
             </div>
         }>

@@ -173,7 +173,7 @@ const PaymentManagementPage = () => {
                 id: paymentId,
                 status: 'PAID'
             });
-            toast.success("Payment approved");
+            toast.success("Approved");
         } catch (error) {
             toast.error("Failed to approve payment");
         }
@@ -187,7 +187,7 @@ const PaymentManagementPage = () => {
                 status: 'REJECTED',
                 notes: rejectionReason
             });
-            toast.success("Payment rejected");
+            toast.success("Rejected");
             setIsRejectDialogOpen(false);
             setRejectionReason("");
             setSelectedPaymentId(null);
@@ -214,7 +214,7 @@ const PaymentManagementPage = () => {
                 ...editFormData
             });
             setIsEditDialogOpen(false);
-            toast.success("Changes saved");
+            toast.success("Saved");
         } catch (error) {
             // Error handled by hook
         }
@@ -230,7 +230,7 @@ const PaymentManagementPage = () => {
             await deletePayment.mutateAsync(selectedPaymentId);
             setIsDeleteDialogOpen(false);
             setSelectedPaymentId(null);
-            toast.success("Payment deleted");
+            toast.success("Deleted");
         } catch (error) {
             // Error handled by hook
         }
@@ -475,7 +475,7 @@ const PaymentManagementPage = () => {
     };
 
     if (paymentsLoading || statsLoading) return (
-        <Loader label="Loading Payments" subLabel="Fetching payment records..." icon={Wallet} fullScreen={false} />
+        <Loader label="Loading" subLabel="Getting records..." icon={Wallet} fullScreen={false} />
     );
 
     return (
@@ -488,9 +488,9 @@ const PaymentManagementPage = () => {
                         <div className="flex flex-col">
                             <h1 className="text-base md:text-lg font-bold text-gray-900 tracking-tight uppercase">Payments</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">All Records</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Records</span>
                                 <div className="h-1 w-1 rounded-full bg-blue-500 animate-pulse" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Updated Live</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Active</span>
                             </div>
                         </div>
                     </div>
@@ -503,7 +503,7 @@ const PaymentManagementPage = () => {
                             disabled={isExportingDefaulters}
                         >
                             {isExportingDefaulters ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <AlertCircle className="h-3.5 w-3.5" />}
-                            <span className="truncate">DEFAULTERS</span>
+                            <span className="truncate">LATE</span>
                         </Button>
                         <Button
                             variant="outline"
@@ -512,13 +512,13 @@ const PaymentManagementPage = () => {
                             disabled={isExportingPayments}
                         >
                             {isExportingPayments ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-                            <span className="truncate">EXPORT</span>
+                            <span className="truncate">Export</span>
                         </Button>
                         <Button
                             className="h-8 md:h-9 px-4 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex-1 md:flex-none justify-center"
                             onClick={() => router.push('/warden/bookings')}
                         >
-                            <Plus className="h-3.5 w-3.5 mr-1.5" /> <span className="truncate">New Payment</span>
+                            <Plus className="h-3.5 w-3.5 mr-1.5" /> <span className="truncate">Add</span>
                         </Button>
                     </div>
                 </div>
@@ -529,10 +529,10 @@ const PaymentManagementPage = () => {
                 {/* Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Total Money', value: `PKR ${(stats?.totalRevenue / 1000).toFixed(1)}k`, icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Collection %', value: `${((stats?.monthlyRevenue / (stats?.monthlyRevenue + stats?.pendingReceivables)) * 100 || 0).toFixed(0)}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Unpaid', value: paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Late Fees', value: `PKR ${(stats?.overdueLiability / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' }
+                        { label: 'Revenue', value: `PKR ${(stats?.totalRevenue / 1000).toFixed(1)}k`, icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Collected', value: `${((stats?.monthlyRevenue / (stats?.monthlyRevenue + stats?.pendingReceivables)) * 100 || 0).toFixed(0)}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Pending', value: paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Overdue', value: `PKR ${(stats?.overdueLiability / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default min-w-0">
                             <div className={`h-9 w-9 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -543,7 +543,8 @@ const PaymentManagementPage = () => {
                                 <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate">{stat.value}</span>
                             </div>
                         </div>
-                    ))}
+                    ))
+                    }
                 </div>
 
                 {/* Search and Filters */}
@@ -551,14 +552,14 @@ const PaymentManagementPage = () => {
                     <div className="flex-1 relative w-full group">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
                         <Input
-                            placeholder="Search by student, room or ID..."
+                            placeholder="Search..."
                             className="w-full h-11 md:h-12 pl-12 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         {searchQuery && (
                             <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase animate-in fade-in zoom-in hidden sm:block">
-                                {filteredPayments.length} results
+                                {filteredPayments.length} matches
                             </span>
                         )}
                     </div>
@@ -570,11 +571,11 @@ const PaymentManagementPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
                                     <Filter className="h-3.5 w-3.5 mr-1.5 md:mr-2 text-gray-400" />
-                                    <span className="truncate">{filterStatus === 'All' ? 'Statuses' : filterStatus}</span>
+                                    <span className="truncate">{filterStatus === 'All' ? 'Status' : filterStatus}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[180px] md:w-[220px] rounded-xl border-gray-100 shadow-xl p-2">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Search Status</DropdownMenuLabel>
+                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Status</DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-gray-50 mb-1" />
                                 {["All", "PAID", "PENDING", "PARTIAL", "OVERDUE", "REJECTED"].map(status => (
                                     <DropdownMenuItem key={status} onClick={() => setFilterStatus(status)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer">
@@ -588,13 +589,13 @@ const PaymentManagementPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
                                     <Building2 className="h-3.5 w-3.5 mr-1.5 md:mr-2 text-gray-400" />
-                                    <span className="truncate">{filterHostel === 'All' ? 'Hostels' : filterHostel}</span>
+                                    <span className="truncate">{filterHostel === 'All' ? 'Hostel' : filterHostel}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[200px] md:w-[280px] rounded-xl border-gray-100 shadow-xl p-2">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Hostels</DropdownMenuLabel>
+                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Hostel</DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-gray-50 mb-1" />
-                                <DropdownMenuItem onClick={() => setFilterHostel("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">Show All</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setFilterHostel("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">All</DropdownMenuItem>
                                 {hostels.map(h => (
                                     <DropdownMenuItem key={h.id} onClick={() => setFilterHostel(h.name)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">
                                         {h.name}
@@ -612,13 +613,13 @@ const PaymentManagementPage = () => {
                                 value="ledger"
                                 className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all shrink-0"
                             >
-                                <Boxes className="h-3.5 w-3.5 mr-2" /> <span className="hidden sm:inline">All</span> Payments
+                                <Boxes className="h-3.5 w-3.5 mr-2" /> All
                             </TabsTrigger>
                             <TabsTrigger
                                 value="verification"
                                 className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all relative shrink-0"
                             >
-                                <CheckCircle className="h-3.5 w-3.5 mr-2" /> Pending Approval
+                                <CheckCircle className="h-3.5 w-3.5 mr-2" /> Pending
                                 {(paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length > 0) && (
                                     <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                 )}
@@ -627,7 +628,7 @@ const PaymentManagementPage = () => {
                                 value="refunds"
                                 className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-rose-600 data-[state=active]:text-white transition-all relative shrink-0"
                             >
-                                <Undo2 className="h-3.5 w-3.5 mr-2" /> Refund Requests
+                                <Undo2 className="h-3.5 w-3.5 mr-2" /> Refunds
                                 {(filteredRefunds.filter(r => r.status === 'PENDING').length > 0) && (
                                     <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-rose-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
                                 )}
@@ -641,8 +642,8 @@ const PaymentManagementPage = () => {
                                     <Activity className="h-2 w-2 text-blue-600" />
                                 </div>
                             </div>
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Record Count:</span>
-                            <span className="text-[10px] font-black text-gray-900 uppercase tracking-tight">{filteredPayments.length} Payments Found</span>
+                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">Count:</span>
+                            <span className="text-[10px] font-black text-gray-900 uppercase tracking-tight">{filteredPayments.length} Records</span>
                         </div>
                     </div>
 
@@ -716,13 +717,13 @@ const PaymentManagementPage = () => {
                                         <DropdownMenuContent align="end" className="w-48 rounded-xl border-gray-100 shadow-xl p-2">
                                             <DropdownMenuItem asChild>
                                                 <Link href={`/warden/payments/${payment.id}`} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer flex items-center gap-2">
-                                                    <Eye className="h-3.5 w-3.5" /> View Details
+                                                    <Eye className="h-3.5 w-3.5" /> View
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
                                                 <UnifiedReceipt data={payment} type="payment">
                                                     <div className="w-full p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer flex items-center gap-2 hover:bg-slate-50 transition-colors">
-                                                        <Receipt className="h-3.5 w-3.5" /> View Receipt
+                                                        <Receipt className="h-3.5 w-3.5" /> Receipt
                                                     </div>
                                                 </UnifiedReceipt>
                                             </DropdownMenuItem>
@@ -733,7 +734,7 @@ const PaymentManagementPage = () => {
                                             {payment.Booking?.securityDeposit > 0 && (
                                                 <SecurityRefundModal booking={payment.Booking}>
                                                     <div className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer flex items-center gap-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50">
-                                                        <Wallet className="h-3.5 w-3.5" /> Refund Security
+                                                        <Wallet className="h-3.5 w-3.5" /> Refund
                                                     </div>
                                                 </SecurityRefundModal>
                                             )}
@@ -773,11 +774,11 @@ const PaymentManagementPage = () => {
                                                             <div className="relative aspect-[16/10] bg-gray-50">
                                                                 <img src={payment.receiptUrl} alt="Proof of Payment" className="w-full h-full object-contain p-8" />
                                                                 <div className="absolute top-6 left-6 flex flex-col gap-2">
-                                                                    <Badge className="bg-blue-600 text-white font-bold uppercase text-[9px] tracking-widest px-3">PAYMENT PROOF</Badge>
+                                                                    <Badge className="bg-blue-600 text-white font-bold uppercase text-[9px] tracking-widest px-3">Proof</Badge>
                                                                     <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">{payment.uid ? `REF: ${payment.uid}` : `ID: ${payment.id.slice(-8)}`}</span>
                                                                 </div>
                                                                 <Link href={payment.receiptUrl} target="_blank" className="absolute bottom-6 right-6">
-                                                                    <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 h-10 font-bold uppercase text-[10px] tracking-wider shadow-lg"><ExternalLink className="h-3.5 w-3.5 mr-2" /> View Original</Button>
+                                                                    <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 h-10 font-bold uppercase text-[10px] tracking-wider shadow-lg"><ExternalLink className="h-3.5 w-3.5 mr-2" /> View</Button>
                                                                 </Link>
                                                             </div>
                                                         </DialogContent>
@@ -790,7 +791,7 @@ const PaymentManagementPage = () => {
                                         <div className="flex flex-col gap-4 flex-1 min-w-0 w-full">
                                             <div className="flex items-center gap-3">
                                                 <h4 className="text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight truncate">{payment.User?.name}</h4>
-                                                <Badge className="hidden sm:inline-flex bg-amber-50 text-amber-600 border-amber-100 font-bold uppercase text-[8px] md:text-[9px] tracking-widest px-2 md:px-3">Verification Pending</Badge>
+                                                <Badge className="hidden sm:inline-flex bg-amber-50 text-amber-600 border-amber-100 font-bold uppercase text-[8px] md:text-[9px] tracking-widest px-2 md:px-3">Pending</Badge>
                                                 <Link href={`/warden/payment-approvals/${payment.id}`} className="ml-auto lg:hidden">
                                                     <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-500"><ExternalLink className="h-4 w-4" /></Button>
                                                 </Link>

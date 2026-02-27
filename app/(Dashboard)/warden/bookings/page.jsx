@@ -324,7 +324,7 @@ const GlobalBookingsPage = () => {
         }
     };
 
-    if (isLoading) return <Loader label="Loading Bookings" subLabel="Fetching reservation records..." icon={Calendar} fullScreen={false} />;
+    if (isLoading) return <Loader label="Loading" subLabel="Getting records..." icon={Calendar} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
@@ -334,11 +334,11 @@ const GlobalBookingsPage = () => {
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Reservation Ledger</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Bookings</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Total Records</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Records</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Node</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active</span>
                             </div>
                         </div>
                     </div>
@@ -353,14 +353,14 @@ const GlobalBookingsPage = () => {
                             onClick={() => setIsExportDialogOpen(true)}
                         >
                             <ShieldCheck className="h-3.5 w-3.5 text-indigo-700" />
-                            <span className="hidden xs:inline">Verified PDF</span> <span className="xs:hidden">PDF</span>
+                            <span className="hidden xs:inline">PDF</span> <span className="xs:hidden">PDF</span>
                         </Button>
                         <Button
                             className="h-9 px-4 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center gap-2"
                             onClick={() => router.push('/warden/bookings/create')}
                         >
                             <Plus className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                            <span className="hidden xs:inline">New Booking</span> <span className="xs:hidden">Add</span>
+                            <span className="hidden xs:inline">Add</span> <span className="xs:hidden">Add</span>
                         </Button>
                     </div>
                 </div>
@@ -370,10 +370,10 @@ const GlobalBookingsPage = () => {
                 {/* Statistics Overview */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Reservations', value: bookings.length, icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Active Guests', value: activeBookings, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Pending Node', value: pendingBookings, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Revenue Stream', value: `PKR ${(totalRevenue / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' }
+                        { label: 'Total', value: bookings.length, icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'In', value: activeBookings, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Pending', value: pendingBookings, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Revenue', value: `PKR ${(totalRevenue / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
                             <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform shrink-0`}>
@@ -392,7 +392,7 @@ const GlobalBookingsPage = () => {
                     <div className="flex-1 relative w-full group px-2">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
                         <Input
-                            placeholder="Filter by Resident, Room or Branch..."
+                            placeholder="Search..."
                             className="w-full h-11 md:h-12 pl-10 bg-transparent border-none shadow-none font-bold text-[11px] md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -409,7 +409,7 @@ const GlobalBookingsPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0">
                                     <Filter className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {statusFilter === 'All' ? 'ANY STATUS' : statusFilter.replace('_', ' ')}
+                                    {statusFilter === 'All' ? 'ANY' : statusFilter.replace('_', ' ')}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[180px] rounded-xl border-gray-100 shadow-xl p-1">
@@ -427,11 +427,11 @@ const GlobalBookingsPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0">
                                     <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {hostelFilter === 'All' ? 'ALL BRANCHES' : hostelFilter}
+                                    {hostelFilter === 'All' ? 'HOSTEL' : hostelFilter}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[200px] rounded-xl border-gray-100 shadow-xl p-1">
-                                <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">All Branches</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">All</DropdownMenuItem>
                                 {hostels.map(h => (
                                     <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">
                                         {h.name}
@@ -447,7 +447,7 @@ const GlobalBookingsPage = () => {
                     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300">
                         <div className="bg-gray-950 text-white rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-4 border border-white/10">
                             <span className="text-[11px] font-black uppercase tracking-widest text-gray-300">
-                                {selectedIds.size} Selected
+                                {selectedIds.size} Set
                             </span>
                             <div className="h-4 w-px bg-white/20" />
                             <Button
@@ -456,7 +456,7 @@ const GlobalBookingsPage = () => {
                                 onClick={() => handleBulkStatus('CONFIRMED')}
                                 disabled={isUpdating}
                             >
-                                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> Approve All
+                                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> Approve
                             </Button>
                             <Button
                                 size="sm"
@@ -464,7 +464,7 @@ const GlobalBookingsPage = () => {
                                 onClick={() => handleBulkStatus('CANCELLED')}
                                 disabled={isUpdating}
                             >
-                                <XCircle className="h-3.5 w-3.5 mr-1.5" /> Cancel All
+                                <XCircle className="h-3.5 w-3.5 mr-1.5" /> Cancel
                             </Button>
                             <Button
                                 size="sm"
@@ -545,7 +545,7 @@ const GlobalBookingsPage = () => {
                                         <div className="flex items-center gap-4 md:flex-col md:items-start md:gap-1 w-full md:w-auto justify-between md:justify-start px-2 md:px-0">
                                             <div className="flex items-center gap-2">
                                                 <BedDouble className="h-3.5 w-3.5 text-indigo-500" />
-                                                <span className="text-[11px] font-black text-gray-900 uppercase">UNIT {booking.Room?.roomNumber}</span>
+                                                <span className="text-[11px] font-black text-gray-900 uppercase">ROOM {booking.Room?.roomNumber}</span>
                                             </div>
                                             <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{booking.Room?.type} SEATER</span>
                                         </div>
@@ -554,7 +554,7 @@ const GlobalBookingsPage = () => {
                                         <div className="hidden xl:flex items-center gap-4 min-w-[300px] bg-indigo-50/30 p-2.5 rounded-xl border border-indigo-100/50">
                                             <div className="flex flex-col gap-0.5">
                                                 <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                                                    <Calendar className="h-2.5 w-2.5" /> IN
+                                                    <Calendar className="h-2.5 w-2.5" /> CHECK-IN
                                                 </span>
                                                 <span className="text-[10px] font-black text-gray-900 uppercase">{booking.checkIn ? format(new Date(booking.checkIn), 'MMM dd, yy') : '—'}</span>
                                             </div>
@@ -564,7 +564,7 @@ const GlobalBookingsPage = () => {
                                             </div>
                                             <div className="flex flex-col gap-0.5 text-right">
                                                 <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest flex items-center justify-end gap-1.5">
-                                                    OUT <History className="h-2.5 w-2.5" />
+                                                    CHECK-OUT <History className="h-2.5 w-2.5" />
                                                 </span>
                                                 <span className="text-[10px] font-black text-gray-900 uppercase">{booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yy') : 'ACTIVE'}</span>
                                             </div>
@@ -589,7 +589,7 @@ const GlobalBookingsPage = () => {
                                         <Button
                                             className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn w-full sm:w-auto justify-center"
                                         >
-                                            Open Record
+                                            View
                                             <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
                                         </Button>
                                     </div>
@@ -600,7 +600,7 @@ const GlobalBookingsPage = () => {
                                             <div className="flex items-center gap-3">
                                                 <div className="flex items-center gap-1.5">
                                                     <CreditCard className="h-3 w-3 text-gray-400" />
-                                                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">FISCAL STATUS</span>
+                                                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">PAYMENT</span>
                                                 </div>
                                                 <div className="h-3 w-px bg-gray-200" />
                                                 <div className="flex items-center gap-2">
@@ -626,14 +626,14 @@ const GlobalBookingsPage = () => {
                             <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-6 border border-gray-100">
                                 <Search className="h-8 w-8 text-gray-300" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">No bookings found</h3>
-                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Try changing your search or filters</p>
+                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Empty</h3>
+                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Try changing your filters</p>
                             <Button
                                 variant="outline"
                                 className="mt-8 rounded-xl h-10 px-8 font-bold uppercase tracking-widest text-[10px] border-gray-200 hover:bg-black hover:text-white transition-all shadow-sm"
                                 onClick={() => { setSearchQuery(""); setStatusFilter("All"); setHostelFilter("All"); }}
                             >
-                                Reset Filters
+                                Reset
                             </Button>
                         </div>
                     )}
@@ -650,8 +650,8 @@ const GlobalBookingsPage = () => {
                         <div className="mx-auto h-16 w-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20 mb-4 rotate-3">
                             <ShieldCheck className="h-8 w-8 text-white stroke-[1.5]" />
                         </div>
-                        <h2 className="text-xl font-black text-white uppercase tracking-tight relative z-10">Export Verification Data</h2>
-                        <p className="text-indigo-100 text-[11px] font-bold uppercase tracking-widest mt-1 relative z-10">Generate official PDF records</p>
+                        <h2 className="text-xl font-black text-white uppercase tracking-tight relative z-10">Export</h2>
+                        <p className="text-indigo-100 text-[11px] font-bold uppercase tracking-widest mt-1 relative z-10">Save as PDF.</p>
                     </div>
 
                     <div className="p-8 space-y-6 bg-white overflow-y-auto max-h-[60vh]">
@@ -663,7 +663,7 @@ const GlobalBookingsPage = () => {
                                     value={exportConfig.hostelId}
                                     onChange={(e) => setExportConfig(prev => ({ ...prev, hostelId: e.target.value }))}
                                 >
-                                    <option value="All">All Entities</option>
+                                    <option value="All">All</option>
                                     {hostels.map(h => (
                                         <option key={h.id} value={h.name}>{h.name}</option>
                                     ))}
@@ -677,7 +677,7 @@ const GlobalBookingsPage = () => {
                                     value={exportConfig.roomId}
                                     onChange={(e) => setExportConfig(prev => ({ ...prev, roomId: e.target.value }))}
                                 >
-                                    <option value="All">All Rooms</option>
+                                    <option value="All">All</option>
                                     {rooms
                                         .filter(r => exportConfig.hostelId === "All" || r.Hostel?.name === exportConfig.hostelId)
                                         .map(r => (
@@ -694,16 +694,16 @@ const GlobalBookingsPage = () => {
                                     value={exportConfig.status}
                                     onChange={(e) => setExportConfig(prev => ({ ...prev, status: e.target.value }))}
                                 >
-                                    <option value="All">All Residents</option>
-                                    <option value="CHECKED_IN">Currently In-House</option>
-                                    <option value="CONFIRMED">Confirmed / Verified</option>
-                                    <option value="PENDING">Pending Approval</option>
-                                    <option value="CHECKED_OUT">Archived / Past</option>
+                                    <option value="All">All</option>
+                                    <option value="CHECKED_IN">In</option>
+                                    <option value="CONFIRMED">Ok</option>
+                                    <option value="PENDING">Wait</option>
+                                    <option value="CHECKED_OUT">Past</option>
                                 </select>
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">From Date</Label>
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">From</Label>
                                 <Input
                                     type="date"
                                     className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
@@ -713,7 +713,7 @@ const GlobalBookingsPage = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">To Date</Label>
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">To</Label>
                                 <Input
                                     type="date"
                                     className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
@@ -724,7 +724,7 @@ const GlobalBookingsPage = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Search Keyword (Name/CNIC/Room)</Label>
+                            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Search</Label>
                             <Input
                                 placeholder="Filter records by name or ID..."
                                 className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
@@ -758,12 +758,12 @@ const GlobalBookingsPage = () => {
                             {isExporting ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Processing PDF...
+                                    Saving
                                 </>
                             ) : (
                                 <>
                                     <FileText className="h-4 w-4" />
-                                    Generate Output
+                                    Export
                                 </>
                             )}
                         </Button>

@@ -39,7 +39,7 @@ const WardenRoomDetailsPage = () => {
 
     if (isLoading) return (
         <Loader
-            label="Loading Room Details"
+            label="Loading..."
             subLabel="Fetching information..."
             icon={BedDouble}
             fullScreen={false}
@@ -79,7 +79,7 @@ const WardenRoomDetailsPage = () => {
                             <h1 className="text-lg font-bold text-gray-900 tracking-tight tracking-widest">Room {room.roomNumber}</h1>
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                                 <span className="h-1 w-1 rounded-full bg-indigo-500 animate-pulse" />
-                                {room.Hostel?.name} • Warden Panel
+                                {room.Hostel?.name} • Management
                             </p>
                         </div>
                     </div>
@@ -96,10 +96,10 @@ const WardenRoomDetailsPage = () => {
                 {/* Minimal Metrics Matrix */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Occupancy', value: `${room.currentGuests?.length || 0}/${room.capacity}`, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                        { label: 'Residents', value: `${room.currentGuests?.length || 0}/${room.capacity}`, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                         { label: 'Floor', value: `Level ${room.floor}`, icon: Building2, color: 'text-purple-600', bg: 'bg-purple-50' },
                         { label: 'Room Type', value: room.type, icon: DoorOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Safety Check', value: 'Verified', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
+                        { label: 'Status', value: 'Active', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -124,12 +124,12 @@ const WardenRoomDetailsPage = () => {
                                         <Users className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <h2 className="text-base font-bold text-gray-900 uppercase">Active Residents</h2>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Current occupants in this room</p>
+                                        <h2 className="text-base font-bold text-gray-900 uppercase">Current Residents</h2>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">People living in this room</p>
                                     </div>
                                 </div>
                                 <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest border-gray-100 text-gray-400 px-3 py-1">
-                                    {room.currentGuests?.length || 0} Occupants
+                                    {room.currentGuests?.length || 0} People
                                 </Badge>
                             </div>
 
@@ -150,7 +150,7 @@ const WardenRoomDetailsPage = () => {
 
                                             <div className="flex items-center gap-10">
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Enrolled</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Joined</span>
                                                     <span className="text-[11px] font-bold text-gray-700">{guest.checkInDate}</span>
                                                 </div>
                                                 <div className="flex flex-col items-end">
@@ -224,12 +224,12 @@ const WardenRoomDetailsPage = () => {
 
                     {/* Right Column: Service Hub & Logs */}
                     <div className="space-y-6">
-                        {/* Operational Services */}
+                        {/* Recent Services */}
                         <div className="space-y-3">
                             {[
-                                { title: 'Maintenance', sub: `${room.maintanance?.length || 0} Records`, icon: Wrench, color: 'text-amber-500', bg: 'bg-amber-50', link: `/warden/complaints` },
-                                { title: 'Laundry', sub: `${room.LaundryLog?.length || 0} Batches`, icon: Shirt, color: 'text-purple-500', bg: 'bg-purple-50', link: `/warden/laundry` },
-                                { title: 'Cleaning', sub: `${room.CleaningLog?.length || 0} Cycles`, icon: Sparkle, color: 'text-blue-500', bg: 'bg-blue-50', link: `/warden/cleaning` }
+                                { title: 'Maintenance', sub: `${room.maintanance?.length || 0} Logs`, icon: Wrench, color: 'text-amber-500', bg: 'bg-amber-50', link: `/warden/complaints` },
+                                { title: 'Laundry', sub: `${room.LaundryLog?.length || 0} Logs`, icon: Shirt, color: 'text-purple-500', bg: 'bg-purple-50', link: `/warden/laundry` },
+                                { title: 'Cleaning', sub: `${room.CleaningLog?.length || 0} Logs`, icon: Sparkle, color: 'text-blue-500', bg: 'bg-blue-50', link: `/warden/cleaning` }
                             ].map((service, i) => (
                                 <Link
                                     key={i}
@@ -255,7 +255,7 @@ const WardenRoomDetailsPage = () => {
                             <div className="absolute top-0 right-0 p-8 opacity-5">
                                 <ShieldCheck className="h-24 w-24 text-white" />
                             </div>
-                            <h3 className="text-[10px] font-bold text-indigo-300 uppercase tracking-[0.3em] mb-8 border-b border-white/10 pb-4">Room Info</h3>
+                            <h3 className="text-[10px] font-bold text-indigo-300 uppercase tracking-[0.3em] mb-8 border-b border-white/10 pb-4">Information</h3>
                             <div className="space-y-6">
                                 <div className="flex flex-col">
                                     <span className="text-[8px] font-black text-indigo-400 uppercase tracking-[0.2em]">Created On</span>

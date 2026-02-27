@@ -81,14 +81,14 @@ const CreateRoomForm = () => {
 
             const data = await response.json();
             if (data.success) {
-                toast.success("Unit successfully registered.");
+                toast.success("Room successfully added.");
                 router.push(`/warden/rooms`);
             } else {
-                toast.error(data.error || "Failed to register unit.");
+                toast.error(data.error || "Failed to add room.");
             }
         } catch (error) {
             console.error("Error creating room:", error);
-            toast.error("An internal error occurred.");
+            toast.error("An error occurred.");
         } finally {
             setIsSubmitting(false);
         }
@@ -97,7 +97,7 @@ const CreateRoomForm = () => {
     if (hostelsLoading) return (
         <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center font-sans tracking-tight">
             <Loader2 className="h-10 w-10 text-black animate-spin mb-4" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Registry Protocol...</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading...</p>
         </div>
     );
 
@@ -113,7 +113,7 @@ const CreateRoomForm = () => {
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
                             <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-none uppercase">Add New Room</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mt-1">{wardenHostel?.name || 'Room Records'}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mt-1">{wardenHostel?.name || 'Rooms'}</p>
                         </div>
                     </div>
                     <Button
@@ -136,7 +136,7 @@ const CreateRoomForm = () => {
                             <div className="bg-emerald-50 px-8 py-4 flex items-center justify-between border-b border-emerald-100/50">
                                 <div className="flex items-center gap-3">
                                     <Building2 className="h-4 w-4 text-emerald-600" />
-                                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-[0.2em]">Active Assignment</span>
+                                    <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-[0.2em]">Assigned Hostel</span>
                                 </div>
                                 <span className="text-[10px] font-black text-emerald-800 uppercase tracking-tight">{wardenHostel?.name}</span>
                             </div>
@@ -263,11 +263,11 @@ const CreateRoomForm = () => {
                         {/* Financial Ledger */}
                         <Card className="border border-gray-100 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] bg-white overflow-hidden">
                             <CardHeader className="bg-gray-50/50 border-b border-gray-100 px-6 py-5 text-center">
-                                <CardTitle className="text-[10px] font-black text-gray-900 tracking-widest uppercase">Rent & Price</CardTitle>
+                                <CardTitle className="text-[10px] font-black text-gray-900 tracking-widest uppercase">Pricing</CardTitle>
                             </CardHeader>
                             <div className="p-6 space-y-5">
                                 <div className="space-y-1.5 flex flex-col">
-                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Base Price *</Label>
+                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Price *</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-gray-300">PKR</span>
                                         <Input type="number" className="pl-14 h-11 bg-gray-50/50 border-gray-100 rounded-2xl font-black text-lg text-center focus:bg-white transition-all shadow-none" value={price} onChange={(e) => setPrice(e.target.value)} />
@@ -295,12 +295,12 @@ const CreateRoomForm = () => {
                             <CardHeader className="px-8 pt-8 pb-4">
                                 <CardTitle className="text-[10px] font-bold flex items-center gap-2 uppercase tracking-[0.2em] text-gray-400">
                                     <Info className="h-4 w-4 text-indigo-500" />
-                                    Extended details
+                                    More Details
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="px-8 pb-8 space-y-6">
                                 <div className="space-y-2.5">
-                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Internal Notes</Label>
+                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Notes</Label>
                                     <Textarea
                                         className="bg-gray-50/50 border-gray-100 text-gray-900 text-[11px] font-medium min-h-[120px] rounded-xl focus:bg-white focus:ring-1 focus:ring-indigo-500/20 transition-all resize-none pt-4 placeholder:text-gray-300"
                                         placeholder="Add any specific notes about this unit..."
@@ -345,7 +345,7 @@ export default function WardenCreateRoomPage() {
         <Suspense fallback={
             <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center font-sans tracking-tight">
                 <Loader2 className="h-10 w-10 text-black animate-spin mb-4" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Registry Protocol...</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading...</p>
             </div>
         }>
             <CreateRoomForm />

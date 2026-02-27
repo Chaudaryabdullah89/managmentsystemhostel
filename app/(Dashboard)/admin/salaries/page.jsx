@@ -310,7 +310,7 @@ const SalariesPage = () => {
         <div className="flex h-screen items-center justify-center bg-gray-50">
             <div className="flex flex-col items-center gap-4">
                 <div className="h-10 w-10 border-[3px] border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Payroll...</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading...</p>
             </div>
         </div>
     );
@@ -323,15 +323,15 @@ const SalariesPage = () => {
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1.5 bg-indigo-600 rounded-full" />
                         <div>
-                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Staff Payroll</h1>
-                            <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} distribution records</p>
+                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Salaries</h1>
+                            <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} Records</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                             <Input
-                                placeholder="Search namesake or ID..."
+                                placeholder="Search..."
                                 className="h-9 pl-9 w-[220px] rounded-xl border-gray-200 bg-gray-50 text-xs font-medium"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -356,12 +356,12 @@ const SalariesPage = () => {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-xl border-gray-100 p-2">
-                                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-gray-400 p-3">Payroll Actions</DropdownMenuLabel>
+                                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-gray-400 p-3">Actions</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={handleGeneratePayroll} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
-                                    <Calculator className="h-4 w-4 text-indigo-600" /> Auto Generate
+                                    <Calculator className="h-4 w-4 text-indigo-600" /> Auto
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setIsAddSalaryDialogOpen(true)} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
-                                    <Plus className="h-4 w-4 text-emerald-600" /> Manual Record
+                                    <Plus className="h-4 w-4 text-emerald-600" /> Add
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={handleExportPDF} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer text-rose-600">
@@ -380,10 +380,10 @@ const SalariesPage = () => {
                 {/* Overview Stats - Staff Management Card Style */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: "Gross Payroll", value: `PKR ${(stats.total / 1000).toFixed(1)}k`, icon: Wallet, color: "text-gray-700", bg: "bg-white", iconBg: "bg-gray-100" },
-                        { label: "Paid Volume", value: `PKR ${(stats.paidVolume / 1000).toFixed(1)}k`, icon: CheckCircle2, color: "text-indigo-600", bg: "bg-indigo-50", iconBg: "bg-indigo-100" },
-                        { label: "Appeals Pending", value: stats.appealCount, icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50", iconBg: "bg-amber-100" },
-                        { label: "Active Cycles", value: stats.count, icon: Calendar, color: "text-emerald-600", bg: "bg-emerald-50", iconBg: "bg-emerald-100" },
+                        { label: "Total", value: `PKR ${(stats.total / 1000).toFixed(1)}k`, icon: Wallet, color: "text-gray-700", bg: "bg-white", iconBg: "bg-gray-100" },
+                        { label: "Paid", value: `PKR ${(stats.paidVolume / 1000).toFixed(1)}k`, icon: CheckCircle2, color: "text-indigo-600", bg: "bg-indigo-50", iconBg: "bg-indigo-100" },
+                        { label: "Appeals", value: stats.appealCount, icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50", iconBg: "bg-amber-100" },
+                        { label: "Cycles", value: stats.count, icon: Calendar, color: "text-emerald-600", bg: "bg-emerald-50", iconBg: "bg-emerald-100" },
                     ].map((stat, i) => (
                         <div key={i} className={`${stat.bg} border border-gray-100 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
                             <div>
@@ -405,15 +405,15 @@ const SalariesPage = () => {
                                 <MessageSquare className="h-5 w-5 text-amber-600" />
                             </div>
                             <div>
-                                <p className="text-sm font-bold text-amber-900">{stats.appealCount} payroll appeals need staff resolution</p>
-                                <p className="text-xs text-amber-700 font-medium mt-0.5">Staff members have reported discrepancies in their payouts</p>
+                                <p className="text-sm font-bold text-amber-900">{stats.appealCount} Appeals</p>
+                                <p className="text-xs text-amber-700 font-medium mt-0.5">Review</p>
                             </div>
                         </div>
                         <Button
                             onClick={() => { setActiveTab("appeals"); }}
                             className="h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded-xl gap-2 flex-shrink-0"
                         >
-                            Review Appeals <ArrowUpRight className="h-3.5 w-3.5" />
+                            Review <ArrowUpRight className="h-3.5 w-3.5" />
                         </Button>
                     </div>
                 )}
@@ -427,21 +427,21 @@ const SalariesPage = () => {
                                 onClick={() => setActiveTab('current')}
                                 className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}
                             >
-                                Active Cycle
+                                Current
                             </Button>
                             <Button
                                 variant="ghost"
                                 onClick={() => setActiveTab('appeals')}
                                 className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'appeals' ? 'bg-rose-600 text-white shadow-lg' : 'text-gray-400 hover:text-rose-600'}`}
                             >
-                                Appeals Desk
+                                Appeals
                             </Button>
                             <Button
                                 variant="ghost"
                                 onClick={() => setActiveTab('history')}
                                 className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}
                             >
-                                History Ledger
+                                History
                             </Button>
                         </div>
                         <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} records shown</p>
@@ -452,7 +452,7 @@ const SalariesPage = () => {
                             {filteredSalaries.length === 0 ? (
                                 <div className="text-center py-20 bg-white border border-dashed border-gray-200 rounded-3xl">
                                     <Wallet className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                                    <p className="text-sm font-bold text-gray-400">No payroll records for this cycle</p>
+                                    <p className="text-sm font-bold text-gray-400">No activity</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -501,11 +501,11 @@ const SalariesPage = () => {
                                                     <p className="text-sm font-bold text-gray-900">{(salary.basicSalary || 0).toLocaleString()}</p>
                                                 </div>
                                                 <div className="text-center border-x border-gray-100">
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Adjust.</p>
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Bonus</p>
                                                     <p className="text-sm font-bold text-emerald-600">{(salary.bonuses || 0).toLocaleString()}</p>
                                                 </div>
                                                 <div className="text-center">
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Net Pay</p>
+                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total</p>
                                                     <p className="text-sm font-bold text-gray-900">{(salary.amount || 0).toLocaleString()}</p>
                                                 </div>
                                             </div>
@@ -513,7 +513,7 @@ const SalariesPage = () => {
                                             {/* Payout Bar */}
                                             <div className="px-6 pb-4">
                                                 <div className="flex items-center justify-between mb-1.5">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Disbursement Progress</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Progress</span>
                                                     <span className="text-[10px] font-bold text-gray-900 tracking-tight">PKR {(salary.amount || 0).toLocaleString()}</span>
                                                 </div>
                                                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -531,7 +531,7 @@ const SalariesPage = () => {
                                                         className="flex-1 h-9 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold rounded-xl gap-1.5 shadow-lg shadow-indigo-100 transition-all active:scale-95"
                                                         onClick={() => handlePayOpen(salary)}
                                                     >
-                                                        <Coins className="h-3.5 w-3.5" /> Pay Staff
+                                                        <Coins className="h-3.5 w-3.5" /> Pay
                                                     </Button>
                                                 ) : (
                                                     <Button
@@ -541,7 +541,7 @@ const SalariesPage = () => {
                                                             setIsSlipDialogOpen(true);
                                                         }}
                                                     >
-                                                        <Eye className="h-3.5 w-3.5" /> View Slip
+                                                        <Eye className="h-3.5 w-3.5" /> View
                                                     </Button>
                                                 )}
 
@@ -553,14 +553,14 @@ const SalariesPage = () => {
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end" className="w-52 rounded-2xl p-2 shadow-xl border-gray-100">
                                                         <DropdownMenuItem onClick={() => { setSelectedSalary(salary); setIsSlipDialogOpen(true); }} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
-                                                            <FileText className="h-4 w-4" /> Complete Slip
+                                                            <FileText className="h-4 w-4" /> View
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleEditOpen(salary)} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
-                                                            <Settings2 className="h-4 w-4" /> Adjust Ledger
+                                                            <Settings2 className="h-4 w-4" /> Edit
                                                         </DropdownMenuItem>
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem onClick={() => { setSelectedSalary(salary); setIsDeleteDialogOpen(true); }} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase text-rose-600 hover:bg-rose-50 cursor-pointer">
-                                                            <Trash2 className="h-4 w-4" /> Evict Record
+                                                            <Trash2 className="h-4 w-4" /> Delete
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -576,7 +576,7 @@ const SalariesPage = () => {
                                 {salaries?.filter(s => s.appealStatus && s.appealStatus !== 'NONE').length === 0 ? (
                                     <div className="col-span-full py-20 bg-white border border-dashed border-gray-200 rounded-3xl text-center">
                                         <MessageSquare className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                                        <p className="text-sm font-bold text-gray-400">No active staff appeals</p>
+                                        <p className="text-sm font-bold text-gray-400">No activity</p>
                                     </div>
                                 ) : (
                                     salaries?.filter(s => s.appealStatus && s.appealStatus !== 'NONE').map(salary => (
@@ -589,7 +589,7 @@ const SalariesPage = () => {
                                                         </div>
                                                         <div>
                                                             <h4 className="text-sm font-bold text-gray-900">{salary.StaffProfile?.User?.name}</h4>
-                                                            <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Discrepancy Reported</p>
+                                                            <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Pending</p>
                                                         </div>
                                                     </div>
                                                     <Badge className="bg-rose-600 text-white border-none text-[8px] font-black uppercase px-2.5 py-1">
@@ -599,12 +599,12 @@ const SalariesPage = () => {
                                             </div>
                                             <div className="p-6 space-y-4">
                                                 <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Staff Message</p>
+                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Message</p>
                                                     <p className="text-xs font-bold text-gray-700 italic">"{salary.appealText || "No context provided."}"</p>
                                                 </div>
                                                 {salary.appealResponse && (
                                                     <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
-                                                        <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-2">Admin Resolution</p>
+                                                        <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-widest mb-2">Resolution</p>
                                                         <p className="text-xs font-bold text-emerald-900">{salary.appealResponse}</p>
                                                     </div>
                                                 )}
@@ -621,7 +621,7 @@ const SalariesPage = () => {
                                                             className="flex-1 h-10 bg-gray-900 hover:bg-black text-white rounded-xl text-[10px] font-bold uppercase gap-2"
                                                             onClick={() => { setSelectedSalary(salary); setIsResolveDialogOpen(true); }}
                                                         >
-                                                            <Settings2 className="h-3.5 w-3.5" /> Resolve Appeal
+                                                            <Settings2 className="h-3.5 w-3.5" /> Resolve
                                                         </Button>
                                                     )}
                                                 </div>
@@ -656,7 +656,7 @@ const SalariesPage = () => {
                                 <Calculator className="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-sm font-bold uppercase tracking-tight">Adjust Ledger</h2>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Edit</h2>
                                 <p className="text-[10px] text-indigo-100 font-medium">for {selectedSalary?.StaffProfile?.User?.name}</p>
                             </div>
                         </div>
@@ -681,13 +681,13 @@ const SalariesPage = () => {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Adjustment Memo</Label>
-                            <Textarea value={editFormData.notes} onChange={e => setEditFormData({ ...editFormData, notes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Specify reason for adjustments..." />
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Details</Label>
+                            <Textarea value={editFormData.notes} onChange={e => setEditFormData({ ...editFormData, notes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Add notes..." />
                         </div>
                         <div className="flex gap-3 pt-2">
                             <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
                             <Button className="flex-1 h-11 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-100" onClick={handleEditSubmit} disabled={updateSalary.isPending}>
-                                {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Adjustment'}
+                                {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
                             </Button>
                         </div>
                     </div>
@@ -704,8 +704,8 @@ const SalariesPage = () => {
                                 <ShieldCheck className="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-sm font-bold uppercase tracking-tight">Pay Authorization</h2>
-                                <p className="text-[10px] text-emerald-100 font-medium">for {selectedSalary?.StaffProfile?.User?.name}</p>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Pay</h2>
+                                <p className="text-[10px] text-emerald-100 font-medium">Paying {selectedSalary?.StaffProfile?.User?.name}</p>
                             </div>
                         </div>
                     </div>
@@ -725,13 +725,13 @@ const SalariesPage = () => {
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Authorization Date</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Date</Label>
                             <Input type="date" value={payFormData.paymentDate} onChange={e => setPayFormData({ ...payFormData, paymentDate: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
                         </div>
                         <div className="flex gap-3 pt-4">
                             <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsPayDialogOpen(false)}>Cancel</Button>
                             <Button className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-100" onClick={handlePaySubmit} disabled={updateSalary.isPending}>
-                                {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Payment'}
+                                {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm'}
                             </Button>
                         </div>
                     </div>
@@ -748,17 +748,17 @@ const SalariesPage = () => {
                                 <Plus className="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-sm font-bold uppercase tracking-tight">Manual Ingress</h2>
-                                <p className="text-[10px] text-gray-400 font-medium">Authorize specific staff ledger entry</p>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Add</h2>
+                                <p className="text-[10px] text-gray-400 font-medium">Add record</p>
                             </div>
                         </div>
                     </div>
                     <div className="p-8 space-y-5">
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Target Personnel</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Staff</Label>
                             <Select value={addSalaryForm.staffId} onValueChange={v => setAddSalaryForm({ ...addSalaryForm, staffId: v })}>
                                 <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-xs focus:ring-0">
-                                    <SelectValue placeholder="Choose staff member..." />
+                                    <SelectValue placeholder="Choose staff" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl border-gray-100 shadow-2xl max-h-[300px]">
                                     {staffList?.map(s => (
@@ -769,22 +769,22 @@ const SalariesPage = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Bonus Component</Label>
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Bonus</Label>
                                 <Input type="number" value={addSalaryForm.customBonuses} onChange={e => setAddSalaryForm({ ...addSalaryForm, customBonuses: Number(e.target.value) })} className="rounded-xl border-emerald-50 bg-emerald-50/30 font-bold h-11 text-emerald-600" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-bold uppercase tracking-widest text-rose-500">Deduction Component</Label>
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-rose-500">Deductions</Label>
                                 <Input type="number" value={addSalaryForm.customDeductions} onChange={e => setAddSalaryForm({ ...addSalaryForm, customDeductions: Number(e.target.value) })} className="rounded-xl border-rose-50 bg-rose-50/30 font-bold h-11 text-rose-600" />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Fiscal Memo</Label>
-                            <Textarea value={addSalaryForm.customNotes} onChange={e => setAddSalaryForm({ ...addSalaryForm, customNotes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Add relevant notes for this entry..." />
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Details</Label>
+                            <Textarea value={addSalaryForm.customNotes} onChange={e => setAddSalaryForm({ ...addSalaryForm, customNotes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Add notes..." />
                         </div>
                         <div className="flex gap-3 pt-2">
                             <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsAddSalaryDialogOpen(false)}>Cancel</Button>
                             <Button className="flex-1 h-11 bg-gray-900 hover:bg-black text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-xl" onClick={handleAddSalarySubmit} disabled={createSalary.isPending}>
-                                {createSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Authorize Entry'}
+                                {createSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
                             </Button>
                         </div>
                     </div>

@@ -284,7 +284,7 @@ const ExpensesPage = () => {
         }
     };
 
-    if (expensesLoading || statsLoading) return <Loader label="Loading Expenses" subLabel="Fetching expense records..." icon={Receipt} fullScreen={false} />;
+    if (expensesLoading || statsLoading) return <Loader label="Loading" subLabel="Updates..." icon={Receipt} fullScreen={false} />;
 
     const stats = statsData?.summary || { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalCount: 0 };
 
@@ -296,11 +296,11 @@ const ExpensesPage = () => {
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="h-8 w-1 bg-indigo-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Expense Records</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Expenses</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Hostel Branch</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Hostel</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Live</span>
                             </div>
                         </div>
                     </div>
@@ -311,7 +311,7 @@ const ExpensesPage = () => {
                                 className="h-9 px-3 md:px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 flex-1 sm:flex-none flex items-center justify-center gap-2"
                                 onClick={handleExportCSV}
                             >
-                                <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Export</span> CSV
+                                <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Report</span> CSV
                             </Button>
                             <Button
                                 variant="outline"
@@ -320,14 +320,14 @@ const ExpensesPage = () => {
                                 disabled={isExportingExpenses}
                             >
                                 {isExportingExpenses ? <Loader2 className="h-3.5 w-3.5 text-indigo-700 animate-spin" /> : <Download className="h-3.5 w-3.5 text-indigo-700" />}
-                                <span className="hidden xs:inline">EXPORT</span> REPORTS
+                                <span className="hidden xs:inline">Report</span>
                             </Button>
                         </div>
                         <Button
                             className="h-9 px-4 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all flex-1 sm:flex-none flex items-center justify-center gap-2"
                             onClick={() => setIsAddOpen(true)}
                         >
-                            <Plus className="h-3.5 w-3.5" /> <span className="hidden xs:inline">Add</span> Expense
+                            <Plus className="h-3.5 w-3.5" /> <span className="hidden xs:inline">New</span>
                         </Button>
                     </div>
                 </div>
@@ -340,7 +340,7 @@ const ExpensesPage = () => {
                         { label: 'Total', value: `PKR ${(stats.totalAmount / 1000).toFixed(1)}k`, icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50' },
                         { label: 'Paid', value: `PKR ${(stats.paidAmount / 1000).toFixed(1)}k`, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                         { label: 'Pending', value: `PKR ${(stats.pendingAmount / 1000).toFixed(1)}k`, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Count', value: stats.totalCount, icon: History, color: 'text-purple-600', bg: 'bg-purple-50' }
+                        { label: 'History', value: stats.totalCount, icon: History, color: 'text-purple-600', bg: 'bg-purple-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm group hover:shadow-md transition-shadow min-w-0">
                             <div className={`h-9 w-9 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
@@ -359,7 +359,7 @@ const ExpensesPage = () => {
                     <div className="flex-1 relative w-full group">
                         <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-hover:text-indigo-600 transition-colors" />
                         <Input
-                            placeholder="Search by ID or Title..."
+                            placeholder="Search"
                             className="w-full h-11 md:h-12 pl-10 md:pl-12 bg-transparent border-none shadow-none font-bold text-xs md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -373,11 +373,11 @@ const ExpensesPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none">
                                     <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    <span className="truncate">{filterHostel === 'all' ? 'All Hostels' : hostels.find(h => h.id === filterHostel)?.name}</span>
+                                    <span className="truncate">{filterHostel === 'all' ? 'Hostel' : hostels.find(h => h.id === filterHostel)?.name}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[240px] rounded-xl">
-                                <DropdownMenuItem onClick={() => setFilterHostel('all')}>All Hostels</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setFilterHostel('all')}>Hostel</DropdownMenuItem>
                                 {hostels.map(h => (
                                     <DropdownMenuItem key={h.id} onClick={() => setFilterHostel(h.id)} className="text-[10px] font-bold uppercase tracking-wider">
                                         {h.name}
@@ -390,7 +390,7 @@ const ExpensesPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none">
                                     <Zap className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    <span className="truncate">{filterCategory === 'all' ? 'All Categories' : filterCategory}</span>
+                                    <span className="truncate">{filterCategory === 'all' ? 'Category' : filterCategory}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[200px] rounded-xl">
@@ -406,7 +406,7 @@ const ExpensesPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none">
                                     <ShieldCheck className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    <span className="truncate">{filterStatus === 'all' ? 'All Statuses' : filterStatus}</span>
+                                    <span className="truncate">{filterStatus === 'all' ? 'Status' : filterStatus}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[200px] rounded-xl">
@@ -423,7 +423,7 @@ const ExpensesPage = () => {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
                     <TabsList className="bg-white border border-gray-100 p-1 rounded-xl h-11 w-full lg:w-auto shadow-sm overflow-x-auto scrollbar-hide flex justify-start lg:justify-center">
                         <TabsTrigger value="current" className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white shrink-0">
-                            <Zap className="h-3.5 w-3.5 mr-2" /> This Month <span className="hidden xs:inline">({currentMonthLabel})</span>
+                            <Zap className="h-3.5 w-3.5 mr-2" /> Month <span className="hidden xs:inline">({currentMonthLabel})</span>
                         </TabsTrigger>
                         <TabsTrigger value="history" className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white shrink-0">
                             <History className="h-3.5 w-3.5 mr-2" /> All Time
@@ -460,7 +460,7 @@ const ExpensesPage = () => {
 
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 flex-[1.5] w-full min-w-0 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l lg:pl-8 border-gray-50">
                                     <div className="flex flex-col">
-                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Timeline</span>
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Date</span>
                                         <div className="flex items-center gap-1.5">
                                             <Calendar className="h-3 w-3 text-blue-400 shrink-0" />
                                             <p className="text-[10px] md:text-xs font-bold text-gray-600 uppercase truncate">{format(new Date(expense.date), 'MMM dd, yyyy')}</p>
@@ -486,8 +486,8 @@ const ExpensesPage = () => {
                         {filteredExpenses.length === 0 && (
                             <div className="bg-white border border-dashed border-gray-200 rounded-[2rem] p-24 text-center">
                                 <BarChart3 className="h-16 w-16 text-gray-200 mx-auto mb-6" />
-                                <h3 className="text-xl font-bold text-gray-900 uppercase">No records found</h3>
-                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">No expenses found for the selected filters.</p>
+                                <h3 className="text-xl font-bold text-gray-900 uppercase">Empty</h3>
+                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">Clear</p>
                                 <Button
                                     onClick={() => { setFilterHostel('all'); setFilterCategory('all'); setFilterStatus('all'); }}
                                     className="mt-8 bg-indigo-600 text-white rounded-xl px-8 h-12 font-bold uppercase text-[10px] tracking-widest"
@@ -523,7 +523,7 @@ const ExpensesPage = () => {
 
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 flex-[1.5] w-full min-w-0 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l lg:pl-8 border-gray-50">
                                     <div className="flex flex-col">
-                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Timeline</span>
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Date</span>
                                         <div className="flex items-center gap-1.5">
                                             <Calendar className="h-3 w-3 text-blue-400 shrink-0" />
                                             <p className="text-[10px] md:text-xs font-bold text-gray-600 uppercase truncate">{format(new Date(expense.date), 'MMM dd, yyyy')}</p>
@@ -547,8 +547,8 @@ const ExpensesPage = () => {
                         )) : (
                             <div className="py-20 md:py-32 text-center bg-white border border-dashed border-gray-100 rounded-[2.5rem] px-6">
                                 <Receipt className="h-10 w-10 md:h-12 md:w-12 text-gray-100 mx-auto mb-4" />
-                                <h3 className="text-sm md:text-lg font-black text-gray-900 uppercase tracking-widest">No History Found</h3>
-                                <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">There are no archived expense records matching your current filter.</p>
+                                <h3 className="text-sm md:text-lg font-black text-gray-900 uppercase tracking-widest">Clear</h3>
+                                <p className="text-[9px] md:text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">No records.</p>
                             </div>
                         )}
                     </TabsContent>
@@ -563,8 +563,8 @@ const ExpensesPage = () => {
                         <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
                             <Plus className="h-8 w-8 text-white" />
                         </div>
-                        <h2 className="text-2xl font-bold uppercase tracking-tight">Add New Expense</h2>
-                        <p className="text-[10px] text-indigo-100 font-bold tracking-[0.2em] mt-2 uppercase tracking-widest">Register a new expense for the hostel</p>
+                        <h2 className="text-2xl font-bold uppercase tracking-tight">New</h2>
+                        <p className="text-[10px] text-indigo-100 font-bold tracking-[0.2em] mt-2 uppercase tracking-widest">Details</p>
                     </div>
                     <div className="p-10 space-y-6">
                         <div className="grid grid-cols-2 gap-6">
@@ -584,7 +584,7 @@ const ExpensesPage = () => {
                                     value={newExpenseForm.category}
                                     onChange={e => setNewExpenseForm({ ...newExpenseForm, category: e.target.value })}
                                 >
-                                    <option value="">Select Category</option>
+                                    <option value="">Category</option>
                                     {['UTILITIES', 'MAINTENANCE', 'SALARIES', 'SUPPLIES', 'GROCERIES', 'OTHER'].map(cat => (
                                         <option key={cat} value={cat}>{cat}</option>
                                     ))}
@@ -601,13 +601,13 @@ const ExpensesPage = () => {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Select Hostel*</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Hostel*</Label>
                                 <select
                                     className="w-full h-12 rounded-xl border-gray-100 bg-gray-50 px-4 text-[10px] font-bold uppercase tracking-wider focus:ring-1 focus:ring-indigo-600 outline-none"
                                     value={newExpenseForm.hostelId}
                                     onChange={e => setNewExpenseForm({ ...newExpenseForm, hostelId: e.target.value })}
                                 >
-                                    <option value="">Select Hostel</option>
+                                    <option value="">Hostel</option>
                                     {hostels.map(h => (
                                         <option key={h.id} value={h.id}>{h.name}</option>
                                     ))}
@@ -626,7 +626,7 @@ const ExpensesPage = () => {
                         <div className="space-y-2">
                             <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Description</Label>
                             <Textarea
-                                placeholder="Describe the expense..."
+                                placeholder="Notes"
                                 value={newExpenseForm.description}
                                 onChange={e => setNewExpenseForm({ ...newExpenseForm, description: e.target.value })}
                                 className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24"
@@ -639,7 +639,7 @@ const ExpensesPage = () => {
                                 onClick={handleAddSubmit}
                                 disabled={createExpense.isPending}
                             >
-                                {createExpense.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><ShieldCheck className="h-4 w-4" /> Save Expense</>}
+                                {createExpense.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <><ShieldCheck className="h-4 w-4" /> Save</>}
                             </Button>
                         </div>
                     </div>
@@ -697,20 +697,20 @@ const ExpensesPage = () => {
                                     </div>
                                     <div className="space-y-6">
                                         <div className="space-y-1">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Submitted By</span>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">User</span>
                                             <p className="text-sm font-bold text-gray-900">{selectedExpense.User_Expense_submittedByIdToUser?.name} ({selectedExpense.User_Expense_submittedByIdToUser?.role})</p>
                                         </div>
                                         <div className="space-y-1">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Hostel Branch</span>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Hostel</span>
                                             <p className="text-sm font-bold text-gray-900">{selectedExpense.Hostel?.city} Network</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
-                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-3">Description</span>
+                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-3">Notes</span>
                                     <p className="text-sm font-medium text-gray-700 leading-relaxed">
-                                        "{selectedExpense.description || 'No description provided.'}"
+                                        "{selectedExpense.description || 'No details.'}"
                                     </p>
                                 </div>
 
@@ -721,14 +721,14 @@ const ExpensesPage = () => {
                                                 className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-600/20"
                                                 onClick={() => handleStatusUpdate(selectedExpense.id, 'APPROVED')}
                                             >
-                                                Approve Expense
+                                                Approve
                                             </Button>
                                             <Button
                                                 variant="outline"
                                                 className="flex-1 h-12 border-rose-100 text-rose-600 hover:bg-rose-50 font-bold text-[10px] uppercase tracking-widest rounded-xl"
                                                 onClick={() => handleStatusUpdate(selectedExpense.id, 'REJECTED')}
                                             >
-                                                Reject Expense
+                                                Reject
                                             </Button>
                                         </>
                                     ) : (selectedExpense.status === 'APPROVED' || selectedExpense.status === 'PARTIAL') ? (
@@ -736,7 +736,7 @@ const ExpensesPage = () => {
                                             className="w-full h-12 bg-indigo-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg"
                                             onClick={() => handleStatusUpdate(selectedExpense.id, 'PAID')}
                                         >
-                                            Mark as Paid
+                                            Pay
                                         </Button>
                                     ) : (
                                         <div className="w-full h-12 bg-gray-100 rounded-xl flex items-center justify-center gap-3">

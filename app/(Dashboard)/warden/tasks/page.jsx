@@ -160,7 +160,7 @@ const TasksPage = () => {
         return matchesSearch && matchesStatus && matchesPriority;
     });
 
-    if (isTasksLoading) return <Loader label="Loading Tasks" subLabel="Fetching task list..." fullScreen={false} />;
+    if (isTasksLoading) return <Loader label="Loading" subLabel="Getting records..." fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight leading-relaxed">
@@ -170,11 +170,11 @@ const TasksPage = () => {
                     <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
                         <div className="h-8 w-1 bg-black rounded-full shrink-0" />
                         <div className="flex flex-col min-w-0">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase truncate">Operational Tasks</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase truncate">Tasks</h1>
                             <div className="flex items-center gap-1.5 md:gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400 truncate">Staff Management</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400 truncate">Operations</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500 shrink-0 hidden sm:block" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600 truncate hidden xs:block">Active Sync</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600 truncate hidden xs:block">Online</span>
                             </div>
                         </div>
                     </div>
@@ -182,7 +182,7 @@ const TasksPage = () => {
                         <div className="relative group hidden lg:block">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 group-focus-within:text-black transition-colors" />
                             <Input
-                                placeholder="Search tasks or staff..."
+                                placeholder="Search..."
                                 className="h-9 w-[280px] pl-9 rounded-xl border-gray-100 bg-gray-50/50 font-bold text-[10px] uppercase tracking-wider text-gray-600 shadow-sm transition-all focus:bg-white focus:ring-0"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -206,16 +206,16 @@ const TasksPage = () => {
                                                 <ClipboardList className="h-5 w-5 md:h-6 md:w-6" />
                                             </div>
                                             <div className="min-w-0">
-                                                <h3 className="text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight italic truncate">Provision Task</h3>
-                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic truncate">Operational Directive Node</p>
+                                                <h3 className="text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight italic truncate">New Task</h3>
+                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic truncate">Add a task.</p>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="p-6 md:p-8 space-y-4 md:space-y-6">
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Task Title</Label>
+                                            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Title</Label>
                                             <Input
-                                                placeholder="Enter imperative title..."
+                                                placeholder="Task title..."
                                                 className="h-11 md:h-12 rounded-xl border-gray-100 font-bold text-xs shadow-sm focus:ring-0"
                                                 value={newTaskData.title}
                                                 onChange={(e) => setNewTaskData({ ...newTaskData, title: e.target.value })}
@@ -224,7 +224,7 @@ const TasksPage = () => {
                                         <div className="space-y-2">
                                             <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Description (Optional)</Label>
                                             <Textarea
-                                                placeholder="Technical context and specifics..."
+                                                placeholder="Write a note..."
                                                 className="min-h-[80px] md:min-h-[100px] rounded-xl border-gray-100 font-medium text-xs shadow-sm focus:ring-0 pt-3"
                                                 value={newTaskData.description}
                                                 onChange={(e) => setNewTaskData({ ...newTaskData, description: e.target.value })}
@@ -238,10 +238,10 @@ const TasksPage = () => {
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                                                        <SelectItem value="LOW" className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Low Nominal</SelectItem>
-                                                        <SelectItem value="MEDIUM" className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Medium Scale</SelectItem>
-                                                        <SelectItem value="HIGH" className="text-[10px] font-bold uppercase tracking-widest text-rose-600">High Magnitude</SelectItem>
-                                                        <SelectItem value="URGENT" className="text-[10px] font-bold uppercase tracking-widest text-white bg-rose-500 rounded-md">Urgent Focus</SelectItem>
+                                                        <SelectItem value="LOW" className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Low Priority</SelectItem>
+                                                        <SelectItem value="MEDIUM" className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Medium Priority</SelectItem>
+                                                        <SelectItem value="HIGH" className="text-[10px] font-bold uppercase tracking-widest text-rose-600">High Priority</SelectItem>
+                                                        <SelectItem value="URGENT" className="text-[10px] font-bold uppercase tracking-widest text-white bg-rose-500 rounded-md">Urgent Priority</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
@@ -262,10 +262,10 @@ const TasksPage = () => {
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Assign Tech Node (Staff)</Label>
+                                            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Assign To</Label>
                                             <Select value={newTaskData.assignedToId} onValueChange={(v) => setNewTaskData({ ...newTaskData, assignedToId: v })}>
                                                 <SelectTrigger className="h-11 md:h-12 rounded-xl border-gray-100 bg-white font-bold text-[10px] uppercase tracking-widest text-gray-600 shadow-sm focus:ring-0">
-                                                    <SelectValue placeholder="ASSIGN STAFF UNIT" />
+                                                    <SelectValue placeholder="Select Staff" />
                                                 </SelectTrigger>
                                                 <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
                                                     {staffMembers.map((staff) => (
@@ -290,7 +290,7 @@ const TasksPage = () => {
                                             onClick={handleCreateTask}
                                             disabled={createMutation.isPending}
                                         >
-                                            {createMutation.isPending ? "Syncing..." : "Initialize Task Lifecycle"}
+                                            {createMutation.isPending ? "Saving" : "Create Task"}
                                         </Button>
                                     </div>
                                 </div>
@@ -315,10 +315,10 @@ const TasksPage = () => {
                 {/* Metrics Matrix */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                     {[
-                        { label: 'Total Taskload', value: stats.total, sub: 'Inventory', icon: ClipboardList, color: 'text-gray-900', bg: 'bg-white' },
-                        { label: 'Pending Units', value: stats.pending, sub: 'In Queue', icon: Clock, color: 'text-rose-500', bg: 'bg-rose-50/50' },
-                        { label: 'Escalations', value: stats.urgent, sub: 'Urgent', icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50/50' },
-                        { label: 'Efficiency', value: `${stats.completionRate}%`, sub: 'Resolution', icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50/50' }
+                        { label: 'Total', value: stats.total, sub: 'All', icon: ClipboardList, color: 'text-gray-900', bg: 'bg-white' },
+                        { label: 'Pending', value: stats.pending, sub: 'Pending', icon: Clock, color: 'text-rose-500', bg: 'bg-rose-50/50' },
+                        { label: 'Urgent', value: stats.urgent, sub: 'Urgent', icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50/50' },
+                        { label: 'Done', value: `${stats.completionRate}%`, sub: 'Quality', icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50/50' }
                     ].map((node, i) => (
                         <div key={i} className={`border border-gray-100 rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col sm:flex-row items-center sm:items-center gap-3 md:gap-5 shadow-sm hover:shadow-md transition-all group ${node.bg} min-w-0`}>
                             <div className={`h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-white flex items-center justify-center shrink-0 border border-gray-100 group-hover:scale-110 transition-transform ${node.color} shadow-sm`}>
@@ -338,7 +338,7 @@ const TasksPage = () => {
                 <div className="flex flex-col md:flex-row gap-4 lg:items-center">
                     <div className="flex items-center gap-2 px-1">
                         <Filter className="h-3.5 w-3.5 text-gray-400" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Registry Matrix</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Filter</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 md:gap-3">
                         <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -346,7 +346,7 @@ const TasksPage = () => {
                                 <SelectValue placeholder="STATUS" />
                             </SelectTrigger>
                             <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                                <SelectItem value="all" className="text-[10px] font-bold uppercase tracking-widest">Global Status</SelectItem>
+                                <SelectItem value="all" className="text-[10px] font-bold uppercase tracking-widest">All</SelectItem>
                                 <SelectItem value="PENDING" className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Pending</SelectItem>
                                 <SelectItem value="IN_PROGRESS" className="text-[10px] font-bold uppercase tracking-widest text-blue-600">In Progress</SelectItem>
                                 <SelectItem value="COMPLETED" className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Completed</SelectItem>
@@ -359,11 +359,11 @@ const TasksPage = () => {
                                 <SelectValue placeholder="PRIORITY" />
                             </SelectTrigger>
                             <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                                <SelectItem value="all" className="text-[10px] font-bold uppercase tracking-widest">Global Priority</SelectItem>
-                                <SelectItem value="URGENT" className="text-[10px] font-bold uppercase tracking-widest text-rose-600 italic">Urgent Focus</SelectItem>
-                                <SelectItem value="HIGH" className="text-[10px] font-bold uppercase tracking-widest">High Magnitude</SelectItem>
-                                <SelectItem value="MEDIUM" className="text-[10px] font-bold uppercase tracking-widest">Medium Scale</SelectItem>
-                                <SelectItem value="LOW" className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Nominal Low</SelectItem>
+                                <SelectItem value="all" className="text-[10px] font-bold uppercase tracking-widest">All</SelectItem>
+                                <SelectItem value="URGENT" className="text-[10px] font-bold uppercase tracking-widest text-rose-600 italic">Urgent Priority</SelectItem>
+                                <SelectItem value="HIGH" className="text-[10px] font-bold uppercase tracking-widest">High Priority</SelectItem>
+                                <SelectItem value="MEDIUM" className="text-[10px] font-bold uppercase tracking-widest">Medium Priority</SelectItem>
+                                <SelectItem value="LOW" className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Low Priority</SelectItem>
                             </SelectContent>
                         </Select>
 
@@ -377,7 +377,7 @@ const TasksPage = () => {
                                     setSearchQuery('');
                                 }}
                             >
-                                <Zap className="h-3.5 w-3.5 mr-2" /> Reset Matrix
+                                <Zap className="h-3.5 w-3.5 mr-2" /> Reset
                             </Button>
                         )}
                     </div>
@@ -391,8 +391,8 @@ const TasksPage = () => {
                                 <ClipboardList className="h-5 w-5" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight italic">Operational Ledger</h3>
-                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic">Lifecycle Audit & Directive Tracking</p>
+                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight italic">Tasks</h3>
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic">List of tasks.</p>
                             </div>
                         </div>
                     </div>
@@ -457,12 +457,12 @@ const TasksPage = () => {
                             <table className="w-full text-left min-w-[1200px]">
                                 <thead>
                                     <tr className="bg-gray-50/70 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b">
-                                        <th className="px-8 py-5 italic">Directive & UID</th>
-                                        <th className="px-8 py-5">Assigned Target</th>
-                                        <th className="px-8 py-5">Operational Context</th>
-                                        <th className="px-8 py-5">Priority Magnitude</th>
-                                        <th className="px-8 py-5">Lifecycle Node</th>
-                                        <th className="px-8 py-5 text-right">Lifecycle Management</th>
+                                        <th className="px-8 py-5 italic">Task</th>
+                                        <th className="px-8 py-5">Staff</th>
+                                        <th className="px-8 py-5">Category</th>
+                                        <th className="px-8 py-5">Priority</th>
+                                        <th className="px-8 py-5">Status</th>
+                                        <th className="px-8 py-5 text-right">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -575,8 +575,8 @@ const TaskDetailsContent = ({ task }) => {
                         <BarChart3 className="h-5 w-5 md:h-6 md:w-6" />
                     </div>
                     <div className="min-w-0">
-                        <h3 className="text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight italic truncate">Lifecycle Audit</h3>
-                        <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic truncate">{task.uid} Directive Hub</p>
+                        <h3 className="text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight italic truncate">Details</h3>
+                        <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic truncate">{task.uid} Info</p>
                     </div>
                 </div>
                 <Badge className={`${getStatusTheme(task.status)} px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm`}>{task.status}</Badge>
@@ -588,24 +588,24 @@ const TaskDetailsContent = ({ task }) => {
                     <div className="space-y-4">
                         <div className="p-5 md:p-6 bg-gray-50 rounded-[1.5rem] md:rounded-[2rem] border border-gray-100 space-y-3 shadow-inner">
                             <h4 className="text-[11px] md:text-xs font-black text-gray-900 uppercase tracking-widest italic leading-tight">{task.title}</h4>
-                            <p className="text-xs text-gray-500 font-medium leading-relaxed italic">"{task.description || 'No descriptive metadata provided.'}"</p>
+                            <p className="text-xs text-gray-500 font-medium leading-relaxed italic">"{task.description || 'No details.'}"</p>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="p-4 bg-white border border-gray-100 rounded-2xl flex flex-col gap-1 shadow-sm">
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Initialization</span>
+                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Created</span>
                                 <span className="text-[10px] font-bold text-gray-900 uppercase italic">{format(new Date(task.createdAt), 'MMM dd, HH:mm')}</span>
                             </div>
                             <div className="p-4 bg-white border border-gray-100 rounded-2xl flex flex-col gap-1 shadow-sm">
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Target Threshold</span>
-                                <span className="text-[10px] font-bold text-gray-900 uppercase italic">{task.dueDate ? format(new Date(task.dueDate), 'MMM dd, HH:mm') : 'NO LIMIT'}</span>
+                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Target</span>
+                                <span className="text-[10px] font-bold text-gray-900 uppercase italic">{task.dueDate ? format(new Date(task.dueDate), 'MMM dd, HH:mm') : 'Open'}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Task Lifecycle Actions */}
                     <div className="space-y-3">
-                        <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Operational Directives</Label>
+                        <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Actions</Label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <Button
                                 variant="outline"
@@ -613,7 +613,7 @@ const TaskDetailsContent = ({ task }) => {
                                 onClick={() => handleUpdateStatus(task.id, 'COMPLETED')}
                                 disabled={updateMutation.isPending || task.status === 'COMPLETED'}
                             >
-                                <CheckCircle className="h-4 w-4 shrink-0" /> Finalize Lifecycle
+                                <CheckCircle className="h-4 w-4 shrink-0" /> Done
                             </Button>
                             <Button
                                 variant="outline"
@@ -621,7 +621,7 @@ const TaskDetailsContent = ({ task }) => {
                                 onClick={() => handleUpdateStatus(task.id, 'IN_PROGRESS')}
                                 disabled={updateMutation.isPending || task.status === 'IN_PROGRESS'}
                             >
-                                <Zap className="h-4 w-4 shrink-0" /> Deploy Operations
+                                <Zap className="h-4 w-4 shrink-0" /> Start
                             </Button>
                             <Button
                                 variant="outline"
@@ -629,7 +629,7 @@ const TaskDetailsContent = ({ task }) => {
                                 onClick={() => handleUpdateStatus(task.id, 'CANCELLED')}
                                 disabled={updateMutation.isPending || task.status === 'CANCELLED'}
                             >
-                                <XCircle className="h-4 w-4 shrink-0" /> Terminate Directive
+                                <XCircle className="h-4 w-4 shrink-0" /> Cancel
                             </Button>
                         </div>
                     </div>
@@ -638,7 +638,7 @@ const TaskDetailsContent = ({ task }) => {
                 {/* Right Content: Comments/Audit Trail */}
                 <div className="lg:col-span-2 lg:border-l lg:border-gray-100 lg:pl-8 space-y-6 pt-6 lg:pt-0 border-t lg:border-t-0 border-gray-50">
                     <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest italic">Sync Activity</h4>
+                        <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest italic">Comments</h4>
                         <Badge variant="secondary" className="text-[8px] font-black bg-gray-100 px-2 py-0.5 rounded-md">{task.comments?.length || 0}</Badge>
                     </div>
 
@@ -657,14 +657,14 @@ const TaskDetailsContent = ({ task }) => {
                                 <div className="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto">
                                     <MessageSquare className="h-6 w-6 text-gray-400" />
                                 </div>
-                                <p className="text-[9px] font-black uppercase tracking-widest">No Active Sync Activity</p>
+                                <p className="text-[9px] font-black uppercase tracking-widest">Empty</p>
                             </div>
                         )}
                     </div>
 
                     <div className="relative mt-auto pt-4">
                         <Textarea
-                            placeholder="Broadcast update..."
+                            placeholder="Add a comment..."
                             className="min-h-[90px] rounded-[1.5rem] border-gray-100 bg-gray-50/50 font-medium text-[11px] shadow-sm focus:ring-0 focus:bg-white transition-all pt-4 pb-12 resize-none"
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}

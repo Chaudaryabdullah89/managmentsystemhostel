@@ -202,8 +202,8 @@ const ProfilePage = () => {
                     </div>
                 </div>
                 <div className="flex flex-col items-center gap-1">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-900">Synchronizing</p>
-                    <p className="text-[8px] font-bold uppercase tracking-widest text-gray-400">Fetching Persona Data</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-900">Loading</p>
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-gray-400">Fetching Profile</p>
                 </div>
             </div>
         </div>
@@ -217,11 +217,11 @@ const ProfilePage = () => {
                     <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
                         <div className="h-8 w-1 bg-indigo-600 rounded-full shrink-0" />
                         <div className="flex flex-col min-w-0">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase truncate">My Profile</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase truncate">Profile</h1>
                             <div className="flex items-center gap-1.5 md:gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 truncate">Account Registry</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 truncate">Account</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500 shrink-0 hidden sm:block" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600 truncate hidden sm:block">Active Session</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600 truncate hidden sm:block">Active</span>
                             </div>
                         </div>
                     </div>
@@ -231,7 +231,7 @@ const ProfilePage = () => {
                                 onClick={handleEdit}
                                 className="h-8 md:h-10 px-3 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95"
                             >
-                                <Edit3 className="h-3.5 w-3.5 md:mr-2" /> <span className="hidden sm:inline">Edit Profile</span>
+                                <Edit3 className="h-3.5 w-3.5 md:mr-2" /> <span className="hidden sm:inline">Edit</span>
                             </Button>
                         ) : (
                             <>
@@ -260,10 +260,10 @@ const ProfilePage = () => {
                 {/* Profile Identity Bar */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Login Status', value: 'Active', icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Role Access', value: user.role, icon: Shield, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Active Sessions', value: sessionsData?.sessions?.length || 0, icon: Globe, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Joined Date', value: format(new Date(user.createdAt || Date.now()), 'MMM yyyy'), icon: Calendar, color: 'text-rose-600', bg: 'bg-rose-50' }
+                        { label: 'Status', value: 'Active', icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Role', value: user.role, icon: Shield, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Active Devices', value: sessionsData?.sessions?.length || 0, icon: Globe, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Joined', value: format(new Date(user.createdAt || Date.now()), 'MMM yyyy'), icon: Calendar, color: 'text-rose-600', bg: 'bg-rose-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default min-w-0">
                             <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -312,7 +312,7 @@ const ProfilePage = () => {
                                             className="w-full justify-start h-11 md:h-12 rounded-xl md:rounded-2xl px-4 md:px-6 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-gray-50 hover:text-black transition-all"
                                         >
                                             <History className="h-3.5 w-3.5 md:h-4 md:w-4 mr-3 md:mr-4 text-gray-400" />
-                                            Activity Log
+                                            Log
                                         </Button>
                                     </Link>
                                     <Separator className="my-2 opacity-10" />
@@ -350,7 +350,7 @@ const ProfilePage = () => {
                                         <div className="absolute top-0 left-0 w-1 md:w-1.5 h-full bg-black/5 opacity-70 group-hover:bg-black transition-colors" />
                                         <CardHeader className="p-6 md:p-8 pb-4">
                                             <CardTitle className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900 flex items-center gap-2 md:gap-3">
-                                                <Fingerprint className="h-4 w-4 text-gray-400" /> Personal Details
+                                                <Fingerprint className="h-4 w-4 text-gray-400" /> Personal
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="p-6 md:p-8 pt-0 space-y-4 md:space-y-6">
@@ -375,7 +375,7 @@ const ProfilePage = () => {
                                         <div className="absolute top-0 left-0 w-1 md:w-1.5 h-full bg-black/5 opacity-70 group-hover:bg-emerald-500 transition-colors" />
                                         <CardHeader className="p-6 md:p-8 pb-4">
                                             <CardTitle className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900 flex items-center gap-2 md:gap-3">
-                                                <MapPin className="h-4 w-4 text-gray-400" /> Address Details
+                                                <MapPin className="h-4 w-4 text-gray-400" /> Address
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="p-6 md:p-8 pt-0 space-y-4 md:space-y-6">
@@ -406,13 +406,13 @@ const ProfilePage = () => {
                                                 <Lock className="h-5 w-5 md:h-6 md:w-6" />
                                             </div>
                                             <div className="min-w-0">
-                                                <h3 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight italic truncate">Security Protocol</h3>
-                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Manage login credentials</p>
+                                                <h3 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight italic truncate">Security</h3>
+                                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Set your password.</p>
                                             </div>
                                         </div>
                                         <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
                                             <DialogTrigger asChild>
-                                                <Button size="sm" className="w-full sm:w-auto h-10 md:h-12 px-6 rounded-xl md:rounded-2xl bg-black hover:bg-gray-800 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-lg transition-all active:scale-95">Change Password</Button>
+                                                <Button size="sm" className="w-full sm:w-auto h-10 md:h-12 px-6 rounded-xl md:rounded-2xl bg-black hover:bg-gray-800 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-lg transition-all active:scale-95">Update</Button>
                                             </DialogTrigger>
                                             <DialogContent className="w-[95%] max-w-md p-0 overflow-hidden rounded-[2rem] md:rounded-[3rem] border-none shadow-2xl bg-white mx-auto">
                                                 <div className="bg-black p-8 text-white text-center relative overflow-hidden">
@@ -420,23 +420,23 @@ const ProfilePage = () => {
                                                     <div className="h-12 w-12 md:h-14 md:w-14 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10 shadow-lg relative z-10">
                                                         <Key className="h-6 w-6 md:h-7 md:w-7" />
                                                     </div>
-                                                    <h2 className="text-lg md:text-xl font-bold uppercase tracking-tight italic relative z-10">Password Sync</h2>
-                                                    <p className="text-[9px] text-white/50 font-bold tracking-widest mt-1 uppercase relative z-10">Update account key</p>
+                                                    <h2 className="text-lg md:text-xl font-bold uppercase tracking-tight italic relative z-10">Change Password</h2>
+                                                    <p className="text-[9px] text-white/50 font-bold tracking-widest mt-1 uppercase relative z-10">Enter new password</p>
                                                 </div>
                                                 <div className="p-6 md:p-8 space-y-4">
                                                     <div className="space-y-1.5">
-                                                        <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1 italic">Current Key</Label>
+                                                        <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1 italic">Current Password</Label>
                                                         <Input type="password" value={passwordData.currentPassword} onChange={e => setPasswordData({ ...passwordData, currentPassword: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 px-4 font-bold" />
                                                     </div>
                                                     <div className="space-y-1.5">
-                                                        <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1 italic">New Key</Label>
+                                                        <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1 italic">New Password</Label>
                                                         <Input type="password" value={passwordData.newPassword} onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 px-4 font-bold" />
                                                     </div>
                                                     <div className="space-y-1.5">
-                                                        <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1 italic">Confirm Key</Label>
+                                                        <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1 italic">Confirm Password</Label>
                                                         <Input type="password" value={passwordData.confirmPassword} onChange={e => setPasswordData({ ...passwordData, confirmPassword: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 px-4 font-bold" />
                                                     </div>
-                                                    <Button onClick={handlePasswordChange} disabled={changingpass} className="w-full bg-black text-white h-12 md:h-14 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.2em] text-[9px] mt-2 shadow-xl active:scale-95">Update Key</Button>
+                                                    <Button onClick={handlePasswordChange} disabled={changingpass} className="w-full bg-black text-white h-12 md:h-14 rounded-xl md:rounded-2xl font-black uppercase tracking-[0.2em] text-[9px] mt-2 shadow-xl active:scale-95">Change Password</Button>
                                                 </div>
                                             </DialogContent>
                                         </Dialog>
@@ -448,13 +448,13 @@ const ProfilePage = () => {
                                                 <MailCheck className="h-5 w-5 md:h-6 md:w-6" />
                                             </div>
                                             <div className="min-w-0">
-                                                <h3 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight italic truncate">Email Vector</h3>
+                                                <h3 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight italic truncate">Email</h3>
                                                 <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-tight mt-1 truncate">{user.email}</p>
                                             </div>
                                         </div>
                                         <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
                                             <DialogTrigger asChild>
-                                                <Button variant="outline" size="sm" className="w-full sm:w-auto h-10 md:h-12 px-6 rounded-xl md:rounded-2xl border-gray-200 bg-white text-gray-900 font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm hover:bg-gray-50">Change Email</Button>
+                                                <Button variant="outline" size="sm" className="w-full sm:w-auto h-10 md:h-12 px-6 rounded-xl md:rounded-2xl border-gray-200 bg-white text-gray-900 font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm hover:bg-gray-50">Update</Button>
                                             </DialogTrigger>
                                             <DialogContent className="w-[95%] max-w-md p-0 overflow-hidden rounded-[2rem] md:rounded-[3rem] border-none shadow-2xl bg-white mx-auto">
                                                 <div className="bg-emerald-600 p-8 text-white text-center relative overflow-hidden">
@@ -462,26 +462,26 @@ const ProfilePage = () => {
                                                     <div className="h-12 w-12 md:h-14 md:w-14 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10 shadow-lg relative z-10">
                                                         <Fingerprint className="h-6 w-6 md:h-7 md:w-7" />
                                                     </div>
-                                                    <h2 className="text-lg md:text-xl font-bold uppercase tracking-tight italic relative z-10">Email Update</h2>
-                                                    <p className="text-[9px] text-white/70 font-bold tracking-widest mt-1 uppercase relative z-10">Verify node vector</p>
+                                                    <h2 className="text-lg md:text-xl font-bold uppercase tracking-tight italic relative z-10">Update</h2>
+                                                    <p className="text-[9px] text-white/70 font-bold tracking-widest mt-1 uppercase relative z-10">Final Step</p>
                                                 </div>
                                                 <div className="p-6 md:p-8 space-y-6 text-center font-sans tracking-tight">
                                                     {!showOtpInput ? (
                                                         <div className="space-y-4">
                                                             <div className="space-y-2">
                                                                 <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest italic block text-left ml-1">New Email Address</Label>
-                                                                <Input value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="EMAIL@NODE.LOCAL" className="h-12 rounded-xl border-gray-100 bg-gray-50 px-4 font-bold uppercase text-center placeholder:text-gray-300" />
+                                                                <Input value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="email@example.com" className="h-12 rounded-xl border-gray-100 bg-gray-50 px-4 font-bold uppercase text-center placeholder:text-gray-300" />
                                                             </div>
-                                                            <Button onClick={handleSendOtp} disabled={emailChangeLoading} className="w-full h-12 md:h-14 bg-black text-white rounded-xl md:rounded-2xl font-bold uppercase tracking-[0.1em] text-[9px] shadow-lg active:scale-95">Verify Channel</Button>
+                                                            <Button onClick={handleSendOtp} disabled={emailChangeLoading} className="w-full h-12 md:h-14 bg-black text-white rounded-xl md:rounded-2xl font-bold uppercase tracking-[0.1em] text-[9px] shadow-lg active:scale-95">Send Code</Button>
                                                         </div>
                                                     ) : (
                                                         <div className="space-y-6 animate-in zoom-in-95 duration-300">
                                                             <div className="space-y-2 px-4">
-                                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Code Verification</p>
+                                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Code</p>
                                                                 <p className="text-xs md:text-sm font-black text-gray-900 uppercase italic underline decoration-emerald-500 decoration-2 underline-offset-4 truncate">{newEmail}</p>
                                                             </div>
                                                             <Input value={otp} onChange={e => setOtp(e.target.value)} maxLength={6} className="h-14 md:h-16 text-2xl md:text-3xl text-center font-black tracking-[0.4em] rounded-xl bg-gray-50 border-gray-100 transition-all focus:ring-emerald-500" placeholder="000000" />
-                                                            <Button onClick={handleVerifyOtp} disabled={emailChangeLoading} className="w-full h-12 md:h-14 bg-emerald-600 text-white rounded-xl md:rounded-2xl font-bold uppercase tracking-[0.1em] text-[10px] shadow-xl shadow-emerald-500/20 active:scale-95">Complete Sync</Button>
+                                                            <Button onClick={handleVerifyOtp} disabled={emailChangeLoading} className="w-full h-12 md:h-14 bg-emerald-600 text-white rounded-xl md:rounded-2xl font-bold uppercase tracking-[0.1em] text-[10px] shadow-xl shadow-emerald-500/20 active:scale-95">Verify & Update</Button>
                                                             <p onClick={() => setShowOtpInput(false)} className="text-[8px] font-bold uppercase tracking-widest text-gray-400 hover:text-black cursor-pointer">Discard Update</p>
                                                         </div>
                                                     )}
@@ -491,29 +491,14 @@ const ProfilePage = () => {
                                     </div>
                                 </Card>
 
-                                <div className="bg-black text-white rounded-[2rem] md:rounded-3xl p-5 md:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 md:gap-6 shadow-xl shadow-black/10 relative overflow-hidden group">
-                                    <div className="absolute top-0 right-0 h-full w-48 bg-white/5 skew-x-12 translate-x-20" />
-                                    <div className="flex items-center gap-4 md:gap-6 relative z-10 w-full sm:w-auto">
-                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white/10 flex items-center justify-center border border-white/10 backdrop-blur-md shrink-0">
-                                            <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-emerald-400" />
-                                        </div>
-                                        <div className="min-w-0">
-                                            <h4 className="text-sm md:text-lg font-bold uppercase tracking-tight italic leading-none truncate">Record Integrity: SECURE</h4>
-                                            <p className="text-[7px] md:text-[8px] font-bold uppercase tracking-widest text-gray-400 mt-1.5 md:mt-2">Encrypted & cross-verified</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 relative z-10 px-2 shrink-0 self-end sm:self-center">
-                                        <span className="text-[7px] md:text-[8px] font-black uppercase text-emerald-400 tracking-widest">Active Protect</span>
-                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                    </div>
-                                </div>
+
                             </TabsContent>
 
                             <TabsContent value="sessions" className="m-0 space-y-4 animate-in fade-in duration-500">
                                 <div className="flex items-center justify-between px-2">
                                     <div className="flex items-center gap-3">
                                         <div className="h-8 w-1 bg-black rounded-full" />
-                                        <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight italic">Active Node Access</h2>
+                                        <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight italic">Sessions</h2>
                                     </div>
                                     <Button
                                         variant="ghost"
@@ -521,7 +506,7 @@ const ProfilePage = () => {
                                         disabled={terminateAllSessions.isPending}
                                         className="rounded-xl font-bold text-[8px] uppercase tracking-widest text-gray-400 hover:text-black hover:bg-white h-9 border border-transparent hover:border-gray-100 transition-all"
                                     >
-                                        {terminateAllSessions.isPending ? "Terminating..." : "Terminate All"}
+                                        {terminateAllSessions.isPending ? "Terminating..." : "Disconnect All"}
                                     </Button>
                                 </div>
                                 <div className="grid grid-cols-1 gap-3">
@@ -539,11 +524,11 @@ const ProfilePage = () => {
                                                     </div>
                                                     <div className="flex items-center justify-center sm:justify-start gap-4 md:gap-8 font-sans">
                                                         <div className="flex flex-col">
-                                                            <span className="text-[7px] md:text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Vector IP</span>
+                                                            <span className="text-[7px] md:text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">IP Address</span>
                                                             <span className="text-[10px] md:text-[11px] font-bold text-gray-600 font-mono tracking-tighter">{session.ipAddress || '0.0.0.0'}</span>
                                                         </div>
                                                         <div className="flex flex-col">
-                                                            <span className="text-[7px] md:text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Time Trace</span>
+                                                            <span className="text-[7px] md:text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Last Seen</span>
                                                             <span className="text-[10px] md:text-[11px] font-bold text-gray-600 font-mono tracking-tighter uppercase">{format(new Date(session.lastActive), 'MMM dd | HH:mm')}</span>
                                                         </div>
                                                     </div>
@@ -557,13 +542,13 @@ const ProfilePage = () => {
                                                 className="h-10 px-4 md:px-0 md:w-10 rounded-xl hover:bg-rose-50 hover:text-rose-500 text-gray-300 transition-all md:opacity-0 group-hover:opacity-100 active:scale-95 border border-gray-100 md:border-transparent w-full md:w-auto mt-2 md:mt-0"
                                             >
                                                 <LogOut className="h-4 w-4 md:mr-0 mr-2" />
-                                                <span className="md:hidden text-[9px] font-bold uppercase tracking-widest">Terminate Session</span>
+                                                <span className="md:hidden text-[9px] font-bold uppercase tracking-widest">Disconnect</span>
                                             </Button>
                                         </div>
                                     ))}
                                     {(!sessionsData || sessionsData.sessions?.length === 0) && (
                                         <div className="p-16 text-center border-2 border-dashed border-gray-100 rounded-3xl">
-                                            <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest italic">No active sessions located</p>
+                                            <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest italic">No other devices found</p>
                                         </div>
                                     )}
                                 </div>
@@ -572,40 +557,7 @@ const ProfilePage = () => {
                     </div>
                 </div>
             </main>
-            {/* Audit Registry Bar - Payments Style */}
-            <div className="max-w-[1600px] mx-auto px-4 md:px-6 pb-10">
-                <div className="bg-black text-white rounded-[2rem] md:rounded-[3rem] p-6 md:p-4 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8 shadow-2xl relative overflow-hidden min-w-0">
-                    <div className="absolute top-0 right-0 w-64 h-full bg-white/5 skew-x-12 translate-x-20" />
-
-                    <div className="flex items-center gap-4 md:gap-6 relative z-10 w-full md:w-auto">
-                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md shrink-0 border border-white/5">
-                            <ShieldCheck className="h-5 w-5 text-emerald-400" />
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                            <h4 className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 truncate">Profile Ledger</h4>
-                            <p className="text-[10px] md:text-[11px] font-bold mt-0.5 uppercase tracking-tighter truncate">Verified Node Member</p>
-                        </div>
-                    </div>
-
-                    <div className="h-px md:h-8 w-full md:w-px bg-white/10 shrink-0" />
-
-                    <div className="flex-1 flex items-center justify-between md:justify-start gap-8 md:gap-12 w-full md:w-auto px-2 md:px-4">
-                        <div className="flex flex-col">
-                            <span className="text-[7px] md:text-[8px] font-black uppercase text-gray-500 tracking-widest">Audit Time</span>
-                            <span className="text-[9px] md:text-[10px] font-bold text-gray-200 uppercase mt-1 italic">{new Date().toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="text-[7px] md:text-[8px] font-black uppercase text-gray-500 tracking-widest">Integrity Pulse</span>
-                            <span className="text-[9px] md:text-[10px] font-bold text-emerald-400 uppercase mt-1">100% HEALTHY</span>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 md:pr-6 relative z-10 w-full md:w-auto justify-end border-t md:border-t-0 border-white/5 pt-4 md:pt-0">
-                        <span className="text-[8px] md:text-[9px] font-black uppercase text-emerald-400 tracking-widest">Core Online</span>
-                        <div className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.4)]" />
-                    </div>
-                </div>
-            </div>
+            =
         </div>
     );
 };

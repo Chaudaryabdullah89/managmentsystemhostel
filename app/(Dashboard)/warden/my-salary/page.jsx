@@ -39,7 +39,7 @@ const WardenSalaryPortal = () => {
         <div className="flex h-screen items-center justify-center bg-gray-50/50 font-sans">
             <div className="flex flex-col items-center gap-4">
                 <div className="h-10 w-10 border-[3px] border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Records...</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading...</p>
             </div>
         </div>
     );
@@ -55,8 +55,8 @@ const WardenSalaryPortal = () => {
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1.5 bg-indigo-600 rounded-full" />
                         <div>
-                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Personal Payroll</h1>
-                            <p className="text-[10px] text-gray-400 font-medium font-mono uppercase">Node: {user?.id?.slice(-8).toUpperCase()}</p>
+                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">My Salaries</h1>
+                            <p className="text-[10px] text-gray-400 font-medium font-mono uppercase">My ID: {user?.id?.slice(-8).toUpperCase()}</p>
                         </div>
                     </div>
 
@@ -64,7 +64,7 @@ const WardenSalaryPortal = () => {
                         <div className="relative hidden sm:block">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                             <Input
-                                placeholder="Search cycle..."
+                                placeholder="Search month..."
                                 className="h-9 pl-9 w-[180px] rounded-xl border-gray-200 bg-gray-50 text-[10px] font-bold uppercase tracking-wider"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -81,10 +81,10 @@ const WardenSalaryPortal = () => {
                 {/* Statistics Matrix - consistent with Admin view */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Cumulative Pay', value: `PKR ${(totalEarnings / 1000).toFixed(1)}k`, icon: Wallet, color: 'text-gray-700', bg: 'bg-white', iconBg: 'bg-gray-100' },
-                        { label: 'Latest Net', value: latest?.amount ? `PKR ${(latest.amount / 1000).toFixed(1)}k` : '--', icon: TrendingUp, color: 'text-indigo-600', bg: 'bg-indigo-50', iconBg: 'bg-indigo-100' },
-                        { label: 'Current Cycle', value: latest?.month || 'N/A', icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50', iconBg: 'bg-amber-100' },
-                        { label: 'Base Wage', value: user?.basicSalary ? `PKR ${user.basicSalary.toLocaleString()}` : '--', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50', iconBg: 'bg-emerald-100' },
+                        { label: 'Total Paid', value: `PKR ${(totalEarnings / 1000).toFixed(1)}k`, icon: Wallet, color: 'text-gray-700', bg: 'bg-white', iconBg: 'bg-gray-100' },
+                        { label: 'Last Payment', value: latest?.amount ? `PKR ${(latest.amount / 1000).toFixed(1)}k` : '--', icon: TrendingUp, color: 'text-indigo-600', bg: 'bg-indigo-50', iconBg: 'bg-indigo-100' },
+                        { label: 'This Month', value: latest?.month || 'N/A', icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50', iconBg: 'bg-amber-100' },
+                        { label: 'Base Salary', value: user?.basicSalary ? `PKR ${user.basicSalary.toLocaleString()}` : '--', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50', iconBg: 'bg-emerald-100' },
                     ].map((stat, i) => (
                         <div key={i} className={`${stat.bg} border border-gray-100 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
                             <div>
@@ -102,8 +102,8 @@ const WardenSalaryPortal = () => {
                 <div className="space-y-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Disbursement History</h2>
-                            <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} records mapped</p>
+                            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Payment History</h2>
+                            <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} payments</p>
                         </div>
                     </div>
 
@@ -137,7 +137,7 @@ const WardenSalaryPortal = () => {
                                 {/* Financial Grid */}
                                 <div className="px-6 py-5 grid grid-cols-3 gap-4">
                                     <div>
-                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Retainer</p>
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Basic</p>
                                         <p className="text-xs font-bold text-gray-900">{(salary.basicSalary || 0).toLocaleString()}</p>
                                     </div>
                                     <div className="border-x border-gray-50 px-4">
@@ -145,7 +145,7 @@ const WardenSalaryPortal = () => {
                                         <p className="text-xs font-bold text-emerald-600">+{(salary.bonuses || 0).toLocaleString()}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Deduct</p>
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1">Deductions</p>
                                         <p className="text-xs font-bold text-rose-500">-{(salary.deductions || 0).toLocaleString()}</p>
                                     </div>
                                 </div>
@@ -154,7 +154,7 @@ const WardenSalaryPortal = () => {
                                 <div className="px-6 pb-6 mt-1">
                                     <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 flex items-center justify-between group-hover:bg-indigo-50/30 group-hover:border-indigo-100 transition-colors">
                                         <div>
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Net Transferred</p>
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Total Paid</p>
                                             <p className="text-xl font-black text-gray-900 tracking-tighter tabular-nums">PKR {(salary.amount || 0).toLocaleString()}</p>
                                         </div>
                                         <Button

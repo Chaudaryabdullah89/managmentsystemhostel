@@ -138,7 +138,7 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
                         <div className="p-5 bg-emerald-50 rounded-2xl border border-emerald-100">
                             <div className="flex items-center gap-2 mb-2">
                                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700">Resolution Details</span>
+                                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700">Fix</span>
                             </div>
                             <p className="text-sm text-emerald-800 font-medium leading-relaxed">{complaint.resolutionNotes}</p>
                         </div>
@@ -147,12 +147,12 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
                     {/* Action Controls */}
                     {(complaint.status === "PENDING" || complaint.status === "IN_PROGRESS") && (
                         <div className="space-y-4 pt-2 border-t border-gray-100">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Update Status</p>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Status</p>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400">Assign To Staff</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400">Assign</Label>
                                 <Select defaultValue={complaint.assignedToId} onValueChange={setAssignedStaffId}>
                                     <SelectTrigger className="h-10 rounded-xl border-gray-100 text-xs font-bold uppercase tracking-wider shadow-sm focus:ring-indigo-300">
-                                        <SelectValue placeholder="Select staff member..." />
+                                        <SelectValue placeholder="Staff" />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl shadow-2xl">
                                         {staffMembers.map((s) => (
@@ -164,9 +164,9 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400">Resolution Notes</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400">Details</Label>
                                 <Textarea
-                                    placeholder="Write details of the fix here..."
+                                    placeholder="Notes"
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
                                     className="min-h-[80px] text-xs font-medium rounded-xl border-gray-100 resize-none focus:ring-indigo-300"
@@ -191,7 +191,7 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
 
                     {/* Chat Thread */}
                     <div className="space-y-4 pt-2 border-t border-gray-100">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Message Thread</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Chat</p>
                         <div className="space-y-3 max-h-[240px] overflow-y-auto pr-1">
                             {complaint.comments?.length > 0 ? complaint.comments.map((c) => {
                                 const isAdmin = c.User.role !== "RESIDENT" && c.User.role !== "GUEST";
@@ -209,12 +209,12 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
                                     </div>
                                 );
                             }) : (
-                                <div className="text-center py-8 text-gray-400 text-xs font-bold uppercase tracking-widest">No messages yet</div>
+                                <div className="text-center py-8 text-gray-400 text-xs font-bold uppercase tracking-widest">Clear</div>
                             )}
                         </div>
                         <div className="flex items-center gap-2">
                             <Input
-                                placeholder="Write a reply..."
+                                placeholder="Reply..."
                                 className="rounded-xl border-gray-100 text-xs font-medium"
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
@@ -285,7 +285,7 @@ const ComplaintsPage = () => {
         toast.success("Complaints exported successfully");
     };
 
-    if (isComplaintsLoading || isStatsLoading) return <Loader label="Loading Complaints" subLabel="Fetching complaint records..." icon={MessageSquare} fullScreen={false} />;
+    if (isComplaintsLoading || isStatsLoading) return <Loader label="Loading" subLabel="Updates..." icon={MessageSquare} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
@@ -297,16 +297,16 @@ const ComplaintsPage = () => {
                         <div className="flex flex-col">
                             <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Complaints</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Complaint List</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Stats</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Monitoring</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Live</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <Button variant="outline" onClick={handleExport}
                             className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-2">
-                            <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Export List</span> <span className="xs:hidden">Export</span>
+                            <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Export</span> <span className="xs:hidden">Export</span>
                         </Button>
                     </div>
                 </div>
@@ -316,10 +316,10 @@ const ComplaintsPage = () => {
                 {/* ── Stat Cards ── */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 animate-in slide-in-from-bottom-6 fade-in duration-500 fill-mode-both">
                     {[
-                        { label: "Total Received", value: stats.total, icon: MessageSquare, color: "text-indigo-600", bg: "bg-indigo-50" },
+                        { label: "Total", value: stats.total, icon: MessageSquare, color: "text-indigo-600", bg: "bg-indigo-50" },
                         { label: "Pending", value: stats.pending, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-                        { label: "Urgent Cases", value: stats.urgent, icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50" },
-                        { label: "Fix Rate", value: `${stats.resolutionRate}%`, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+                        { label: "Urgent", value: stats.urgent, icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50" },
+                        { label: "Rate", value: `${stats.resolutionRate}%`, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-3 md:gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default text-center sm:text-left">
                             <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -338,14 +338,14 @@ const ComplaintsPage = () => {
                     <div className="flex-1 relative w-full group">
                         <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                         <Input
-                            placeholder="Search by title, resident or ID..."
+                            placeholder="Search"
                             className="w-full h-11 md:h-12 pl-10 md:pl-12 bg-transparent border-none shadow-none font-bold text-xs md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         {searchQuery && (
                             <span className="hidden sm:inline-flex absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full uppercase animate-in fade-in zoom-in duration-300">
-                                {filteredComplaints.length} Results
+                                {filteredComplaints.length} Total
                             </span>
                         )}
                     </div>
@@ -358,7 +358,7 @@ const ComplaintsPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
                                     <Filter className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    <span className="truncate">{statusFilter === "All" ? "All Status" : statusFilter.replace("_", " ")}</span>
+                                    <span className="truncate">{statusFilter === "All" ? "Status" : statusFilter.replace("_", " ")}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[220px] rounded-xl border-gray-100 shadow-xl p-2">
@@ -377,7 +377,7 @@ const ComplaintsPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
                                     <AlertTriangle className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    <span className="truncate">{priorityFilter === "All" ? "All Priority" : priorityFilter}</span>
+                                    <span className="truncate">{priorityFilter === "All" ? "Priority" : priorityFilter}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[200px] rounded-xl border-gray-100 shadow-xl p-2">
@@ -396,13 +396,13 @@ const ComplaintsPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
                                     <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    <span className="truncate">{hostelFilter === "All" ? "All Hostels" : hostelFilter}</span>
+                                    <span className="truncate">{hostelFilter === "All" ? "Hostel" : hostelFilter}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[260px] rounded-xl border-gray-100 shadow-xl p-2">
                                 <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Select Hostel</DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-gray-50 mb-1" />
-                                <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">All Hostels</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">Hostel</DropdownMenuItem>
                                 {hostels.map((h) => (
                                     <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">
                                         {h.name}
@@ -446,7 +446,7 @@ const ComplaintsPage = () => {
                                     {/* Status Badge Mobile */}
                                     <div className="lg:hidden">
                                         <Badge variant="outline" className={`${getStatusStyle(complaint.status)} px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest border`}>
-                                            {complaint.status.replace("_", " ")}
+                                            {complaint.status === 'RESOLVED' ? 'DONE' : complaint.status === 'REJECTED' ? 'CLOSED' : complaint.status.replace("_", " ")}
                                         </Badge>
                                     </div>
                                 </div>
@@ -488,7 +488,7 @@ const ComplaintsPage = () => {
                                     {/* Status Badge Desktop */}
                                     <div className="hidden lg:flex min-w-[130px] justify-center">
                                         <Badge variant="outline" className={`${getStatusStyle(complaint.status)} px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest border shadow-sm`}>
-                                            {complaint.status.replace("_", " ")}
+                                            {complaint.status === 'RESOLVED' ? 'DONE' : complaint.status === 'REJECTED' ? 'CLOSED' : complaint.status.replace("_", " ")}
                                         </Badge>
                                     </div>
                                 </div>
@@ -497,7 +497,7 @@ const ComplaintsPage = () => {
                                 <div className="flex items-center gap-2 w-full lg:w-auto justify-end pt-3 lg:pt-0 border-t lg:border-none border-gray-50">
                                     <DialogTrigger asChild>
                                         <Button className="h-9 md:h-10 px-4 md:px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn flex-1 md:flex-none justify-center">
-                                            View Details
+                                            View
                                             <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
                                         </Button>
                                     </DialogTrigger>
@@ -517,8 +517,8 @@ const ComplaintsPage = () => {
                             <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-6 border border-gray-100">
                                 <Search className="h-8 w-8 text-gray-300" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">No complaints found</h3>
-                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Try changing your search or filters</p>
+                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Empty</h3>
+                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Clear</p>
                             <Button variant="outline"
                                 className="mt-8 rounded-xl h-10 px-8 font-bold uppercase tracking-widest text-[10px] border-gray-200 hover:bg-black hover:text-white transition-all shadow-sm"
                                 onClick={() => { setSearchQuery(""); setStatusFilter("All"); setPriorityFilter("All"); setHostelFilter("All"); }}>
@@ -538,27 +538,27 @@ const ComplaintsPage = () => {
                                     <ShieldCheck className="h-5 w-5 text-white" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <h4 className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-200">System Monitoring</h4>
-                                    <p className="text-[10px] md:text-[11px] font-bold mt-0.5">Live tracking active</p>
+                                    <h4 className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-200">System</h4>
+                                    <p className="text-[10px] md:text-[11px] font-bold mt-0.5">Live</p>
                                 </div>
                             </div>
                             <div className="h-6 w-px bg-white/10 hidden md:block" />
                             <div className="flex-1 grid grid-cols-3 md:flex items-center gap-4 md:gap-12 px-2 md:px-8 w-full md:w-auto text-center md:text-left">
                                 <div className="flex flex-col">
-                                    <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-200 tracking-widest truncate">Open Cases</span>
+                                    <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-200 tracking-widest truncate">Pending</span>
                                     <span className="text-[9px] md:text-[10px] font-bold text-white uppercase mt-1">{stats.pending}</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-200 tracking-widest truncate">Total Records</span>
+                                    <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-200 tracking-widest truncate">Total</span>
                                     <span className="text-[9px] md:text-[10px] font-bold text-white uppercase mt-1">{complaints.length}</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-200 tracking-widest truncate">Solved Rate</span>
-                                    <span className="text-[9px] md:text-[10px] font-bold text-white uppercase mt-1">{stats.resolutionRate}%</span>
+                                    <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-200 tracking-widest truncate">Solved</span>
+                                    <span className="text-[9px] md:text-[10px] font-bold text-white uppercase mt-1">{stats.resolutionRate}% Rate</span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 md:pr-6 relative z-10 w-full md:w-auto justify-center md:justify-end border-t md:border-none border-white/10 pt-4 md:pt-0">
-                                <span className="text-[8px] md:text-[9px] font-bold uppercase text-white tracking-widest">Network Status</span>
+                                <span className="text-[8px] md:text-[9px] font-bold uppercase text-white tracking-widest">Status</span>
                                 <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
                             </div>
                         </div>

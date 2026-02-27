@@ -56,9 +56,9 @@ const WardenHostelsPage = () => {
                     <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-indigo-600 rounded-full" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Hostel Profile</h1>
+                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Profile</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Management</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">System</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
                                 <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Active</span>
                             </div>
@@ -114,12 +114,12 @@ const WardenHostelsPage = () => {
                     <Card className="bg-gray-950 text-white rounded-3xl p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mr-16 -mt-16" />
                         <div className="relative z-10">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-6">Room Availability</h3>
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-6">Availability</h3>
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                        <span className="text-sm font-bold uppercase tracking-tight">Available Rooms</span>
+                                        <span className="text-sm font-bold uppercase tracking-tight">Free</span>
                                     </div>
                                     <span className="text-2xl font-black">{roomStats.available}</span>
                                 </div>
@@ -131,13 +131,13 @@ const WardenHostelsPage = () => {
                                 </div>
                                 <div className="flex justify-between text-[9px] font-black text-gray-500 uppercase tracking-widest">
                                     <span>{roomStats.occupied} Occupied</span>
-                                    <span>{roomStats.total} Total Rooms</span>
+                                    <span>{roomStats.total} Total</span>
                                 </div>
                             </div>
                         </div>
                         <Link href="/warden/rooms" className="mt-8 relative z-10 overflow-hidden">
                             <Button className="w-full h-12 bg-white text-black hover:bg-gray-100 font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all active:scale-95 group">
-                                View Rooms
+                                Rooms
                                 <ChevronRight className="h-3.5 w-3.5 ml-2 group-hover:translate-x-1 transition-transform" />
                             </Button>
                         </Link>
@@ -150,10 +150,10 @@ const WardenHostelsPage = () => {
                         {/* Information Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {[
-                                { label: 'Phone Number', value: hostel.phone || 'N/A', icon: Phone, color: 'text-blue-600', bg: 'bg-blue-50' },
-                                { label: 'Total Floors', value: `Floor ${hostel.floors}`, icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                                { label: 'Phone', value: hostel.phone || 'N/A', icon: Phone, color: 'text-blue-600', bg: 'bg-blue-50' },
+                                { label: 'Floors', value: `Floor ${hostel.floors}`, icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                                 { label: 'Status', value: hostel.status || 'Active', icon: Activity, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                                { label: 'Total Residents', value: `${roomStats.occupied} Active`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' }
+                                { label: 'In', value: `${roomStats.occupied} Active`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' }
                             ].map((item, i) => (
                                 <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 hover:shadow-md transition-all group">
                                     <div className={`h-10 w-10 rounded-xl ${item.bg} ${item.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
@@ -175,13 +175,13 @@ const WardenHostelsPage = () => {
                                 </div>
                                 <div className="space-y-4">
                                     <div className="space-y-1">
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Hostel Address</h3>
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Address</h3>
                                         <p className="text-sm md:text-lg font-bold text-gray-900 italic uppercase">
                                             {hostel.address}, {hostel.city}
                                         </p>
                                     </div>
                                     <Button variant="ghost" className="h-8 px-0 text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:bg-transparent hover:text-indigo-700 flex items-center gap-2 group">
-                                        View on Map <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                                        Map <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                                     </Button>
                                 </div>
                             </div>
@@ -216,18 +216,18 @@ const WardenHostelsPage = () => {
                                         </Badge>
                                     ))
                                 ) : (
-                                    <span className="text-[10px] font-bold text-gray-300 italic">No amenities listed</span>
+                                    <span className="text-[10px] font-bold text-gray-300 italic">None</span>
                                 )}
                             </div>
                         </Card>
 
                         {/* Quick Navigation */}
                         <div className="space-y-3">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 mb-4 block">Quick Links</h3>
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 mb-4 block">Links</h3>
                             {[
                                 { label: 'Residents', icon: Users, href: '/warden/residents', color: 'bg-indigo-600' },
                                 { label: 'Complaints', icon: Phone, href: '/warden/complaints', color: 'bg-indigo-600' },
-                                { label: 'Profile Settings', icon: Activity, href: '/warden/profile', color: 'bg-indigo-600' }
+                                { label: 'Profile', icon: Activity, href: '/warden/profile', color: 'bg-indigo-600' }
                             ].map((action, i) => (
                                 <Link key={i} href={action.href}>
                                     <div className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between hover:border-indigo-200 hover:shadow-md transition-all group cursor-pointer mb-3 last:mb-0">

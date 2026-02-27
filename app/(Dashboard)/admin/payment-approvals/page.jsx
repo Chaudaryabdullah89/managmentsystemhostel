@@ -116,8 +116,8 @@ const PaymentApprovalPage = () => {
                     <ShieldCheck className="h-8 w-8 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                 </div>
                 <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 tracking-tight uppercase">Loading Queue...</p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-2">Checking pending approvals</p>
+                    <p className="text-lg font-bold text-gray-900 tracking-tight uppercase">Loading</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-2">Getting records...</p>
                 </div>
             </div>
         </div>
@@ -136,9 +136,9 @@ const PaymentApprovalPage = () => {
                         <div className="flex items-center gap-3">
                             <div className="h-2 w-2 rounded-full bg-indigo-600" />
                             <div className="flex flex-col">
-                                <h1 className="text-base font-bold text-gray-900 tracking-tight uppercase">Approvals</h1>
+                                <h1 className="text-base font-bold text-gray-900 tracking-tight uppercase">Payment Approvals</h1>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Verifications Desk</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pending</span>
                                     <Badge variant="secondary" className="bg-amber-50 text-amber-600 border-amber-100 text-[9px] px-2 py-0">
                                         {filteredPayments.length} Pending
                                     </Badge>
@@ -157,10 +157,10 @@ const PaymentApprovalPage = () => {
                 {/* Metrics */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Pending Count', value: filteredPayments.length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Queue Value', value: `PKR ${(filteredPayments.reduce((acc, p) => acc + p.amount, 0) / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                        { label: 'Hostels Active', value: hostelsData?.hostels?.length || 0, icon: Building2, color: 'text-slate-900', bg: 'bg-slate-100' },
-                        { label: 'System status', value: 'Live', icon: Activity, color: 'text-emerald-600', bg: 'bg-emerald-50' }
+                        { label: 'Pending', value: filteredPayments.length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Total Value', value: `PKR ${(filteredPayments.reduce((acc, p) => acc + p.amount, 0) / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                        { label: 'Hostels', value: hostelsData?.hostels?.length || 0, icon: Building2, color: 'text-slate-900', bg: 'bg-slate-100' },
+                        { label: 'Status', value: 'Live', icon: Activity, color: 'text-emerald-600', bg: 'bg-emerald-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-slate-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -179,7 +179,7 @@ const PaymentApprovalPage = () => {
                     <div className="flex-1 relative w-full group px-2">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
                         <Input
-                            placeholder="Search by student name or ID..."
+                            placeholder="Search..."
                             className="w-full h-12 pl-12 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-slate-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -195,7 +195,7 @@ const PaymentApprovalPage = () => {
                                 <SelectValue placeholder="Filter Hostel" />
                             </SelectTrigger>
                             <SelectContent className="rounded-xl border-slate-100 shadow-xl p-2">
-                                <SelectItem value="all" className="font-bold text-[10px] uppercase p-2.5 rounded-lg">All Hostels</SelectItem>
+                                <SelectItem value="all" className="font-bold text-[10px] uppercase p-2.5 rounded-lg">All</SelectItem>
                                 {hostelsData?.hostels?.map((h) => (
                                     <SelectItem key={h.id} value={h.id} className="font-bold text-[10px] uppercase p-2.5 rounded-lg">{h.name}</SelectItem>
                                 ))}
@@ -282,8 +282,8 @@ const PaymentApprovalPage = () => {
                             <div className="h-16 w-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-emerald-100">
                                 <CheckCircle className="h-8 w-8 text-emerald-500" />
                             </div>
-                            <h3 className="text-lg font-bold text-slate-900 uppercase">Clear Desk</h3>
-                            <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-2">All payments have been reviewed and processed.</p>
+                            <h3 className="text-lg font-bold text-slate-900 uppercase">Done</h3>
+                            <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-2">No pending payments.</p>
                         </div>
                     )}
                 </div>
@@ -298,7 +298,7 @@ const PaymentApprovalPage = () => {
                             </div>
                             <div className="flex flex-col">
                                 <h4 className="text-[10px] font-bold uppercase tracking-[0.3em] text-indigo-100">Audit Ready</h4>
-                                <p className="text-[12px] font-bold mt-1 tracking-wide uppercase">Official Finance Desk Active</p>
+                                <p className="text-[12px] font-bold mt-1 tracking-wide uppercase">Finance Desk</p>
                             </div>
                         </div>
 
@@ -306,7 +306,7 @@ const PaymentApprovalPage = () => {
 
                         <div className="flex-1 flex items-center gap-16 px-8">
                             <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-indigo-100 tracking-[0.2em]">Pending Total</span>
+                                <span className="text-[8px] font-bold uppercase text-indigo-100 tracking-[0.2em]">Pending</span>
                                 <span className="text-[10px] font-bold text-white uppercase mt-1 tracking-widest">PKR {filteredPayments.reduce((acc, p) => acc + p.amount, 0).toLocaleString()}</span>
                             </div>
                             <div className="flex flex-col">
@@ -331,14 +331,14 @@ const PaymentApprovalPage = () => {
                         <div className="h-16 w-16 bg-black/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
                             <XCircle className="h-8 w-8" />
                         </div>
-                        <h2 className="text-2xl font-bold uppercase tracking-tight italic">Reject Payment</h2>
-                        <p className="text-[10px] text-white/70 font-bold tracking-widest mt-2 uppercase">Stop verification protocol</p>
+                        <h2 className="text-2xl font-bold uppercase tracking-tight italic">Reject</h2>
+                        <p className="text-[10px] text-white/70 font-bold tracking-widest mt-2 uppercase">Cancel payment verification</p>
                     </div>
                     <div className="p-10 space-y-8">
                         <div className="space-y-3">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Feedback for Resident</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Reason</Label>
                             <Textarea
-                                placeholder="Specify exactly why this payment cannot be approved..."
+                                placeholder="Write a note..."
                                 className="rounded-2xl border-slate-100 bg-slate-50 p-6 font-bold text-sm min-h-[140px] focus:ring-rose-500 text-slate-900 resize-none pt-4 placeholder:text-slate-300"
                                 value={rejectionReason}
                                 onChange={(e) => setRejectionReason(e.target.value)}
@@ -351,7 +351,7 @@ const PaymentApprovalPage = () => {
                                 onClick={handleReject}
                                 disabled={updatePayment.isPending || !rejectionReason}
                             >
-                                {updatePayment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Reject Now'}
+                                {updatePayment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Reject'}
                             </Button>
                         </div>
                     </div>
@@ -367,8 +367,8 @@ const PaymentApprovalPage = () => {
                                 <Scan className="h-5 w-5" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-bold uppercase tracking-wider">Evidence Examination</h3>
-                                <p className="text-[9px] text-indigo-100 font-bold uppercase tracking-widest">Verify submitted proof of payment</p>
+                                <h3 className="text-sm font-bold uppercase tracking-wider">Receipt</h3>
+                                <p className="text-[9px] text-indigo-100 font-bold uppercase tracking-widest">Verify payment proof</p>
                             </div>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => setIsReceiptDialogOpen(false)} className="rounded-xl hover:bg-white/10 text-white">
@@ -381,17 +381,17 @@ const PaymentApprovalPage = () => {
                         ) : (
                             <div className="text-center py-12">
                                 <AlertCircle className="h-12 w-12 text-slate-200 mx-auto mb-4" />
-                                <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">Evidence missing from registry</p>
+                                <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">No receipt available</p>
                             </div>
                         )}
                     </div>
                     <div className="p-6 border-t border-slate-100 flex justify-between items-center bg-white">
                         <div className="flex flex-col">
-                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Examination Status</span>
-                            <span className="text-[10px] font-bold text-indigo-600 uppercase">Verification Active</span>
+                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Status</span>
+                            <span className="text-[10px] font-bold text-indigo-600 uppercase">Verifying</span>
                         </div>
                         <div className="flex gap-3">
-                            <Button variant="ghost" className="rounded-xl h-11 px-6 font-bold text-[10px] uppercase tracking-widest text-slate-400" onClick={() => setIsReceiptDialogOpen(false)}>Close Inspector</Button>
+                            <Button variant="ghost" className="rounded-xl h-11 px-6 font-bold text-[10px] uppercase tracking-widest text-slate-400" onClick={() => setIsReceiptDialogOpen(false)}>Close</Button>
                             <Button
                                 className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11 px-8 font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-600/10 active:scale-95 transition-all"
                                 onClick={() => {
@@ -399,7 +399,7 @@ const PaymentApprovalPage = () => {
                                     setIsReceiptDialogOpen(false);
                                 }}
                             >
-                                Approve Transaction
+                                Approve
                             </Button>
                         </div>
                     </div>

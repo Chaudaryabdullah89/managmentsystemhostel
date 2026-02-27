@@ -27,7 +27,7 @@ const WardenLaundryPage = () => {
             <div className="flex h-screen items-center justify-center bg-white font-sans">
                 <div className="flex flex-col items-center gap-6">
                     <div className="h-10 w-10 border-[3px] border-gray-100 border-t-black rounded-full animate-spin" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 italic">Syncing Registry...</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 italic">Loading</p>
                 </div>
             </div>
         );
@@ -48,9 +48,9 @@ const WardenLaundryPage = () => {
                     <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
                         <div className="h-8 w-1 bg-black rounded-full shrink-0" />
                         <div className="flex flex-col min-w-0">
-                            <h1 className="text-sm md:text-lg font-black text-gray-900 tracking-tight uppercase truncate">Laundry Registry</h1>
+                            <h1 className="text-sm md:text-lg font-black text-gray-900 tracking-tight uppercase truncate">Laundry</h1>
                             <div className="flex items-center gap-1.5 md:gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 truncate">Operational Logs</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 truncate">Records</span>
                                 <div className="h-1 w-1 rounded-full bg-indigo-500 shrink-0 hidden sm:block" />
                             </div>
                         </div>
@@ -62,10 +62,10 @@ const WardenLaundryPage = () => {
                 {/* Stats Matrix */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Cumulative', value: stats.total, sub: 'Total', icon: Package, color: 'text-gray-900', bg: 'bg-white' },
-                        { label: 'Completed', value: stats.delivered, sub: 'Done', icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50/50' },
-                        { label: 'Active', value: stats.processing, sub: 'Working', icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50/50' },
-                        { label: 'Queued', value: stats.pending, sub: 'Waiting', icon: Shirt, color: 'text-amber-600', bg: 'bg-amber-50/50' }
+                        { label: 'Total', value: stats.total, sub: 'Total', icon: Package, color: 'text-gray-900', bg: 'bg-white' },
+                        { label: 'Done', value: stats.delivered, sub: 'Delivered', icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50/50' },
+                        { label: 'Active', value: stats.processing, sub: 'Active', icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50/50' },
+                        { label: 'Pending', value: stats.pending, sub: 'Pending', icon: Shirt, color: 'text-amber-600', bg: 'bg-amber-50/50' }
                     ].map((node, i) => (
                         <div key={i} className={`border border-gray-100 rounded-2xl p-3 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-all group min-w-0 ${node.bg}`}>
                             <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white flex items-center justify-center shrink-0 border border-gray-100 group-hover:scale-110 transition-transform ${node.color}`}>
@@ -79,7 +79,8 @@ const WardenLaundryPage = () => {
                                 </div>
                             </div>
                         </div>
-                    ))}
+                    ))
+                    }
                 </div>
 
                 {/* Operations Bar */}
@@ -98,7 +99,7 @@ const WardenLaundryPage = () => {
                                     : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-50'
                                     }`}
                             >
-                                {filter === 'all' ? 'Universal Registry' : filter}
+                                {filter === 'all' ? 'All' : filter}
                             </button>
                         ))}
                     </div>
@@ -131,20 +132,20 @@ const WardenLaundryPage = () => {
                                             </Badge>
                                             <span className="text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] whitespace-nowrap"><Bed className="h-3 w-3 inline mr-1 mb-0.5" />Room {log.Room?.roomNumber}</span>
                                         </div>
-                                        <h3 className="text-sm md:text-base font-black text-gray-900 uppercase tracking-tight truncate shrink-0">Laundromat Node Assignment</h3>
+                                        <h3 className="text-sm md:text-base font-black text-gray-900 uppercase tracking-tight truncate shrink-0">Laundry</h3>
                                         <p className="text-[10px] md:text-xs font-semibold text-gray-500 mt-1 italic uppercase tracking-wider">
-                                            {log.itemsCount} units detected • {log.weight ? `${log.weight}kg certified` : 'Mass verification pending'}
+                                            {log.itemsCount} items • {log.weight ? `${log.weight}kg` : 'Weight pending'}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="flex items-center justify-between md:justify-end w-full md:w-auto shrink-0 border-t md:border-t-0 pt-4 md:pt-0 gap-4 md:gap-8 overflow-x-auto scrollbar-hide">
                                     <div className="text-left md:text-right shrink-0">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Ingress Log</p>
+                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Received</p>
                                         <p className="text-[10px] md:text-xs font-black text-gray-900 uppercase tracking-tighter">{format(new Date(log.receivedAt), 'MMM dd • HH:mm')}</p>
                                     </div>
                                     {log.deliveredAt && (
                                         <div className="text-left md:text-right border-l md:border-l-0 pl-4 md:pl-0 shrink-0">
-                                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Egress Log</p>
+                                            <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Delivered</p>
                                             <p className="text-[10px] md:text-xs font-black text-emerald-600 uppercase tracking-tighter">{format(new Date(log.deliveredAt), 'MMM dd • HH:mm')}</p>
                                         </div>
                                     )}
@@ -156,8 +157,8 @@ const WardenLaundryPage = () => {
                     {filteredLogs?.length === 0 && (
                         <div className="py-20 md:py-32 bg-white border border-dashed border-gray-200 rounded-[2rem] md:rounded-[3rem] text-center px-6">
                             <Shirt className="h-12 w-12 md:h-20 md:w-20 text-gray-100 mx-auto mb-6" />
-                            <h3 className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-widest italic">Registry Vacuum</h3>
-                            <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-[0.3em] mt-3 italic max-w-sm mx-auto leading-relaxed">No operational tokens detected within the specified identification criteria.</p>
+                            <h3 className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-widest italic">Empty</h3>
+                            <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-[0.3em] mt-3 italic max-w-sm mx-auto leading-relaxed">No records.</p>
                         </div>
                     )}
                 </div>

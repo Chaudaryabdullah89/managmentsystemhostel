@@ -113,7 +113,7 @@ const WardenNoticePage = () => {
         expiring: notices?.filter(n => n.expiresAt && new Date(n.expiresAt) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)).length || 0,
     }
 
-    if (isLoading) return <Loader label="Loading Notices" subLabel="Fetching notice board..." icon={Megaphone} fullScreen={false} />
+    if (isLoading) return <Loader label="Loading" subLabel="Updates..." icon={Megaphone} fullScreen={false} />
 
     const NoticeForm = ({ onSubmit, isPending, submitLabel }) => (
         <form onSubmit={onSubmit} className="space-y-4 pt-2">
@@ -122,7 +122,7 @@ const WardenNoticePage = () => {
                 <Input
                     required
                     className="rounded-xl border-gray-100 bg-gray-50/50 focus:bg-white text-sm font-medium"
-                    placeholder="Notice headline..."
+                    placeholder="Title"
                     value={formData.title}
                     onChange={e => setFormData({ ...formData, title: e.target.value })}
                 />
@@ -132,7 +132,7 @@ const WardenNoticePage = () => {
                 <Textarea
                     required
                     className="min-h-[100px] rounded-xl border-gray-100 bg-gray-50/50 focus:bg-white resize-none text-sm font-medium"
-                    placeholder="Detailed message..."
+                    placeholder="Message"
                     value={formData.content}
                     onChange={e => setFormData({ ...formData, content: e.target.value })}
                 />
@@ -152,7 +152,7 @@ const WardenNoticePage = () => {
                     </Select>
                 </div>
                 <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Expiry Date</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">End</Label>
                     <Input
                         type="date"
                         className="rounded-xl border-gray-100 font-medium text-sm"
@@ -180,9 +180,9 @@ const WardenNoticePage = () => {
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="h-8 w-1 bg-indigo-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Notice Board</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Notices</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Announcements</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Total</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
                                 <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600 hidden sm:block">Active</span>
                             </div>
@@ -194,7 +194,7 @@ const WardenNoticePage = () => {
                         <div className="relative group hidden lg:block">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                             <Input
-                                placeholder="Search notices..."
+                                placeholder="Search..."
                                 className="h-9 w-[240px] pl-9 rounded-xl border-gray-100 bg-gray-50/50 font-bold text-[10px] uppercase tracking-wider text-gray-600 shadow-sm focus:ring-0 focus:bg-white placeholder:text-gray-300"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
@@ -205,16 +205,16 @@ const WardenNoticePage = () => {
                             <DialogTrigger asChild>
                                 <Button className="h-9 px-4 md:px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2">
                                     <Plus className="h-4 w-4" />
-                                    <span className="hidden sm:inline">New Notice</span>
+                                    <span className="hidden sm:inline">Add</span>
                                     <span className="sm:hidden">Post</span>
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[440px] rounded-3xl border-gray-100 p-8">
                                 <DialogHeader className="mb-2">
-                                    <DialogTitle className="text-base font-black uppercase tracking-widest text-gray-900">Post Notice</DialogTitle>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Create a new announcement</p>
+                                    <DialogTitle className="text-base font-black uppercase tracking-widest text-gray-900">Add</DialogTitle>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Post update.</p>
                                 </DialogHeader>
-                                <NoticeForm onSubmit={handleCreate} isPending={createMutation.isPending} submitLabel="Publish Notice" />
+                                <NoticeForm onSubmit={handleCreate} isPending={createMutation.isPending} submitLabel="Post" />
                             </DialogContent>
                         </Dialog>
                     </div>
@@ -227,7 +227,7 @@ const WardenNoticePage = () => {
                 <div className="lg:hidden relative group w-full">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
-                        placeholder="Search notices..."
+                        placeholder="Search..."
                         className="h-12 w-full pl-11 rounded-2xl border-gray-100 bg-white font-bold text-[11px] uppercase tracking-wider text-gray-600 shadow-sm focus:ring-0"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
@@ -237,10 +237,10 @@ const WardenNoticePage = () => {
                 {/* Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Total', value: stats.total, sub: 'Notices', icon: Megaphone, color: 'text-indigo-600', bg: 'bg-indigo-50/50' },
-                        { label: 'Urgent', value: stats.urgent, sub: 'Notices', icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50/50' },
-                        { label: 'High', value: stats.high, sub: 'Priority', icon: Bell, color: 'text-orange-600', bg: 'bg-orange-50/50' },
-                        { label: 'Expiring', value: stats.expiring, sub: 'This Week', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50/50' },
+                        { label: 'Total', value: stats.total, sub: 'Records', icon: Megaphone, color: 'text-indigo-600', bg: 'bg-indigo-50/50' },
+                        { label: 'Urgent', value: stats.urgent, sub: 'Urgent', icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50/50' },
+                        { label: 'High', value: stats.high, sub: 'High', icon: Bell, color: 'text-orange-600', bg: 'bg-orange-50/50' },
+                        { label: 'Ending', value: stats.expiring, sub: 'Soon', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50/50' },
                     ].map((stat, i) => (
                         <div key={i} className={`border border-gray-100 rounded-2xl p-3 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-all group min-w-0 ${stat.bg}`}>
                             <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white flex items-center justify-center shrink-0 border border-gray-100 group-hover:scale-110 transition-transform ${stat.color}`}>
@@ -266,7 +266,7 @@ const WardenNoticePage = () => {
                             <SelectValue placeholder="Priority" />
                         </SelectTrigger>
                         <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                            <SelectItem value="all" className="text-[10px] font-bold uppercase tracking-widest">All Priorities</SelectItem>
+                            <SelectItem value="all" className="text-[10px] font-bold uppercase tracking-widest">All</SelectItem>
                             <SelectItem value="URGENT" className="text-[10px] font-bold uppercase tracking-widest">Urgent</SelectItem>
                             <SelectItem value="HIGH" className="text-[10px] font-bold uppercase tracking-widest">High</SelectItem>
                             <SelectItem value="MEDIUM" className="text-[10px] font-bold uppercase tracking-widest">Medium</SelectItem>
@@ -283,7 +283,7 @@ const WardenNoticePage = () => {
                         </Button>
                     )}
                     <span className="ml-auto text-[10px] font-bold text-gray-400 uppercase tracking-widest pr-2">
-                        {filteredNotices.length} Result{filteredNotices.length !== 1 ? 's' : ''}
+                        {filteredNotices.length} Matches
                     </span>
                 </div>
 
@@ -291,7 +291,7 @@ const WardenNoticePage = () => {
                 <div className="space-y-4">
                     <div className="flex items-center gap-3 px-2">
                         <div className="h-5 w-1 bg-indigo-600 rounded-full" />
-                        <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Notices</h3>
+                        <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Recent</h3>
                     </div>
 
                     <div className="grid grid-cols-1 gap-3 md:gap-4">
@@ -325,7 +325,7 @@ const WardenNoticePage = () => {
                                                 {notice.expiresAt && (
                                                     <div className="flex items-center gap-1.5">
                                                         <Calendar className="h-3 w-3 text-amber-500" />
-                                                        <span className="text-[9px] md:text-[10px] font-bold text-amber-600 uppercase tracking-tight">Expires {format(new Date(notice.expiresAt), 'dd/MM/yyyy')}</span>
+                                                        <span className="text-[9px] md:text-[10px] font-bold text-amber-600 uppercase tracking-tight">Ends {format(new Date(notice.expiresAt), 'dd/MM/yyyy')}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -340,7 +340,7 @@ const WardenNoticePage = () => {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end" className="rounded-xl border-gray-100 shadow-xl p-1">
                                             <DropdownMenuItem onClick={() => startEditing(notice)} className="rounded-lg text-[10px] font-bold uppercase tracking-widest py-2 gap-3">
-                                                <Edit3 className="h-3.5 w-3.5 text-indigo-500" /> Edit Notice
+                                                <Edit3 className="h-3.5 w-3.5 text-indigo-500" /> Edit
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 onClick={() => deleteMutation.mutate(notice.id)}
@@ -357,14 +357,14 @@ const WardenNoticePage = () => {
                                 <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-6 border border-gray-100">
                                     <Inbox className="h-8 w-8 text-gray-200" />
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">No Notices Found</h3>
-                                <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mt-2">No notices match your current filters</p>
+                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Empty</h3>
+                                <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mt-2">No records match.</p>
                                 <Button
                                     variant="outline"
                                     className="mt-8 rounded-xl border-gray-200 uppercase tracking-widest text-[10px] font-bold h-10 px-8 hover:bg-indigo-600 hover:text-white transition-all"
                                     onClick={() => { setFilterPriority('all'); setSearchTerm('') }}
                                 >
-                                    Clear Filters
+                                    Reset
                                 </Button>
                             </div>
                         )}
@@ -376,10 +376,10 @@ const WardenNoticePage = () => {
             <Dialog open={!!editingNotice} onOpenChange={() => setEditingNotice(null)}>
                 <DialogContent className="sm:max-w-[440px] rounded-3xl border-gray-100 p-8">
                     <DialogHeader className="mb-2">
-                        <DialogTitle className="text-base font-black uppercase tracking-widest text-gray-900">Edit Notice</DialogTitle>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Update announcement details</p>
+                        <DialogTitle className="text-base font-black uppercase tracking-widest text-gray-900">Edit</DialogTitle>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Update post.</p>
                     </DialogHeader>
-                    <NoticeForm onSubmit={handleUpdate} isPending={updateMutation.isPending} submitLabel="Save Changes" />
+                    <NoticeForm onSubmit={handleUpdate} isPending={updateMutation.isPending} submitLabel="Save" />
                 </DialogContent>
             </Dialog>
         </div>

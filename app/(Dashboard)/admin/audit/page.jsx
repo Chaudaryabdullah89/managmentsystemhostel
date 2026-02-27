@@ -186,21 +186,21 @@ const SearchPage = () => {
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1.5 bg-indigo-600 rounded-full" />
                         <div>
-                            <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight">Audit & Search</h1>
+                            <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight">Search</h1>
                             <div className="flex items-center gap-2">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">System Online</span>
+                                <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">Live</span>
                             </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         {results && (
                             <Button variant="ghost" onClick={handleExport} className="h-9 px-4 rounded-xl text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:bg-gray-50 flex items-center gap-2">
-                                <Download className="h-3.5 w-3.5" /> Export
+                                <Download className="h-3.5 w-3.5" /> Report
                             </Button>
                         )}
                         <Badge variant="outline" className="h-7 px-3 rounded-full border-gray-100 bg-gray-50 text-[9px] font-bold uppercase tracking-widest text-gray-400">
-                            SECURE
+                            SAFE
                         </Badge>
                     </div>
                 </div>
@@ -219,7 +219,7 @@ const SearchPage = () => {
                                 ref={inputRef}
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
-                                placeholder="Search users, bookings, payments, IDs, CNIC..."
+                                placeholder="Search"
                                 className="h-14 bg-transparent border-none shadow-none font-bold text-base focus-visible:ring-0 placeholder:text-gray-300"
                             />
                             {query && (
@@ -237,7 +237,7 @@ const SearchPage = () => {
                                 disabled={isLoading}
                                 className="h-12 px-8 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-200 transition-all"
                             >
-                                {isLoading ? 'Searching...' : 'Search'}
+                                {isLoading ? 'Search' : 'Search'}
                             </Button>
                         </div>
                     </form>
@@ -286,7 +286,7 @@ const SearchPage = () => {
                 {results && (
                     <div className="flex items-center justify-between">
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                            {totalFiltered} result{totalFiltered !== 1 ? 's' : ''} {activeCategory !== 'all' ? `in ${activeCategory}` : 'found'} · Query: <span className="text-indigo-600">"{query}"</span>
+                            {totalFiltered} Total <span className="text-indigo-600">"{query}"</span>
                         </p>
                         <Button variant="ghost" size="sm" onClick={() => { setResults(null); setQuery(''); setActiveCategory('all'); }}
                             className="h-8 px-3 rounded-xl text-[9px] font-bold uppercase tracking-widest text-gray-400 hover:bg-gray-100">
@@ -304,9 +304,9 @@ const SearchPage = () => {
                             <div className="absolute inset-0 bg-indigo-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                             <Search className="h-10 w-10 text-gray-200 relative z-10 group-hover:text-white transition-colors" />
                         </div>
-                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-3">Unified Search</h3>
+                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-3">Search</h3>
                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center max-w-md leading-relaxed">
-                            Search across users, bookings, payments, complaints and maintenance records. Use <kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">⌘K</kbd> to focus.
+                            Find anything in the system. Use <kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-600">⌘K</kbd> to search.
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-10 w-full max-w-2xl">
                             {CATEGORIES.slice(1).map(cat => (
@@ -326,7 +326,7 @@ const SearchPage = () => {
                             <div className="h-20 w-20 border-4 border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
                             <Search className="h-8 w-8 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                         </div>
-                        <p className="text-[11px] font-black text-gray-900 uppercase tracking-widest animate-pulse">Searching Records...</p>
+                        <p className="text-[11px] font-black text-gray-900 uppercase tracking-widest animate-pulse">Updates...</p>
                     </div>
                 )}
 
@@ -369,8 +369,8 @@ const SearchPage = () => {
                             {totalFiltered === 0 && (
                                 <div className="text-center py-20">
                                     <Blocks className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                                    <h3 className="text-base font-black text-gray-900 uppercase">No Results Found</h3>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Try a different search term</p>
+                                    <h3 className="text-base font-black text-gray-900 uppercase">Empty</h3>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Clear</p>
                                 </div>
                             )}
                         </div>
@@ -397,7 +397,7 @@ const SearchPage = () => {
                                 { label: 'Full Name', value: selectedItem.name }, { label: 'Email', value: selectedItem.email },
                                 { label: 'Phone', value: selectedItem.phone || 'N/A' }, { label: 'CNIC', value: selectedItem.cnic || 'N/A' },
                                 { label: 'Role', value: selectedItem.role }, { label: 'Status', value: selectedItem.isActive ? 'Active' : 'Inactive' },
-                                { label: 'Hostel', value: selectedItem.Hostel_User_hostelIdToHostel?.name || 'Global' },
+                                { label: 'Hostel', value: selectedItem.Hostel_User_hostelIdToHostel?.name || 'Hostel' },
                                 { label: 'Joined', value: selectedItem.createdAt ? format(new Date(selectedItem.createdAt), 'MMM dd, yyyy') : 'N/A' },
                             ],
                             bookings: [
@@ -439,7 +439,7 @@ const SearchPage = () => {
                                         <Icon className="h-6 w-6 text-white" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-bold text-white/60 uppercase tracking-widest">{itemType} Record</p>
+                                        <p className="text-[9px] font-bold text-white/60 uppercase tracking-widest">{itemType}</p>
                                         <h3 className="text-lg font-black text-white uppercase tracking-tight truncate max-w-xs">{title}</h3>
                                     </div>
                                 </div>
@@ -458,7 +458,7 @@ const SearchPage = () => {
                                 <div className="px-8 pb-8 shrink-0">
                                     <Link href={link}>
                                         <Button className="w-full h-12 rounded-2xl bg-gray-950 hover:bg-gray-800 text-white font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
-                                            Open Full Record <ExternalLink className="h-4 w-4" />
+                                            Check <ExternalLink className="h-4 w-4" />
                                         </Button>
                                     </Link>
                                 </div>

@@ -93,7 +93,7 @@ const AdminStaffPage = () => {
         <div className="flex h-screen items-center justify-center bg-gray-50">
             <div className="flex flex-col items-center gap-4">
                 <div className="h-10 w-10 border-[3px] border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Staff...</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading</p>
             </div>
         </div>
     );
@@ -106,15 +106,15 @@ const AdminStaffPage = () => {
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1.5 bg-indigo-600 rounded-full" />
                         <div>
-                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Staff Management</h1>
-                            <p className="text-[10px] text-gray-400 font-medium">{staffMembers.length} staff members</p>
+                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Staff</h1>
+                            <p className="text-[10px] text-gray-400 font-medium">{staffMembers.length} Total</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                             <Input
-                                placeholder="Search staff..."
+                                placeholder="Search"
                                 className="h-9 pl-9 w-[220px] rounded-xl border-gray-200 bg-gray-50 text-xs font-medium"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -125,7 +125,7 @@ const AdminStaffPage = () => {
                             className="h-9 px-4 rounded-xl border-gray-200 font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 gap-2 shrink-0 hidden lg:flex"
                             onClick={() => {
                                 if (!staffMembers || staffMembers.length === 0) {
-                                    toast.error("No staff records found to export");
+                                    toast.error("Empty");
                                     return;
                                 }
                                 const headers = ["Name", "Designation", "Department", "Hostel", "Tasks Handled", "Rating"];
@@ -145,17 +145,17 @@ const AdminStaffPage = () => {
                                 document.body.appendChild(link);
                                 link.click();
                                 document.body.removeChild(link);
-                                toast.success("Staff directory exported successfully");
+                                toast.success("Exported");
                             }}
                         >
-                            <Download className="h-4 w-4" /> Export List
+                            <Download className="h-4 w-4" /> Export
                         </Button>
                         <Select value={selectedHostel} onValueChange={setSelectedHostel}>
                             <SelectTrigger className="h-9 w-[160px] rounded-xl border-gray-200 bg-white text-[10px] font-bold uppercase tracking-wider">
-                                <SelectValue placeholder="All Hostels" />
+                                <SelectValue placeholder="All" />
                             </SelectTrigger>
                             <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                                <SelectItem value="all" className="text-[10px] font-bold uppercase">All Hostels</SelectItem>
+                                <SelectItem value="all" className="text-[10px] font-bold uppercase">All</SelectItem>
                                 {hostels.map(h => (
                                     <SelectItem key={h.id} value={h.id} className="text-[10px] font-bold uppercase">{h.name}</SelectItem>
                                 ))}
@@ -170,10 +170,10 @@ const AdminStaffPage = () => {
                 {/* Overview Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: "Total Staff", value: staffMembers.length, icon: Users, color: "text-gray-700", bg: "bg-white", iconBg: "bg-gray-100" },
-                        { label: "Active Tasks", value: totalActive, icon: Activity, color: "text-indigo-600", bg: "bg-indigo-50", iconBg: "bg-indigo-100" },
-                        { label: "Unassigned", value: unassignedComplaints.length, icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50", iconBg: "bg-amber-100" },
-                        { label: "Resolved Today", value: totalResolved, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50", iconBg: "bg-emerald-100" },
+                        { label: "Total", value: staffMembers.length, icon: Users, color: "text-gray-700", bg: "bg-white", iconBg: "bg-gray-100" },
+                        { label: "Online", value: totalActive, icon: Activity, color: "text-indigo-600", bg: "bg-indigo-50", iconBg: "bg-indigo-100" },
+                        { label: "Open", value: unassignedComplaints.length, icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50", iconBg: "bg-amber-100" },
+                        { label: "Done", value: totalResolved, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50", iconBg: "bg-emerald-100" },
                     ].map((stat, i) => (
                         <div key={i} className={`${stat.bg} border border-gray-100 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
                             <div>
@@ -195,13 +195,13 @@ const AdminStaffPage = () => {
                                 <AlertCircle className="h-5 w-5 text-amber-600" />
                             </div>
                             <div>
-                                <p className="text-sm font-bold text-amber-900">{unassignedComplaints.length} complaints need staff assignment</p>
-                                <p className="text-xs text-amber-700 font-medium mt-0.5">These complaints have no assigned staff member yet</p>
+                                <p className="text-sm font-bold text-amber-900">{unassignedComplaints.length} Pending</p>
+                                <p className="text-xs text-amber-700 font-medium mt-0.5">Ready</p>
                             </div>
                         </div>
                         <Link href="/admin/complaints">
                             <Button className="h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded-xl gap-2 flex-shrink-0">
-                                Manage <ArrowUpRight className="h-3.5 w-3.5" />
+                                View <ArrowUpRight className="h-3.5 w-3.5" />
                             </Button>
                         </Link>
                     </div>
@@ -210,14 +210,14 @@ const AdminStaffPage = () => {
                 {/* Staff Grid */}
                 <div>
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Staff Members</h2>
+                        <h2 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Staff</h2>
                         <p className="text-[10px] text-gray-400 font-medium">{filteredStaff.length} shown</p>
                     </div>
 
                     {filteredStaff.length === 0 ? (
                         <div className="text-center py-20 bg-white border border-dashed border-gray-200 rounded-3xl">
                             <Users className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                            <p className="text-sm font-bold text-gray-400">No staff members found</p>
+                            <p className="text-sm font-bold text-gray-400">No records</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -251,7 +251,7 @@ const AdminStaffPage = () => {
                                                 </div>
                                             </div>
                                             <Badge className={`${staff.attendance?.[0] && !staff.attendance[0].checkOut ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-gray-50 text-gray-400 border-gray-200'} text-[8px] font-black uppercase border`}>
-                                                {staff.attendance?.[0] && !staff.attendance[0].checkOut ? 'On Duty' : 'Off Duty'}
+                                                {staff.attendance?.[0] && !staff.attendance[0].checkOut ? 'Active' : 'Offline'}
                                             </Badge>
                                         </div>
 
@@ -271,7 +271,7 @@ const AdminStaffPage = () => {
                                         </div>
                                         <div className="text-center border-x border-gray-100">
                                             <p className="text-xl font-bold text-emerald-600">{staff.totalTasksHandled || 0}</p>
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Total Units</p>
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Total</p>
                                         </div>
                                         <div className="text-center">
                                             <p className={`text-xl font-bold ${staff.stats.urgent > 0 ? "text-rose-600" : "text-gray-300"}`}>{staff.stats.urgent}</p>
@@ -282,7 +282,7 @@ const AdminStaffPage = () => {
                                     {/* Efficiency Profile Bar */}
                                     <div className="px-6 pb-4">
                                         <div className="flex items-center justify-between mb-1.5">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Efficiency Profile</span>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Rate</span>
                                             <span className="text-[10px] font-bold text-gray-700">{staff.totalTasksHandled > 0 ? staff.stats.rate : 0}%</span>
                                         </div>
                                         <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -302,7 +302,7 @@ const AdminStaffPage = () => {
                                                 setIsAssignOpen(true);
                                             }}
                                         >
-                                            <ClipboardList className="h-3.5 w-3.5" /> Assign Task
+                                            <ClipboardList className="h-3.5 w-3.5" /> Task
                                         </Button>
                                         <Button
                                             variant="outline"
@@ -318,9 +318,9 @@ const AdminStaffPage = () => {
                                     {selectedStaff?.id === staff.id && !isAssignOpen && (
                                         <div className="border-t border-gray-100 bg-gray-50/50">
                                             <div className="px-6 py-4">
-                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">Current Tasks</p>
+                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">Tasks</p>
                                                 {complaints.filter(c => c.assignedToId === staff.userId && c.status !== "RESOLVED").length === 0 ? (
-                                                    <p className="text-xs text-gray-400 text-center py-3">No active tasks</p>
+                                                    <p className="text-xs text-gray-400 text-center py-3">Empty</p>
                                                 ) : (
                                                     <div className="space-y-2">
                                                         {complaints.filter(c => c.assignedToId === staff.userId && c.status !== "RESOLVED").slice(0, 4).map(task => (
@@ -355,21 +355,21 @@ const AdminStaffPage = () => {
                                 <ClipboardList className="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-sm font-bold uppercase tracking-tight">Assign Task</h2>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Assign</h2>
                                 <p className="text-[10px] text-indigo-300 font-medium">to {selectedStaff?.User?.name}</p>
                             </div>
                         </div>
                     </div>
                     <div className="p-6 space-y-5 bg-white">
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Select Complaint / Task</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Task</Label>
                             <Select value={assignComplaintId} onValueChange={setAssignComplaintId}>
                                 <SelectTrigger className="h-11 rounded-xl border-gray-200 font-medium text-xs focus:ring-0">
-                                    <SelectValue placeholder="Choose a complaint to assign..." />
+                                    <SelectValue placeholder="Task" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl border-gray-100 shadow-2xl max-h-[300px]">
                                     {unassignedComplaints.length === 0 ? (
-                                        <div className="px-4 py-3 text-xs text-gray-400 text-center">No unassigned complaints</div>
+                                        <div className="px-4 py-3 text-xs text-gray-400 text-center">No tasks</div>
                                     ) : (
                                         unassignedComplaints.map(c => (
                                             <SelectItem key={c.id} value={c.id} className="text-xs font-medium">
@@ -404,9 +404,9 @@ const AdminStaffPage = () => {
                         )}
 
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Assignment Notes (Optional)</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Notes</Label>
                             <Textarea
-                                placeholder="Add any specific instructions for the staff member..."
+                                placeholder="Note"
                                 className="min-h-[80px] rounded-xl border-gray-200 bg-gray-50 focus:bg-white text-xs font-medium resize-none"
                                 value={assignNotes}
                                 onChange={(e) => setAssignNotes(e.target.value)}
@@ -427,7 +427,7 @@ const AdminStaffPage = () => {
                                 disabled={!assignComplaintId || updateMutation.isPending}
                             >
                                 <UserCheck className="h-3.5 w-3.5" />
-                                {updateMutation.isPending ? "Assigning..." : "Assign Task"}
+                                {updateMutation.isPending ? "Assign" : "Assign"}
                             </Button>
                         </div>
                     </div>

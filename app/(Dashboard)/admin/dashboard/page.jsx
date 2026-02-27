@@ -61,20 +61,20 @@ const AdminDashboard = () => {
     const updateMutation = useUpdateComplaint();
 
     const handleResolve = async (id) => {
-        updateMutation.mutate({ id, status: 'RESOLVED', resolutionNotes: 'Quick resolution from dashboard' });
+        updateMutation.mutate({ id, status: 'RESOLVED', resolutionNotes: 'Dashboard fix' });
     };
 
     const handleRefresh = async () => {
         const promise = refetchReports();
         toast.promise(promise, {
-            loading: 'Refreshing data...',
-            success: 'Data updated successfully',
+            loading: 'Updating...',
+            success: 'Updated',
             error: 'Failed to update data'
         });
     };
 
     if (reportsLoading || complaintsLoading || financialsLoading) return (
-        <Loader label="Loading Dashboard" subLabel="Fetching latest metrics..." icon={ClipboardList} fullScreen={false} />
+        <Loader label="Loading" subLabel="Getting updates..." icon={ClipboardList} fullScreen={false} />
     );
 
     const stats = reportData?.overall || {
@@ -102,9 +102,9 @@ const AdminDashboard = () => {
                         <div className="flex flex-col">
                             <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Dashboard</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Registry Overview</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Stats</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Surveillance</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Live</span>
                             </div>
                         </div>
                     </div>
@@ -114,7 +114,7 @@ const AdminDashboard = () => {
                             className="h-9 px-3 md:px-4 rounded-xl border-gray-200 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 flex items-center gap-2"
                             onClick={handleRefresh}
                         >
-                            <RefreshCw className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Refresh Data</span> <span className="xs:hidden">Refresh</span>
+                            <RefreshCw className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Sync</span> <span className="xs:hidden">Sync</span>
                         </Button>
                         <Button
                             className="h-9 px-4 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all flex items-center gap-2"
@@ -137,7 +137,7 @@ const AdminDashboard = () => {
                                 toast.success("Performance report exported");
                             }}
                         >
-                            <Download className="h-3.5 w-3.5" /> <span className="hidden xs:inline">Export Analytics</span> <span className="xs:hidden">Export</span>
+                            <Download className="h-3.5 w-3.5" /> <span className="hidden xs:inline">Report</span> <span className="xs:hidden">Report</span>
                         </Button>
                     </div>
                 </div>
@@ -213,15 +213,15 @@ const AdminDashboard = () => {
                     <div className="flex items-center gap-3 px-1">
                         <div className="h-5 w-1 bg-purple-600 rounded-full" />
                         <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Analytics</h3>
-                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-auto">Last 6 Months</span>
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-auto">History</span>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         {/* Revenue vs Expenses Area Chart */}
                         <div className="lg:col-span-2 bg-white border border-gray-100 rounded-[2rem] p-5 md:p-6 shadow-sm">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Revenue vs Expenses</span>
-                                    <span className="text-sm font-black text-gray-900 mt-0.5">6-Month Trend</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Revenue / Expense</span>
+                                    <span className="text-sm font-black text-gray-900 mt-0.5">Trends</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest">
                                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-blue-500" />Revenue</span>
@@ -235,7 +235,7 @@ const AdminDashboard = () => {
                         {/* Right column: Occupancy + Complaint doughnut */}
                         <div className="space-y-4">
                             <div className="bg-white border border-gray-100 rounded-[2rem] p-5 shadow-sm">
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Occupancy Rate</span>
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Occupancy</span>
                                 <div className="flex items-center justify-center">
                                     <OccupancyDonutChart occupancyRate={stats.occupancyRate} />
                                 </div>
@@ -245,7 +245,7 @@ const AdminDashboard = () => {
                                 </div>
                             </div>
                             <div className="bg-white border border-gray-100 rounded-[2rem] p-5 shadow-sm">
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Complaint Breakdown</span>
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Complaints</span>
                                 <ComplaintStatusChart stats={complaintStats} />
                             </div>
                         </div>
@@ -256,8 +256,8 @@ const AdminDashboard = () => {
                         <div className="bg-white border border-gray-100 rounded-[2rem] p-5 md:p-6 shadow-sm">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Property Revenue vs Expenses</span>
-                                    <span className="text-sm font-black text-gray-900 mt-0.5">Hostel Performance Comparison</span>
+                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Revenue / Expense</span>
+                                    <span className="text-sm font-black text-gray-900 mt-0.5">Performance</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-[9px] font-black uppercase tracking-widest">
                                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-blue-500" />Revenue</span>
@@ -279,7 +279,7 @@ const AdminDashboard = () => {
                             </div>
                             <Link href="/admin/hostels">
                                 <Button variant="ghost" size="sm" className="text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-blue-600">
-                                    View <ChevronRight className="h-3 w-3 ml-1" />
+                                    More <ChevronRight className="h-3 w-3 ml-1" />
                                 </Button>
                             </Link>
                         </div>
@@ -289,10 +289,10 @@ const AdminDashboard = () => {
                                 <table className="w-full text-left border-collapse min-w-[600px]">
                                     <thead className="bg-gray-50/50">
                                         <tr>
-                                            <th className="px-6 md:px-8 py-4 md:py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Hostel Branch</th>
-                                            <th className="px-6 md:px-8 py-4 md:py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Capacity Metrics</th>
-                                            <th className="px-6 md:px-8 py-4 md:py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Revenue Stream</th>
-                                            <th className="px-6 md:px-8 py-4 md:py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 text-right">Inventory</th>
+                                            <th className="px-6 md:px-8 py-4 md:py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Hostel</th>
+                                            <th className="px-6 md:px-8 py-4 md:py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Occupancy</th>
+                                            <th className="px-6 md:px-8 py-4 md:py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Revenue</th>
+                                            <th className="px-6 md:px-8 py-4 md:py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 text-right">Rooms</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50">
@@ -316,11 +316,11 @@ const AdminDashboard = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 md:px-8 py-4 md:py-5">
-                                                    <span className="text-[10px] md:text-[11px] font-bold text-emerald-600">PKR {(hostel.revenue / 1000).toFixed(1)}k</span>
+                                                    <span className="text-[10px] md:text-[11px] font-bold text-emerald-600">PKR ${(hostel.revenue / 1000).toFixed(1)}k</span>
                                                 </td>
                                                 <td className="px-6 md:px-8 py-4 md:py-5 text-right">
                                                     <Badge variant="outline" className="text-[8px] md:text-[9px] font-black rounded-full px-2 md:px-3 py-1 border-gray-100 bg-white shadow-sm shrink-0 whitespace-nowrap">
-                                                        {hostel.rooms} NODES
+                                                        {hostel.rooms} ROOMS
                                                     </Badge>
                                                 </td>
                                             </tr>
@@ -338,26 +338,26 @@ const AdminDashboard = () => {
                                         <div className="h-8 w-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
                                             <AlertTriangle className="h-4 w-4" />
                                         </div>
-                                        <CardTitle className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-gray-900">Grievances</CardTitle>
+                                        <CardTitle className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-gray-900">Complaints</CardTitle>
                                     </div>
                                     <Badge className="bg-rose-500 text-white border-none text-[8px] md:text-[9px] font-black rounded-full px-2 py-0.5">
-                                        {complaintStats.urgent} URGENT
+                                        {complaintStats.urgent} Urgent
                                     </Badge>
                                 </CardHeader>
                                 <CardContent className="p-5 md:p-6">
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Active</span>
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total</span>
                                             <span className="text-sm md:text-base font-bold text-gray-900">{complaintStats.total}</span>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Processing</span>
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Open</span>
                                             <span className="text-sm md:text-base font-bold text-indigo-600">{complaintStats.pending}</span>
                                         </div>
                                         <div className="pt-2 md:pt-4">
                                             <Link href="/admin/complaints">
                                                 <Button className="w-full h-10 bg-indigo-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-600/10">
-                                                    Review Ledger
+                                                    Open
                                                 </Button>
                                             </Link>
                                         </div>
@@ -371,7 +371,7 @@ const AdminDashboard = () => {
                                         <div className="h-8 w-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                                             <ShieldCheck className="h-4 w-4" />
                                         </div>
-                                        <CardTitle className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-gray-900">Fiscal Pulse</CardTitle>
+                                        <CardTitle className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-gray-900">Finances</CardTitle>
                                     </div>
                                     <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
                                 </CardHeader>
@@ -388,7 +388,7 @@ const AdminDashboard = () => {
                                         <div className="pt-2 md:pt-4">
                                             <Link href="/admin/payment-approvals">
                                                 <Button variant="outline" className="w-full h-10 border-gray-200 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all">
-                                                    Verify Approvals
+                                                    Checks
                                                 </Button>
                                             </Link>
                                         </div>
@@ -403,13 +403,13 @@ const AdminDashboard = () => {
                         <div className="space-y-6">
                             <div className="flex items-center gap-3 px-2">
                                 <div className="h-5 w-1 bg-blue-600 rounded-full" />
-                                <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Quick</h3>
+                                <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Actions</h3>
                             </div>
                             <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 lg:grid-cols-2 gap-3 md:gap-4 px-2 md:px-0">
                                 {[
                                     { label: 'Bookings', icon: ClipboardList, href: '/admin/bookings', color: 'text-orange-600', bg: 'bg-orange-50' },
                                     { label: 'Payments', icon: DollarSign, href: '/admin/payments', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                                    { label: 'Grievances', icon: MessageSquare, href: '/admin/complaints', color: 'text-rose-600', bg: 'bg-rose-50' },
+                                    { label: 'Complaints', icon: MessageSquare, href: '/admin/complaints', color: 'text-rose-600', bg: 'bg-rose-50' },
                                     { label: 'Notices', icon: Megaphone, href: '/admin/notices', color: 'text-indigo-600', bg: 'bg-indigo-50' },
                                     { label: 'Expenses', icon: Receipt, href: '/admin/expenses', color: 'text-blue-600', bg: 'bg-blue-50' },
                                     // { label: 'Asset Log', icon: History, href: '/admin/maintenances', color: 'text-amber-600', bg: 'bg-amber-50' },
@@ -429,7 +429,7 @@ const AdminDashboard = () => {
 
                         <div className="flex items-center gap-3 px-2">
                             <div className="h-5 w-1 bg-rose-600 rounded-full" />
-                            <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Priority Actions</h3>
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Alerts</h3>
                         </div>
                         <div className="bg-white border border-rose-100 rounded-[2rem] p-5 md:p-6 shadow-sm space-y-4">
                             {pendingComplaints?.length > 0 ? pendingComplaints.filter(c => c.priority === 'URGENT').slice(0, 3).map((complaint) => (
@@ -448,7 +448,7 @@ const AdminDashboard = () => {
                                                 onClick={() => handleResolve(complaint.id)}
                                                 disabled={updateMutation.isPending}
                                             >
-                                                {updateMutation.isPending ? 'Processing' : 'Mark Resolved'}
+                                                {updateMutation.isPending ? 'Saving...' : 'Done'}
                                             </Button>
                                         </div>
                                         <Badge className="bg-rose-50 text-rose-600 border-rose-100 text-[7px] font-black uppercase rounded-full px-2 py-0 border">
@@ -459,19 +459,19 @@ const AdminDashboard = () => {
                             )) : (
                                 <div className="py-6 text-center">
                                     <CheckCircle2 className="h-8 w-8 text-emerald-100 mx-auto mb-2" />
-                                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">No urgent tasks</p>
+                                    <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">Clear</p>
                                 </div>
                             )}
                             <Link href="/admin/complaints" className="block">
                                 <Button variant="ghost" className="w-full h-10 text-[9px] font-black uppercase tracking-widest text-gray-400 hover:text-rose-600 hover:bg-gray-50 rounded-xl border border-transparent hover:border-rose-100 transition-all">
-                                    View All Pending
+                                    Open
                                 </Button>
                             </Link>
                         </div>
 
                         <div className="flex items-center gap-3 px-2">
                             <div className="h-5 w-1 bg-blue-600 rounded-full" />
-                            <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Recent</h3>
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Logs</h3>
                         </div>
                         <div className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-6 shadow-sm space-y-5 md:space-y-6">
                             {recentPayments?.payments?.length > 0 ? recentPayments.payments.slice(0, 4).map((pmt) => (
@@ -495,7 +495,7 @@ const AdminDashboard = () => {
                             )) : (
                                 <div className="py-10 text-center">
                                     <Activity className="h-8 w-8 text-gray-100 mx-auto mb-3" />
-                                    <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">No recent transactions</p>
+                                    <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Clear</p>
                                 </div>
                             )}
 

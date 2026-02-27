@@ -31,9 +31,9 @@ import Loader from "@/components/ui/Loader";
 
 const StatusBadge = ({ status }) => {
     const s = status?.toUpperCase();
-    if (s === 'APPROVED') return <Badge className="bg-emerald-50 text-emerald-700 border-none text-[9px] font-bold uppercase px-3">Approved</Badge>;
-    if (s === 'REJECTED') return <Badge className="bg-rose-50 text-rose-700 border-none text-[9px] font-bold uppercase px-3">Rejected</Badge>;
-    if (s === 'PENDING') return <Badge className="bg-amber-50 text-amber-700 border-none text-[9px] font-bold uppercase px-3">Pending</Badge>;
+    if (s === 'APPROVED') return <Badge className="bg-emerald-50 text-emerald-700 border-none text-[9px] font-bold uppercase px-3">Done</Badge>;
+    if (s === 'REJECTED') return <Badge className="bg-rose-50 text-rose-700 border-none text-[9px] font-bold uppercase px-3">Closed</Badge>;
+    if (s === 'PENDING') return <Badge className="bg-amber-50 text-amber-700 border-none text-[9px] font-bold uppercase px-3">Open</Badge>;
     if (s === 'IN_PROGRESS') return <Badge className="bg-blue-50 text-blue-700 border-none text-[9px] font-bold uppercase px-3">In Progress</Badge>;
     return <Badge className="bg-gray-50 text-gray-600 border-none text-[9px] font-bold uppercase px-3">{status}</Badge>;
 };
@@ -123,7 +123,7 @@ const LeaveManagementPage = () => {
         rejected: parsedLeaves.filter(l => l.status === 'REJECTED').length,
     };
 
-    if (isLoading) return <Loader label="Loading Leave Requests" subLabel="Fetching absence records..." icon={Plane} fullScreen={false} />;
+    if (isLoading) return <Loader label="Loading" subLabel="Updates..." icon={Plane} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/30 pb-20 font-sans">
@@ -136,10 +136,10 @@ const LeaveManagementPage = () => {
                         </Button>
                         <div className="h-5 w-px bg-gray-100" />
                         <div>
-                            <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight">Leave Management</h1>
+                            <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight">Leaves</h1>
                             <div className="flex items-center gap-2">
                                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">{stats.pending} Awaiting Review</p>
+                                <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest">{stats.pending} Open</p>
                             </div>
                         </div>
                     </div>
@@ -153,10 +153,10 @@ const LeaveManagementPage = () => {
                 {/* Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[
-                        { label: 'Total Requests', value: stats.total, color: 'bg-gray-950 text-white', icon: Plane },
-                        { label: 'Pending Review', value: stats.pending, color: 'bg-amber-50 text-amber-800', icon: Clock },
-                        { label: 'Approved', value: stats.approved, color: 'bg-emerald-50 text-emerald-800', icon: CheckCircle },
-                        { label: 'Rejected', value: stats.rejected, color: 'bg-rose-50 text-rose-800', icon: XCircle },
+                        { label: 'Total', value: stats.total, color: 'bg-gray-950 text-white', icon: Plane },
+                        { label: 'Open', value: stats.pending, color: 'bg-amber-50 text-amber-800', icon: Clock },
+                        { label: 'Done', value: stats.approved, color: 'bg-emerald-50 text-emerald-800', icon: CheckCircle },
+                        { label: 'Closed', value: stats.rejected, color: 'bg-rose-50 text-rose-800', icon: XCircle },
                     ].map((stat, i) => (
                         <div key={i} className={`${stat.color} rounded-2xl p-5 shadow-sm flex items-center justify-between`}>
                             <div>
@@ -173,7 +173,7 @@ const LeaveManagementPage = () => {
                     <div className="flex-1 relative w-full">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
                         <Input
-                            placeholder="Search by resident name, email, or reason..."
+                            placeholder="Search"
                             className="h-12 pl-10 border-none shadow-none font-bold text-sm focus-visible:ring-0"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
@@ -186,7 +186,7 @@ const LeaveManagementPage = () => {
                                 onClick={() => setStatusFilter(s)}
                                 className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${statusFilter === s ? 'bg-white text-gray-900 shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}
                             >
-                                {s === 'ALL' ? 'All' : s.charAt(0) + s.slice(1).toLowerCase()}
+                                {s === 'ALL' ? 'All' : s === 'PENDING' ? 'Open' : s === 'APPROVED' ? 'Done' : 'Closed'}
                             </button>
                         ))}
                     </div>
@@ -205,8 +205,8 @@ const LeaveManagementPage = () => {
                                 <div className="flex flex-col md:flex-row md:items-center gap-4 justify-between">
                                     <div className="flex items-center gap-4">
                                         <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 text-sm font-black ${leave.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-700' :
-                                                leave.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
-                                                    'bg-amber-100 text-amber-700'
+                                            leave.status === 'REJECTED' ? 'bg-rose-100 text-rose-700' :
+                                                'bg-amber-100 text-amber-700'
                                             }`}>
                                             {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                                         </div>
@@ -235,7 +235,7 @@ const LeaveManagementPage = () => {
                                                     className="h-8 px-4 rounded-xl bg-emerald-600 text-white text-[9px] font-bold uppercase tracking-wider hover:bg-emerald-700 shadow-sm"
                                                     onClick={(e) => { e.stopPropagation(); setSelectedLeave(leave); setReviewNotes(''); }}
                                                 >
-                                                    <Check className="h-3 w-3 mr-1" /> Review
+                                                    <Check className="h-3 w-3 mr-1" /> Check
                                                 </Button>
                                             </div>
                                         )}
@@ -251,9 +251,9 @@ const LeaveManagementPage = () => {
                     }) : (
                         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
                             <Plane className="h-10 w-10 text-gray-200 mb-4" />
-                            <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight">No Leave Requests</h3>
+                            <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight">Empty</h3>
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">
-                                {statusFilter !== 'ALL' ? `No ${statusFilter.toLowerCase()} requests` : 'No requests found'}
+                                {statusFilter !== 'ALL' ? `Clear` : 'Clear'}
                             </p>
                         </div>
                     )}
@@ -283,10 +283,10 @@ const LeaveManagementPage = () => {
                                 <div className="p-8 space-y-6">
                                     <div className="grid grid-cols-2 gap-4 p-5 bg-gray-50 rounded-2xl">
                                         {[
-                                            { label: 'Departure', value: selectedLeave.startDate ? format(new Date(selectedLeave.startDate), 'MMM dd, yyyy') : 'N/A', icon: Calendar },
-                                            { label: 'Return', value: selectedLeave.endDate ? format(new Date(selectedLeave.endDate), 'MMM dd, yyyy') : 'N/A', icon: Home },
-                                            { label: 'Duration', value: `${selectedLeave.duration} days`, icon: CalendarRange },
-                                            { label: 'Emergency Contact', value: selectedLeave.emergencyContact || 'N/A', icon: Phone },
+                                            { label: 'Start', value: selectedLeave.startDate ? format(new Date(selectedLeave.startDate), 'MMM dd, yyyy') : 'N/A', icon: Calendar },
+                                            { label: 'End', value: selectedLeave.endDate ? format(new Date(selectedLeave.endDate), 'MMM dd, yyyy') : 'N/A', icon: Home },
+                                            { label: 'Time', value: `${selectedLeave.duration} days`, icon: CalendarRange },
+                                            { label: 'Contact', value: selectedLeave.emergencyContact || 'N/A', icon: Phone },
                                         ].map((item, i) => (
                                             <div key={i} className="flex items-start gap-2">
                                                 <item.icon className="h-3.5 w-3.5 text-gray-300 mt-0.5" />
@@ -306,10 +306,10 @@ const LeaveManagementPage = () => {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Admin Notes (optional)</Label>
+                                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Notes</Label>
                                         <Textarea
                                             className="rounded-xl border-gray-100 font-medium text-sm bg-gray-50 resize-none min-h-[80px]"
-                                            placeholder="Add a note for the resident..."
+                                            placeholder="Notes"
                                             value={reviewNotes}
                                             onChange={e => setReviewNotes(e.target.value)}
                                         />
@@ -335,7 +335,7 @@ const LeaveManagementPage = () => {
                                     ) : (
                                         <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
                                             <Info className="h-4 w-4 text-gray-400" />
-                                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">This request has already been {selectedLeave.status.toLowerCase()}</p>
+                                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Processed</p>
                                         </div>
                                     )}
                                 </div>

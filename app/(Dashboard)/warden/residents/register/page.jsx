@@ -175,7 +175,7 @@ export default function RegisterUserPage() {
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <div>
-                            <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight leading-none">Register New User</h1>
+                            <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight leading-none">Register</h1>
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
                                 {isAdmin ? "Admin Panel" : "Warden Panel"} · Authorized Access
                             </p>
@@ -214,9 +214,9 @@ export default function RegisterUserPage() {
                         {step === 1 && (
                             <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 <div>
-                                    <h2 className="text-3xl font-bold tracking-tight">Select Role</h2>
+                                    <h2 className="text-3xl font-bold tracking-tight">Role</h2>
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">
-                                        Choose the account type for the new user
+                                        Select an account type.
                                     </p>
                                 </div>
 
@@ -272,8 +272,8 @@ export default function RegisterUserPage() {
                         {step === 2 && (
                             <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div>
-                                    <h2 className="text-3xl font-bold tracking-tight">Identity Details</h2>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Personal information for the new {selectedRole?.label}</p>
+                                    <h2 className="text-3xl font-bold tracking-tight">Details</h2>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Basic info.</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -404,9 +404,9 @@ export default function RegisterUserPage() {
                         {step === 3 && (
                             <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div>
-                                    <h2 className="text-3xl font-bold tracking-tight">Hostel Assignment</h2>
+                                    <h2 className="text-3xl font-bold tracking-tight">Hostel</h2>
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">
-                                        Assign the user to a hostel {isStaffLike && "and set their role details"}
+                                        Select a hostel.
                                     </p>
                                 </div>
 
@@ -482,8 +482,8 @@ export default function RegisterUserPage() {
                         {step === 4 && (
                             <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div>
-                                    <h2 className="text-3xl font-bold tracking-tight">Access Credentials</h2>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Set the initial login password for this account</p>
+                                    <h2 className="text-3xl font-bold tracking-tight">Security</h2>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Initial password.</p>
                                 </div>
 
                                 <div className="space-y-6 max-w-md">
@@ -525,8 +525,8 @@ export default function RegisterUserPage() {
                         {step === 5 && (
                             <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div>
-                                    <h2 className="text-3xl font-bold tracking-tight">Review & Confirm</h2>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Verify all details before creating the account</p>
+                                    <h2 className="text-3xl font-bold tracking-tight">Review</h2>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Final check.</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -627,9 +627,9 @@ export default function RegisterUserPage() {
                                 disabled={createUser.isPending}
                             >
                                 {createUser.isPending ? (
-                                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Creating Account...</>
+                                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Creating...</>
                                 ) : (
-                                    <><UserPlus className="h-4 w-4 mr-2" /> Create Account</>
+                                    <><UserPlus className="h-4 w-4 mr-2" /> Register</>
                                 )}
                             </Button>
                         )}

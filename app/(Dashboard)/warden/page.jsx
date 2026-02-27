@@ -70,7 +70,7 @@ const WardenDashboard = () => {
     };
 
     if (reportsLoading || complaintsLoading || financialsLoading) return (
-        <Loader label="Loading Dashboard" subLabel="Fetching latest data..." icon={Activity} fullScreen={false} />
+        <Loader label="Loading" subLabel="Getting latest updates..." icon={Activity} fullScreen={false} />
     );
 
     const stats = reportData?.overall || {
@@ -174,7 +174,7 @@ const WardenDashboard = () => {
                             bg: 'bg-emerald-50'
                         },
                         {
-                            label: 'Net Profit',
+                            label: 'Profit',
                             value: `PKR ${(stats.netProfit / 1000).toFixed(1)}k`,
                             change: `${stats.profitChange}%`,
                             isUp: stats.profitChange >= 0,
@@ -210,11 +210,11 @@ const WardenDashboard = () => {
                         <div className="flex items-center justify-between px-2">
                             <div className="flex items-center gap-3">
                                 <div className="h-5 w-1 bg-blue-600 rounded-full" />
-                                <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Your Hostel</h3>
+                                <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Hostel</h3>
                             </div>
                             <Link href="/warden/hostels">
                                 <Button variant="ghost" size="sm" className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-blue-600">
-                                    <span className="hidden sm:inline">View Details</span>
+                                    <span className="hidden sm:inline">View</span>
                                     <span className="sm:hidden">View</span>
                                     <ChevronRight className="h-3 w-3 ml-1" />
                                 </Button>
@@ -252,7 +252,7 @@ const WardenDashboard = () => {
                                                 </div>
                                             </td>
                                             <td className="px-6 md:px-8 py-4 md:py-5">
-                                                <span className="text-[10px] md:text-[11px] font-bold text-emerald-600">PKR {(hostel.revenue / 1000).toFixed(1)}k</span>
+                                                <span className="text-[10px] md:text-[11px] font-bold text-emerald-600">PKR ${(hostel.revenue / 1000).toFixed(1)}k</span>
                                             </td>
                                             <td className="px-6 md:px-8 py-4 md:py-5 text-right">
                                                 <Badge variant="outline" className="text-[8px] md:text-[9px] font-bold rounded-full px-2 md:px-3 py-1 border-gray-100 bg-white shadow-sm whitespace-nowrap">
@@ -263,7 +263,7 @@ const WardenDashboard = () => {
                                     )) : (
                                         <tr>
                                             <td colSpan={4} className="px-6 md:px-8 py-10 text-center">
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No hostel assigned yet</p>
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Empty</p>
                                             </td>
                                         </tr>
                                     )}
@@ -282,7 +282,7 @@ const WardenDashboard = () => {
                                         <CardTitle className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-gray-900 truncate">Complaints</CardTitle>
                                     </div>
                                     <Badge className="bg-rose-500 text-white border-none text-[8px] md:text-[9px] font-bold rounded-full px-2 shrink-0">
-                                        {complaintStats.urgent} URGENT
+                                        {complaintStats.urgent} ALERT
                                     </Badge>
                                 </CardHeader>
                                 <CardContent className="p-4 md:p-6">
@@ -319,17 +319,17 @@ const WardenDashboard = () => {
                                 <CardContent className="p-4 md:p-6">
                                     <div className="space-y-3 md:space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Available</span>
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Free</span>
                                             <span className="text-sm md:text-base font-bold text-emerald-600">{hostelData[0]?.rooms || 0} Rooms</span>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">System</span>
-                                            <span className="text-sm md:text-base font-bold text-gray-900">OPTIMAL</span>
+                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Server</span>
+                                            <span className="text-sm md:text-base font-bold text-gray-900">ACTIVE</span>
                                         </div>
                                         <div className="pt-2 md:pt-4">
                                             <Link href="/warden/rooms">
                                                 <Button variant="outline" className="w-full h-10 md:h-12 border-gray-200 text-[9px] font-bold uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all">
-                                                    View Rooms
+                                                    Rooms
                                                 </Button>
                                             </Link>
                                         </div>
@@ -344,7 +344,7 @@ const WardenDashboard = () => {
                         <div className="space-y-4 md:space-y-6">
                             <div className="flex items-center gap-3 px-2">
                                 <div className="h-5 w-1 bg-blue-600 rounded-full" />
-                                <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Quick Actions</h3>
+                                <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Actions</h3>
                             </div>
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-3 md:gap-4">
                                 {[
@@ -361,7 +361,7 @@ const WardenDashboard = () => {
                                     { label: 'Residents', icon: Users, href: '/warden/residents', color: 'text-blue-600', bg: 'bg-blue-50' },
                                     { label: 'Notices', icon: Megaphone, href: '/warden/notices', color: 'text-indigo-600', bg: 'bg-indigo-50' },
                                     { label: 'Rooms', icon: Bed, href: '/warden/rooms', color: 'text-amber-600', bg: 'bg-amber-50' },
-                                    { label: 'Service Hub', icon: History, href: '/warden/services', color: 'text-purple-600', bg: 'bg-purple-50' },
+                                    { label: 'Hub', icon: History, href: '/warden/services', color: 'text-purple-600', bg: 'bg-purple-50' },
                                 ].map((item, i) => (
                                     <Link key={i} href={item.href}>
                                         <div className="bg-white border border-gray-100 rounded-xl md:rounded-2xl p-3 md:p-4 flex flex-col items-center gap-2 md:gap-3 shadow-sm hover:shadow-md hover:border-blue-600/20 transition-all text-center relative group min-w-0">
@@ -383,7 +383,7 @@ const WardenDashboard = () => {
                         <div className="space-y-4 md:space-y-6">
                             <div className="flex items-center gap-3 px-2">
                                 <div className="h-5 w-1 bg-rose-600 rounded-full" />
-                                <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Priority Actions</h3>
+                                <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Alerts</h3>
                             </div>
                             <div className="bg-white border border-rose-100 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 shadow-sm space-y-4">
                                 {pendingComplaints?.length > 0 ? pendingComplaints.filter(c => c.priority === 'URGENT').slice(0, 3).map((complaint) => (
@@ -405,18 +405,18 @@ const WardenDashboard = () => {
                                                     {updateMutation.isPending ? 'Updating...' : 'Resolve'}
                                                 </Button>
                                             </div>
-                                            <Badge className="bg-rose-50 text-rose-600 border-none text-[7px] font-black uppercase rounded-full px-2 py-0">Urgent</Badge>
+                                            <Badge className="bg-rose-50 text-rose-600 border-none text-[7px] font-black uppercase rounded-full px-2 py-0">Alert</Badge>
                                         </div>
                                     </div>
                                 )) : (
                                     <div className="py-8 text-center">
                                         <CheckCircle2 className="h-8 w-8 text-emerald-100 mx-auto mb-2" />
-                                        <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">No urgent tasks</p>
+                                        <p className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">Clear</p>
                                     </div>
                                 )}
                                 <Link href="/warden/complaints" className="block">
                                     <Button variant="ghost" className="w-full h-10 text-[8px] font-black uppercase tracking-widest text-gray-400 hover:text-rose-600 hover:bg-gray-50 rounded-xl">
-                                        View All Pending
+                                        View All
                                     </Button>
                                 </Link>
                             </div>
@@ -425,7 +425,7 @@ const WardenDashboard = () => {
                         <div className="space-y-4 md:space-y-6">
                             <div className="flex items-center gap-3 px-2">
                                 <div className="h-5 w-1 bg-blue-600 rounded-full" />
-                                <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Recent Activity</h3>
+                                <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Activity</h3>
                             </div>
                             <div className="bg-white border border-gray-100 rounded-[1.5rem] md:rounded-[2.5rem] p-4 md:p-6 shadow-sm space-y-4 md:space-y-6 min-w-0">
                                 {recentPayments?.payments?.length > 0 ? recentPayments.payments.slice(0, 4).map((pmt) => (
@@ -449,21 +449,21 @@ const WardenDashboard = () => {
                                         <div className="text-right flex flex-col items-end shrink-0">
                                             <span className="text-[10px] md:text-[11px] font-bold text-gray-900 pb-0.5">PKR {pmt.amount.toLocaleString()}</span>
                                             <Badge variant="outline" className={`text-[7px] font-bold rounded-full px-1.5 py-0 border-none ${pmt.status === 'PAID' ? 'text-emerald-500 bg-emerald-50' : 'text-amber-500 bg-amber-50'}`}>
-                                                {pmt.status === 'PENDING' && pmt.receiptUrl ? 'NOTIFIED' : pmt.status}
+                                                {pmt.status === 'PENDING' && pmt.receiptUrl ? 'ALERT' : pmt.status}
                                             </Badge>
                                         </div>
                                     </div>
                                 )) : (
                                     <div className="py-8 md:py-10 text-center">
                                         <Activity className="h-8 w-8 text-gray-100 mx-auto mb-3" />
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No activity found</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Empty</p>
                                     </div>
                                 )}
 
                                 <div className="pt-2 md:pt-4">
                                     <Link href="/warden/payments">
                                         <Button variant="ghost" className="w-full h-10 md:h-11 text-[8px] md:text-[9px] font-bold uppercase tracking-widest text-gray-400 hover:text-blue-600 hover:bg-gray-50 rounded-xl">
-                                            Complete Ledger
+                                            All
                                         </Button>
                                     </Link>
                                 </div>

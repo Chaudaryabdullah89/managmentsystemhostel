@@ -165,24 +165,24 @@ const UserRecordPage = () => {
             <DropdownMenuContent align="end" className="w-52 rounded-2xl p-2 shadow-2xl border-gray-100">
                 <DropdownMenuItem onClick={() => router.push(`/admin/users-records/${user.id}`)}
                     className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2">
-                    <Eye className="h-4 w-4 text-gray-400" /> View Profile
+                    <Eye className="h-4 w-4 text-gray-400" /> View
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { setSelectedUser({ ...user }); setIsEditDialogOpen(true); }}
                     className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2">
-                    <Settings2 className="h-4 w-4 text-gray-400" /> Edit Profile
+                    <Settings2 className="h-4 w-4 text-gray-400" /> Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { setSelectedUser({ ...user }); setIsRoleDialogOpen(true); }}
                     className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-gray-400" /> Change Role
+                    <Shield className="h-4 w-4 text-gray-400" /> Role
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { setSelectedUser(user); setIsAccessDialogOpen(true); }}
                     className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer text-blue-600 flex items-center gap-2">
-                    <Zap className="h-4 w-4" /> Reset Password
+                    <Zap className="h-4 w-4" /> Reset
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-gray-50 mx-2 my-1" />
                 <DropdownMenuItem onClick={() => handleDelete(user.id)}
                     className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer text-rose-600 hover:bg-rose-50 flex items-center gap-2">
-                    <Trash2 className="h-4 w-4" /> Delete User
+                    <Trash2 className="h-4 w-4" /> Delete
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
@@ -196,19 +196,19 @@ const UserRecordPage = () => {
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1.5 bg-blue-600 rounded-full shrink-0" />
                         <div>
-                            <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight">User Directory</h1>
-                            <p className="text-[9px] font-bold text-blue-600 uppercase tracking-widest">{stats.total || 0} registered users</p>
+                            <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight">Users</h1>
+                            <p className="text-[9px] font-bold text-blue-600 uppercase tracking-widest">{stats.total || 0} Total</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" onClick={handleExport} className="h-9 px-4 rounded-xl border border-gray-100 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:bg-gray-50 flex items-center gap-2">
-                            <Download className="h-3.5 w-3.5" /> Export
+                            <Download className="h-3.5 w-3.5" /> Report
                         </Button>
                         <Button variant="outline" onClick={() => setIsCreateDialogOpen(true)} className="h-9 px-4 rounded-xl border-gray-200 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
-                            <Plus className="h-3.5 w-3.5" /> Quick Add
+                            <Plus className="h-3.5 w-3.5" /> New
                         </Button>
                         <Button onClick={() => router.push('/admin/users-records/register')} className="h-9 px-5 rounded-xl bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-indigo-200 flex items-center gap-2">
-                            <UserPlus className="h-3.5 w-3.5" /> Register
+                            <UserPlus className="h-3.5 w-3.5" /> Enroll
                         </Button>
                     </div>
                 </div>
@@ -218,12 +218,12 @@ const UserRecordPage = () => {
                 {/* Stats Row */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                     {[
-                        { label: 'Total Users', value: stats.total, color: 'bg-gray-950 text-white', dot: '' },
+                        { label: 'Total', value: stats.total, color: 'bg-gray-950 text-white', dot: '' },
                         { label: 'Active', value: stats.active, color: 'bg-emerald-50 text-emerald-800', dot: 'bg-emerald-500' },
-                        { label: 'Admins', value: stats.admin, color: 'bg-rose-50 text-rose-800', dot: 'bg-rose-500' },
-                        { label: 'Wardens', value: stats.warden, color: 'bg-amber-50 text-amber-800', dot: 'bg-amber-500' },
+                        { label: 'Admin', value: stats.admin, color: 'bg-rose-50 text-rose-800', dot: 'bg-rose-500' },
+                        { label: 'Warden', value: stats.warden, color: 'bg-amber-50 text-amber-800', dot: 'bg-amber-500' },
                         { label: 'Staff', value: stats.staff, color: 'bg-blue-50 text-blue-800', dot: 'bg-blue-500' },
-                        { label: 'Residents', value: stats.resident, color: 'bg-purple-50 text-purple-800', dot: 'bg-purple-500' },
+                        { label: 'Student', value: stats.resident, color: 'bg-purple-50 text-purple-800', dot: 'bg-purple-500' },
                     ].map((s, i) => (
                         <div key={i} className={`${s.color} rounded-2xl p-4 shadow-sm`}>
                             {s.dot && <div className={`h-2 w-2 rounded-full ${s.dot} mb-3`} />}
@@ -238,7 +238,7 @@ const UserRecordPage = () => {
                     <div className="flex-1 relative w-full">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
                         <Input
-                            placeholder="Search by name, email, phone, CNIC, or UID..."
+                            placeholder="Search"
                             className="h-12 pl-10 border-none shadow-none font-bold text-sm focus-visible:ring-0 bg-transparent"
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
@@ -249,7 +249,7 @@ const UserRecordPage = () => {
                         {ROLES.map(r => (
                             <button key={r} onClick={() => setFilterRole(r)}
                                 className={`h-9 px-4 rounded-lg font-bold text-[9px] uppercase tracking-widest shrink-0 transition-all ${filterRole === r ? 'bg-white text-indigo-600 shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
-                                {r === 'all' ? 'All' : r}
+                                {r === 'all' ? 'Type' : r === 'RESIDENT' ? 'STUDENT' : r}
                             </button>
                         ))}
                     </div>
@@ -264,12 +264,12 @@ const UserRecordPage = () => {
                 </div>
 
                 {isLoading ? (
-                    <Loader label="Loading Directory" subLabel="Fetching user records..." icon={Fingerprint} fullScreen={false} />
+                    <Loader label="Updates" subLabel="Updates..." icon={Fingerprint} fullScreen={false} />
                 ) : filteredUsers.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-dashed border-gray-200">
                         <Fingerprint className="h-12 w-12 text-gray-200 mb-4" />
-                        <h3 className="text-base font-bold text-gray-900 uppercase">No Users Found</h3>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Adjust your search or filters</p>
+                        <h3 className="text-base font-bold text-gray-900 uppercase">Clear</h3>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Clear</p>
                     </div>
                 ) : viewMode === 'table' ? (
                     /* ─── TABLE VIEW ─── */
@@ -279,11 +279,11 @@ const UserRecordPage = () => {
                                 <thead>
                                     <tr className="bg-gray-50 border-b border-gray-100">
                                         {[
-                                            { label: 'User', field: 'name' },
-                                            { label: 'Contact', field: 'email' },
+                                            { label: 'Name', field: 'name' },
+                                            { label: 'Info', field: 'email' },
                                             { label: 'Role', field: 'role' },
                                             { label: 'Hostel', field: null },
-                                            { label: 'Joined', field: 'createdAt' },
+                                            { label: 'Date', field: 'createdAt' },
                                             { label: 'Status', field: 'isActive' },
                                             { label: '', field: null },
                                         ].map((col, i) => (
@@ -322,12 +322,12 @@ const UserRecordPage = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <Badge className={`${rc.bg} ${rc.color} border-none text-[9px] font-bold uppercase px-2.5 py-0.5`}>
-                                                        {user.role}
+                                                        {user.role === 'RESIDENT' ? 'STUDENT' : user.role}
                                                     </Badge>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <p className="text-[11px] font-bold text-gray-600 truncate max-w-[140px]">
-                                                        {user.Hostel_User_hostelIdToHostel?.name || <span className="text-gray-300 italic">Global</span>}
+                                                        {user.Hostel_User_hostelIdToHostel?.name || <span className="text-gray-300 italic">Hostel</span>}
                                                     </p>
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -383,7 +383,7 @@ const UserRecordPage = () => {
                                         <div>
                                             <h3 className="text-base font-black text-gray-900 uppercase tracking-tight">{user.name}</h3>
                                             <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                                <Badge className={`${rc.bg} ${rc.color} border-none text-[8px] font-bold uppercase px-2 py-0.5`}>{user.role}</Badge>
+                                                <Badge className={`${rc.bg} ${rc.color} border-none text-[8px] font-bold uppercase px-2 py-0.5`}>{user.role === 'RESIDENT' ? 'STUDENT' : user.role}</Badge>
                                                 <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${user.isActive ? 'bg-emerald-50' : 'bg-gray-50'}`}>
                                                     <div className={`h-1.5 w-1.5 rounded-full ${user.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
                                                     <span className={`text-[8px] font-bold uppercase ${user.isActive ? 'text-emerald-600' : 'text-gray-400'}`}>{user.isActive ? 'Active' : 'Inactive'}</span>
@@ -393,7 +393,7 @@ const UserRecordPage = () => {
                                         <div className="space-y-1.5 text-[11px]">
                                             <div className="flex items-center gap-2 text-gray-500"><Mail className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{user.email}</span></div>
                                             <div className="flex items-center gap-2 text-gray-500"><Phone className="h-3.5 w-3.5 shrink-0" /><span>{user.phone || '—'}</span></div>
-                                            <div className="flex items-center gap-2 text-gray-500"><Building2 className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{user.Hostel_User_hostelIdToHostel?.name || 'Global'}</span></div>
+                                            <div className="flex items-center gap-2 text-gray-500"><Building2 className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{user.Hostel_User_hostelIdToHostel?.name || 'Hostel'}</span></div>
                                         </div>
                                     </div>
                                     <Separator className="bg-gray-50 my-4" />
@@ -417,12 +417,12 @@ const UserRecordPage = () => {
                 <DialogContent className="max-w-xl p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white flex flex-col max-h-[90vh]">
                     <div className="bg-blue-600 px-8 py-6 flex items-center gap-4 shrink-0">
                         <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center"><Settings2 className="h-6 w-6 text-white" /></div>
-                        <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Edit User</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">Update profile details</p></div>
+                        <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Edit</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">Details</p></div>
                     </div>
                     <div className="p-8 overflow-y-auto space-y-5">
                         <div className="grid grid-cols-2 gap-5">
                             {[
-                                { label: 'Full Name', field: 'name' }, { label: 'Email', field: 'email' },
+                                { label: 'Name', field: 'name' }, { label: 'Email', field: 'email' },
                                 { label: 'Phone', field: 'phone' }, { label: 'CNIC', field: 'cnic' },
                             ].map(({ label, field }) => (
                                 <div key={field} className="space-y-1.5">
@@ -435,7 +435,7 @@ const UserRecordPage = () => {
                         <div className="flex gap-3">
                             <Button variant="ghost" className="flex-1 h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
                             <Button className="flex-[2] h-12 bg-blue-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg" onClick={handleEditUser} disabled={updateAnyUser.isPending}>
-                                {updateAnyUser.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Changes'}
+                                {updateAnyUser.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
                             </Button>
                         </div>
                     </div>
@@ -447,17 +447,17 @@ const UserRecordPage = () => {
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white">
                     <div className="bg-indigo-600 px-8 py-6 flex items-center gap-4">
                         <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center"><ShieldCheck className="h-6 w-6 text-white" /></div>
-                        <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Reset Password</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">For {selectedUser?.name}</p></div>
+                        <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Reset</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">For {selectedUser?.name}</p></div>
                     </div>
                     <div className="p-8 space-y-6">
                         <div className="space-y-2">
                             <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">New Password</Label>
                             <Input type="text" className="h-14 rounded-xl border-gray-100 bg-gray-50 text-center font-black tracking-widest text-lg"
                                 value={newPassword} onChange={e => setNewPassword(e.target.value)} />
-                            <p className="text-[9px] text-gray-400 text-center italic">Share this with the user for their next login</p>
+                            <p className="text-[9px] text-gray-400 text-center italic">Details</p>
                         </div>
                         <Button className="w-full h-12 bg-indigo-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl" onClick={handleResetPassword} disabled={resetPassword.isPending}>
-                            {resetPassword.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Reset Password'}
+                            {resetPassword.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Reset'}
                         </Button>
                     </div>
                 </DialogContent>
@@ -468,21 +468,21 @@ const UserRecordPage = () => {
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white">
                     <div className="bg-amber-500 px-8 py-6 flex items-center gap-4">
                         <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center"><UserCog className="h-6 w-6 text-white" /></div>
-                        <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Change Role</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">For {selectedUser?.name}</p></div>
+                        <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Role</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">For {selectedUser?.name}</p></div>
                     </div>
                     <div className="p-8 space-y-6">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Select New Role</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">New Role</Label>
                             <select className="w-full h-12 rounded-xl border border-gray-100 bg-gray-50 px-4 font-bold text-sm uppercase outline-none focus:ring-2 focus:ring-amber-500/20"
                                 value={selectedUser?.role || ''} onChange={e => setSelectedUser({ ...selectedUser, role: e.target.value })}>
                                 <option value="ADMIN">Administrator</option>
                                 <option value="WARDEN">Hostel Warden</option>
                                 <option value="STAFF">Facility Staff</option>
-                                <option value="RESIDENT">Student Resident</option>
+                                <option value="RESIDENT">Student</option>
                             </select>
                         </div>
                         <Button className="w-full h-12 bg-amber-500 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl" onClick={handleUpdateRole} disabled={updateAnyUser.isPending}>
-                            {updateAnyUser.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Update Role'}
+                            {updateAnyUser.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
                         </Button>
                     </div>
                 </DialogContent>
@@ -493,13 +493,13 @@ const UserRecordPage = () => {
                 <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white flex flex-col max-h-[90vh]">
                     <div className="bg-indigo-600 px-8 py-6 flex items-center gap-4 shrink-0">
                         <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center"><Plus className="h-6 w-6 text-white" /></div>
-                        <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Register New User</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">Add to system directory</p></div>
+                        <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Add</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">Add new user.</p></div>
                     </div>
                     <div className="p-8 overflow-y-auto space-y-6">
                         <div className="grid grid-cols-2 gap-5">
                             {[
-                                { label: 'Full Name *', field: 'name', placeholder: 'Enter full name' },
-                                { label: 'Email Address *', field: 'email', placeholder: 'email@hostel.com' },
+                                { label: 'Name', field: 'name', placeholder: 'Enter name' },
+                                { label: 'Email', field: 'email', placeholder: 'email@hostel.com' },
                                 { label: 'Phone', field: 'phone', placeholder: '03XX-XXXXXXX' },
                                 { label: 'CNIC', field: 'cnic', placeholder: 'XXXXX-XXXXXXX-X' },
                             ].map(({ label, field, placeholder }) => (
@@ -512,20 +512,20 @@ const UserRecordPage = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-5">
                             <div className="space-y-1.5">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Role *</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Type</Label>
                                 <select className="w-full h-11 rounded-xl border border-gray-100 bg-gray-50 px-4 font-bold text-sm uppercase outline-none focus:ring-2 focus:ring-indigo-500/20"
                                     value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
-                                    <option value="ADMIN">Administrator</option>
+                                    <option value="ADMIN">Admin</option>
                                     <option value="WARDEN">Hostel Warden</option>
-                                    <option value="STAFF">Facility Staff</option>
-                                    <option value="RESIDENT">Student Resident</option>
+                                    <option value="STAFF">Staff</option>
+                                    <option value="RESIDENT">Resident</option>
                                 </select>
                             </div>
                             <div className="space-y-1.5">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Assign Hostel</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Hostel</Label>
                                 <select className="w-full h-11 rounded-xl border border-gray-100 bg-gray-50 px-4 font-bold text-sm uppercase outline-none focus:ring-2 focus:ring-indigo-500/20"
                                     value={formData.hostelId} onChange={e => setFormData({ ...formData, hostelId: e.target.value })}>
-                                    <option value="">Global (No Hostel)</option>
+                                    <option value="">None</option>
                                     {hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
                                 </select>
                             </div>
@@ -533,12 +533,12 @@ const UserRecordPage = () => {
                         {(formData.role === 'STAFF' || formData.role === 'WARDEN') && (
                             <div className="grid grid-cols-2 gap-5 p-5 bg-gray-50 rounded-2xl animate-in fade-in duration-300">
                                 <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Designation</Label>
+                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Title</Label>
                                     <Input placeholder="e.g. Senior Manager" className="h-11 rounded-xl border-gray-100 bg-white font-bold text-sm"
                                         value={formData.designation} onChange={e => setFormData({ ...formData, designation: e.target.value })} />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Monthly Salary (PKR)</Label>
+                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Salary</Label>
                                     <Input type="number" placeholder="45000" className="h-11 rounded-xl border-gray-100 bg-white font-bold text-sm"
                                         value={formData.basicSalary} onChange={e => setFormData({ ...formData, basicSalary: Number(e.target.value) })} />
                                 </div>
@@ -548,7 +548,7 @@ const UserRecordPage = () => {
                             <Button variant="ghost" className="flex-1 h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest" onClick={() => setIsCreateDialogOpen(false)}>Cancel</Button>
                             <Button className="flex-[2] h-12 bg-indigo-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg flex items-center justify-center gap-2"
                                 onClick={handleCreateUser} disabled={createUser.isPending || !formData.name || !formData.email}>
-                                {createUser.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ShieldCheck className="h-4 w-4" /> Create User</>}
+                                {createUser.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ShieldCheck className="h-4 w-4" /> Save</>}
                             </Button>
                         </div>
                     </div>

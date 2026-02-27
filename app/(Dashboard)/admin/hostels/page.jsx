@@ -133,7 +133,7 @@ const HostelsPage = () => {
         }
     };
 
-    if (hostelsloading) return <Loader label="Loading Hostels" subLabel="Fetching branch list..." icon={Building2} fullScreen={false} />;
+    if (hostelsloading) return <Loader label="Loading" subLabel="Updates..." icon={Building2} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50">
@@ -142,9 +142,9 @@ const HostelsPage = () => {
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Infrastructure</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Hostels</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Node Registry</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Stats</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
                                 <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active</span>
                             </div>
@@ -154,12 +154,12 @@ const HostelsPage = () => {
                     <div className="flex items-center gap-2 md:gap-4">
                         <div className="hidden lg:flex items-center gap-8 mr-4">
                             <div className="flex flex-col items-end">
-                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Efficiency</span>
-                                <span className="text-sm font-bold text-emerald-600 uppercase tracking-tighter">Optimal</span>
+                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Status</span>
+                                <span className="text-sm font-bold text-emerald-600 uppercase tracking-tighter">Active</span>
                             </div>
                             <div className="flex flex-col items-end">
-                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Total Nodes</span>
-                                <span className="text-sm font-bold text-gray-900 tracking-tighter">{hostelsToDisplay.length} Branches</span>
+                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Total</span>
+                                <span className="text-sm font-bold text-gray-900 tracking-tighter">{hostelsToDisplay.length} Total</span>
                             </div>
                         </div>
                         <Button
@@ -176,7 +176,7 @@ const HostelsPage = () => {
                             className="h-9 px-4 rounded-xl border-gray-200 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 gap-2 shrink-0 hidden sm:flex"
                             onClick={() => {
                                 if (!hostelsToDisplay || hostelsToDisplay.length === 0) {
-                                    toast.error("No properties found to export");
+                                    toast.error("Empty");
                                     return;
                                 }
                                 const headers = ["ID", "Name", "Type", "Status", "City", "Total Rooms", "Occupied", "Available"];
@@ -191,16 +191,16 @@ const HostelsPage = () => {
                                 document.body.appendChild(link);
                                 link.click();
                                 document.body.removeChild(link);
-                                toast.success("Branch registry exported successfully");
+                                toast.success("Exported");
                             }}
                         >
                             <Download className="h-4 w-4" />
-                            <span className="hidden md:inline">Export Registry</span>
+                            <span className="hidden md:inline">Export</span>
                         </Button>
                         <Link href="/admin/hostels/createhostel?role=admin">
                             <Button className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 px-4 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm gap-2 whitespace-nowrap">
                                 <Plus className="h-4 w-4" />
-                                <span>Add Branch</span>
+                                <span>New</span>
                             </Button>
                         </Link>
                     </div>
@@ -211,10 +211,10 @@ const HostelsPage = () => {
                 {/* Statistics Overview */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Buildings', value: hostelsToDisplay.length, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Total BEDS', value: hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 0), icon: Bed, color: 'text-purple-600', bg: 'bg-purple-50' },
+                        { label: 'Total', value: hostelsToDisplay.length, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Capacity', value: hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 0), icon: Bed, color: 'text-purple-600', bg: 'bg-purple-50' },
                         { label: 'Available', value: hostelsToDisplay.reduce((t, h) => t + h.roomStats.availableRooms, 0), icon: DoorOpen, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Occupancy', value: `${Math.round((hostelsToDisplay.reduce((t, h) => t + h.roomStats.occupiedRooms, 0) / Math.max(hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 1), 1)) * 100)}%`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Usage', value: `${Math.round((hostelsToDisplay.reduce((t, h) => t + h.roomStats.occupiedRooms, 0) / Math.max(hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 1), 1)) * 100)}%`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
                     ].map((s, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
                             <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${s.bg} ${s.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform shrink-0`}>
@@ -234,7 +234,7 @@ const HostelsPage = () => {
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                         <Input
                             className="w-full bg-transparent border-none shadow-none h-11 md:h-12 pl-10 text-[11px] md:text-sm font-black text-gray-900 placeholder:text-gray-300 focus-visible:ring-0 uppercase tracking-tight"
-                            placeholder="Filter by Name, City or Category..."
+                            placeholder="Search"
                             value={searchterm}
                             onChange={(e) => setsearchterm(e.target.value)}
                         />
@@ -246,7 +246,7 @@ const HostelsPage = () => {
                                 onClick={() => setFilterType(type)}
                                 className={`flex-1 md:flex-none px-6 py-2 rounded-lg text-9px md:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterType === type ? 'bg-white text-gray-900 shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}
                             >
-                                {type === 'All' ? 'ANY' : type}
+                                {type === 'All' ? 'All' : type}
                             </button>
                         ))}
                     </div>
@@ -284,7 +284,7 @@ const HostelsPage = () => {
                                         {/* Performance Metrics */}
                                         <div className="flex-1 w-full max-w-none md:max-w-sm xl:max-w-md hidden md:block">
                                             <div className="flex justify-between items-end mb-1.5">
-                                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Occupancy Metrics</span>
+                                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Usage</span>
                                                 <span className="text-xs font-black text-gray-900">{Math.round((hostel.roomStats.occupiedRooms / hostel.roomStats.totalRooms) * 100 || 0)}%</span>
                                             </div>
                                             <div className="h-1.5 w-full bg-gray-50 rounded-full overflow-hidden border border-gray-100">
@@ -298,14 +298,14 @@ const HostelsPage = () => {
                                         {/* Custodial Info */}
                                         <div className="hidden lg:flex items-center gap-8 min-w-[200px]">
                                             <div className="flex flex-col">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Registry Leads</span>
+                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Staff</span>
                                                 <div className="text-[10px] font-black text-gray-700 truncate max-w-[120px] uppercase">
                                                     <WardenNames wardenIds={hostel.basicInfo.wardens} />
                                                 </div>
                                             </div>
                                             <div className="flex flex-col text-right">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Inventory</span>
-                                                <span className="text-[10px] font-black text-gray-700 uppercase">{hostel.roomStats.totalRooms} Blocks</span>
+                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Rooms</span>
+                                                <span className="text-[10px] font-black text-gray-700 uppercase">{hostel.roomStats.totalRooms} Rooms</span>
                                             </div>
                                         </div>
 
@@ -319,27 +319,27 @@ const HostelsPage = () => {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-52 p-1 rounded-xl border-gray-100 shadow-xl">
                                                     <DropdownMenuItem className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/admin/hostels/${hostel.id}`)}>
-                                                        <LayoutGrid className="h-3.5 w-3.5" /> Registry View
+                                                        <LayoutGrid className="h-3.5 w-3.5" /> View
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/admin/hostels/${encodeURIComponent(hostel.name)}/edithostel?hostelId=${hostel.id}`)}>
-                                                        <Edit className="h-3.5 w-3.5" /> Modify Node
+                                                        <Edit className="h-3.5 w-3.5" /> Edit
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-red-500 focus:bg-red-50 focus:text-red-600 cursor-pointer" onSelect={(e) => e.preventDefault()}>
                                                         <AlertDialog>
                                                             <AlertDialogTrigger className="w-full text-left flex items-center gap-3">
-                                                                <Trash className="h-3.5 w-3.5" /> Purge Records
+                                                                <Trash className="h-3.5 w-3.5" /> Delete
                                                             </AlertDialogTrigger>
                                                             <AlertDialogContent className="rounded-[2.5rem] border-none shadow-3xl overflow-hidden p-0 max-w-md">
                                                                 <div className="bg-rose-600 p-8 text-white relative">
                                                                     <div className="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center mb-4"><Trash size={24} /></div>
-                                                                    <AlertDialogTitle className="text-xl font-black uppercase tracking-tight mb-2 text-white">Purge Branch Data?</AlertDialogTitle>
+                                                                    <AlertDialogTitle className="text-xl font-black uppercase tracking-tight mb-2 text-white">Delete?</AlertDialogTitle>
                                                                     <AlertDialogDescription className="text-rose-100 text-xs font-medium uppercase tracking-wider">
-                                                                        This will erase all room and resident data for {hostel.name}.
+                                                                        All data will be lost for {hostel.name}.
                                                                     </AlertDialogDescription>
                                                                 </div>
                                                                 <div className="p-6 flex items-center justify-end gap-3 bg-white">
-                                                                    <AlertDialogCancel className="rounded-xl border-none bg-gray-50 font-black px-6 h-10 uppercase tracking-widest text-[9px] text-gray-400">Abort</AlertDialogCancel>
-                                                                    <AlertDialogAction className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black px-6 h-10 uppercase tracking-widest text-[9px] transition-all" onClick={() => handledelecthostel(hostel.id)}>Confirm Purge</AlertDialogAction>
+                                                                    <AlertDialogCancel className="rounded-xl border-none bg-gray-50 font-black px-6 h-10 uppercase tracking-widest text-[9px] text-gray-400">Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black px-6 h-10 uppercase tracking-widest text-[9px] transition-all" onClick={() => handledelecthostel(hostel.id)}>Confirm</AlertDialogAction>
                                                                 </div>
                                                             </AlertDialogContent>
                                                         </AlertDialog>
@@ -353,7 +353,7 @@ const HostelsPage = () => {
                                                     router.push(`/admin/hostels/${encodeURIComponent(hostel.name)}/rooms?role=admin&hostelId=${hostel.id}`);
                                                 }}
                                             >
-                                                Enter Branch
+                                                Open
                                                 <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
                                             </Button>
                                         </div>
@@ -363,7 +363,7 @@ const HostelsPage = () => {
                                     <div className="bg-gray-50/50 border-t border-gray-100 px-4 md:px-6 py-3 flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
                                         <div className="flex items-center gap-2 shrink-0">
                                             <LayoutGrid className="h-3 w-3 text-gray-400" />
-                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Inventory Map</span>
+                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Rooms</span>
                                         </div>
                                         <div className="h-px md:h-4 w-full md:w-px bg-gray-200" />
                                         <div className="flex flex-wrap gap-2">
@@ -396,8 +396,8 @@ const HostelsPage = () => {
                             <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-6 border border-gray-100">
                                 <Search className="h-8 w-8 text-gray-300" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 lg:tracking-tight uppercase">No Results</h3>
-                            <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mt-1">No hostels match your search</p>
+                            <h3 className="text-lg font-bold text-gray-900 lg:tracking-tight uppercase">Empty</h3>
+                            <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mt-1">Clear</p>
                             <Button
                                 variant="outline"
                                 className="mt-8 rounded-xl border-gray-200 uppercase tracking-widest text-[10px] font-bold h-10 px-8 hover:bg-blue-600 hover:text-white transition-all"

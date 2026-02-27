@@ -231,7 +231,7 @@ const WardenMessMenu = () => {
             <div className="flex h-screen items-center justify-center bg-white font-sans">
                 <div className="flex flex-col items-center gap-6">
                     <div className="h-10 w-10 border-[3px] border-gray-100 border-t-black rounded-full animate-spin" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 italic">Accessing Menu Node...</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 italic">Loading</p>
                 </div>
             </div>
         );
@@ -248,7 +248,7 @@ const WardenMessMenu = () => {
                             <Utensils className="h-4 w-4 md:h-5 md:w-5 text-indigo-600" />
                         </div>
                         <div className="flex flex-col min-w-0">
-                            <h1 className="text-sm md:text-lg font-semibold text-gray-800 tracking-tight uppercase truncate">Mess Schedule</h1>
+                            <h1 className="text-sm md:text-lg font-semibold text-gray-800 tracking-tight uppercase truncate">Mess Menu</h1>
                             <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
                                 <span className="text-[9px] md:text-[10px] font-medium uppercase tracking-wide text-gray-500 truncate">{user?.Hostel?.name}</span>
                             </div>
@@ -263,7 +263,7 @@ const WardenMessMenu = () => {
                             className="h-10 md:h-11 px-4 md:px-6 rounded-xl md:rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95"
                         >
                             {isExporting ? <Loader2 className="h-3 w-3 md:h-3.5 md:w-3.5 animate-spin mr-2" /> : <Download className="h-3 w-3 md:h-3.5 md:w-3.5 mr-2" />}
-                            <span className="hidden sm:inline">{isExporting ? 'Exporting...' : 'Export PDF'}</span>
+                            <span className="hidden sm:inline">{isExporting ? 'Exporting' : 'Save PDF'}</span>
                             <span className="sm:hidden">{isExporting ? '...' : 'PDF'}</span>
                         </Button>
                     </div>
@@ -276,10 +276,10 @@ const WardenMessMenu = () => {
                 {!hostelId ? (
                     <div className="py-16 md:py-28 bg-white border border-dashed border-gray-200 rounded-2xl md:rounded-3xl text-center px-6 max-w-2xl mx-auto shadow-sm">
                         <Utensils className="h-12 w-12 md:h-20 md:w-20 text-gray-200 mx-auto mb-6" />
-                        <h3 className="text-xl md:text-2xl font-semibold text-gray-800 uppercase tracking-wide">Hostel Not Found</h3>
+                        <h3 className="text-xl md:text-2xl font-semibold text-gray-800 uppercase tracking-wide">No Hostel</h3>
                         <p className="text-gray-500 text-sm mt-2 max-w-md mx-auto">Your account does not have an active hostel linked.</p>
                         <Button variant="outline" className="mt-8 rounded-xl border-gray-200 uppercase tracking-wide text-[9px] font-medium h-11 px-10 hover:bg-gray-50 transition-all text-gray-500">
-                            Re-Identify Hostel
+                            Reconnect
                         </Button>
                     </div>
                 ) : (
@@ -299,7 +299,7 @@ const WardenMessMenu = () => {
                                             </div>
                                             <div className="min-w-0">
                                                 <h2 className={`text-base md:text-2xl font-semibold uppercase tracking-tight truncate ${isEditing ? 'text-gray-800' : 'text-gray-800'}`}>{day}</h2>
-                                                <p className="text-[8px] md:text-[9px] font-medium uppercase tracking-wide mt-0.5">Daily Menu</p>
+                                                <p className="text-[8px] md:text-[9px] font-medium uppercase tracking-wide mt-0.5">Daily Items</p>
                                             </div>
                                         </div>
 
@@ -319,7 +319,7 @@ const WardenMessMenu = () => {
                                                         className="h-9 md:h-11 px-5 md:px-8 rounded-xl md:rounded-2xl bg-white text-gray-800 hover:bg-gray-100 font-medium text-[9px] md:text-[10px] uppercase tracking-wide shadow-sm transition-all active:scale-95"
                                                     >
                                                         {upsertMessMenu.isPending ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Save className="h-3 w-3 mr-2" />}
-                                                        {upsertMessMenu.isPending ? 'Saving...' : 'Publish'}
+                                                        {upsertMessMenu.isPending ? 'Saving' : 'Save'}
                                                     </Button>
                                                 </div>
                                             ) : (

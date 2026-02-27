@@ -108,7 +108,7 @@ const AdminMessMenu = () => {
                 dinner: formData.dinner,
                 dinnerTime: `${formData.dinnerStart}~${formData.dinnerEnd}`
             });
-            toast.success(`${day} menu updated successfully!`);
+            toast.success(`${day} updated`);
             setEditingDay(null);
         } catch (error) {
             toast.error("Failed to update menu");
@@ -151,7 +151,7 @@ const AdminMessMenu = () => {
             doc.setLineWidth(0.5);
             doc.line(14, 49, pageWidth - 14, 49);
 
-            const tableColumn = ["DAY", "MEAL", "FOOD ITEMS", "SERVED AT"];
+            const tableColumn = ["DAY", "TYPE", "ITEMS", "TIME"];
             const tableRows = [];
 
             DAYS.forEach(day => {
@@ -171,7 +171,7 @@ const AdminMessMenu = () => {
                         }
                     },
                     "BREAKFAST",
-                    menu?.breakfast || "NO MENU DEFINED",
+                    menu?.breakfast || "EMPTY",
                     displayTimeRange(menu?.breakfastTime)
                 ]);
 
@@ -179,7 +179,7 @@ const AdminMessMenu = () => {
                 tableRows.push([
                     "",
                     "LUNCH",
-                    menu?.lunch || "NO MENU DEFINED",
+                    menu?.lunch || "EMPTY",
                     displayTimeRange(menu?.lunchTime)
                 ]);
 
@@ -187,7 +187,7 @@ const AdminMessMenu = () => {
                 tableRows.push([
                     "",
                     "DINNER",
-                    menu?.dinner || "NO MENU DEFINED",
+                    menu?.dinner || "EMPTY",
                     displayTimeRange(menu?.dinnerTime)
                 ]);
             });
@@ -259,8 +259,8 @@ const AdminMessMenu = () => {
                             <Utensils className="h-5 w-5 text-indigo-600" />
                         </div>
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Mess Schedule</h1>
-                            <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400">Nutritional Registry & Timing</p>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Mess Menu</h1>
+                            <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400">Schedule</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 md:gap-3 w-full md:w-auto">
@@ -276,7 +276,7 @@ const AdminMessMenu = () => {
                         <Select value={selectedHostel} onValueChange={setSelectedHostel}>
                             <SelectTrigger className="flex-1 md:w-[240px] h-9 md:h-10 rounded-xl font-bold text-[9px] md:text-[10px] uppercase tracking-wider bg-white border-gray-200 focus:ring-1 focus:ring-indigo-600">
                                 <Building2 className="h-3.5 w-3.5 mr-1 md:mr-2 text-gray-400 shrink-0" />
-                                <span className="truncate"><SelectValue placeholder="SELECT HOSTEL" /></span>
+                                <span className="truncate"><SelectValue placeholder="HOSTEL" /></span>
                             </SelectTrigger>
                             <SelectContent className="rounded-xl">
                                 {hostels.map(h => (
@@ -296,12 +296,12 @@ const AdminMessMenu = () => {
                         <div className="h-24 w-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Utensils className="h-10 w-10 text-gray-300" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 uppercase">Select Hostel Branch</h3>
-                        <p className="text-gray-400 text-sm mt-2 max-w-md mx-auto">Please select a hostel branch from the top menu to view and manage its daily mess schedule.</p>
+                        <h3 className="text-xl font-bold text-gray-900 uppercase">Select Hostel</h3>
+                        <p className="text-gray-400 text-sm mt-2 max-w-md mx-auto">Choose a hostel to view and manage its daily mess menu.</p>
                     </div>
                 ) : isMenusLoading ? (
                     <div className="flex items-center justify-center p-20">
-                        <Loader fullScreen={false} label="Compiling Menu" subLabel="Formatting scheduling data" icon={Utensils} />
+                        <Loader fullScreen={false} label="Loading" subLabel="Getting updates..." icon={Utensils} />
                     </div>
                 ) : (
                     <div className="space-y-6">
@@ -326,7 +326,7 @@ const AdminMessMenu = () => {
                                                         onClick={() => setEditingDay(null)}
                                                         className="h-9 px-3 md:px-4 rounded-lg text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:bg-gray-100 flex-1 sm:flex-none"
                                                     >
-                                                        Discard
+                                                        Cancel
                                                     </Button>
                                                     <Button
                                                         onClick={() => handleSave(day)}
@@ -343,7 +343,7 @@ const AdminMessMenu = () => {
                                                     onClick={() => handleEdit(day)}
                                                     className="h-9 w-full sm:w-auto px-4 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-[9px] md:text-[10px] uppercase tracking-wider"
                                                 >
-                                                    <Edit3 className="h-3.5 w-3.5 mr-2" /> Modify Schedule
+                                                    <Edit3 className="h-3.5 w-3.5 mr-2" /> Edit
                                                 </Button>
                                             )}
                                         </div>
@@ -363,7 +363,7 @@ const AdminMessMenu = () => {
 
                                                 <div className="space-y-4 md:space-y-5">
                                                     <div className="space-y-2">
-                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Food Menu</Label>
+                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Menu</Label>
                                                         {isEditing ? (
                                                             <Input
                                                                 value={formData.breakfast}
@@ -372,11 +372,11 @@ const AdminMessMenu = () => {
                                                                 placeholder="e.g. Omelette, Tea"
                                                             />
                                                         ) : (
-                                                            <p className="text-xs md:text-sm font-medium text-gray-800 min-h-[40px] md:min-h-[44px] flex items-center leading-relaxed">{currentMenu?.breakfast || <span className="text-gray-400 italic font-normal">Not defined</span>}</p>
+                                                            <p className="text-xs md:text-sm font-medium text-gray-800 min-h-[40px] md:min-h-[44px] flex items-center leading-relaxed">{currentMenu?.breakfast || <span className="text-gray-400 italic font-normal">Empty</span>}</p>
                                                         )}
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Window</Label>
+                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time</Label>
                                                         {isEditing ? (
                                                             <div className="flex items-center gap-2">
                                                                 <div className="relative flex-1">
@@ -420,7 +420,7 @@ const AdminMessMenu = () => {
 
                                                 <div className="space-y-4 md:space-y-5">
                                                     <div className="space-y-2">
-                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Food Menu</Label>
+                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Menu</Label>
                                                         {isEditing ? (
                                                             <Input
                                                                 value={formData.lunch}
@@ -429,11 +429,11 @@ const AdminMessMenu = () => {
                                                                 placeholder="e.g. Chicken Biryani"
                                                             />
                                                         ) : (
-                                                            <p className="text-xs md:text-sm font-medium text-gray-800 min-h-[40px] md:min-h-[44px] flex items-center leading-relaxed">{currentMenu?.lunch || <span className="text-gray-400 italic font-normal">Not defined</span>}</p>
+                                                            <p className="text-xs md:text-sm font-medium text-gray-800 min-h-[40px] md:min-h-[44px] flex items-center leading-relaxed">{currentMenu?.lunch || <span className="text-gray-400 italic font-normal">Empty</span>}</p>
                                                         )}
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Window</Label>
+                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time</Label>
                                                         {isEditing ? (
                                                             <div className="flex items-center gap-2">
                                                                 <div className="relative flex-1">
@@ -477,7 +477,7 @@ const AdminMessMenu = () => {
 
                                                 <div className="space-y-4 md:space-y-5">
                                                     <div className="space-y-2">
-                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Food Menu</Label>
+                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Menu</Label>
                                                         {isEditing ? (
                                                             <Input
                                                                 value={formData.dinner}
@@ -486,11 +486,11 @@ const AdminMessMenu = () => {
                                                                 placeholder="e.g. Daal Mash, Roti"
                                                             />
                                                         ) : (
-                                                            <p className="text-xs md:text-sm font-medium text-gray-800 min-h-[40px] md:min-h-[44px] flex items-center leading-relaxed">{currentMenu?.dinner || <span className="text-gray-400 italic font-normal">Not defined</span>}</p>
+                                                            <p className="text-xs md:text-sm font-medium text-gray-800 min-h-[40px] md:min-h-[44px] flex items-center leading-relaxed">{currentMenu?.dinner || <span className="text-gray-400 italic font-normal">Empty</span>}</p>
                                                         )}
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time Window</Label>
+                                                        <Label className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Time</Label>
                                                         {isEditing ? (
                                                             <div className="flex items-center gap-2">
                                                                 <div className="relative flex-1">

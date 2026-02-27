@@ -93,7 +93,7 @@ const ReportsPage = () => {
     const [selectedPeriod, setSelectedPeriod] = useState("month");
     const { data, isLoading } = useReports(selectedPeriod);
 
-    if (isLoading) return <Loader label="Loading Reports" subLabel="Fetching analytics data..." icon={Activity} fullScreen={false} />;
+    if (isLoading) return <Loader label="Loading" subLabel="Getting records..." icon={Activity} fullScreen={false} />;
 
     const stats = data?.overall || {
         totalRevenue: 0,
@@ -147,11 +147,11 @@ const ReportsPage = () => {
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="h-8 w-1 bg-black rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Business Analytics</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Reports</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Network Registry</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Stats</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Live Insights</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Live</span>
                             </div>
                         </div>
                     </div>
@@ -171,7 +171,7 @@ const ReportsPage = () => {
                             className="h-9 px-4 md:px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap"
                             onClick={handleExport}
                         >
-                            <Download className="h-3.5 w-3.5" /> <span className="hidden xs:inline">Export</span> Protocol
+                            <Download className="h-3.5 w-3.5" /> <span className="hidden xs:inline">Report</span>
                         </Button>
                     </div>
                 </div>
@@ -186,7 +186,7 @@ const ReportsPage = () => {
                         </div>
                         <div className="flex flex-col min-w-0">
                             <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest italic flex items-center justify-center sm:justify-start gap-1 md:gap-1.5 shrink-0">
-                                Gross Revenue <TrendingUp className="h-2.5 w-2.5" />
+                                Total Revenue <TrendingUp className="h-2.5 w-2.5" />
                             </span>
                             <div className="flex flex-col sm:flex-row items-center sm:items-baseline gap-1 md:gap-2">
                                 <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate w-full">PKR {stats.totalRevenue.toLocaleString()}</span>
@@ -203,7 +203,7 @@ const ReportsPage = () => {
                         </div>
                         <div className="flex flex-col min-w-0">
                             <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest italic flex items-center justify-center sm:justify-start gap-1 md:gap-1.5 shrink-0">
-                                Operating Costs <TrendingDown className="h-2.5 w-2.5" />
+                                Expenses <TrendingDown className="h-2.5 w-2.5" />
                             </span>
                             <div className="flex flex-col sm:flex-row items-center sm:items-baseline gap-1 md:gap-2">
                                 <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate w-full">PKR {stats.totalExpenses.toLocaleString()}</span>
@@ -217,7 +217,7 @@ const ReportsPage = () => {
                             <TrendingUp className="h-5 w-5" />
                         </div>
                         <div className="flex flex-col min-w-0">
-                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest italic shrink-0">Net Performance</span>
+                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest italic shrink-0">Net Profit</span>
                             <div className="flex flex-col sm:flex-row items-center sm:items-baseline gap-1 md:gap-2">
                                 <span className="text-sm md:text-xl font-bold text-blue-600 tracking-tight truncate w-full">PKR {stats.netProfit.toLocaleString()}</span>
                                 <span className="text-[8px] md:text-[9px] font-bold text-emerald-500 shrink-0">+{stats.profitChange}%</span>
@@ -230,7 +230,7 @@ const ReportsPage = () => {
                             <Home className="h-5 w-5" />
                         </div>
                         <div className="flex flex-col min-w-0">
-                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest italic shrink-0">Network Occupancy</span>
+                            <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest italic shrink-0">Occupancy</span>
                             <div className="flex flex-col sm:flex-row items-center sm:items-baseline gap-1 md:gap-2">
                                 <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate w-full">{stats.occupancyRate}%</span>
                                 <span className="text-[8px] md:text-[9px] font-bold text-emerald-500 shrink-0">+{stats.occupancyChange}%</span>
@@ -247,8 +247,8 @@ const ReportsPage = () => {
                                 <Building2 className="h-5 w-5" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight italic">Domain Performance Matrix</h3>
-                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic">Real-time property-level settlements</p>
+                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight italic">Performance</h3>
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic">Growth and occupancy by hostel</p>
                             </div>
                         </div>
                     </div>
@@ -256,12 +256,12 @@ const ReportsPage = () => {
                         <table className="w-full text-left min-w-[1000px]">
                             <thead>
                                 <tr className="bg-gray-50/70 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b">
-                                    <th className="px-8 py-5 italic">Hostel Node</th>
-                                    <th className="px-8 py-5">Occupancy Delta</th>
-                                    <th className="px-8 py-5 text-right">Revenue Settlement</th>
-                                    <th className="px-8 py-5 text-right">Expenditure</th>
-                                    <th className="px-8 py-5 text-right">Net Magnitude</th>
-                                    <th className="px-8 py-5 text-center">Protocol</th>
+                                    <th className="px-8 py-5 italic">Hostel</th>
+                                    <th className="px-8 py-5">Occupancy</th>
+                                    <th className="px-8 py-5 text-right">Revenue</th>
+                                    <th className="px-8 py-5 text-right">Expenses</th>
+                                    <th className="px-8 py-5 text-right">Profit</th>
+                                    <th className="px-8 py-5 text-center">View</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -270,7 +270,7 @@ const ReportsPage = () => {
                                         <td className="px-8 py-6">
                                             <div className="flex flex-col">
                                                 <span className="text-[11px] font-bold text-gray-900 uppercase tracking-tight italic">{hostel.name}</span>
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5">{hostel.occupied}/{hostel.rooms} NODE_SLOTS</span>
+                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5">{hostel.occupied}/{hostel.rooms} Rooms</span>
                                             </div>
                                         </td>
                                         <td className="px-8 py-6">
@@ -311,8 +311,8 @@ const ReportsPage = () => {
                                         <BarChart3 className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Revenue vs Expenses</h3>
-                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1 italic">6-Month financial trajectory</p>
+                                        <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Trends</h3>
+                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1 italic">History</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
@@ -340,7 +340,7 @@ const ReportsPage = () => {
                                     <table className="w-full text-left">
                                         <thead>
                                             <tr className="bg-gray-50 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b">
-                                                <th className="px-8 py-4">Period</th>
+                                                <th className="px-8 py-4">Month</th>
                                                 <th className="px-8 py-4 text-right">Revenue</th>
                                                 <th className="px-8 py-4 text-right">Expenses</th>
                                                 <th className="px-8 py-4 text-right">Net Profit</th>
@@ -370,36 +370,36 @@ const ReportsPage = () => {
                                 <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
                                     <ShieldCheck className="h-5 w-5 text-emerald-400" />
                                 </div>
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 italic">Audit Summary</h4>
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 italic">Score</h4>
                             </div>
                             <div className="space-y-6 relative z-10">
                                 <div className="flex justify-between items-end border-b border-white/10 pb-4">
                                     <div className="flex flex-col">
-                                        <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest italic">Collection Rate</span>
+                                        <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest italic">Paid</span>
                                         <span className="text-2xl font-bold tracking-tighter italic">94.2%</span>
                                     </div>
-                                    <Badge className="bg-emerald-500/20 text-emerald-400 border-none text-[8px] font-black mb-1">OPTIMIZED</Badge>
+                                    <Badge className="bg-emerald-500/20 text-emerald-400 border-none text-[8px] font-black mb-1">SAFE</Badge>
                                 </div>
                                 <div className="flex justify-between items-end border-b border-white/10 pb-4">
                                     <div className="flex flex-col">
-                                        <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest italic">Network Growth</span>
+                                        <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest italic">Growth</span>
                                         <span className="text-2xl font-bold tracking-tighter italic">+18.5%</span>
                                     </div>
                                     <TrendingUp className="h-5 w-5 text-blue-400 mb-1" />
                                 </div>
                                 <Link href="/admin/payments">
                                     <Button className="w-full h-12 mt-4 bg-white text-black font-black text-[10px] uppercase tracking-[0.2em] rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-3">
-                                        Open Ledger Hub <ChevronRight className="h-4 w-4" />
+                                        Open <ChevronRight className="h-4 w-4" />
                                     </Button>
                                 </Link>
                             </div>
                         </Card>
 
                         <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
-                            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 italic">Quick Vectors</h4>
+                            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 italic">Actions</h4>
                             <div className="grid grid-cols-2 gap-3">
                                 {[
-                                    { label: 'Fiscal', icon: Receipt, link: '/admin/payments' },
+                                    { label: 'Payments', icon: Receipt, link: '/admin/payments' },
                                     { label: 'Booking', icon: Calendar, link: '/admin/bookings' },
                                     { label: 'Salary', icon: Users, link: '/admin/salaries' },
                                     { label: 'Hostel', icon: Building2, link: '/admin/hostels' }

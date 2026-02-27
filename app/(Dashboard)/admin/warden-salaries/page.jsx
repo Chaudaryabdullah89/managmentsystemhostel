@@ -263,7 +263,7 @@ const WardenSalariesPage = () => {
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1.5 bg-indigo-600 rounded-full" />
                         <div>
-                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Warden Payroll</h1>
+                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Payroll</h1>
                             <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} distribution records</p>
                         </div>
                     </div>
@@ -296,12 +296,12 @@ const WardenSalariesPage = () => {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-xl border-gray-100 p-2">
-                                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-gray-400 p-3">Payroll Actions</DropdownMenuLabel>
+                                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-gray-400 p-3">Actions</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={handleGeneratePayroll} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
-                                    <Calculator className="h-4 w-4 text-indigo-600" /> Auto Generate
+                                    <Calculator className="h-4 w-4 text-indigo-600" /> Auto
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setIsAddSalaryDialogOpen(true)} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
-                                    <Plus className="h-4 w-4 text-emerald-600" /> Manual Record
+                                    <Plus className="h-4 w-4 text-emerald-600" /> Add
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={handleExportPDF} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer text-rose-600">
@@ -320,10 +320,10 @@ const WardenSalariesPage = () => {
                 {/* Overview Stats - Staff Management Card Style */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: "Gross Payroll", value: `PKR ${(stats.total / 1000).toFixed(1)}k`, icon: Wallet, color: "text-gray-700", bg: "bg-white", iconBg: "bg-gray-100" },
-                        { label: "Paid Volume", value: `PKR ${(stats.paidVolume / 1000).toFixed(1)}k`, icon: CheckCircle2, color: "text-indigo-600", bg: "bg-indigo-50", iconBg: "bg-indigo-100" },
-                        { label: "Appeals Pending", value: stats.appealCount, icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50", iconBg: "bg-amber-100" },
-                        { label: "Active Cycles", value: stats.count, icon: Calendar, color: "text-emerald-600", bg: "bg-emerald-50", iconBg: "bg-emerald-100" },
+                        { label: "Total", value: `PKR ${(stats.total / 1000).toFixed(1)}k`, icon: Wallet, color: "text-gray-700", bg: "bg-white", iconBg: "bg-gray-100" },
+                        { label: "Paid", value: `PKR ${(stats.paidVolume / 1000).toFixed(1)}k`, icon: CheckCircle2, color: "text-indigo-600", bg: "bg-indigo-50", iconBg: "bg-indigo-100" },
+                        { label: "Appeals", value: stats.appealCount, icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50", iconBg: "bg-amber-100" },
+                        { label: "Cycles", value: stats.count, icon: Calendar, color: "text-emerald-600", bg: "bg-emerald-50", iconBg: "bg-emerald-100" },
                     ].map((stat, i) => (
                         <div key={i} className={`${stat.bg} border border-gray-100 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
                             <div>
@@ -345,15 +345,15 @@ const WardenSalariesPage = () => {
                                 <MessageSquare className="h-5 w-5 text-amber-600" />
                             </div>
                             <div>
-                                <p className="text-sm font-bold text-amber-900">{stats.appealCount} payroll appeals need administrative resolution</p>
-                                <p className="text-xs text-amber-700 font-medium mt-0.5">Appeals require immediate review for fiscal accuracy</p>
+                                <p className="text-sm font-bold text-amber-900">{stats.appealCount} Appeals</p>
+                                <p className="text-xs text-amber-700 font-medium mt-0.5">Review</p>
                             </div>
                         </div>
                         <Button
                             onClick={() => setFilterStatus("PENDING")}
                             className="h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-bold rounded-xl gap-2 flex-shrink-0"
                         >
-                            Review Appeals <ArrowUpRight className="h-3.5 w-3.5" />
+                            Review <ArrowUpRight className="h-3.5 w-3.5" />
                         </Button>
                     </div>
                 )}
@@ -367,14 +367,14 @@ const WardenSalariesPage = () => {
                                 onClick={() => setActiveTab('current')}
                                 className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}
                             >
-                                Active Cycle
+                                Active
                             </Button>
                             <Button
                                 variant="ghost"
                                 onClick={() => setActiveTab('history')}
                                 className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}
                             >
-                                Ledger History
+                                History
                             </Button>
                         </div>
                         <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} records shown</p>
@@ -383,7 +383,7 @@ const WardenSalariesPage = () => {
                     {filteredSalaries.length === 0 ? (
                         <div className="text-center py-20 bg-white border border-dashed border-gray-200 rounded-3xl">
                             <Wallet className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                            <p className="text-sm font-bold text-gray-400">No payroll records found</p>
+                            <p className="text-sm font-bold text-gray-400">No records</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
@@ -444,7 +444,7 @@ const WardenSalariesPage = () => {
                                     {/* Efficiency Profile Bar (Payout Ratio) */}
                                     <div className="px-6 pb-4">
                                         <div className="flex items-center justify-between mb-1.5">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Net Disbursement</span>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Total</span>
                                             <span className="text-[10px] font-bold text-gray-900 tracking-tight">PKR {(salary.amount || 0).toLocaleString()}</span>
                                         </div>
                                         <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -480,10 +480,10 @@ const WardenSalariesPage = () => {
                                                     </DropdownMenuItem>
                                                 )}
                                                 <DropdownMenuItem className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
-                                                    <Settings2 className="h-4 w-4" /> Edit Record
+                                                    <Settings2 className="h-4 w-4" /> Edit
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => { setSelectedSalary(salary); setIsDeleteDialogOpen(true); }} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase text-rose-600 hover:bg-rose-50 cursor-pointer">
-                                                    <Trash2 className="h-4 w-4" /> Evict Record
+                                                    <Trash2 className="h-4 w-4" /> Delete
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -521,20 +521,20 @@ const WardenSalariesPage = () => {
                                 <MessageSquare className="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-sm font-bold uppercase tracking-tight">Appeal Resolution</h2>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Edit</h2>
                                 <p className="text-[10px] text-indigo-300 font-medium">for {selectedSalary?.Warden?.name}</p>
                             </div>
                         </div>
                     </div>
                     <div className="p-6 space-y-5 bg-white">
                         <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 block mb-2">Original Appeal Note</Label>
-                            <p className="text-xs font-bold text-gray-600 leading-relaxed italic">"{selectedSalary?.appealText || 'No description provided'}"</p>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 block mb-2">Notes</Label>
+                            <p className="text-xs font-bold text-gray-600 leading-relaxed italic">"{selectedSalary?.appealText || 'Empty'}"</p>
                         </div>
 
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Response Status</Label>
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Status</Label>
                                 <Select value={resolveFormData.appealStatus} onValueChange={v => setResolveFormData({ ...resolveFormData, appealStatus: v })}>
                                     <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-xs focus:ring-0">
                                         <SelectValue />
@@ -546,10 +546,10 @@ const WardenSalariesPage = () => {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Resolution Memo</Label>
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Details</Label>
                                 <Textarea
                                     className="rounded-2xl border-gray-100 bg-gray-50 font-medium text-xs min-h-[120px] resize-none"
-                                    placeholder="Enter details about the resolution..."
+                                    placeholder="Add notes..."
                                     value={resolveFormData.appealResponse}
                                     onChange={e => setResolveFormData({ ...resolveFormData, appealResponse: e.target.value })}
                                 />
@@ -561,7 +561,7 @@ const WardenSalariesPage = () => {
                             disabled={updateSalary.isPending}
                             className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-xl transition-all active:scale-[0.98]"
                         >
-                            {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Finalize Resolution"}
+                            {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
                         </Button>
                     </div>
                 </DialogContent>
@@ -574,18 +574,18 @@ const WardenSalariesPage = () => {
                         <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10">
                             <Wallet2 className="h-6 w-6" />
                         </div>
-                        <h2 className="text-xl font-bold uppercase tracking-tight">Manual Ingress</h2>
-                        <p className="text-[9px] text-white/70 font-bold tracking-widest mt-1 uppercase">Initialize manual salary record</p>
+                        <h2 className="text-xl font-bold uppercase tracking-tight">Add</h2>
+                        <p className="text-[9px] text-white/70 font-bold tracking-widest mt-1 uppercase">Add record</p>
                     </div>
                     <form onSubmit={handleAddSalary} className="p-8 space-y-4">
                         <div className="space-y-1.5">
-                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Target Warden</Label>
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Warden</Label>
                             <Select value={addSalaryForm.wardenId} onValueChange={(v) => {
                                 const w = wardens.find(u => u.id === v);
                                 setAddSalaryForm({ ...addSalaryForm, wardenId: v, basicSalary: w?.basicSalary || "" });
                             }}>
                                 <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-xs">
-                                    <SelectValue placeholder="Select Warden" />
+                                    <SelectValue placeholder="Choose warden" />
                                 </SelectTrigger>
                                 <SelectContent className="rounded-2xl">
                                     {wardens.map(w => (
@@ -596,11 +596,11 @@ const WardenSalariesPage = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1.5">
-                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Base Salary</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Salary</Label>
                                 <Input type="number" required value={addSalaryForm.basicSalary} onChange={e => setAddSalaryForm({ ...addSalaryForm, basicSalary: e.target.value })} className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold" />
                             </div>
                             <div className="space-y-1.5">
-                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Cycle Month</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Month</Label>
                                 <Input required value={addSalaryForm.month} onChange={e => setAddSalaryForm({ ...addSalaryForm, month: e.target.value })} className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold" />
                             </div>
                         </div>
@@ -628,7 +628,7 @@ const WardenSalariesPage = () => {
                             </Select>
                         </div>
                         <Button disabled={payWarden.isPending} type="submit" className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg mt-2">
-                            {payWarden.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Initiate Settlement"}
+                            {payWarden.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Pay"}
                         </Button>
                     </form>
                 </DialogContent>
@@ -641,18 +641,18 @@ const WardenSalariesPage = () => {
                         <Trash2 className="h-8 w-8 text-rose-500" />
                     </div>
                     <AlertDialogHeader>
-                        <AlertDialogTitle className="text-2xl font-black uppercase text-gray-900 tracking-tight">Evict Record?</AlertDialogTitle>
+                        <AlertDialogTitle className="text-2xl font-black uppercase text-gray-900 tracking-tight">Delete?</AlertDialogTitle>
                         <AlertDialogDescription className="text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed mt-2">
-                            This will permanently remove the disbursement entry from the ledger. This action is IRREVERSIBLE.
+                            This will permanently remove the record.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="flex flex-col sm:flex-row gap-3 mt-8">
-                        <AlertDialogCancel className="h-12 w-full rounded-2xl bg-gray-50 border-none font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition-colors">Abort</AlertDialogCancel>
+                        <AlertDialogCancel className="h-12 w-full rounded-2xl bg-gray-50 border-none font-black text-[10px] uppercase tracking-widest hover:bg-gray-100 transition-colors">Cancel</AlertDialogCancel>
                         <AlertDialogAction
                             onClick={() => deleteSalary.mutate(selectedSalary.id)}
                             className="h-12 w-full rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-[10px] uppercase tracking-widest shadow-lg shadow-rose-200"
                         >
-                            Confirm Eviction
+                            Delete
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

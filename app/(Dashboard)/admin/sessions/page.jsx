@@ -49,7 +49,7 @@ export default function SessionsPage() {
         },
         onSuccess: (_, sessionId) => {
             queryClient.invalidateQueries({ queryKey: ['user-sessions'] });
-            toast.success(sessionId ? 'Session terminated' : 'All other sessions terminated');
+            toast.success(sessionId ? 'Signed out' : 'Others signed out');
         },
         onError: (err) => toast.error(err.message || 'Failed to terminate session'),
     });
@@ -73,8 +73,8 @@ export default function SessionsPage() {
                                 <Shield className="h-4 w-4 text-indigo-600" />
                             </div>
                             <div>
-                                <h1 className="text-sm font-black text-gray-900 uppercase tracking-tight">Active Sessions</h1>
-                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Device Security Management</p>
+                                <h1 className="text-sm font-black text-gray-900 uppercase tracking-tight">Devices</h1>
+                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Devices</p>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@ export default function SessionsPage() {
                                 onClick={() => terminateMutation.mutate(null)}
                                 disabled={terminateMutation.isPending}
                             >
-                                <LogOut className="h-3.5 w-3.5 mr-1.5" /> End All Others
+                                <LogOut className="h-3.5 w-3.5 mr-1.5" /> Others
                             </Button>
                         )}
                     </div>
@@ -109,15 +109,13 @@ export default function SessionsPage() {
                             <Lock className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                            <h2 className="text-sm font-black text-gray-900 uppercase tracking-tight">Account Security</h2>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">
-                                {sessions.length} total sessions · {activeSessions.length} active
-                            </p>
+                            <h2 className="text-sm font-black text-gray-900 uppercase tracking-tight">Status</h2>
+                            {sessions.length} Total · {activeSessions.length} Live
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Secured</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Safe</span>
                     </div>
                 </div>
 
@@ -140,8 +138,8 @@ export default function SessionsPage() {
                         <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-4">
                             <Activity className="h-8 w-8 text-gray-300" />
                         </div>
-                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">No Sessions Found</h3>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">Your session history is empty</p>
+                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">Empty</h3>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">Clear</p>
                     </div>
                 ) : (
                     <>
@@ -150,7 +148,7 @@ export default function SessionsPage() {
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
                                     <div className="h-5 w-1 bg-emerald-500 rounded-full" />
-                                    <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Active Sessions</h3>
+                                    <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Live</h3>
                                     <Badge className="bg-emerald-100 text-emerald-700 border-none text-[8px] font-black rounded-full px-2">
                                         {activeSessions.length}
                                     </Badge>
@@ -175,7 +173,7 @@ export default function SessionsPage() {
                                                             </span>
                                                             {isCurrentSession && (
                                                                 <Badge className="bg-indigo-600 text-white border-none text-[8px] font-black rounded-full px-2 py-0.5">
-                                                                    This Device
+                                                                    Current
                                                                 </Badge>
                                                             )}
                                                         </div>
@@ -186,7 +184,7 @@ export default function SessionsPage() {
                                                             </span>
                                                             <span className="flex items-center gap-1">
                                                                 <Clock className="h-3 w-3" />
-                                                                {session.lastActive ? formatDistanceToNow(new Date(session.lastActive), { addSuffix: true }) : 'N/A'}
+                                                                {session.lastActive ? formatDistanceToNow(new Date(session.lastActive), { addSuffix: true }) : 'Now'}
                                                             </span>
                                                         </div>
                                                         <p className="text-[9px] font-black text-gray-300 uppercase tracking-widest">
@@ -202,7 +200,7 @@ export default function SessionsPage() {
                                                         onClick={() => terminateMutation.mutate(session.id)}
                                                         disabled={terminateMutation.isPending}
                                                     >
-                                                        <LogOut className="h-3.5 w-3.5 mr-1.5" /> Revoke
+                                                        <LogOut className="h-3.5 w-3.5 mr-1.5" /> Sign out
                                                     </Button>
                                                 )}
                                             </div>
@@ -217,7 +215,7 @@ export default function SessionsPage() {
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
                                     <div className="h-5 w-1 bg-gray-300 rounded-full" />
-                                    <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Past Sessions</h3>
+                                    <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Past</h3>
                                     <Badge variant="outline" className="border-gray-200 text-gray-400 text-[8px] font-black rounded-full px-2">
                                         {inactiveSessions.length}
                                     </Badge>

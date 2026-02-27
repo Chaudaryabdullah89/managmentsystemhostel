@@ -101,7 +101,7 @@ const ProfilePage = () => {
                 data: editedData
             });
             setIsEditing(false);
-            toast.success('Profile updated successfully');
+            toast.success('Updated');
         } catch (err) {
             toast.error('Failed to update profile');
         }
@@ -129,7 +129,7 @@ const ProfilePage = () => {
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || "Failed to change password");
 
-            toast.success("Password updated successfully!");
+            toast.success("Updated");
             setShowPasswordDialog(false);
             setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
         } catch (err) {
@@ -152,7 +152,7 @@ const ProfilePage = () => {
                 body: JSON.stringify({ email: newEmail })
             });
             if (!res.ok) throw new Error("Failed to send verification code");
-            toast.success("Verification code sent to your new email");
+            toast.success("Code sent");
             setShowOtpInput(true);
         } catch (err) {
             toast.error(err.message);
@@ -173,7 +173,7 @@ const ProfilePage = () => {
             });
             if (!res.ok) throw new Error("Invalid verification code");
 
-            toast.success("Email updated successfully");
+            toast.success("Updated");
             setShowEmailDialog(false);
             setOtp("");
             setShowOtpInput(false);
@@ -193,7 +193,7 @@ const ProfilePage = () => {
         return <Monitor className="w-5 h-5 text-gray-400" />;
     };
 
-    if (isLoading) return <Loader label="Loading Profile" subLabel="Fetching your account details..." icon={User} fullScreen={false} />;
+    if (isLoading) return <Loader label="Loading" subLabel="Updates..." icon={User} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
@@ -205,9 +205,9 @@ const ProfilePage = () => {
                         <div className="flex flex-col">
                             <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">My Profile</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Account Registry</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Profile</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Session</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Signed In</span>
                             </div>
                         </div>
                     </div>
@@ -226,14 +226,14 @@ const ProfilePage = () => {
                                     variant="outline"
                                     className="h-9 px-6 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all shadow-sm"
                                 >
-                                    <X className="h-3.5 w-3.5 mr-2" /> Discard
+                                    <X className="h-3.5 w-3.5 mr-2" /> Cancel
                                 </Button>
                                 <Button
                                     onClick={handleSave}
                                     disabled={updateLoading}
                                     className="h-9 px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all"
                                 >
-                                    <Save className="h-3.5 w-3.5 mr-2" /> {updateLoading ? "Saving..." : "Save Changes"}
+                                    <Save className="h-3.5 w-3.5 mr-2" /> {updateLoading ? "Saving" : "Save"}
                                 </Button>
                             </>
                         )}
@@ -245,10 +245,10 @@ const ProfilePage = () => {
                 {/* Profile Identity Bar */}
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Login Status', value: 'Active', icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Role Access', value: user.role, icon: Shield, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Active Sessions', value: sessionsData?.sessions?.length || 0, icon: Globe, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Joined Date', value: format(new Date(user.createdAt || Date.now()), 'MMM yyyy'), icon: Calendar, color: 'text-rose-600', bg: 'bg-rose-50' }
+                        { label: 'Status', value: 'Active', icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Role', value: user.role, icon: Shield, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Sessions', value: sessionsData?.sessions?.length || 0, icon: Globe, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Joined', value: format(new Date(user.createdAt || Date.now()), 'MMM yyyy'), icon: Calendar, color: 'text-rose-600', bg: 'bg-rose-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -297,7 +297,7 @@ const ProfilePage = () => {
                                             className="w-full justify-start h-12 rounded-2xl px-6 font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-gray-50 hover:text-black transition-all"
                                         >
                                             <History className="h-4 w-4 mr-4 text-gray-400" />
-                                            Activity Log
+                                            Activity
                                         </Button>
                                     </Link>
                                     <Separator className="my-2 opacity-10" />
@@ -319,13 +319,13 @@ const ProfilePage = () => {
                         <Tabs defaultValue="overview" className="space-y-6">
                             <TabsList className="bg-white border border-gray-100 p-1 rounded-xl h-11 shadow-sm">
                                 <TabsTrigger value="overview" className="h-full px-10 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-black data-[state=active]:text-white transition-all">
-                                    <Boxes className="h-3.5 w-3.5 mr-2" /> General details
+                                    <Boxes className="h-3.5 w-3.5 mr-2" /> Info
                                 </TabsTrigger>
                                 <TabsTrigger value="security" className="h-full px-10 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-black data-[state=active]:text-white transition-all">
-                                    <ShieldCheck className="h-3.5 w-3.5 mr-2" /> Security Details
+                                    <ShieldCheck className="h-3.5 w-3.5 mr-2" /> Keys
                                 </TabsTrigger>
                                 <TabsTrigger value="sessions" className="h-full px-10 rounded-lg font-bold text-[10px] uppercase tracking-wider data-[state=active]:bg-black data-[state=active]:text-white transition-all">
-                                    <Clock className="h-3.5 w-3.5 mr-2" /> Active Sessions
+                                    <Clock className="h-3.5 w-3.5 mr-2" /> Devices
                                 </TabsTrigger>
                             </TabsList>
 
@@ -335,21 +335,21 @@ const ProfilePage = () => {
                                         <div className="absolute top-0 left-0 w-1.5 h-full bg-black/5 opacity-70 group-hover:bg-black transition-colors" />
                                         <CardHeader className="p-8 pb-4">
                                             <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-900 flex items-center gap-3">
-                                                <Fingerprint className="h-4 w-4 text-gray-400" /> Personal Details
+                                                <Fingerprint className="h-4 w-4 text-gray-400" /> Identity
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="p-8 pt-0 space-y-6">
                                             <div className="space-y-2">
-                                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Full Name</Label>
+                                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Name</Label>
                                                 {isEditing ? <Input value={editedData.name} onChange={e => setEditedData({ ...editedData, name: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" /> : <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">{user.name}</p>}
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-2">
-                                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Phone Number</Label>
+                                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Phone</Label>
                                                     {isEditing ? <Input value={editedData.phone} onChange={e => setEditedData({ ...editedData, phone: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" /> : <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">{user.phone || 'N/A'}</p>}
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">CNIC No</Label>
+                                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">CNIC</Label>
                                                     {isEditing ? <Input value={editedData.cnic} onChange={e => setEditedData({ ...editedData, cnic: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" /> : <p className="text-sm font-mono font-bold text-gray-900 bg-gray-50 px-3 py-1.5 rounded-lg w-fit">{user.cnic || 'N/A'}</p>}
                                                 </div>
                                             </div>
@@ -360,21 +360,21 @@ const ProfilePage = () => {
                                         <div className="absolute top-0 left-0 w-1.5 h-full bg-black/5 opacity-70 group-hover:bg-emerald-500 transition-colors" />
                                         <CardHeader className="p-8 pb-4">
                                             <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-900 flex items-center gap-3">
-                                                <MapPin className="h-4 w-4 text-gray-400" /> Address Details
+                                                <MapPin className="h-4 w-4 text-gray-400" /> Location
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="p-8 pt-0 space-y-6">
                                             <div className="space-y-2">
-                                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Home Address</Label>
+                                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Current Address</Label>
                                                 {isEditing ? <Textarea value={editedData.address} onChange={e => setEditedData({ ...editedData, address: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-sm p-4 min-h-[100px]" /> : <p className="text-sm font-bold text-gray-900 leading-relaxed uppercase tracking-tight">{user.address || 'N/A'}</p>}
                                             </div>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-2">
-                                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Current City</Label>
+                                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">City</Label>
                                                     {isEditing ? <Input value={editedData.city} onChange={e => setEditedData({ ...editedData, city: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" /> : <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">{user.city || 'N/A'}</p>}
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hostel Node</Label>
+                                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hostel</Label>
                                                     <Badge variant="outline" className="h-7 px-3 bg-gray-50 text-[9px] font-bold border-gray-200 uppercase tracking-widest">{user?.Hostel_User_hostelIdToUser?.name || 'CENTRAL'}</Badge>
                                                 </div>
                                             </div>
@@ -391,7 +391,7 @@ const ProfilePage = () => {
                                                 <Lock className="h-6 w-6" />
                                             </div>
                                             <div>
-                                                <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight italic">Security Protocol</h3>
+                                                <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight italic">Password</h3>
                                                 <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-1">Manage your login credentials</p>
                                             </div>
                                         </div>
@@ -405,23 +405,23 @@ const ProfilePage = () => {
                                                     <div className="h-14 w-14 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10 shadow-lg relative z-10">
                                                         <Key className="h-7 w-7" />
                                                     </div>
-                                                    <h2 className="text-xl font-bold uppercase tracking-tight italic relative z-10">Password Sync</h2>
+                                                    <h2 className="text-xl font-bold uppercase tracking-tight italic relative z-10">Password</h2>
                                                     <p className="text-[9px] text-white/50 font-bold tracking-widest mt-1 uppercase relative z-10">Update your account key</p>
                                                 </div>
                                                 <div className="p-8 space-y-4">
                                                     <div className="space-y-1.5">
-                                                        <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1 italic">Current Key</Label>
+                                                        <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1 italic">Code</Label>
                                                         <Input type="password" value={passwordData.currentPassword} onChange={e => setPasswordData({ ...passwordData, currentPassword: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 px-4 font-bold" />
                                                     </div>
                                                     <div className="space-y-1.5">
-                                                        <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1 italic">New Key</Label>
+                                                        <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1 italic">New</Label>
                                                         <Input type="password" value={passwordData.newPassword} onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 px-4 font-bold" />
                                                     </div>
                                                     <div className="space-y-1.5">
-                                                        <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1 italic">Confirm Key</Label>
+                                                        <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1 italic">Check</Label>
                                                         <Input type="password" value={passwordData.confirmPassword} onChange={e => setPasswordData({ ...passwordData, confirmPassword: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 px-4 font-bold" />
                                                     </div>
-                                                    <Button onClick={handlePasswordChange} disabled={changingpass} className="w-full bg-black text-white h-12 rounded-xl font-black uppercase tracking-[0.2em] text-[9px] mt-2 shadow-xl active:scale-95">Update Key</Button>
+                                                    <Button onClick={handlePasswordChange} disabled={changingpass} className="w-full bg-black text-white h-12 rounded-xl font-black uppercase tracking-[0.2em] text-[9px] mt-2 shadow-xl active:scale-95">Save</Button>
                                                 </div>
                                             </DialogContent>
                                         </Dialog>
@@ -433,7 +433,7 @@ const ProfilePage = () => {
                                                 <MailCheck className="h-6 w-6" />
                                             </div>
                                             <div>
-                                                <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight italic">Email Vector</h3>
+                                                <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight italic">Email</h3>
                                                 <p className="text-xs font-bold text-gray-400 uppercase tracking-tight mt-1">{user.email}</p>
                                             </div>
                                         </div>
@@ -447,8 +447,8 @@ const ProfilePage = () => {
                                                     <div className="h-14 w-14 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10 shadow-lg relative z-10">
                                                         <Fingerprint className="h-7 w-7" />
                                                     </div>
-                                                    <h2 className="text-xl font-bold uppercase tracking-tight italic relative z-10">Email Update</h2>
-                                                    <p className="text-[9px] text-white/70 font-bold tracking-widest mt-1 uppercase relative z-10">Verify your new node vector</p>
+                                                    <h2 className="text-xl font-bold uppercase tracking-tight italic relative z-10">Email</h2>
+                                                    <p className="text-[9px] text-white/70 font-bold tracking-widest mt-1 uppercase relative z-10">Verify new email</p>
                                                 </div>
                                                 <div className="p-8 space-y-6 text-center font-sans tracking-tight">
                                                     {!showOtpInput ? (
@@ -457,7 +457,7 @@ const ProfilePage = () => {
                                                                 <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest italic block text-left ml-1">New Email Address</Label>
                                                                 <Input value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="EMAIL@NODE.LOCAL" className="h-12 rounded-xl border-gray-100 bg-gray-50 px-4 font-bold uppercase text-center placeholder:text-gray-300" />
                                                             </div>
-                                                            <Button onClick={handleSendOtp} disabled={emailChangeLoading} className="w-full h-12 bg-black text-white rounded-xl font-bold uppercase tracking-[0.1em] text-[9px] shadow-lg active:scale-95">Verify Channel</Button>
+                                                            <Button onClick={handleSendOtp} disabled={emailChangeLoading} className="w-full h-12 bg-black text-white rounded-xl font-bold uppercase tracking-[0.1em] text-[9px] shadow-lg active:scale-95">Send Code</Button>
                                                         </div>
                                                     ) : (
                                                         <div className="space-y-6 animate-in zoom-in-95 duration-300">
@@ -466,8 +466,8 @@ const ProfilePage = () => {
                                                                 <p className="text-xs font-black text-gray-900 uppercase italic underline decoration-emerald-500 decoration-2 underline-offset-4">{newEmail}</p>
                                                             </div>
                                                             <Input value={otp} onChange={e => setOtp(e.target.value)} maxLength={6} className="h-16 text-3xl text-center font-black tracking-[0.4em] rounded-xl bg-gray-50 border-gray-100 transition-all focus:ring-emerald-500" placeholder="000000" />
-                                                            <Button onClick={handleVerifyOtp} disabled={emailChangeLoading} className="w-full h-12 bg-emerald-600 text-white rounded-xl font-bold uppercase tracking-[0.1em] text-[9px] shadow-xl shadow-emerald-500/20 active:scale-95">Complete Sync</Button>
-                                                            <p onClick={() => setShowOtpInput(false)} className="text-[8px] font-bold uppercase tracking-widest text-gray-400 hover:text-black cursor-pointer">Discard Update</p>
+                                                            <Button onClick={handleVerifyOtp} disabled={emailChangeLoading} className="w-full h-12 bg-emerald-600 text-white rounded-xl font-bold uppercase tracking-[0.1em] text-[9px] shadow-xl shadow-emerald-500/20 active:scale-95">Verify Code</Button>
+                                                            <p onClick={() => setShowOtpInput(false)} className="text-[8px] font-bold uppercase tracking-widest text-gray-400 hover:text-black cursor-pointer">Cancel</p>
                                                         </div>
                                                     )}
                                                 </div>
@@ -487,7 +487,7 @@ const ProfilePage = () => {
                                     <div className="flex items-center gap-3">
                                         <div className="h-7 w-1 bg-black rounded-full" />
                                         <h2 className="text-base font-semibold text-gray-900">
-                                            Active Sessions
+                                            Devices
                                         </h2>
                                     </div>
 
@@ -499,7 +499,7 @@ const ProfilePage = () => {
                  hover:text-black hover:bg-gray-50 
                  rounded-lg transition-all"
                                     >
-                                        {terminateAllSessions.isPending ? "Terminating..." : "Terminate All"}
+                                        {terminateAllSessions.isPending ? "Closing..." : "Sign out"}
                                     </Button>
                                 </div>
 

@@ -51,9 +51,9 @@ const UnifiedServicesPage = () => {
     const handleSync = async () => {
         const promise = fetch('/api/automation/sync-logs', { method: 'POST' });
         toast.promise(promise, {
-            loading: 'Recalibrating schedules...',
-            success: 'Schedules synchronized',
-            error: 'Sync failed'
+            loading: 'Syncing...',
+            success: 'Synced',
+            error: 'Failed'
         });
         await promise;
         refetchAll();
@@ -93,8 +93,8 @@ const UnifiedServicesPage = () => {
                         <Activity className="h-6 w-6 text-blue-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
                     </div>
                     <div className="flex flex-col items-center gap-1.5 text-center px-4">
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-900">Synchronizing Hub</p>
-                        <p className="text-[8px] font-bold uppercase tracking-widest text-gray-400 italic">Optimizing Service Vectors</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-900">Loading</p>
+                        <p className="text-[8px] font-bold uppercase tracking-widest text-gray-400 italic">Waiting...</p>
                     </div>
                 </div>
             </div>
@@ -109,11 +109,11 @@ const UnifiedServicesPage = () => {
                     <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
                         <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
                         <div className="flex flex-col min-w-0">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase truncate">Service Hub</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase truncate">Services</h1>
                             <div className="flex items-center gap-1.5 md:gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400">Operations</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400">Status</span>
                                 <div className="h-1 w-1 rounded-full bg-blue-500 shrink-0 hidden sm:block" />
-                                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider text-blue-600 italic truncate hidden xs:block">Algorithm Optimized</span>
+                                <span className="text-[8px] md:text-[10px] font-bold uppercase tracking-wider text-blue-600 italic truncate hidden xs:block">Optimized</span>
                             </div>
                         </div>
                     </div>
@@ -124,7 +124,7 @@ const UnifiedServicesPage = () => {
                             onClick={handleSync}
                         >
                             <RefreshCw className="h-3.5 w-3.5 md:mr-2 text-gray-400" />
-                            <span className="hidden sm:inline">Run Sync</span>
+                            <span className="hidden sm:inline">Sync</span>
                             <span className="sm:hidden">Sync</span>
                         </Button>
                         <Button onClick={refetchAll} variant="outline" size="icon" className="h-8 w-8 md:h-10 md:w-10 rounded-xl border-gray-200 bg-white shrink-0 sm:flex hidden">
@@ -138,9 +138,9 @@ const UnifiedServicesPage = () => {
                 {/* Stats Matrix */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                     {[
-                        { label: 'Active Requests', value: stats.pending, icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50', sub: 'Tasks in queue' },
-                        { label: 'Scheduled Alerts', value: stats.overdue, icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50', sub: 'Calculated suggestions' },
-                        { label: 'Done Today', value: stats.productivity, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', sub: 'Nodes serviced' },
+                        { label: 'Active', value: stats.pending, icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50', sub: 'Tasks in queue' },
+                        { label: 'Suggestions', value: stats.overdue, icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50', sub: 'Calculated suggestions' },
+                        { label: 'Done', value: stats.productivity, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', sub: 'Rooms serviced' },
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-[2rem] p-5 md:p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden flex-1 min-w-0">
                             <div className="absolute top-0 right-0 w-24 h-full bg-gray-50/50 skew-x-12 translate-x-10 group-hover:translate-x-8 transition-transform" />
@@ -164,21 +164,21 @@ const UnifiedServicesPage = () => {
                     <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-4">
                         <TabsList className="bg-white p-1 rounded-xl md:rounded-2xl border border-gray-100 h-11 md:h-14 flex shadow-sm overflow-x-auto scrollbar-hide shrink-0 min-w-0">
                             <TabsTrigger value="operational-tasks" className="flex-1 md:flex-none rounded-lg md:rounded-xl px-4 md:px-8 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.15em] data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all whitespace-nowrap">
-                                Task Queue
+                                Active
                             </TabsTrigger>
                             <TabsTrigger value="due-alerts" className="flex-1 md:flex-none rounded-lg md:rounded-xl px-4 md:px-8 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.15em] data-[state=active]:bg-blue-600 data-[state=active]:text-white relative transition-all whitespace-nowrap">
-                                Due Alerts
+                                Suggestions
                                 {stats.overdue > 0 && <span className="absolute -top-1 -right-0.5 h-3.5 w-3.5 md:h-4 md:w-4 bg-rose-500 rounded-full border-2 border-white animate-pulse" />}
                             </TabsTrigger>
                             <TabsTrigger value="history" className="flex-1 md:flex-none rounded-lg md:rounded-xl px-4 md:px-8 text-[9px] md:text-[11px] font-bold uppercase tracking-[0.15em] data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all whitespace-nowrap">
-                                Log History
+                                History
                             </TabsTrigger>
                         </TabsList>
 
                         <div className="relative w-full lg:w-72 group">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 md:h-4 md:w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
                             <Input
-                                placeholder="IDENTIFY UNIT VECTOR..."
+                                placeholder="SEARCH..."
                                 className="pl-10 md:pl-12 h-11 md:h-14 rounded-xl md:rounded-[1.25rem] border-gray-100 bg-white shadow-sm focus:ring-blue-500 transition-all text-[10px] md:text-[11px] font-black uppercase tracking-widest placeholder:text-gray-300"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -195,7 +195,7 @@ const UnifiedServicesPage = () => {
                                 <div className="col-span-full py-24 bg-white border border-dashed border-gray-200 rounded-[3rem] text-center space-y-4">
                                     <Sparkles className="h-16 w-16 text-gray-100 mx-auto" />
                                     <div>
-                                        <p className="text-lg font-bold text-gray-900 uppercase">Queue Clear</p>
+                                        <p className="text-lg font-bold text-gray-900 uppercase">Clear</p>
                                         <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">No active tasks found</p>
                                     </div>
                                 </div>
@@ -207,11 +207,11 @@ const UnifiedServicesPage = () => {
                         <div className="bg-white border border-gray-100 rounded-[3.5rem] overflow-hidden shadow-sm">
                             <div className="p-10 border-b border-gray-50 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 bg-gray-50/30">
                                 <div className="space-y-1">
-                                    <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Intelligence Suggestions</h3>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Calculated from room lifecycle and service intervals</p>
+                                    <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Suggestions</h3>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Suggestions based on last service time</p>
                                 </div>
                                 <Badge className="bg-blue-600 text-white border-none text-[10px] font-bold px-4 py-1.5 rounded-full shadow-lg shadow-blue-200">
-                                    {stats.overdue} ALERTS DETECTED
+                                    {stats.overdue} MATCHES
                                 </Badge>
                             </div>
                             <div className="grid grid-cols-1 lg:grid-cols-2 divide-x divide-gray-100">
@@ -220,7 +220,7 @@ const UnifiedServicesPage = () => {
                                         <div className="h-10 w-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
                                             <Brush className="h-5 w-5" />
                                         </div>
-                                        <h4 className="text-sm font-bold uppercase tracking-widest text-gray-900">Sanitation Overdue</h4>
+                                        <h4 className="text-sm font-bold uppercase tracking-widest text-gray-900">Cleaning</h4>
                                     </div>
                                     <div className="space-y-4">
                                         {dueServices?.dueCleaning?.map((room) => (
@@ -228,7 +228,7 @@ const UnifiedServicesPage = () => {
                                         ))}
                                         {dueServices?.dueCleaning?.length === 0 && (
                                             <div className="py-8 text-center bg-gray-50/50 rounded-3xl">
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Maintenance Optimal</p>
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">All Clean</p>
                                             </div>
                                         )}
                                     </div>
@@ -238,7 +238,7 @@ const UnifiedServicesPage = () => {
                                         <div className="h-10 w-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
                                             <Shirt className="h-5 w-5" />
                                         </div>
-                                        <h4 className="text-sm font-bold uppercase tracking-widest text-gray-900">Laundry Recommended</h4>
+                                        <h4 className="text-sm font-bold uppercase tracking-widest text-gray-900">Laundry</h4>
                                     </div>
                                     <div className="space-y-4">
                                         {dueServices?.dueLaundry?.map((room) => (
@@ -246,7 +246,7 @@ const UnifiedServicesPage = () => {
                                         ))}
                                         {dueServices?.dueLaundry?.length === 0 && (
                                             <div className="py-8 text-center bg-gray-50/50 rounded-3xl">
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Schedules optimal</p>
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">All Good</p>
                                             </div>
                                         )}
                                     </div>
@@ -260,11 +260,11 @@ const UnifiedServicesPage = () => {
                             <table className="w-full text-left border-collapse">
                                 <thead className="bg-gray-50/50">
                                     <tr>
-                                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Class</th>
-                                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Target</th>
-                                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Timestamp</th>
+                                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Type</th>
+                                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Room</th>
+                                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Date</th>
                                         <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400">Status</th>
-                                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 text-right">Activity</th>
+                                        <th className="px-8 py-5 text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 text-right">Notes</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
@@ -325,7 +325,7 @@ const TaskCard = ({ data, refetch }) => {
             });
             const resData = await response.json();
             if (resData.success) {
-                toast.success('Task updated');
+                toast.success('Updated');
                 refetch();
             } else {
                 toast.error(resData.error || 'Failed');
@@ -400,7 +400,7 @@ const DueItem = ({ room, type, refetch }) => {
             });
             const data = await response.json();
             if (data.success) {
-                toast.success('Service task initiated');
+                toast.success('Started');
                 refetch();
             } else {
                 toast.error(data.error || 'Failed');
@@ -427,7 +427,7 @@ const DueItem = ({ room, type, refetch }) => {
                 className="h-9 px-4 rounded-xl text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-blue-600 hover:bg-blue-50"
                 onClick={handleTrigger}
             >
-                Assign Task <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                Assign <ChevronRight className="h-3.5 w-3.5 ml-1" />
             </Button>
         </div>
     );

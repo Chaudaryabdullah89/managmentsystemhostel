@@ -310,7 +310,7 @@ const SalariesPage = () => {
         <div className="flex h-screen items-center justify-center bg-gray-50">
             <div className="flex flex-col items-center gap-4">
                 <div className="h-10 w-10 border-[3px] border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Payroll...</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading...</p>
             </div>
         </div>
     );
@@ -323,15 +323,15 @@ const SalariesPage = () => {
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1.5 bg-indigo-600 rounded-full" />
                         <div>
-                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Staff Payroll</h1>
-                            <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} distribution records</p>
+                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Salaries</h1>
+                            <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} records</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                             <Input
-                                placeholder="Search namesake or ID..."
+                                placeholder="Search staff..."
                                 className="h-9 pl-9 w-[220px] rounded-xl border-gray-200 bg-gray-50 text-xs font-medium"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -358,10 +358,10 @@ const SalariesPage = () => {
                             <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-xl border-gray-100 p-2">
                                 <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-gray-400 p-3">Payroll Actions</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={handleGeneratePayroll} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
-                                    <Calculator className="h-4 w-4 text-indigo-600" /> Auto Generate
+                                    <Calculator className="h-4 w-4 text-indigo-600" /> Generate Payroll
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setIsAddSalaryDialogOpen(true)} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
-                                    <Plus className="h-4 w-4 text-emerald-600" /> Manual Record
+                                    <Plus className="h-4 w-4 text-emerald-600" /> Add Record
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={handleExportPDF} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer text-rose-600">
@@ -380,10 +380,10 @@ const SalariesPage = () => {
                 {/* Overview Stats - Staff Management Card Style */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: "Gross Payroll", value: `PKR ${(stats.total / 1000).toFixed(1)}k`, icon: Wallet, color: "text-gray-700", bg: "bg-white", iconBg: "bg-gray-100" },
-                        { label: "Paid Volume", value: `PKR ${(stats.paidVolume / 1000).toFixed(1)}k`, icon: CheckCircle2, color: "text-indigo-600", bg: "bg-indigo-50", iconBg: "bg-indigo-100" },
-                        { label: "Appeals Pending", value: stats.appealCount, icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50", iconBg: "bg-amber-100" },
-                        { label: "Active Cycles", value: stats.count, icon: Calendar, color: "text-emerald-600", bg: "bg-emerald-50", iconBg: "bg-emerald-100" },
+                        { label: "Total Payroll", value: `PKR ${(stats.total / 1000).toFixed(1)}k`, icon: Wallet, color: "text-gray-700", bg: "bg-white", iconBg: "bg-gray-100" },
+                        { label: "Paid", value: `PKR ${(stats.paidVolume / 1000).toFixed(1)}k`, icon: CheckCircle2, color: "text-indigo-600", bg: "bg-indigo-50", iconBg: "bg-indigo-100" },
+                        { label: "Appeals", value: stats.appealCount, icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50", iconBg: "bg-amber-100" },
+                        { label: "Total Records", value: stats.count, icon: Calendar, color: "text-emerald-600", bg: "bg-emerald-50", iconBg: "bg-emerald-100" },
                     ].map((stat, i) => (
                         <div key={i} className={`${stat.bg} border border-gray-100 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
                             <div>
@@ -427,21 +427,21 @@ const SalariesPage = () => {
                                 onClick={() => setActiveTab('current')}
                                 className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}
                             >
-                                Active Cycle
+                                Current
                             </Button>
                             <Button
                                 variant="ghost"
                                 onClick={() => setActiveTab('appeals')}
                                 className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'appeals' ? 'bg-rose-600 text-white shadow-lg' : 'text-gray-400 hover:text-rose-600'}`}
                             >
-                                Appeals Desk
+                                Appeals
                             </Button>
                             <Button
                                 variant="ghost"
                                 onClick={() => setActiveTab('history')}
                                 className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}
                             >
-                                History Ledger
+                                History
                             </Button>
                         </div>
                         <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} records shown</p>
@@ -513,7 +513,7 @@ const SalariesPage = () => {
                                             {/* Payout Bar */}
                                             <div className="px-6 pb-4">
                                                 <div className="flex items-center justify-between mb-1.5">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Disbursement Progress</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Pay Progress</span>
                                                     <span className="text-[10px] font-bold text-gray-900 tracking-tight">PKR {(salary.amount || 0).toLocaleString()}</span>
                                                 </div>
                                                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -556,11 +556,11 @@ const SalariesPage = () => {
                                                             <FileText className="h-4 w-4" /> Complete Slip
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleEditOpen(salary)} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
-                                                            <Settings2 className="h-4 w-4" /> Adjust Ledger
+                                                            <Settings2 className="h-4 w-4" /> Edit Salary
                                                         </DropdownMenuItem>
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem onClick={() => { setSelectedSalary(salary); setIsDeleteDialogOpen(true); }} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase text-rose-600 hover:bg-rose-50 cursor-pointer">
-                                                            <Trash2 className="h-4 w-4" /> Evict Record
+                                                            <Trash2 className="h-4 w-4" /> Delete Record
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -589,7 +589,7 @@ const SalariesPage = () => {
                                                         </div>
                                                         <div>
                                                             <h4 className="text-sm font-bold text-gray-900">{salary.StaffProfile?.User?.name}</h4>
-                                                            <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Discrepancy Reported</p>
+                                                            <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Issue Reported</p>
                                                         </div>
                                                     </div>
                                                     <Badge className="bg-rose-600 text-white border-none text-[8px] font-black uppercase px-2.5 py-1">
@@ -656,7 +656,7 @@ const SalariesPage = () => {
                                 <Calculator className="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-sm font-bold uppercase tracking-tight">Adjust Ledger</h2>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Edit Salary</h2>
                                 <p className="text-[10px] text-indigo-100 font-medium">for {selectedSalary?.StaffProfile?.User?.name}</p>
                             </div>
                         </div>
@@ -748,8 +748,8 @@ const SalariesPage = () => {
                                 <Plus className="h-5 w-5 text-white" />
                             </div>
                             <div>
-                                <h2 className="text-sm font-bold uppercase tracking-tight">Manual Ingress</h2>
-                                <p className="text-[10px] text-gray-400 font-medium">Authorize specific staff ledger entry</p>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Add Salary</h2>
+                                <p className="text-[10px] text-gray-400 font-medium">Authorize specific staff salary entry</p>
                             </div>
                         </div>
                     </div>

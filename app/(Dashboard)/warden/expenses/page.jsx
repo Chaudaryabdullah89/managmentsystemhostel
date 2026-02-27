@@ -116,7 +116,7 @@ const ExpensesPage = () => {
                 return;
             }
             if (!user?.id) {
-                toast.error("User identity verification failed");
+                toast.error("Identity check failed");
                 return;
             }
             await createExpense.mutateAsync({
@@ -144,7 +144,7 @@ const ExpensesPage = () => {
     const handleStatusUpdate = async (id, newStatus) => {
         try {
             if (!user) {
-                toast.error("Authorization failed: No user found");
+                toast.error("Auth error");
                 return;
             }
             await updateStatus.mutateAsync({
@@ -210,13 +210,13 @@ const ExpensesPage = () => {
             doc.text("EXPENSE REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Period: ${activeTab === 'current' ? currentMonthLabel : 'All Time'} | Record Count: ${filteredExpenses.length}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+            doc.text(`${activeTab === 'current' ? currentMonthLabel : 'All Time'} | Count: ${filteredExpenses.length}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
 
             doc.setTextColor(80, 80, 80);
             doc.setFontSize(10);
             doc.setFont("helvetica", "bold");
-            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
-            doc.text(`Total Expense: PKR ${stats.totalAmount.toLocaleString()}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+            doc.text(`Generated: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Total: PKR ${stats.totalAmount.toLocaleString()}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
 
             // Draw Line
             doc.setDrawColor(220, 220, 220);
@@ -270,7 +270,7 @@ const ExpensesPage = () => {
                     doc.setFontSize(8);
                     doc.setTextColor(150, 150, 150);
                     doc.text(str, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
-                    doc.text("Official GreenView Expense Tracking", 14, doc.internal.pageSize.height - 10);
+                    doc.text("Expense Log", 14, doc.internal.pageSize.height - 10);
                 }
             });
 
@@ -284,7 +284,7 @@ const ExpensesPage = () => {
         }
     };
 
-    if (expensesLoading || statsLoading) return <Loader label="Loading Expenses" subLabel="Fetching expense records..." icon={Receipt} fullScreen={false} />;
+    if (expensesLoading || statsLoading) return <Loader label="Loading" subLabel="Getting records..." icon={Receipt} fullScreen={false} />;
 
     const stats = statsData?.summary || { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalCount: 0 };
 
@@ -296,9 +296,9 @@ const ExpensesPage = () => {
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="h-8 w-1 bg-indigo-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Expense Records</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Expenses</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Hostel Branch</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Hostel</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
                                 <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Online</span>
                             </div>
@@ -460,7 +460,7 @@ const ExpensesPage = () => {
 
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 flex-[1.5] w-full min-w-0 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l lg:pl-8 border-gray-50">
                                     <div className="flex flex-col">
-                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Timeline</span>
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Date</span>
                                         <div className="flex items-center gap-1.5">
                                             <Calendar className="h-3 w-3 text-blue-400 shrink-0" />
                                             <p className="text-[10px] md:text-xs font-bold text-gray-600 uppercase truncate">{format(new Date(expense.date), 'MMM dd, yyyy')}</p>
@@ -523,7 +523,7 @@ const ExpensesPage = () => {
 
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-8 flex-[1.5] w-full min-w-0 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l lg:pl-8 border-gray-50">
                                     <div className="flex flex-col">
-                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Timeline</span>
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">Date</span>
                                         <div className="flex items-center gap-1.5">
                                             <Calendar className="h-3 w-3 text-blue-400 shrink-0" />
                                             <p className="text-[10px] md:text-xs font-bold text-gray-600 uppercase truncate">{format(new Date(expense.date), 'MMM dd, yyyy')}</p>

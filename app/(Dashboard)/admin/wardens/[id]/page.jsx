@@ -146,7 +146,7 @@ const WardenProfilePage = () => {
                         </Link>
                         <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Warden Profile</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Profile</h1>
                             <div className="flex items-center gap-2">
                                 <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 truncate">{user.name}</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500 hidden sm:block" />
@@ -161,7 +161,7 @@ const WardenProfilePage = () => {
                         <DialogTrigger asChild>
                             <Button className="h-9 px-4 md:px-6 rounded-xl bg-gray-900 hover:bg-gray-800 text-white font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2">
                                 <DollarSign className="h-4 w-4" />
-                                <span>Pay Salary</span>
+                                <span>Pay</span>
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
@@ -170,8 +170,8 @@ const WardenProfilePage = () => {
                                 <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10">
                                     <Wallet className="h-6 w-6" />
                                 </div>
-                                <h2 className="text-xl font-bold uppercase tracking-tight">Release Salary</h2>
-                                <p className="text-[9px] text-gray-400 font-bold tracking-widest mt-1 uppercase">Processing disbursement for {user.name}</p>
+                                <h2 className="text-xl font-bold uppercase tracking-tight">Pay</h2>
+                                <p className="text-[9px] text-gray-400 font-bold tracking-widest mt-1 uppercase">Pay {user.name}</p>
                             </div>
                             <form onSubmit={handlePaySubmit} className="p-8 space-y-5">
                                 <div className="grid grid-cols-2 gap-4">
@@ -230,7 +230,7 @@ const WardenProfilePage = () => {
 
                                 <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Net Disbursement</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total</span>
                                         <span className="text-lg font-black text-gray-900 tracking-tight">PKR {Number(formData.amount || 0).toLocaleString()}</span>
                                     </div>
                                 </div>
@@ -264,7 +264,7 @@ const WardenProfilePage = () => {
                                     disabled={payWarden.isPending}
                                     className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg transition-all"
                                 >
-                                    {payWarden.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm disbursement'}
+                                    {payWarden.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Pay'}
                                 </Button>
                             </form>
                         </DialogContent>
@@ -334,7 +334,7 @@ const WardenProfilePage = () => {
                     <div className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm space-y-5">
                         <div className="flex items-center gap-3 pb-4 border-b border-gray-50">
                             <div className="h-8 w-1 bg-blue-600 rounded-full" />
-                            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900">Personal Info</h3>
+                            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900">Personal</h3>
                         </div>
                         <InfoRow icon={Mail} label="Email Address" value={user.email} />
                         <InfoRow icon={Phone} label="Phone Number" value={user.phone} />
@@ -346,7 +346,7 @@ const WardenProfilePage = () => {
                     <div className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm space-y-5">
                         <div className="flex items-center gap-3 pb-4 border-b border-gray-50">
                             <div className="h-8 w-1 bg-blue-600 rounded-full" />
-                            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900">Location Info</h3>
+                            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900">Address</h3>
                         </div>
                         <InfoRow icon={MapPin} label="Address" value={user.address} />
                         <InfoRow icon={Building2} label="City" value={user.city} />
@@ -360,7 +360,7 @@ const WardenProfilePage = () => {
                     <div className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm space-y-5">
                         <div className="flex items-center gap-3 pb-4 border-b border-gray-50">
                             <div className="h-8 w-1 bg-emerald-600 rounded-full" />
-                            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900">Payroll Stats</h3>
+                            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900">Stats</h3>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-gray-50/50 rounded-2xl p-4 border border-gray-100">
@@ -388,7 +388,7 @@ const WardenProfilePage = () => {
                 <div className="space-y-4">
                     <div className="flex items-center gap-3 px-2">
                         <div className="h-5 w-1 bg-gray-900 rounded-full" />
-                        <h3 className="text-xs md:text-sm font-black uppercase tracking-widest text-gray-900">Salary Disbursement History</h3>
+                        <h3 className="text-xs md:text-sm font-black uppercase tracking-widest text-gray-900">History</h3>
                     </div>
 
                     {paymentsLoading ? (
@@ -408,7 +408,7 @@ const WardenProfilePage = () => {
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <span className="text-[11px] font-black uppercase tracking-widest text-gray-900">{payment.month}</span>
                                                     <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
-                                                        DISBURSED
+                                                        Paid
                                                     </Badge>
                                                 </div>
                                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -436,7 +436,7 @@ const WardenProfilePage = () => {
                                                 <p className="text-[11px] font-bold text-rose-600">PKR {payment.deductions.toLocaleString()}</p>
                                             </div>
                                             <div className="text-right min-w-[120px]">
-                                                <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 block mb-0.5">Net Transferred</span>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 block mb-0.5">Total</span>
                                                 <p className="text-lg font-black text-gray-900 tracking-tight">PKR {payment.amount.toLocaleString()}</p>
                                             </div>
                                         </div>

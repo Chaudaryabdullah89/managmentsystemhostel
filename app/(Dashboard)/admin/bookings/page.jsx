@@ -123,7 +123,7 @@ const GlobalBookingsPage = () => {
         if (selectedIds.size === 0) return;
         const ids = [...selectedIds];
         ids.forEach(id => updateStatus({ id, status: newStatus }));
-        toast.success(`${ids.length} booking(s) updated to ${newStatus.replace('_', ' ')}`);
+        toast.success(`${ids.length} updated`);
         clearSelection();
     };
 
@@ -324,7 +324,7 @@ const GlobalBookingsPage = () => {
         }
     };
 
-    if (isLoading) return <Loader label="Loading Bookings" subLabel="Fetching reservation records..." icon={Calendar} fullScreen={false} />;
+    if (isLoading) return <Loader label="Loading" subLabel="Updates..." icon={Calendar} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
@@ -334,11 +334,11 @@ const GlobalBookingsPage = () => {
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Reservation Ledger</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Bookings</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Total Records</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Total</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Node</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Live</span>
                             </div>
                         </div>
                     </div>
@@ -353,14 +353,14 @@ const GlobalBookingsPage = () => {
                             onClick={() => setIsExportDialogOpen(true)}
                         >
                             <ShieldCheck className="h-3.5 w-3.5 text-indigo-700" />
-                            <span className="hidden xs:inline">Verified PDF</span> <span className="xs:hidden">PDF</span>
+                            <span className="hidden xs:inline">Report</span> <span className="xs:hidden">REPORT</span>
                         </Button>
                         <Button
                             className="h-9 px-4 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center gap-2"
                             onClick={() => router.push('/admin/bookings/create')}
                         >
                             <Plus className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                            <span className="hidden xs:inline">New Booking</span> <span className="xs:hidden">Add</span>
+                            <span className="hidden xs:inline">New</span> <span className="xs:hidden">NEW</span>
                         </Button>
                     </div>
                 </div>
@@ -370,10 +370,10 @@ const GlobalBookingsPage = () => {
                 {/* Statistics Overview */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Reservations', value: bookings.length, icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Active Guests', value: activeBookings, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Pending Node', value: pendingBookings, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Revenue Stream', value: `PKR ${(totalRevenue / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' }
+                        { label: 'Total', value: bookings.length, icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Active', value: activeBookings, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Pending', value: pendingBookings, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Paid', value: `PKR ${(totalRevenue / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
                             <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform shrink-0`}>
@@ -392,14 +392,14 @@ const GlobalBookingsPage = () => {
                     <div className="flex-1 relative w-full group px-2">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
                         <Input
-                            placeholder="Filter by Resident, Room or Branch..."
                             className="w-full h-11 md:h-12 pl-10 bg-transparent border-none shadow-none font-bold text-[11px] md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
+                            placeholder="Search"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         {searchQuery && (
                             <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[8px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase transition-all animate-in fade-in zoom-in duration-300 hidden sm:inline">
-                                {filteredBookings.length} Matches
+                                {filteredBookings.length} Total
                             </span>
                         )}
                     </div>
@@ -409,7 +409,7 @@ const GlobalBookingsPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0">
                                     <Filter className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {statusFilter === 'All' ? 'ANY STATUS' : statusFilter.replace('_', ' ')}
+                                    {statusFilter === 'All' ? 'Status' : statusFilter.replace('_', ' ')}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[180px] rounded-xl border-gray-100 shadow-xl p-1">
@@ -427,11 +427,11 @@ const GlobalBookingsPage = () => {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0">
                                     <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {hostelFilter === 'All' ? 'ALL BRANCHES' : hostelFilter}
+                                    {hostelFilter === 'All' ? 'Hostel' : hostelFilter}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[200px] rounded-xl border-gray-100 shadow-xl p-1">
-                                <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">All Branches</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">Hostel</DropdownMenuItem>
                                 {hostels.map(h => (
                                     <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">
                                         {h.name}
@@ -456,7 +456,7 @@ const GlobalBookingsPage = () => {
                                 onClick={() => handleBulkStatus('CONFIRMED')}
                                 disabled={isUpdating}
                             >
-                                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> Approve All
+                                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> Approve
                             </Button>
                             <Button
                                 size="sm"
@@ -464,7 +464,7 @@ const GlobalBookingsPage = () => {
                                 onClick={() => handleBulkStatus('CANCELLED')}
                                 disabled={isUpdating}
                             >
-                                <XCircle className="h-3.5 w-3.5 mr-1.5" /> Cancel All
+                                <XCircle className="h-3.5 w-3.5 mr-1.5" /> Stop
                             </Button>
                             <Button
                                 size="sm"
@@ -536,7 +536,7 @@ const GlobalBookingsPage = () => {
                                             </div>
                                             <div className="ml-auto md:hidden">
                                                 <Badge variant="outline" className={`${getStatusStyle(booking.status)} px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border shrink-0`}>
-                                                    {booking.status.replace('_', ' ')}
+                                                    {booking.status === 'CHECKED_IN' ? 'ACTIVE' : booking.status === 'CHECKED_OUT' ? 'PAST' : booking.status.replace('_', ' ')}
                                                 </Badge>
                                             </div>
                                         </div>
@@ -545,9 +545,9 @@ const GlobalBookingsPage = () => {
                                         <div className="flex items-center gap-4 md:flex-col md:items-start md:gap-1 w-full md:w-auto justify-between md:justify-start px-2 md:px-0">
                                             <div className="flex items-center gap-2">
                                                 <BedDouble className="h-3.5 w-3.5 text-indigo-500" />
-                                                <span className="text-[11px] font-black text-gray-900 uppercase">UNIT {booking.Room?.roomNumber}</span>
+                                                <span className="text-[11px] font-black text-gray-900 uppercase">ROOM {booking.Room?.roomNumber}</span>
                                             </div>
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{booking.Room?.type} SEATER</span>
+                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{booking.Room?.type} BEDS</span>
                                         </div>
 
                                         {/* Timeline */}
@@ -573,7 +573,7 @@ const GlobalBookingsPage = () => {
                                         {/* Status (Desktop) */}
                                         <div className="hidden md:flex min-w-[120px] justify-center">
                                             <Badge variant="outline" className={`${getStatusStyle(booking.status)} px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm`}>
-                                                {booking.status.replace('_', ' ')}
+                                                {booking.status === 'CHECKED_IN' ? 'ACTIVE' : booking.status === 'CHECKED_OUT' ? 'PAST' : booking.status.replace('_', ' ')}
                                             </Badge>
                                         </div>
                                     </div>
@@ -589,7 +589,7 @@ const GlobalBookingsPage = () => {
                                         <Button
                                             className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn w-full sm:w-auto justify-center"
                                         >
-                                            Open Record
+                                            View
                                             <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
                                         </Button>
                                     </div>
@@ -600,7 +600,7 @@ const GlobalBookingsPage = () => {
                                             <div className="flex items-center gap-3">
                                                 <div className="flex items-center gap-1.5">
                                                     <CreditCard className="h-3 w-3 text-gray-400" />
-                                                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">FISCAL STATUS</span>
+                                                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">PAYMENT</span>
                                                 </div>
                                                 <div className="h-3 w-px bg-gray-200" />
                                                 <div className="flex items-center gap-2">
@@ -626,8 +626,8 @@ const GlobalBookingsPage = () => {
                             <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-6 border border-gray-100">
                                 <Search className="h-8 w-8 text-gray-300" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">No bookings found</h3>
-                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Try changing your search or filters</p>
+                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Empty</h3>
+                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Clear</p>
                             <Button
                                 variant="outline"
                                 className="mt-8 rounded-xl h-10 px-8 font-bold uppercase tracking-widest text-[10px] border-gray-200 hover:bg-black hover:text-white transition-all shadow-sm"
@@ -650,8 +650,8 @@ const GlobalBookingsPage = () => {
                         <div className="mx-auto h-16 w-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20 mb-4 rotate-3">
                             <ShieldCheck className="h-8 w-8 text-white stroke-[1.5]" />
                         </div>
-                        <h2 className="text-xl font-black text-white uppercase tracking-tight relative z-10">Export Verification Data</h2>
-                        <p className="text-indigo-100 text-[11px] font-bold uppercase tracking-widest mt-1 relative z-10">Generate official PDF records</p>
+                        <h2 className="text-xl font-black text-white uppercase tracking-tight relative z-10">Export</h2>
+                        <p className="text-indigo-100 text-[11px] font-bold uppercase tracking-widest mt-1 relative z-10">PDF</p>
                     </div>
 
                     <div className="p-8 space-y-6 bg-white overflow-y-auto max-h-[60vh]">
@@ -663,7 +663,7 @@ const GlobalBookingsPage = () => {
                                     value={exportConfig.hostelId}
                                     onChange={(e) => setExportConfig(prev => ({ ...prev, hostelId: e.target.value }))}
                                 >
-                                    <option value="All">All Entities</option>
+                                    <option value="All">All</option>
                                     {hostels.map(h => (
                                         <option key={h.id} value={h.name}>{h.name}</option>
                                     ))}
@@ -677,7 +677,7 @@ const GlobalBookingsPage = () => {
                                     value={exportConfig.roomId}
                                     onChange={(e) => setExportConfig(prev => ({ ...prev, roomId: e.target.value }))}
                                 >
-                                    <option value="All">All Rooms</option>
+                                    <option value="All">All</option>
                                     {rooms
                                         .filter(r => exportConfig.hostelId === "All" || r.Hostel?.name === exportConfig.hostelId)
                                         .map(r => (
@@ -694,11 +694,11 @@ const GlobalBookingsPage = () => {
                                     value={exportConfig.status}
                                     onChange={(e) => setExportConfig(prev => ({ ...prev, status: e.target.value }))}
                                 >
-                                    <option value="All">All Residents</option>
-                                    <option value="CHECKED_IN">Currently In-House</option>
-                                    <option value="CONFIRMED">Confirmed / Verified</option>
-                                    <option value="PENDING">Pending Approval</option>
-                                    <option value="CHECKED_OUT">Archived / Past</option>
+                                    <option value="All">All</option>
+                                    <option value="CHECKED_IN">Checked In</option>
+                                    <option value="CONFIRMED">Confirmed</option>
+                                    <option value="PENDING">Pending</option>
+                                    <option value="CHECKED_OUT">Checked Out</option>
                                 </select>
                             </div>
 
@@ -736,7 +736,7 @@ const GlobalBookingsPage = () => {
                         <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 flex gap-3">
                             <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
                             <p className="text-[10px] text-amber-700 font-medium leading-relaxed italic">
-                                Unified Data Export: This configuration allows full override. You can generate reports for specific date ranges and branches regardless of your current dashboard view.
+                                Select filters.
                             </p>
                         </div>
                     </div>
@@ -758,12 +758,12 @@ const GlobalBookingsPage = () => {
                             {isExporting ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Processing PDF...
+                                    Updates...
                                 </>
                             ) : (
                                 <>
                                     <FileText className="h-4 w-4" />
-                                    Generate Output
+                                    Export
                                 </>
                             )}
                         </Button>
