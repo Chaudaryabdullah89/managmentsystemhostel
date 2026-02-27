@@ -4,7 +4,7 @@ import HostelServices from "../../../../lib/services/hostelservices/hostelservic
 const hostelServices = new HostelServices()
 
 export async function GET(request) {
-    const auth = await checkRole(['ADMIN', 'SUPER_ADMIN']);
+    const auth = await checkRole(['ADMIN', 'SUPER_ADMIN', 'WARDEN']);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
     const { searchParams } = new URL(request.url)

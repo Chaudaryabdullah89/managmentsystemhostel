@@ -207,7 +207,7 @@ const EditHostelForm = () => {
                             <CardHeader className="px-8 pt-8 pb-4 flex flex-row items-center justify-between border-b border-gray-50/50">
                                 <CardTitle className="text-[11px] font-black flex items-center gap-2 uppercase tracking-[0.15em] text-gray-400">
                                     <Building2 className="h-4 w-4 text-blue-500" />
-                                    Property Core Identity
+                                    Property  Identity
                                 </CardTitle>
                                 <Badge variant="outline" className={`${status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-gray-100 text-gray-500 border-gray-200'} text-[9px] font-black px-2 py-0.5 rounded-md`}>
                                     {status?.toUpperCase() || 'UNIT_STANDBY'}
@@ -217,7 +217,7 @@ const EditHostelForm = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-2.5">
                                         <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center gap-2">
-                                            Registry Name
+                                            Hostel Name
                                             <span className="text-red-500">*</span>
                                         </Label>
                                         <Input
@@ -298,7 +298,7 @@ const EditHostelForm = () => {
                                         </div>
                                     </div>
                                     <div className="space-y-2.5">
-                                        <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Operation Status</Label>
+                                        <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Hostel Status</Label>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="outline" className="w-full h-12 justify-between rounded-xl border-gray-100 bg-white font-bold text-gray-900 hover:bg-gray-50">
@@ -329,7 +329,7 @@ const EditHostelForm = () => {
                             </CardHeader>
                             <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-2.5">
-                                    <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Contact Prime</Label>
+                                    <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Contact Number </Label>
                                     <div className="relative">
                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300">
                                             <ShieldCheck className="h-4 w-4" />
@@ -343,7 +343,7 @@ const EditHostelForm = () => {
                                     </div>
                                 </div>
                                 <div className="space-y-2.5">
-                                    <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Network Email</Label>
+                                    <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest"> Email</Label>
                                     <Input
                                         value={email}
                                         type="email"
@@ -403,7 +403,7 @@ const EditHostelForm = () => {
                             </CardHeader>
                             <div className="p-8 space-y-6">
                                 <div className="space-y-2 flex flex-col">
-                                    <Label className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">Standard Lease (p/mo)</Label>
+                                    <Label className="text-[9px] font-black text-gray-400 uppercase tracking-widest text-center">Price Per Month  (p/mo)</Label>
                                     <div className="relative">
                                         <Badge className="absolute left-4 top-1/2 -translate-y-1/2 bg-emerald-50 text-emerald-600 border-emerald-100 text-[9px] font-black p-1">PKR</Badge>
                                         <Input type="number" className="pl-16 h-14 bg-gray-50 border-transparent rounded-2xl font-black text-xl text-center focus:bg-white focus:border-gray-100 transition-all" value={montlypayment} onChange={(e) => setMontlypayment(e.target.value)} />

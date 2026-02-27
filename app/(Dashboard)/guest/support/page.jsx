@@ -93,7 +93,7 @@ const ServiceCard = ({ icon: Icon, title, status, date, notes, color }) => (
             <p className="text-[10px] text-gray-500 font-medium">{notes || 'Standard service cycle performed.'}</p>
             <div className="flex items-center gap-2 pt-1">
                 <Clock className="h-3 w-3 text-gray-300" />
-                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{format(new Date(date), 'MMM dd, yyyy • hh:mm a')}</span>
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{date ? format(new Date(date), 'MMM dd, yyyy • hh:mm a') : 'N/A'}</span>
             </div>
         </div>
     </div>
@@ -328,7 +328,7 @@ const GuestSupportPage = () => {
                                             <div className="flex items-center gap-3">
                                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">#{issue.id.slice(-6).toUpperCase()}</span>
                                                 <span className="h-4 w-px bg-slate-100" />
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{issue.category.replace('_', ' ')}</span>
+                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{issue.category?.replace('_', ' ') || 'GENERAL'}</span>
                                             </div>
                                             <h3 className="text-xl font-bold text-slate-900 tracking-tight group-hover:text-indigo-600 transition-colors uppercase">{issue.title}</h3>
                                             <p className="text-sm text-slate-500 font-medium line-clamp-1 max-w-xl">{issue.description}</p>
@@ -343,7 +343,7 @@ const GuestSupportPage = () => {
                                         <div className="flex items-center gap-4">
                                             <div className="text-right">
                                                 <span className="block text-[8px] font-bold text-slate-300 uppercase tracking-[0.2em] mb-0.5">Updated At</span>
-                                                <span className="block text-[10px] font-bold text-slate-500 uppercase">{format(new Date(issue.updatedAt || issue.createdAt), 'MMM dd, yyyy')}</span>
+                                                <span className="block text-[10px] font-bold text-slate-500 uppercase">{issue.updatedAt || issue.createdAt ? format(new Date(issue.updatedAt || issue.createdAt), 'MMM dd, yyyy') : 'N/A'}</span>
                                             </div>
                                             <ChevronRight className="h-6 w-6 text-slate-200 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
                                         </div>
@@ -382,7 +382,7 @@ const GuestSupportPage = () => {
                                     </div>
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-1">Last Cleaning</p>
                                     <h3 className="text-3xl font-extrabold text-slate-900 tracking-tighter uppercase mb-6">
-                                        {room?.CleaningLog?.[0] ? format(new Date(room.CleaningLog[0].createdAt), 'MMM dd') : 'N/A'}
+                                        {room?.CleaningLog?.[0]?.createdAt ? format(new Date(room.CleaningLog[0].createdAt), 'MMM dd') : 'N/A'}
                                     </h3>
                                     <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest">Confirmed Done</span>
                                 </div>
@@ -460,7 +460,7 @@ const GuestSupportPage = () => {
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Issue #{selectedIssue.id.slice(-6).toUpperCase()}</h3>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">{selectedIssue.category.replace('_', ' ')} • {selectedIssue.status}</p>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">{selectedIssue.category?.replace('_', ' ') || 'GENERAL'} • {selectedIssue.status}</p>
                                     </div>
                                 </div>
                             </div>
@@ -483,7 +483,7 @@ const GuestSupportPage = () => {
                                                 <div className={`p-4 rounded-[1.5rem] max-w-[85%] ${comment.User.id === user?.id ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-slate-50 border border-slate-100 rounded-tl-none'}`}>
                                                     <div className="flex items-center gap-3 mb-1 justify-between">
                                                         <span className={`text-[8px] font-bold uppercase tracking-widest ${comment.User.id === user?.id ? 'text-indigo-100' : 'text-slate-400'}`}>{comment.User.name}</span>
-                                                        <span className={`text-[8px] uppercase tracking-widest opacity-50 font-bold`}>{new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                        <span className={`text-[8px] uppercase tracking-widest opacity-50 font-bold`}>{comment.createdAt ? new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}</span>
                                                     </div>
                                                     <p className="text-xs font-medium leading-relaxed">{comment.message}</p>
                                                 </div>

@@ -16,6 +16,7 @@ import {
     Users,
     Bed,
     AlertTriangle,
+    CheckCircle2,
     MessageSquare,
     ClipboardList,
     Activity,

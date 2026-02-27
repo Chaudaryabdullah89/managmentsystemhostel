@@ -250,7 +250,7 @@ const HostelOverviewPage = () => {
                                                             <BedDouble className="h-5 w-5 text-indigo-600 group-hover:text-white transition-colors" />
                                                         </div>
                                                         <div className="flex flex-col">
-                                                            <span className="text-xs font-black text-gray-900 uppercase">UNIT {room.roomNumber}</span>
+                                                            <span className="text-xs font-black text-gray-900 uppercase">Room {room.roomNumber}</span>
                                                             <span className="text-[9px] font-black text-gray-400 uppercase">SYS_REF: {room.roomNumber}</span>
                                                         </div>
                                                     </div>

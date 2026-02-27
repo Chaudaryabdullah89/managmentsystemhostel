@@ -12,8 +12,8 @@ import {
     CheckCircle2,
     XCircle,
     AlertCircle,
-    Search,
     History,
+    Search,
     Filter,
     Eye,
     Download,
@@ -31,6 +31,7 @@ import {
     ArrowUpRight,
     UserCheck,
     Printer,
+    Loader2,
     Hash,
     Building,
     User as UserIcon,
@@ -47,14 +48,26 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
-import { useBookings } from "@/hooks/useBooking";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { useBookings, useUpdateBookingStatus } from "@/hooks/useBooking";
 import { useHostel } from "@/hooks/usehostel";
+import { useRoom } from "@/hooks/useRoom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { QueryKeys } from '@/lib/queryclient';
 import { format } from "date-fns";
-import useAuthStore from "@/hooks/Authstate";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import Loader from "../../../../components/ui/Loader";
 
 const useSyncAutomation = () => {
     const queryClient = useQueryClient();
@@ -72,11 +85,11 @@ const useSyncAutomation = () => {
 };
 
 const GlobalBookingsPage = () => {
-    const { user } = useAuthStore();
     const router = useRouter();
     const queryClient = useQueryClient();
-    const { data: bookingsResponse, isLoading, isFetching } = useBookings({ hostelId: user?.hostelId });
+    const { data: bookingsResponse, isLoading, isFetching } = useBookings();
     const { data: hostelsResponse } = useHostel();
+    const { mutate: updateStatus, isPending: isUpdating } = useUpdateBookingStatus();
     const syncAutomation = useSyncAutomation();
 
     useEffect(() => {
@@ -86,13 +99,42 @@ const GlobalBookingsPage = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
     const [hostelFilter, setHostelFilter] = useState("All");
+    const [selectedIds, setSelectedIds] = useState(new Set());
+
+    const toggleSelect = (id) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.size === filteredBookings.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(filteredBookings.map(b => b.id)));
+        }
+    };
+
+    const clearSelection = () => setSelectedIds(new Set());
+
+    const handleBulkStatus = (newStatus) => {
+        if (selectedIds.size === 0) return;
+        const ids = [...selectedIds];
+        ids.forEach(id => updateStatus({ id, status: newStatus }));
+        toast.success(`${ids.length} booking(s) updated to ${newStatus.replace('_', ' ')}`);
+        clearSelection();
+    };
 
     const bookings = bookingsResponse || [];
-    const hostels = hostelsResponse?.hostels || [];
+    const hostels = hostelsResponse?.data || [];
+    const { data: roomsResponse } = useRoom();
+    const rooms = roomsResponse?.data || [];
 
     const getStatusStyle = (status) => {
         switch (status) {
-            case "CONFIRMED": return "bg-indigo-50 text-indigo-700 border-indigo-100";
+            case "CONFIRMED": return "bg-blue-50 text-blue-700 border-blue-100";
             case "PENDING": return "bg-amber-50 text-amber-700 border-amber-100";
             case "CHECKED_IN": return "bg-emerald-50 text-emerald-700 border-emerald-100";
             case "CHECKED_OUT": return "bg-gray-100 text-gray-700 border-gray-200";
@@ -103,7 +145,7 @@ const GlobalBookingsPage = () => {
 
     const getRibbonColor = (status) => {
         switch (status) {
-            case "CONFIRMED": return "bg-indigo-600";
+            case "CONFIRMED": return "bg-blue-600";
             case "PENDING": return "bg-amber-500";
             case "CHECKED_IN": return "bg-emerald-500";
             case "CHECKED_OUT": return "bg-gray-900";
@@ -121,261 +163,474 @@ const GlobalBookingsPage = () => {
 
         const matchesStatus = statusFilter === "All" || booking.status === statusFilter;
         const matchesHostel = hostelFilter === "All" || (booking.Room?.Hostel?.name === hostelFilter);
-        const matchesWardenHostel = user?.hostelId ? booking.Room?.Hostel?.id === user.hostelId : true;
 
-        return matchesSearch && matchesStatus && matchesHostel && matchesWardenHostel;
+        return matchesSearch && matchesStatus && matchesHostel;
     });
 
     const activeBookings = bookings.filter(b => b.status === "CHECKED_IN").length;
     const pendingBookings = bookings.filter(b => b.status === "PENDING").length;
     const totalRevenue = bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0);
 
-    if (isLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
-                    <Calendar className="h-8 w-8 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 tracking-tight">Loading Bookings...</p>
-                    <p className="text-xs text-gray-500 font-medium mt-1 uppercase tracking-widest">Retrieving Booking Records</p>
-                </div>
-            </div>
-        </div>
-    );
+    // Export Data Configuration
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
+    const [exportConfig, setExportConfig] = useState({
+        hostelId: "All",
+        status: "All",
+        roomId: "All",
+        dateFrom: "",
+        dateTo: "",
+        searchQuery: ""
+    });
+
+    const handleExportPoliceVerification = async () => {
+        setIsExporting(true);
+
+        // Filter the raw bookings based on the EXPORT config
+        const customExportList = bookings.filter(b => {
+            const passStatus = exportConfig.status === "All" || b.status === exportConfig.status;
+            const passHostel = exportConfig.hostelId === "All" || b.Room?.Hostel?.name === exportConfig.hostelId;
+            const passRoom = exportConfig.roomId === "All" || b.roomId === exportConfig.roomId;
+
+            // Date Range Logic
+            let passDate = true;
+            if (exportConfig.dateFrom) {
+                passDate = passDate && new Date(b.checkIn) >= new Date(exportConfig.dateFrom);
+            }
+            if (exportConfig.dateTo) {
+                const toDate = new Date(exportConfig.dateTo);
+                toDate.setHours(23, 59, 59, 999);
+                passDate = passDate && new Date(b.checkIn) <= toDate;
+            }
+
+            // Search Logic
+            let passSearch = true;
+            if (exportConfig.searchQuery) {
+                const q = exportConfig.searchQuery.toLowerCase();
+                // Safely check fields accounting for null or undefined strings
+                passSearch =
+                    (b.User?.name?.toLowerCase()?.includes(q)) ||
+                    (b.User?.cnic?.toLowerCase()?.includes(q)) ||
+                    (b.Room?.roomNumber?.toLowerCase()?.includes(q));
+            }
+
+            return passStatus && passHostel && passRoom && passDate && passSearch;
+        });
+
+        // Setup mock delay for animation
+        await new Promise(resolve => setTimeout(resolve, 2500));
+
+        try {
+            const doc = new jsPDF('landscape');
+
+            // PDF Styling and Typography
+            doc.setFont("helvetica", "bold");
+
+            // Header Section
+            // Dark blue background rect for header
+            doc.setFillColor(30, 58, 138);
+            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+
+            // Header Text
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text("TENANT / RESIDENT VERIFICATION REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            // doc.text("()", doc.internal.pageSize.width / 2, 26, { align: "center" });
+
+            // Metadata Section Below Header
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Total Records: ${customExportList.length}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+
+            // Draw Line
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.5);
+            doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
+
+            const headers = [
+                ["S.No", "Resident Name", "Father/Guardian", "CNIC", "Phone", "Address", "City", "Hostel", "Room", "Check-In", "Emg Contact", "Emg Phone", "Status"]
+            ];
+
+            const rows = customExportList.map((b, index) => {
+                const profile = b.User?.ResidentProfile || {};
+                return [
+                    index + 1,
+                    b.User?.name || 'N/A',
+                    profile.guardianName || 'N/A',
+                    b.User?.cnic || 'N/A',
+                    b.User?.phone || 'N/A',
+                    profile.address || b.User?.address || 'N/A',
+                    profile.city || b.User?.city || 'N/A',
+                    b.Room?.Hostel?.name || 'N/A',
+                    b.Room?.roomNumber || 'N/A',
+                    b.checkIn ? format(new Date(b.checkIn), 'dd/MM/yyyy') : 'N/A',
+                    profile.emergencyContact || 'N/A',
+                    profile.guardianPhone || 'N/A',
+                    b.status
+                ];
+            });
+
+            autoTable(doc, {
+                startY: 55,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [59, 130, 246], // Blue-500
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold',
+                    fontSize: 8,
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fontSize: 8,
+                    textColor: [50, 50, 50]
+                },
+                alternateRowStyles: {
+                    fillColor: [248, 250, 252] // Slate-50
+                },
+                columnStyles: {
+                    0: { cellWidth: 10, halign: 'center' }, // S.No
+                    5: { cellWidth: 30 }, // Address
+                },
+                styles: {
+                    overflow: 'linebreak',
+                    cellPadding: 3,
+                    valign: 'middle'
+                },
+                didDrawPage: function (data) {
+                    // Footer
+                    let str = "Page " + doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(str, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
+                    doc.text("Official GreenView Hostels Records", 14, doc.internal.pageSize.height - 10);
+                }
+            });
+
+            doc.save(`Records_Report_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+            toast.success("PDF Verification Report Exported ✨");
+        } catch (error) {
+            toast.error("Failed to export PDF");
+            console.error(error);
+        } finally {
+            setIsExporting(false);
+            setIsExportDialogOpen(false); // Close Modal on done
+        }
+    };
+
+    if (isLoading) return <Loader label="Loading Bookings" subLabel="Fetching reservation records..." icon={Calendar} fullScreen={false} />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
             {/* Minimal Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-2 md:gap-4">
-                        <div className="h-8 w-1 bg-indigo-600 rounded-full hidden md:block" />
+            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+                    <div className="flex items-center gap-3 md:gap-4">
+                        <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-base font-bold text-gray-900 tracking-tight uppercase">Booking Management</h1>
-                            <div className="flex items-center gap-1.5 md:gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400">Hostel Dashboard</span>
-                                <div className="h-1 w-1 rounded-full bg-indigo-500 animate-pulse hidden sm:block" />
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Reservation Ledger</h1>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Total Records</span>
+                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Node</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 md:gap-3">
-                        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9 shrink-0" onClick={() => syncAutomation.mutate()}>
+                        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9" onClick={() => syncAutomation.mutate()}>
                             <RefreshCw className={`h-4 w-4 text-gray-500 ${syncAutomation.isPending ? 'animate-spin' : ''}`} />
                         </Button>
-                        <Button variant="outline" className="hidden sm:flex h-8 md:h-9 px-3 md:px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all shrink-0">
-                            <Download className="h-3.5 w-3.5 mr-1 md:mr-2 text-gray-400" />
-                            <span>Export</span>
+                        <Button
+                            variant="outline"
+                            className="h-9 px-3 md:px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2"
+                            onClick={() => setIsExportDialogOpen(true)}
+                        >
+                            <ShieldCheck className="h-3.5 w-3.5 text-indigo-700" />
+                            <span className="hidden xs:inline">Verified PDF</span> <span className="xs:hidden">PDF</span>
                         </Button>
                         <Button
-                            className="h-8 md:h-9 px-3 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 shrink-0 flex whitespace-nowrap"
+                            className="h-9 px-4 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center gap-2"
                             onClick={() => router.push('/warden/bookings/create')}
                         >
-                            <Plus className="h-3.5 w-3.5 md:mr-2" />
-                            <span className="hidden sm:inline">Add Booking</span>
-                            <span className="sm:hidden ml-1">Add</span>
+                            <Plus className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                            <span className="hidden xs:inline">New Booking</span> <span className="xs:hidden">Add</span>
                         </Button>
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8 min-w-0 overflow-hidden">
-                {/* Summary Metrics */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 w-full">
+            <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8 min-w-0">
+                {/* Statistics Overview */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Total Logs', value: bookings.length, icon: Calendar, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                        { label: 'Residents', value: activeBookings, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Queue', value: pendingBookings, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Revenue', value: `${(totalRevenue / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-indigo-600', bg: 'bg-indigo-50' }
+                        { label: 'Reservations', value: bookings.length, icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Active Guests', value: activeBookings, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Pending Node', value: pendingBookings, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Revenue Stream', value: `PKR ${(totalRevenue / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-3 md:p-5 flex items-start md:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default flex-col md:flex-row min-w-0">
-                            <div className={`h-8 w-8 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
-                                <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
+                            <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform shrink-0`}>
+                                <stat.icon className="h-5 w-5" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
-                                <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight">{stat.value}</span>
+                                <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
+                                <span className="text-sm md:text-xl font-black text-gray-900 tracking-tight">{stat.value}</span>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* Search & Filter */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col lg:flex-row items-center gap-2 md:gap-4 shadow-sm w-full min-w-0">
-                    <div className="flex-1 relative w-full group px-2 min-w-0">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                {/* Search and Filters */}
+                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm">
+                    <div className="flex-1 relative w-full group px-2">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
                         <Input
-                            placeholder="Guest, Room or Hostel..."
-                            className="w-full h-11 md:h-12 pl-10 pr-20 bg-transparent border-none shadow-none font-bold text-xs md:text-sm focus-visible:ring-0 placeholder:text-gray-300 min-w-0"
+                            placeholder="Filter by Resident, Room or Branch..."
+                            className="w-full h-11 md:h-12 pl-10 bg-transparent border-none shadow-none font-bold text-[11px] md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                         {searchQuery && (
-                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[8px] md:text-[9px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full uppercase hidden sm:block">
-                                {filteredBookings.length} Hits
+                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[8px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase transition-all animate-in fade-in zoom-in duration-300 hidden sm:inline">
+                                {filteredBookings.length} Matches
                             </span>
                         )}
                     </div>
 
-                    <div className="h-8 w-px bg-gray-100 mx-2 hidden lg:block" />
-
-                    <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-xl w-full lg:w-auto overflow-x-auto min-w-0 scrollbar-hide">
+                    <div className="flex items-center gap-1.5 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0 whitespace-nowrap">
+                                <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0">
                                     <Filter className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {statusFilter === 'All' ? 'Status' : statusFilter.split('_')[0]}
+                                    {statusFilter === 'All' ? 'ANY STATUS' : statusFilter.replace('_', ' ')}
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[200px] rounded-xl border-gray-100 shadow-xl p-2">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Status Code</DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-gray-50 mb-1" />
+                            <DropdownMenuContent align="end" className="w-[180px] rounded-xl border-gray-100 shadow-xl p-1">
                                 {["All", "CONFIRMED", "PENDING", "CHECKED_IN", "CHECKED_OUT", "CANCELLED"].map(status => (
-                                    <DropdownMenuItem key={status} onClick={() => setStatusFilter(status)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer">
+                                    <DropdownMenuItem key={status} onClick={() => setStatusFilter(status)} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg cursor-pointer">
                                         {status.replace('_', ' ')}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        {user?.role === 'ADMIN' && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0 whitespace-nowrap">
-                                        <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                        {hostelFilter === 'All' ? 'Hostel' : hostelFilter.slice(0, 10)}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-[240px] rounded-xl border-gray-100 shadow-xl p-2">
-                                    <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Location Node</DropdownMenuLabel>
-                                    <DropdownMenuSeparator className="bg-gray-50 mb-1" />
-                                    <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">Global</DropdownMenuItem>
-                                    {hostels.map(h => (
-                                        <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">
-                                            {h.name}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                        <div className="h-4 w-px bg-gray-200 shrink-0" />
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0">
+                                    <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                    {hostelFilter === 'All' ? 'ALL BRANCHES' : hostelFilter}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-[200px] rounded-xl border-gray-100 shadow-xl p-1">
+                                <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">All Branches</DropdownMenuItem>
+                                {hostels.map(h => (
+                                    <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">
+                                        {h.name}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
 
+                {/* Floating Bulk Action Bar */}
+                {selectedIds.size > 0 && (
+                    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-300">
+                        <div className="bg-gray-950 text-white rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-4 border border-white/10">
+                            <span className="text-[11px] font-black uppercase tracking-widest text-gray-300">
+                                {selectedIds.size} Selected
+                            </span>
+                            <div className="h-4 w-px bg-white/20" />
+                            <Button
+                                size="sm"
+                                className="h-8 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-4"
+                                onClick={() => handleBulkStatus('CONFIRMED')}
+                                disabled={isUpdating}
+                            >
+                                <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" /> Approve All
+                            </Button>
+                            <Button
+                                size="sm"
+                                className="h-8 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest px-4"
+                                onClick={() => handleBulkStatus('CANCELLED')}
+                                disabled={isUpdating}
+                            >
+                                <XCircle className="h-3.5 w-3.5 mr-1.5" /> Cancel All
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 rounded-xl text-gray-400 hover:text-white text-[9px] font-black uppercase tracking-widest"
+                                onClick={clearSelection}
+                            >
+                                Clear
+                            </Button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Bookings List */}
                 <div className="space-y-4">
+                    {/* Select-all row */}
+                    {filteredBookings.length > 0 && (
+                        <div className="flex items-center gap-3 px-1">
+                            <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded accent-indigo-600 cursor-pointer"
+                                checked={selectedIds.size === filteredBookings.length && filteredBookings.length > 0}
+                                onChange={toggleSelectAll}
+                            />
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                {selectedIds.size > 0 ? `${selectedIds.size} of ${filteredBookings.length} selected` : `Select all ${filteredBookings.length} bookings`}
+                            </span>
+                        </div>
+                    )}
                     {filteredBookings.length > 0 ? (
-                        filteredBookings.map((booking) => (
-                            <Link
-                                href={`/warden/bookings/${booking.id}`}
+                        filteredBookings.map((booking, index) => (
+                            <div
                                 key={booking.id}
-                                className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 relative flex flex-col gap-4 lg:gap-6 hover:shadow-md transition-all group overflow-hidden min-w-0"
+                                className="relative"
                             >
-                                <div className={`absolute top-0 left-0 w-1.5 h-full ${getRibbonColor(booking.status)} opacity-80`} />
+                                {/* Checkbox */}
+                                <div
+                                    className="absolute top-4 left-4 z-10"
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleSelect(booking.id); }}
+                                >
+                                    <input
+                                        type="checkbox"
+                                        className="h-4 w-4 rounded accent-indigo-600 cursor-pointer"
+                                        checked={selectedIds.has(booking.id)}
+                                        onChange={() => toggleSelect(booking.id)}
+                                    />
+                                </div>
+                                <Link
+                                    href={`/warden/bookings/${booking.id}`}
+                                    className={`bg-white border rounded-2xl p-4 md:p-5 pb-14 md:pb-14 pl-10 flex flex-col xl:flex-row items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-shadow group relative overflow-hidden ${selectedIds.has(booking.id) ? 'border-indigo-300 bg-indigo-50/30' : 'border-gray-100'
+                                        }`}
+                                >
+                                    <div className={`absolute top-0 left-0 w-1 md:w-1.5 h-full ${getRibbonColor(booking.status)} opacity-70`} />
 
-                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-6 flex-1 min-w-0">
-                                    {/* Guest Identity */}
-                                    <div className="flex items-center gap-3 md:gap-5 min-w-0 lg:min-w-[280px]">
-                                        <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm shrink-0 group-hover:bg-indigo-600 transition-colors">
-                                            <UserIcon className="h-5 w-5 md:h-6 md:w-6 text-gray-400 group-hover:text-white transition-colors" />
-                                        </div>
-                                        <div className="flex flex-col min-w-0">
-                                            <h4 className="text-[13px] md:text-base font-black text-gray-900 uppercase tracking-tight truncate">{booking.User.name}</h4>
-                                            <div className="flex items-center gap-1.5 mt-0.5 min-w-0 overflow-hidden">
-                                                <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{booking.Room?.Hostel?.name}</span>
-                                                {booking.uid && (
-                                                    <>
-                                                        <span className="h-1 w-1 rounded-full bg-gray-200 shrink-0" />
-                                                        <span className="text-[9px] md:text-[10px] font-mono font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded truncate">{booking.uid}</span>
-                                                    </>
-                                                )}
+                                    <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 flex-1 min-w-0 w-full xl:w-auto text-center md:text-left">
+                                        {/* Resident Info */}
+                                        <div className="flex items-center gap-3 md:gap-5 min-w-0 md:min-w-[280px] w-full md:w-auto">
+                                            <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm shrink-0 group-hover:bg-indigo-600 transition-colors">
+                                                <UserIcon className="h-4 w-4 md:h-5 md:w-5 text-gray-400 group-hover:text-white transition-colors" />
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <h4 className="text-[13px] md:text-sm font-black text-gray-900 uppercase tracking-tight truncate">{booking.User.name}</h4>
+                                                <div className="flex items-center justify-center md:justify-start gap-2 mt-0.5">
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest truncate">{booking.Room?.Hostel?.name}</span>
+                                                    {booking.uid && (
+                                                        <span className="text-[8px] font-black text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded uppercase">{booking.uid}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="ml-auto md:hidden">
+                                                <Badge variant="outline" className={`${getStatusStyle(booking.status)} px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border shrink-0`}>
+                                                    {booking.status.replace('_', ' ')}
+                                                </Badge>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Asset Allocation */}
-                                    <div className="flex items-center justify-between lg:justify-start gap-4 lg:gap-8 bg-gray-50/50 p-3 md:p-4 rounded-xl border border-gray-100/80">
-                                        <div className="flex flex-col gap-1 min-w-[100px]">
+                                        {/* Room Details */}
+                                        <div className="flex items-center gap-4 md:flex-col md:items-start md:gap-1 w-full md:w-auto justify-between md:justify-start px-2 md:px-0">
                                             <div className="flex items-center gap-2">
-                                                <BedDouble className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-                                                <span className="text-xs font-black text-gray-900 uppercase">Room {booking.Room?.roomNumber}</span>
+                                                <BedDouble className="h-3.5 w-3.5 text-indigo-500" />
+                                                <span className="text-[11px] font-black text-gray-900 uppercase">UNIT {booking.Room?.roomNumber}</span>
                                             </div>
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest px-0.5">{booking.Room?.type} Node</span>
+                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{booking.Room?.type} SEATER</span>
                                         </div>
 
-                                        <div className="hidden sm:flex flex-col gap-1.5 min-w-[140px]">
-                                            <div className="flex items-center gap-2">
-                                                <Calendar className="h-3 w-3 text-gray-400" />
-                                                <span className="text-[10px] font-bold text-gray-700 uppercase tracking-tight">
-                                                    {format(new Date(booking.checkIn), 'MMM dd')} - {booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd') : 'LIVE'}
+                                        {/* Timeline */}
+                                        <div className="hidden xl:flex items-center gap-4 min-w-[300px] bg-indigo-50/30 p-2.5 rounded-xl border border-indigo-100/50">
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                                                    <Calendar className="h-2.5 w-2.5" /> IN
                                                 </span>
+                                                <span className="text-[10px] font-black text-gray-900 uppercase">{booking.checkIn ? format(new Date(booking.checkIn), 'MMM dd, yy') : '—'}</span>
                                             </div>
-                                            <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden">
-                                                <div className="h-full bg-indigo-500/40 w-2/3 rounded-full" />
+                                            <div className="flex-1 h-[1px] bg-indigo-100 relative mx-2">
+                                                <div className="absolute -top-1 left-0 h-2 w-2 rounded-full bg-indigo-200" />
+                                                <div className="absolute -top-1 right-0 h-2 w-2 rounded-full bg-indigo-200" />
+                                            </div>
+                                            <div className="flex flex-col gap-0.5 text-right">
+                                                <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest flex items-center justify-end gap-1.5">
+                                                    OUT <History className="h-2.5 w-2.5" />
+                                                </span>
+                                                <span className="text-[10px] font-black text-gray-900 uppercase">{booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yy') : 'ACTIVE'}</span>
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-col items-end lg:min-w-[100px]">
-                                            <Badge variant="outline" className={`${getStatusStyle(booking.status)} px-3 py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest border-none shadow-sm`}>
-                                                {booking.status.split('_')[0]}
+                                        {/* Status (Desktop) */}
+                                        <div className="hidden md:flex min-w-[120px] justify-center">
+                                            <Badge variant="outline" className={`${getStatusStyle(booking.status)} px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm`}>
+                                                {booking.status.replace('_', ' ')}
                                             </Badge>
                                         </div>
                                     </div>
 
-                                    {/* Quick Actions */}
-                                    <div className="flex items-center justify-end gap-2 lg:min-w-[160px]">
+                                    <div className="flex items-center gap-2 w-full xl:w-auto justify-end pt-3 md:pt-0 border-t md:border-none border-gray-50">
                                         <Button
                                             size="icon"
                                             variant="ghost"
-                                            className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-gray-100 text-gray-400 transition-colors shrink-0"
+                                            className="h-9 w-9 rounded-full hover:bg-gray-50 text-gray-400 hidden sm:flex"
                                         >
                                             <Eye className="h-4 w-4" />
                                         </Button>
                                         <Button
-                                            className="h-9 md:h-10 px-4 md:px-5 rounded-xl bg-black hover:bg-gray-900 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-widest shadow-sm flex items-center gap-2 group/btn"
+                                            className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn w-full sm:w-auto justify-center"
                                         >
-                                            <span className="hidden sm:inline">Inspect</span>
-                                            <span className="sm:hidden">View</span>
-                                            <ArrowRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
+                                            Open Record
+                                            <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
                                         </Button>
                                     </div>
-                                </div>
 
-                                {/* Payment Log Strip */}
-                                {booking.Payment && booking.Payment.length > 0 && (
-                                    <div className="bg-white border-t border-gray-50 mt-1 pt-3 md:pt-4 flex items-center justify-between px-1">
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <div className="flex items-center gap-2 shrink-0">
-                                                <CreditCard className="h-3 w-3 text-gray-300" />
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest hidden xs:inline">Transaction</span>
+                                    {/* Instant Payment Check */}
+                                    {booking.Payment && booking.Payment.length > 0 && (
+                                        <div className="absolute bottom-0 left-0 w-full h-[36px] bg-gray-50/80 backdrop-blur-sm border-t border-gray-100 flex items-center justify-between px-4 md:px-6 group-hover:bg-white transition-colors duration-300">
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex items-center gap-1.5">
+                                                    <CreditCard className="h-3 w-3 text-gray-400" />
+                                                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">FISCAL STATUS</span>
+                                                </div>
+                                                <div className="h-3 w-px bg-gray-200" />
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`text-[9px] font-black uppercase tracking-tight ${booking.Payment[0].status === 'PAID' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                        {booking.Payment[0].status}
+                                                    </span>
+                                                    <span className="text-[9px] font-black text-gray-900">Rs. {booking.Payment[0].amount.toLocaleString()}</span>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-2 min-w-0">
-                                                <span className={`text-[10px] font-black uppercase shrink-0 ${booking.Payment[0].status === 'PAID' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                                    {booking.Payment[0].status}
+                                            <div className="flex items-center gap-2">
+                                                <div className={`h-1.5 w-1.5 rounded-full ${booking.Payment[0].status === 'PAID' ? 'bg-emerald-400' : 'bg-rose-400'} animate-pulse`} />
+                                                <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">
+                                                    {booking.Payment?.[0]?.date || booking.Payment?.[0]?.createdAt ? format(new Date(booking.Payment[0].date || booking.Payment[0].createdAt), 'MMM dd') : '—'}
                                                 </span>
-                                                <span className="text-[10px] font-bold text-gray-900 tracking-tight truncate">PKR {booking.Payment[0].amount.toLocaleString()}</span>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 shrink-0">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                                                {format(new Date(booking.Payment[0].date), 'MMM dd, yyyy')}
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
-                            </Link>
+                                    )}
+                                </Link>
+                            </div>
                         ))
                     ) : (
-                        <div className="bg-white border border-gray-100 rounded-3xl p-12 md:p-20 text-center shadow-sm border-dashed">
-                            <div className="h-14 w-14 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-6">
-                                <Search className="h-7 w-7 text-gray-200" />
+                        <div className="bg-white border border-gray-100 rounded-3xl p-12 sm:p-24 text-center shadow-sm border-dashed">
+                            <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-6 border border-gray-100">
+                                <Search className="h-8 w-8 text-gray-300" />
                             </div>
-                            <h3 className="text-sm md:text-base font-black text-gray-900 uppercase tracking-tight">System query returned 0 results</h3>
-                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Adjust signal filters to see active records</p>
+                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">No bookings found</h3>
+                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Try changing your search or filters</p>
                             <Button
                                 variant="outline"
-                                className="mt-8 rounded-xl h-10 px-8 font-black uppercase tracking-widest text-[10px] border-gray-200 hover:bg-black hover:text-white transition-all"
+                                className="mt-8 rounded-xl h-10 px-8 font-bold uppercase tracking-widest text-[10px] border-gray-200 hover:bg-black hover:text-white transition-all shadow-sm"
                                 onClick={() => { setSearchQuery(""); setStatusFilter("All"); setHostelFilter("All"); }}
                             >
                                 Reset Filters
@@ -384,54 +639,137 @@ const GlobalBookingsPage = () => {
                     )}
                 </div>
 
-                {/* System Status Node */}
-                <div className="pt-4">
-                    <div className="bg-indigo-600 text-white rounded-[1.5rem] md:rounded-[2rem] p-4 md:p-5 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-r from-indigo-700/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                        <div className="flex items-center gap-4 relative z-10 w-full md:w-auto">
-                            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md shrink-0 border border-white/10">
-                                <ShieldCheck className="h-5 w-5 text-white" />
+            </div>
+
+            {/* Export Wizard Dialog */}
+            <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+                <DialogContent className="sm:max-w-md rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl">
+                    <div className="bg-indigo-600 p-8 text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="mx-auto h-16 w-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20 mb-4 rotate-3">
+                            <ShieldCheck className="h-8 w-8 text-white stroke-[1.5]" />
+                        </div>
+                        <h2 className="text-xl font-black text-white uppercase tracking-tight relative z-10">Export Verification Data</h2>
+                        <p className="text-indigo-100 text-[11px] font-bold uppercase tracking-widest mt-1 relative z-10">Generate official PDF records</p>
+                    </div>
+
+                    <div className="p-8 space-y-6 bg-white overflow-y-auto max-h-[60vh]">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Select Hostel</Label>
+                                <select
+                                    className="w-full h-12 rounded-xl bg-gray-50 border border-gray-100 px-4 text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                    value={exportConfig.hostelId}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, hostelId: e.target.value }))}
+                                >
+                                    <option value="All">All Entities</option>
+                                    {hostels.map(h => (
+                                        <option key={h.id} value={h.name}>{h.name}</option>
+                                    ))}
+                                </select>
                             </div>
-                            <div className="flex flex-col">
-                                <h4 className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.2em] text-indigo-100">Core OS</h4>
-                                <p className="text-[11px] md:text-[12px] font-black mt-0.5 uppercase tracking-tight">Sync Integrity: 100%</p>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Select Room</Label>
+                                <select
+                                    className="w-full h-12 rounded-xl bg-gray-50 border border-gray-100 px-4 text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                    value={exportConfig.roomId}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, roomId: e.target.value }))}
+                                >
+                                    <option value="All">All Rooms</option>
+                                    {rooms
+                                        .filter(r => exportConfig.hostelId === "All" || r.Hostel?.name === exportConfig.hostelId)
+                                        .map(r => (
+                                            <option key={r.id} value={r.id}>Room {r.roomNumber} ({r.type})</option>
+                                        ))
+                                    }
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Booking Status</Label>
+                                <select
+                                    className="w-full h-12 rounded-xl bg-gray-50 border border-gray-100 px-4 text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                    value={exportConfig.status}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, status: e.target.value }))}
+                                >
+                                    <option value="All">All Residents</option>
+                                    <option value="CHECKED_IN">Currently In-House</option>
+                                    <option value="CONFIRMED">Confirmed / Verified</option>
+                                    <option value="PENDING">Pending Approval</option>
+                                    <option value="CHECKED_OUT">Archived / Past</option>
+                                </select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">From Date</Label>
+                                <Input
+                                    type="date"
+                                    className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                                    value={exportConfig.dateFrom}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, dateFrom: e.target.value }))}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">To Date</Label>
+                                <Input
+                                    type="date"
+                                    className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                                    value={exportConfig.dateTo}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, dateTo: e.target.value }))}
+                                />
                             </div>
                         </div>
 
-                        <div className="h-px w-full md:h-8 md:w-px bg-white/10" />
-
-                        <div className="flex flex-1 items-center justify-around md:justify-start gap-6 md:gap-12 relative z-10 w-full px-2">
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-indigo-200 tracking-widest">Global Pings</span>
-                                <span className="text-[10px] md:text-[11px] font-black text-white uppercase mt-1">Live Feed</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-indigo-200 tracking-widest">DB Records</span>
-                                <span className="text-[10px] md:text-[11px] font-black text-white uppercase mt-1">{bookings.length} Entry</span>
-                            </div>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Search Keyword (Name/CNIC/Room)</Label>
+                            <Input
+                                placeholder="Filter records by name or ID..."
+                                className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                                value={exportConfig.searchQuery}
+                                onChange={(e) => setExportConfig(prev => ({ ...prev, searchQuery: e.target.value }))}
+                            />
                         </div>
 
-                        <div className="flex items-center justify-between md:justify-end w-full md:w-auto gap-3 relative z-10 bg-indigo-700/50 md:bg-transparent p-2 md:p-0 rounded-xl">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-9 px-4 rounded-lg bg-white/10 hover:bg-white/20 text-[9px] font-bold uppercase tracking-widest text-white gap-2 transition-all"
-                                onClick={() => syncAutomation.mutate()}
-                                disabled={syncAutomation.isPending}
-                            >
-                                <RefreshCw className={`h-3 w-3 ${syncAutomation.isPending ? 'animate-spin' : ''}`} />
-                                <span className="hidden sm:inline">Refresh Sync</span>
-                                <span className="sm:hidden">Sync</span>
-                            </Button>
-                            <div className="flex items-center gap-2 px-2">
-                                <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_12px_rgba(52,211,153,0.6)]" />
-                                <span className="text-[9px] font-black uppercase text-white tracking-widest">Active</span>
-                            </div>
+                        <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 flex gap-3">
+                            <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
+                            <p className="text-[10px] text-amber-700 font-medium leading-relaxed italic">
+                                Unified Data Export: This configuration allows full override. You can generate reports for specific date ranges and branches regardless of your current dashboard view.
+                            </p>
                         </div>
                     </div>
-                </div>
-            </div>
+
+                    <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3 justify-end">
+                        <Button
+                            variant="ghost"
+                            className="h-12 px-6 rounded-xl font-bold text-[10px] uppercase tracking-widest text-gray-500 hover:bg-gray-100"
+                            onClick={() => setIsExportDialogOpen(false)}
+                            disabled={isExporting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            className="h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2"
+                            onClick={handleExportPoliceVerification}
+                            disabled={isExporting}
+                        >
+                            {isExporting ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Processing PDF...
+                                </>
+                            ) : (
+                                <>
+                                    <FileText className="h-4 w-4" />
+                                    Generate Output
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

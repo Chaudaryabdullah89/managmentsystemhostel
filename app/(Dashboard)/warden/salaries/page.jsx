@@ -1,14 +1,17 @@
 "use client"
 import React, { useState, useMemo } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import {
-    DollarSign, Calendar, CheckCircle2, AlertCircle,
-    Search, Filter, Download, Eye, Building2,
+    DollarSign, Calendar, CheckCircle2, XCircle, AlertCircle,
+    Clock, Search, Filter, Download, Eye, User, Building2,
     CreditCard, TrendingUp, Briefcase, Plus, ShieldCheck,
-    Wallet, History, FileText, Boxes,
-    ArrowUpRight, Loader2, Calculator, Zap,
-    MessageSquare, MoreVertical, Settings2, Trash2,
-    Coins, MoreHorizontal, ChevronRight, UserCheck
+    PieChart, Wallet, History, FileText, Boxes, Scan,
+    ArrowRight, Send, Loader2, ExternalLink, CheckCircle,
+    Settings2, Trash2, Save, MoreVertical, ChevronRight,
+    ArrowUpRight, UserCheck, Coins, Calculator, Zap,
+    MessageSquare, Wallet2, Mail, Users, Star, MapPin, Activity, ClipboardList
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,9 +23,9 @@ import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem,
     DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    Dialog, DialogContent,
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter
 } from "@/components/ui/dialog";
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -35,30 +38,30 @@ import {
     useDeleteSalary, useStaffList, useCreateSalary
 } from "@/hooks/useSalaries";
 import { useHostel } from "@/hooks/usehostel";
-import useAuthStore from "@/hooks/Authstate";
-import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { toast } from "sonner";
 import SalarySlip from "@/components/SalarySlip";
 import Loader from "@/components/ui/Loader";
 
-const WardenSalariesPage = () => {
-    const { user } = useAuthStore();
+const SalariesPage = () => {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState("current");
     const [searchQuery, setSearchQuery] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
     const [filterHostel, setFilterHostel] = useState("All");
+    const [isSlipDialogOpen, setIsSlipDialogOpen] = useState(false);
 
     const currentMonth = format(new Date(), 'MMMM yyyy');
     const [selectedMonth, setSelectedMonth] = useState(currentMonth);
 
-    // Mutation & Dialog states
+    // Mutation states
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isPayDialogOpen, setIsPayDialogOpen] = useState(false);
     const [isAddSalaryDialogOpen, setIsAddSalaryDialogOpen] = useState(false);
     const [isResolveDialogOpen, setIsResolveDialogOpen] = useState(false);
-    const [isSlipDialogOpen, setIsSlipDialogOpen] = useState(false);
+    const [isExportingSalaries, setIsExportingSalaries] = useState(false);
     const [selectedSalary, setSelectedSalary] = useState(null);
 
     const [resolveFormData, setResolveFormData] = useState({
@@ -88,13 +91,10 @@ const WardenSalariesPage = () => {
         notes: ""
     });
 
-    // Queries
     const { data: salaries, isLoading: salariesLoading } = useAllSalaries({
-        month: activeTab === "current" ? currentMonth : null,
-        hostelId: user?.role === 'ADMIN' ? (filterHostel === 'All' ? null : filterHostel) : user?.hostelId
+        month: activeTab === "current" ? currentMonth : null
     });
-
-    const { data: staffList } = useStaffList(user?.hostelId);
+    const { data: staffList, isLoading: staffLoading } = useStaffList();
     const { data: hostelsData } = useHostel();
     const hostels = hostelsData?.data || [];
 
@@ -107,39 +107,132 @@ const WardenSalariesPage = () => {
     const filteredSalaries = useMemo(() => {
         const data = salaries || [];
         return data.filter(item => {
+            const name = item.StaffProfile?.User?.name?.toLowerCase() || "";
+            const email = item.StaffProfile?.User?.email?.toLowerCase() || "";
+            const id = item.id?.toLowerCase() || "";
             const matchesSearch = !searchQuery ||
-                item.StaffProfile?.User?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                item.id.toLowerCase().includes(searchQuery.toLowerCase());
+                name.includes(searchQuery.toLowerCase()) ||
+                email.includes(searchQuery.toLowerCase()) ||
+                id.includes(searchQuery.toLowerCase());
 
-            const matchesStatus = filterStatus === "All" || item.status === filterStatus;
             const matchesHostel = filterHostel === "All" || item.StaffProfile?.User?.hostelId === filterHostel;
+            const matchesStatus = filterStatus === "All" || item.status === filterStatus;
 
-            return matchesSearch && matchesStatus && matchesHostel;
+            return matchesSearch && matchesHostel && matchesStatus;
         });
-    }, [salaries, searchQuery, filterStatus, filterHostel]);
+    }, [salaries, searchQuery, filterHostel, filterStatus]);
 
-    // Derived stats
     const stats = useMemo(() => {
-        const data = filteredSalaries || [];
+        const data = salaries || [];
         const total = data.reduce((acc, curr) => acc + (curr.amount || 0), 0);
         const paidVolume = data.filter(s => s.status === 'PAID').reduce((acc, curr) => acc + (curr.amount || 0), 0);
+        const pendingReserve = data.filter(s => s.status === 'PENDING').reduce((acc, curr) => acc + (curr.amount || 0), 0);
         const appealCount = data.filter(s => s.appealStatus === 'PENDING').length;
-        return { total, paidVolume, appealCount, count: data.length };
-    }, [filteredSalaries]);
+        return { total, paidVolume, pendingReserve, count: data.length, appealCount };
+    }, [salaries]);
+
+    const handleExportCSV = () => {
+        const headers = ["ID", "Staff Name", "Month", "Basic Salary", "Allowances", "Bonuses", "Deductions", "Net Amount", "Status", "Payment Method", "Date"];
+        const rows = filteredSalaries.map(s => [
+            s.id,
+            s.StaffProfile?.User?.name,
+            s.month,
+            s.basicSalary,
+            s.allowances,
+            s.bonuses,
+            s.deductions,
+            s.amount,
+            s.status,
+            s.paymentMethod || 'N/A',
+            s.paymentDate ? format(new Date(s.paymentDate), 'yyyy-MM-dd') : 'N/A'
+        ]);
+
+        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `Staff_Payroll_${selectedMonth.replace(' ', '_')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success("Payroll CSV Exported!");
+    };
+
+    const handleExportPDF = async () => {
+        setIsExportingSalaries(true);
+        try {
+            const doc = new jsPDF('landscape');
+            doc.setFont("helvetica", "bold");
+
+            doc.setFillColor(31, 41, 55);
+            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.text("STAFF PAYROLL REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Month: ${selectedMonth} | Total Staff: ${filteredSalaries.length}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+
+            doc.setTextColor(80, 80, 80);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
+            doc.text(`Total Amount: PKR ${stats.total.toLocaleString()}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+
+            doc.setDrawColor(220, 220, 220);
+            doc.setLineWidth(0.5);
+            doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
+
+            const headers = [
+                ["S.No", "Staff Name", "Month", "Basic", "Allowances", "Bonuses", "Deductions", "Net", "Status", "Date"]
+            ];
+
+            const rows = filteredSalaries.map((s, index) => [
+                index + 1,
+                s.StaffProfile?.User?.name || 'N/A',
+                s.month,
+                (s.basicSalary || 0).toLocaleString(),
+                (s.allowances || 0).toLocaleString(),
+                (s.bonuses || 0).toLocaleString(),
+                (s.deductions || 0).toLocaleString(),
+                (s.amount || 0).toLocaleString(),
+                s.status,
+                s.paymentDate ? format(new Date(s.paymentDate), 'dd/MM/yy') : 'N/A'
+            ]);
+
+            autoTable(doc, {
+                startY: 55,
+                head: headers,
+                body: rows,
+                theme: 'grid',
+                headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8, halign: 'center' },
+                bodyStyles: { fontSize: 8, textColor: [50, 50, 50] },
+                alternateRowStyles: { fillColor: [249, 250, 251] },
+                styles: { overflow: 'linebreak', cellPadding: 3, valign: 'middle' },
+                didDrawPage: (data) => {
+                    let str = "Page " + doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(str, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
+                    doc.text("Official GreenView Staff Records", 14, doc.internal.pageSize.height - 10);
+                }
+            });
+
+            doc.save(`Payroll_Report_${selectedMonth.replace(' ', '_')}.pdf`);
+            toast.success("Payroll PDF Exported!");
+        } catch (error) {
+            toast.error("Failed to export PDF");
+        } finally {
+            setIsExportingSalaries(false);
+        }
+    };
 
     const handleGeneratePayroll = async () => {
         try {
-            await generatePayroll.mutateAsync({
-                month: currentMonth,
-                hostelId: user?.hostelId
-            });
-            toast.success("Payroll generation initiated");
+            await generatePayroll.mutateAsync({ month: currentMonth });
         } catch (error) { }
-    };
-
-    const handlePayOpen = (salary) => {
-        setSelectedSalary(salary);
-        setIsPayDialogOpen(true);
     };
 
     const handleEditOpen = (salary) => {
@@ -154,6 +247,21 @@ const WardenSalariesPage = () => {
         setIsEditDialogOpen(true);
     };
 
+    const handleEditSubmit = async () => {
+        try {
+            await updateSalary.mutateAsync({
+                id: selectedSalary.id,
+                ...editFormData
+            });
+            setIsEditDialogOpen(false);
+        } catch (error) { }
+    };
+
+    const handlePayOpen = (salary) => {
+        setSelectedSalary(salary);
+        setIsPayDialogOpen(true);
+    };
+
     const handlePaySubmit = async () => {
         try {
             await updateSalary.mutateAsync({
@@ -163,18 +271,6 @@ const WardenSalariesPage = () => {
                 paymentDate: new Date(payFormData.paymentDate).toISOString()
             });
             setIsPayDialogOpen(false);
-            toast.success("Payment confirmed successfully");
-        } catch (error) { }
-    };
-
-    const handleEditSubmit = async () => {
-        try {
-            await updateSalary.mutateAsync({
-                id: selectedSalary.id,
-                ...editFormData
-            });
-            setIsEditDialogOpen(false);
-            toast.success("Record updated");
         } catch (error) { }
     };
 
@@ -189,7 +285,6 @@ const WardenSalariesPage = () => {
                 customDeductions: 0,
                 customNotes: ""
             });
-            toast.success("Manual entry authorized");
         } catch (error) { }
     };
 
@@ -201,69 +296,23 @@ const WardenSalariesPage = () => {
             });
             setIsResolveDialogOpen(false);
             setResolveFormData({ appealStatus: "RESOLVED", appealResponse: "" });
-            toast.success("Dispute resolved successfully");
         } catch (error) { }
-    };
-
-    const handleExportPDF = async () => {
-        try {
-            const doc = new jsPDF('landscape');
-            doc.setFont("helvetica", "bold");
-            doc.setFillColor(31, 41, 55);
-            doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(18);
-            doc.text("STAFF PAYROLL REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
-
-            const rows = filteredSalaries.map((s, i) => [
-                i + 1,
-                s.StaffProfile?.User?.name || 'N/A',
-                s.month,
-                s.basicSalary.toLocaleString(),
-                s.amount.toLocaleString(),
-                s.status
-            ]);
-
-            autoTable(doc, {
-                startY: 45,
-                head: [["S.No", "Staff Name", "Month", "Basic", "Net", "Status"]],
-                body: rows,
-                theme: 'grid'
-            });
-
-            doc.save(`Payroll_${selectedMonth}.pdf`);
-            toast.success("PDF Exported");
-        } catch (error) {
-            toast.error("Export failed");
-        }
-    };
-
-    const handleExportCSV = () => {
-        const headers = ["Staff Name,Month,Basic Salary,Net Pay,Status"];
-        const rows = filteredSalaries.map(s =>
-            `"${s.StaffProfile?.User?.name}","${s.month}",${s.basicSalary},${s.amount},"${s.status}"`
-        );
-        const csvContent = "data:text/csv;charset=utf-8," + headers.concat(rows).join("\n");
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `Payroll_${selectedMonth}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        toast.success("CSV Exported");
     };
 
     const handleDeleteConfirm = async () => {
         try {
             await deleteSalary.mutateAsync(selectedSalary.id);
             setIsDeleteDialogOpen(false);
-            toast.success("Record deleted");
         } catch (error) { }
     };
 
     if (salariesLoading) return (
-        <Loader label="Syncing Ledger" subLabel="Fetching latest payroll records" icon={History} fullScreen={true} />
+        <div className="flex h-screen items-center justify-center bg-gray-50">
+            <div className="flex flex-col items-center gap-4">
+                <div className="h-10 w-10 border-[3px] border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Payroll...</p>
+            </div>
+        </div>
     );
 
     return (
@@ -582,296 +631,228 @@ const WardenSalariesPage = () => {
                                 )}
                             </div>
                         </TabsContent>
-
-                        <TabsContent value="history" className="mt-0">
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                                {filteredSalaries.filter(s => s.month !== currentMonth).length === 0 ? (
-                                    <div className="col-span-full py-20 bg-white border border-dashed border-gray-200 rounded-3xl text-center">
-                                        <History className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                                        <p className="text-sm font-bold text-gray-400">No historical traces</p>
-                                    </div>
-                                ) : (
-                                    filteredSalaries.filter(s => s.month !== currentMonth).map(salary => (
-                                        <div key={salary.id} className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all group opacity-75 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
-                                            {/* Card Header */}
-                                            <div className="p-6 border-b border-gray-50">
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="h-12 w-12 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-500 font-bold text-lg flex-shrink-0">
-                                                            {salary.StaffProfile?.User?.name?.charAt(0) || "S"}
-                                                        </div>
-                                                        <div>
-                                                            <h3 className="text-sm font-bold text-gray-900">{salary.StaffProfile?.User?.name}</h3>
-                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{salary.StaffProfile?.designation}</p>
-                                                            <p className="text-[9px] text-gray-400 font-medium uppercase mt-0.5">{salary.month}</p>
-                                                        </div>
-                                                    </div>
-                                                    <Badge className="bg-gray-50 text-gray-600 border-gray-200 text-[8px] font-black uppercase border">
-                                                        ARCHIVED
-                                                    </Badge>
-                                                </div>
-                                            </div>
-                                            <div className="px-6 py-4 flex items-center justify-between">
-                                                <div>
-                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Final Net</p>
-                                                    <p className="text-sm font-black text-gray-900 tabular-nums">PKR {(salary.amount || 0).toLocaleString()}</p>
-                                                </div>
-                                                <Button
-                                                    variant="outline"
-                                                    size="icon"
-                                                    className="h-9 w-9 rounded-xl"
-                                                    onClick={() => { setSelectedSalary(salary); setIsSlipDialogOpen(true); }}
-                                                >
-                                                    <Eye className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        </TabsContent>
                     </Tabs>
                 </div>
             </div>
 
-            {/* Global Dialogs */}
-            <WardenDialogs
-                {...{
-                    selectedSalary, isEditDialogOpen, setIsEditDialogOpen, isPayDialogOpen, setIsPayDialogOpen,
-                    isAddSalaryDialogOpen, setIsAddSalaryDialogOpen, isResolveDialogOpen, setIsResolveDialogOpen,
-                    isDeleteDialogOpen, setIsDeleteDialogOpen, isSlipDialogOpen, setIsSlipDialogOpen,
-                    editFormData, setEditFormData, payFormData, setPayFormData, addSalaryForm, setAddSalaryForm,
-                    resolveFormData, setResolveFormData, handleEditSubmit, handlePaySubmit, handleAddSalarySubmit,
-                    handleResolveSubmit, handleDeleteConfirm, staffList, updatePending: updateSalary.isPending, createPending: createSalary.isPending
-                }}
-            />
+            {/* Slip Dialog */}
+            <Dialog open={isSlipDialogOpen} onOpenChange={setIsSlipDialogOpen}>
+                <DialogContent className="max-w-3xl p-0 bg-transparent border-none overflow-y-auto max-h-[95vh]">
+                    {selectedSalary && (
+                        <SalarySlip
+                            salary={selectedSalary}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
+                    <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="flex items-center gap-3 relative z-10">
+                            <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                                <Calculator className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Adjust Ledger</h2>
+                                <p className="text-[10px] text-indigo-100 font-medium">for {selectedSalary?.StaffProfile?.User?.name}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-8 space-y-5">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Basic Salary</Label>
+                                <Input type="number" value={editFormData.basicSalary} onChange={e => setEditFormData({ ...editFormData, basicSalary: Number(e.target.value) })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Allowances</Label>
+                                <Input type="number" value={editFormData.allowances} onChange={e => setEditFormData({ ...editFormData, allowances: Number(e.target.value) })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Bonuses</Label>
+                                <Input type="number" value={editFormData.bonuses} onChange={e => setEditFormData({ ...editFormData, bonuses: Number(e.target.value) })} className="rounded-xl border-emerald-50 bg-emerald-50/30 font-bold h-11 text-emerald-600 focus:ring-0" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-rose-500">Deductions</Label>
+                                <Input type="number" value={editFormData.deductions} onChange={e => setEditFormData({ ...editFormData, deductions: Number(e.target.value) })} className="rounded-xl border-rose-50 bg-rose-50/30 font-bold h-11 text-rose-600 focus:ring-0" />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Adjustment Memo</Label>
+                            <Textarea value={editFormData.notes} onChange={e => setEditFormData({ ...editFormData, notes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Specify reason for adjustments..." />
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                            <Button className="flex-1 h-11 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-100" onClick={handleEditSubmit} disabled={updateSalary.isPending}>
+                                {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Adjustment'}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Pay Dialog */}
+            <Dialog open={isPayDialogOpen} onOpenChange={setIsPayDialogOpen}>
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
+                    <div className="bg-emerald-600 p-8 text-white relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="flex items-center gap-3 relative z-10">
+                            <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                                <ShieldCheck className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Pay Authorization</h2>
+                                <p className="text-[10px] text-emerald-100 font-medium">for {selectedSalary?.StaffProfile?.User?.name}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-8 space-y-5">
+                        <div className="space-y-2">
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Payment Method</Label>
+                            <Select value={payFormData.paymentMethod} onValueChange={v => setPayFormData({ ...payFormData, paymentMethod: v })}>
+                                <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-[10px] uppercase focus:ring-0">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                                    <SelectItem value="BANK_TRANSFER" className="text-[10px] font-bold uppercase tracking-widest">Bank Transfer</SelectItem>
+                                    <SelectItem value="CASH" className="text-[10px] font-bold uppercase tracking-widest">Cash</SelectItem>
+                                    <SelectItem value="ONLINE" className="text-[10px] font-bold uppercase tracking-widest">Online Transfer</SelectItem>
+                                    <SelectItem value="CHEQUE" className="text-[10px] font-bold uppercase tracking-widest">Cheque</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Authorization Date</Label>
+                            <Input type="date" value={payFormData.paymentDate} onChange={e => setPayFormData({ ...payFormData, paymentDate: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
+                        </div>
+                        <div className="flex gap-3 pt-4">
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsPayDialogOpen(false)}>Cancel</Button>
+                            <Button className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-100" onClick={handlePaySubmit} disabled={updateSalary.isPending}>
+                                {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Payment'}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Manual Entry Dialog */}
+            <Dialog open={isAddSalaryDialogOpen} onOpenChange={setIsAddSalaryDialogOpen}>
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
+                    <div className="bg-gray-900 p-8 text-white relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/5 skew-x-12 translate-x-20" />
+                        <div className="flex items-center gap-3 relative z-10">
+                            <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md">
+                                <Plus className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Manual Ingress</h2>
+                                <p className="text-[10px] text-gray-400 font-medium">Authorize specific staff ledger entry</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-8 space-y-5">
+                        <div className="space-y-2">
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Target Personnel</Label>
+                            <Select value={addSalaryForm.staffId} onValueChange={v => setAddSalaryForm({ ...addSalaryForm, staffId: v })}>
+                                <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-xs focus:ring-0">
+                                    <SelectValue placeholder="Choose staff member..." />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl max-h-[300px]">
+                                    {staffList?.map(s => (
+                                        <SelectItem key={s.id} value={s.id} className="text-xs font-bold">{s.User?.name} — {s.designation}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Bonus Component</Label>
+                                <Input type="number" value={addSalaryForm.customBonuses} onChange={e => setAddSalaryForm({ ...addSalaryForm, customBonuses: Number(e.target.value) })} className="rounded-xl border-emerald-50 bg-emerald-50/30 font-bold h-11 text-emerald-600" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-rose-500">Deduction Component</Label>
+                                <Input type="number" value={addSalaryForm.customDeductions} onChange={e => setAddSalaryForm({ ...addSalaryForm, customDeductions: Number(e.target.value) })} className="rounded-xl border-rose-50 bg-rose-50/30 font-bold h-11 text-rose-600" />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Fiscal Memo</Label>
+                            <Textarea value={addSalaryForm.customNotes} onChange={e => setAddSalaryForm({ ...addSalaryForm, customNotes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Add relevant notes for this entry..." />
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsAddSalaryDialogOpen(false)}>Cancel</Button>
+                            <Button className="flex-1 h-11 bg-gray-900 hover:bg-black text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-xl" onClick={handleAddSalarySubmit} disabled={createSalary.isPending}>
+                                {createSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Authorize Entry'}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Resolve Appeal Dialog */}
+            <Dialog open={isResolveDialogOpen} onOpenChange={setIsResolveDialogOpen}>
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
+                    <div className="bg-rose-600 p-8 text-white relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="flex items-center gap-3 relative z-10">
+                            <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                                <MessageSquare className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Appeal Resolution</h2>
+                                <p className="text-[10px] text-rose-100 font-medium">for {selectedSalary?.StaffProfile?.User?.name}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-8 space-y-5">
+                        <div className="space-y-2">
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Fiscal Status</Label>
+                            <Select value={resolveFormData.appealStatus} onValueChange={v => setResolveFormData({ ...resolveFormData, appealStatus: v })}>
+                                <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-[10px] uppercase focus:ring-0">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                                    <SelectItem value="RESOLVED" className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Resolved</SelectItem>
+                                    <SelectItem value="REJECTED" className="text-[10px] font-bold uppercase tracking-widest text-rose-600">Rejected</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Administrative Response</Label>
+                            <Textarea value={resolveFormData.appealResponse} onChange={e => setResolveFormData({ ...resolveFormData, appealResponse: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-32 focus:ring-0" placeholder="Enter details about the resolution..." />
+                        </div>
+                        <div className="flex gap-3 pt-4">
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsResolveDialogOpen(false)}>Cancel</Button>
+                            <Button className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-rose-100" onClick={handleResolveSubmit} disabled={updateSalary.isPending}>
+                                {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Finalize Resolution'}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Alert */}
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent className="rounded-3xl border-none shadow-2xl p-8 max-w-sm text-center">
+                    <div className="h-16 w-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <Trash2 className="h-8 w-8 text-rose-600" />
+                    </div>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-xl font-bold uppercase tracking-tight">Evict Ledger Entry?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed mt-2">
+                            This operation will permanently remove the salary record from the system. This is irreversible.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex flex-col sm:flex-row gap-3 mt-8">
+                        <AlertDialogCancel className="h-11 w-full rounded-xl bg-gray-50 border-none font-bold text-[10px] uppercase tracking-widest">Abort</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteConfirm} className="h-11 w-full rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-rose-100">Confirm Eviction</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };
 
-// --- Sub Components ---
-
-const WardenDialogs = ({
-    selectedSalary, isEditDialogOpen, setIsEditDialogOpen, isPayDialogOpen, setIsPayDialogOpen,
-    isAddSalaryDialogOpen, setIsAddSalaryDialogOpen, isResolveDialogOpen, setIsResolveDialogOpen,
-    isDeleteDialogOpen, setIsDeleteDialogOpen, isSlipDialogOpen, setIsSlipDialogOpen,
-    editFormData, setEditFormData, payFormData, setPayFormData, addSalaryForm, setAddSalaryForm,
-    resolveFormData, setResolveFormData, handleEditSubmit, handlePaySubmit, handleAddSalarySubmit,
-    handleResolveSubmit, handleDeleteConfirm, staffList, updatePending, createPending
-}) => (
-    <>
-        <Dialog open={isSlipDialogOpen} onOpenChange={setIsSlipDialogOpen}>
-            <DialogContent className="max-w-4xl p-0 bg-transparent border-none overflow-y-auto max-h-[90vh]">
-                {selectedSalary && <SalarySlip salary={selectedSalary} />}
-            </DialogContent>
-        </Dialog>
-
-        {/* Adjust Entry */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
-                <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
-                    <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
-                    <div className="flex items-center gap-3 relative z-10">
-                        <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
-                            <Calculator className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                            <h2 className="text-sm font-bold uppercase tracking-tight">Adjust Ledger</h2>
-                            <p className="text-[10px] text-indigo-100 font-medium">for {selectedSalary?.StaffProfile?.User?.name}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-8 space-y-5">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Basic Salary</Label>
-                            <Input type="number" value={editFormData.basicSalary} onChange={e => setEditFormData({ ...editFormData, basicSalary: Number(e.target.value) })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Allowances</Label>
-                            <Input type="number" value={editFormData.allowances} onChange={e => setEditFormData({ ...editFormData, allowances: Number(e.target.value) })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Bonuses</Label>
-                            <Input type="number" value={editFormData.bonuses} onChange={e => setEditFormData({ ...editFormData, bonuses: Number(e.target.value) })} className="rounded-xl border-emerald-50 bg-emerald-50/30 font-bold h-11 text-emerald-600 focus:ring-0" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-rose-500">Deductions</Label>
-                            <Input type="number" value={editFormData.deductions} onChange={e => setEditFormData({ ...editFormData, deductions: Number(e.target.value) })} className="rounded-xl border-rose-50 bg-rose-50/30 font-bold h-11 text-rose-600 focus:ring-0" />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Adjustment Memo</Label>
-                        <Textarea value={editFormData.notes} onChange={e => setEditFormData({ ...editFormData, notes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Specify reason for adjustments..." />
-                    </div>
-                    <div className="flex gap-3 pt-2">
-                        <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-                        <Button className="flex-1 h-11 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-100" onClick={handleEditSubmit} disabled={updatePending}>
-                            {updatePending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save Adjustment'}
-                        </Button>
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
-
-        {/* Pay Confirm */}
-        <Dialog open={isPayDialogOpen} onOpenChange={setIsPayDialogOpen}>
-            <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
-                <div className="bg-emerald-600 p-8 text-white relative overflow-hidden">
-                    <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
-                    <div className="flex items-center gap-3 relative z-10">
-                        <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
-                            <ShieldCheck className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                            <h2 className="text-sm font-bold uppercase tracking-tight">Pay Authorization</h2>
-                            <p className="text-[10px] text-emerald-100 font-medium">for {selectedSalary?.StaffProfile?.User?.name}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-8 space-y-5">
-                    <div className="space-y-2">
-                        <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Payment Method</Label>
-                        <Select value={payFormData.paymentMethod} onValueChange={v => setPayFormData({ ...payFormData, paymentMethod: v })}>
-                            <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-[10px] uppercase focus:ring-0">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                                <SelectItem value="BANK_TRANSFER" className="text-[10px] font-bold uppercase tracking-widest">Bank Transfer</SelectItem>
-                                <SelectItem value="CASH" className="text-[10px] font-bold uppercase tracking-widest">Cash</SelectItem>
-                                <SelectItem value="ONLINE" className="text-[10px] font-bold uppercase tracking-widest">Online Transfer</SelectItem>
-                                <SelectItem value="CHEQUE" className="text-[10px] font-bold uppercase tracking-widest">Cheque</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Authorization Date</Label>
-                        <Input type="date" value={payFormData.paymentDate} onChange={e => setPayFormData({ ...payFormData, paymentDate: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
-                    </div>
-                    <div className="flex gap-3 pt-4">
-                        <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsPayDialogOpen(false)}>Cancel</Button>
-                        <Button className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-100" onClick={handlePaySubmit} disabled={updatePending}>
-                            {updatePending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm Payment'}
-                        </Button>
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
-
-        {/* Manual Record */}
-        <Dialog open={isAddSalaryDialogOpen} onOpenChange={setIsAddSalaryDialogOpen}>
-            <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
-                <div className="bg-gray-900 p-8 text-white relative overflow-hidden">
-                    <div className="absolute inset-0 bg-white/5 skew-x-12 translate-x-20" />
-                    <div className="flex items-center gap-3 relative z-10">
-                        <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md">
-                            <Plus className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                            <h2 className="text-sm font-bold uppercase tracking-tight">Manual Ingress</h2>
-                            <p className="text-[10px] text-gray-400 font-medium">Authorize specific staff ledger entry</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-8 space-y-5">
-                    <div className="space-y-2">
-                        <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Target Personnel</Label>
-                        <Select value={addSalaryForm.staffId} onValueChange={v => setAddSalaryForm({ ...addSalaryForm, staffId: v })}>
-                            <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-xs focus:ring-0">
-                                <SelectValue placeholder="Choose staff member..." />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-2xl border-gray-100 shadow-2xl max-h-[300px]">
-                                {staffList?.map(s => (
-                                    <SelectItem key={s.id} value={s.id} className="text-xs font-bold">{s.User?.name} — {s.designation}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Bonus Component</Label>
-                            <Input type="number" value={addSalaryForm.customBonuses} onChange={e => setAddSalaryForm({ ...addSalaryForm, customBonuses: Number(e.target.value) })} className="rounded-xl border-emerald-50 bg-emerald-50/30 font-bold h-11 text-emerald-600" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-rose-500">Deduction Component</Label>
-                            <Input type="number" value={addSalaryForm.customDeductions} onChange={e => setAddSalaryForm({ ...addSalaryForm, customDeductions: Number(e.target.value) })} className="rounded-xl border-rose-50 bg-rose-50/30 font-bold h-11 text-rose-600" />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Fiscal Memo</Label>
-                        <Textarea value={addSalaryForm.customNotes} onChange={e => setAddSalaryForm({ ...addSalaryForm, customNotes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Add relevant notes for this entry..." />
-                    </div>
-                    <div className="flex gap-3 pt-2">
-                        <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsAddSalaryDialogOpen(false)}>Cancel</Button>
-                        <Button className="flex-1 h-11 bg-gray-900 hover:bg-black text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-xl" onClick={handleAddSalarySubmit} disabled={createPending}>
-                            {createPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Authorize Entry'}
-                        </Button>
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
-
-        {/* Resolve Dispute */}
-        <Dialog open={isResolveDialogOpen} onOpenChange={setIsResolveDialogOpen}>
-            <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
-                <div className="bg-rose-600 p-8 text-white relative overflow-hidden">
-                    <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
-                    <div className="flex items-center gap-3 relative z-10">
-                        <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
-                            <MessageSquare className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                            <h2 className="text-sm font-bold uppercase tracking-tight">Appeal Resolution</h2>
-                            <p className="text-[10px] text-rose-100 font-medium">for {selectedSalary?.StaffProfile?.User?.name}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="p-8 space-y-5">
-                    <div className="space-y-2">
-                        <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Fiscal Status</Label>
-                        <Select value={resolveFormData.appealStatus} onValueChange={v => setResolveFormData({ ...resolveFormData, appealStatus: v })}>
-                            <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-[10px] uppercase focus:ring-0">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                                <SelectItem value="RESOLVED" className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Resolved</SelectItem>
-                                <SelectItem value="REJECTED" className="text-[10px] font-bold uppercase tracking-widest text-rose-600">Rejected</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Administrative Response</Label>
-                        <Textarea value={resolveFormData.appealResponse} onChange={e => setResolveFormData({ ...resolveFormData, appealResponse: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-32 focus:ring-0" placeholder="Enter details about the resolution..." />
-                    </div>
-                    <div className="flex gap-3 pt-4">
-                        <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsResolveDialogOpen(false)}>Cancel</Button>
-                        <Button className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-rose-100" onClick={handleResolveSubmit} disabled={updatePending}>
-                            {updatePending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Finalize Resolution'}
-                        </Button>
-                    </div>
-                </div>
-            </DialogContent>
-        </Dialog>
-
-        {/* Delete Record */}
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-            <AlertDialogContent className="rounded-3xl border-none shadow-2xl p-8 max-w-sm text-center">
-                <div className="h-16 w-16 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                    <Trash2 className="h-8 w-8 text-rose-600" />
-                </div>
-                <AlertDialogHeader>
-                    <AlertDialogTitle className="text-xl font-bold uppercase tracking-tight">Evict Ledger Entry?</AlertDialogTitle>
-                    <AlertDialogDescription className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed mt-2">
-                        This operation will permanently remove the salary record from the system. This is irreversible.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter className="flex flex-col sm:flex-row gap-3 mt-8">
-                    <AlertDialogCancel className="h-11 w-full rounded-xl bg-gray-50 border-none font-bold text-[10px] uppercase tracking-widest">Abort</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteConfirm} className="h-11 w-full rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-rose-100">Confirm Eviction</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-    </>
-);
-
-export default WardenSalariesPage;
+export default SalariesPage;
