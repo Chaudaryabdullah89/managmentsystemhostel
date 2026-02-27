@@ -122,9 +122,9 @@ const EditRoomPage = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-100 hidden md:block" />
                         <div className="flex flex-col min-w-0">
-                            <h1 className="text-sm md:text-lg font-black text-gray-900 tracking-tight leading-none truncate uppercase">Modify Unit Config</h1>
+                            <h1 className="text-sm md:text-lg font-black text-gray-900 tracking-tight leading-none truncate uppercase">Edit Room</h1>
                             <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1 truncate">
-                                Unit {roomNumber} • <span className="text-purple-500">Registry System</span>
+                                Room {roomNumber} • <span className="text-purple-500">Details</span>
                             </p>
                         </div>
                     </div>
@@ -144,18 +144,18 @@ const EditRoomPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
                     {/* Primary Form Area */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Unit Identity */}
+                        {/* Basic room info */}
                         <Card className="border border-gray-100 rounded-[2rem] shadow-sm bg-white overflow-hidden">
                             <CardHeader className="p-6 md:p-8 border-b border-gray-50 bg-gray-50/30">
                                 <CardTitle className="text-[10px] font-black flex items-center gap-2 uppercase tracking-[0.2em] text-gray-400">
                                     <LayoutGrid className="h-4 w-4 text-purple-500" />
-                                    Unit Specification Profile
+                                    Room information
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 md:p-8 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Room Identifier *</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Room number *</Label>
                                         <Input
                                             placeholder="e.g. B-102"
                                             className="h-12 bg-gray-50/50 border-gray-100 rounded-xl font-black text-xs md:text-sm text-gray-900 focus:bg-white transition-all shadow-inner"
@@ -164,7 +164,7 @@ const EditRoomPage = () => {
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Floor Vector *</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Floor *</Label>
                                         <Input
                                             type="number"
                                             placeholder="0"
@@ -176,7 +176,7 @@ const EditRoomPage = () => {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Classification *</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Room type *</Label>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="outline" className="w-full h-12 justify-between rounded-xl border-gray-100 bg-gray-50/50 font-black text-[10px] md:text-xs text-gray-900 transition-all hover:bg-white uppercase tracking-widest shadow-inner">
@@ -192,7 +192,7 @@ const EditRoomPage = () => {
                                         </DropdownMenu>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Capacity Node *</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Capacity *</Label>
                                         <Input
                                             type="number"
                                             className="h-12 bg-gray-50/50 border-gray-100 rounded-xl font-black text-xs md:text-sm text-gray-900 focus:bg-white transition-all shadow-inner"
@@ -204,23 +204,23 @@ const EditRoomPage = () => {
                             </CardContent>
                         </Card>
 
-                        {/* Status Management */}
+                        {/* Status */}
                         <Card className="border border-gray-100 rounded-[2rem] shadow-sm bg-white overflow-hidden">
                             <CardHeader className="p-6 md:p-8 border-b border-gray-50 bg-gray-50/30">
                                 <CardTitle className="text-[10px] font-black flex items-center gap-2 uppercase tracking-[0.2em] text-gray-400">
                                     <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                                    Operational Lifecycle Status
+                                    Room status
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 md:p-8">
                                 <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Current Vector *</Label>
+                                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Current status *</Label>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <Button variant="outline" className="w-full h-12 justify-between rounded-xl border-gray-100 bg-gray-50/50 font-black text-[10px] md:text-xs text-gray-900 transition-all hover:bg-white uppercase tracking-widest shadow-inner">
                                                 <span className="flex items-center gap-2">
                                                     <div className={`h-1.5 w-1.5 rounded-full ${status === 'AVAILABLE' ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
-                                                    {status} Mode
+                                                    {status}
                                                 </span>
                                                 <ChevronDown className="h-4 w-4 opacity-40" />
                                             </Button>
@@ -235,18 +235,18 @@ const EditRoomPage = () => {
                             </CardContent>
                         </Card>
 
-                        {/* Service Schedule */}
+                        {/* Service schedule */}
                         <Card className="border border-gray-100 rounded-[2rem] shadow-sm bg-white overflow-hidden">
                             <CardHeader className="p-6 md:p-8 border-b border-gray-50 bg-gray-50/30">
                                 <CardTitle className="text-[10px] font-black flex items-center gap-2 uppercase tracking-[0.2em] text-gray-400">
                                     <Clock className="h-4 w-4 text-blue-500" />
-                                    Service Schedule (Auto-Log)
+                                    Cleaning & laundry schedule
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-6 md:p-8 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Cleaning Frequency (H)</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Cleaning interval (hours)</Label>
                                         <Input
                                             type="number"
                                             placeholder="24"
@@ -254,10 +254,10 @@ const EditRoomPage = () => {
                                             value={cleaningInterval}
                                             onChange={(e) => setCleaningInterval(e.target.value)}
                                         />
-                                        <p className="text-[8px] text-indigo-500 font-black uppercase tracking-widest mt-1 italic ml-1 opacity-60">Auto-log entry every {cleaningInterval} hours</p>
+                                        <p className="text-[8px] text-indigo-500 font-black uppercase tracking-widest mt-1 italic ml-1 opacity-60">Suggested cleaning every {cleaningInterval} hours</p>
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Logistics Frequency (H)</Label>
+                                        <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Laundry interval (hours)</Label>
                                         <Input
                                             type="number"
                                             placeholder="48"
@@ -265,7 +265,7 @@ const EditRoomPage = () => {
                                             value={laundryInterval}
                                             onChange={(e) => setLaundryInterval(e.target.value)}
                                         />
-                                        <p className="text-[8px] text-blue-500 font-black uppercase tracking-widest mt-1 italic ml-1 opacity-60">Auto-log entry every {laundryInterval} hours</p>
+                                        <p className="text-[8px] text-blue-500 font-black uppercase tracking-widest mt-1 italic ml-1 opacity-60">Suggested laundry every {laundryInterval} hours</p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -274,104 +274,91 @@ const EditRoomPage = () => {
 
                     {/* Sidebar Configuration */}
                     <div className="space-y-6">
-                        {/* Financial Ledger */}
+                        {/* Pricing */}
                         <Card className="border border-gray-100 rounded-[2rem] shadow-sm bg-white overflow-hidden">
                             <CardHeader className="bg-gray-950 border-b border-white/5 px-6 py-5 text-center relative overflow-hidden">
                                 <div className="absolute top-0 right-0 p-2 opacity-5"><Coins className="h-12 w-12 text-white" /></div>
-                                <CardTitle className="text-[10px] font-black text-white tracking-[0.3em] uppercase relative z-10">Asset Commercials</CardTitle>
+                                <CardTitle className="text-[10px] font-black text-white tracking-[0.3em] uppercase relative z-10">Pricing</CardTitle>
                             </CardHeader>
                             <div className="p-6 space-y-5">
                                 <div className="space-y-2 flex flex-col">
-                                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Reference Value *</Label>
+                                    <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Base price *</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-gray-300">PKR</span>
                                         <Input type="number" className="pl-14 h-12 bg-gray-50/50 border-gray-100 rounded-2xl font-black text-lg text-center focus:bg-white transition-all shadow-inner italic" value={price} onChange={(e) => setPrice(e.target.value)} />
                                     </div>
                                 </div>
                                 <div className="space-y-2 flex flex-col">
-                                    <Label className="text-[10px] font-black text-emerald-500/60 uppercase tracking-widest text-center">Monthly Yield *</Label>
+                                    <Label className="text-[10px] font-black text-emerald-500/60 uppercase tracking-widest text-center">Monthly rent *</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-300">PKR</span>
                                         <Input type="number" className="pl-14 h-12 bg-emerald-50/30 border-emerald-100/30 rounded-2xl font-black text-lg text-center text-emerald-700 focus:bg-white transition-all shadow-inner italic" value={monthlyrent} onChange={(e) => setMonthlyrent(e.target.value)} />
                                     </div>
                                 </div>
                                 <div className="space-y-2 flex flex-col">
-                                    <Label className="text-[10px] font-black text-blue-500/60 uppercase tracking-widest text-center">Nocturnal Tariff *</Label>
+                                    <Label className="text-[10px] font-black text-blue-500/60 uppercase tracking-widest text-center">Per night price *</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-blue-300">PKR</span>
                                         <Input type="number" className="pl-14 h-12 bg-blue-50/30 border-blue-100/30 rounded-2xl font-black text-lg text-center text-blue-700 focus:bg-white transition-all shadow-inner italic" value={pricepernight} onChange={(e) => setPricepernight(e.target.value)} />
                                     </div>
                                 </div>
-                                <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest text-center leading-relaxed">Financial parameters are synced with invoice agents across the network.</p>
+                                <p className="text-[8px] font-black text-gray-300 uppercase tracking-widest text-center leading-relaxed">These values are used when creating invoices and bookings.</p>
                             </div>
                         </Card>
 
-                        {/* Audit Details */}
-                        <Card className="border border-gray-100 bg-gray-950 rounded-[2rem] shadow-2xl overflow-hidden p-6 md:p-8 relative">
-                            <div className="absolute top-0 right-0 p-6 opacity-5">
-                                <ShieldCheck className="h-20 w-20 text-indigo-500" />
-                            </div>
-                            <h3 className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4 italic">Artifact Registry</h3>
-                            <div className="space-y-6">
+                        {/* Description & media */}
+                        <Card className="border border-gray-100 bg-white rounded-2xl shadow-sm overflow-hidden">
+                            <CardHeader className="p-6 md:p-8 border-b border-gray-50 bg-gray-50/40">
+                                <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                                    <ShieldCheck className="h-4 w-4 text-indigo-500" />
+                                    Room notes
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6 md:p-8 space-y-6">
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center justify-between">
-                                        Registry Notes
-                                        <Sparkle className="h-3.5 w-3.5 text-indigo-400 animate-pulse" />
+                                        Description
+                                        <Sparkle className="h-3.5 w-3.5 text-indigo-400" />
                                     </Label>
                                     <Textarea
-                                        className="bg-white/5 border-white/10 text-white text-xs font-black min-h-[140px] rounded-2xl focus:border-indigo-500/50 transition-all resize-none shadow-inner"
-                                        placeholder="Internal property metadata..."
+                                        className="bg-gray-50 border-gray-200 text-xs font-medium min-h-[140px] rounded-xl focus:border-indigo-400 focus:ring-indigo-400/40 transition-all resize-none"
+                                        placeholder="Short description of the room..."
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Amenities Manifest (CSV)</Label>
+                                    <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                        Amenities (comma separated)
+                                    </Label>
                                     <Input
-                                        className="bg-white/5 border-white/10 text-white text-[10px] font-black h-11 rounded-xl focus:border-indigo-500/50 uppercase tracking-tight shadow-inner"
-                                        placeholder="WiFi, AC, Attached Bath..."
+                                        className="bg-gray-50 border-gray-200 text-[10px] font-medium h-11 rounded-xl focus:border-indigo-400 focus:ring-indigo-400/40"
+                                        placeholder="WiFi, AC, Attached bath..."
                                         value={amenities}
                                         onChange={(e) => setAmenities(e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Media Anchor Point</Label>
+                                    <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                        Image URL
+                                    </Label>
                                     <div className="relative">
-                                        <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-600" />
+                                        <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                                         <Input
-                                            className="bg-white/5 border-white/10 text-white text-[10px] font-black h-11 pl-11 rounded-xl focus:border-indigo-500/50 shadow-inner"
-                                            placeholder="Image URL..."
+                                            className="bg-gray-50 border-gray-200 text-[10px] font-medium h-11 pl-11 rounded-xl focus:border-indigo-400 focus:ring-indigo-400/40"
+                                            placeholder="https://example.com/room.jpg"
                                             value={imageUrl}
                                             onChange={(e) => setImageUrl(e.target.value)}
                                         />
                                     </div>
                                 </div>
-                            </div>
+                            </CardContent>
                         </Card>
                     </div>
                 </div>
             </div>
 
-            {/* Architecture Bar */}
-            <div className="fixed bottom-0 w-full z-40 px-4 md:px-6 pb-4 pointer-events-none left-0">
-                <div className="max-w-[1200px] mx-auto bg-gray-950/90 backdrop-blur-xl border border-white/5 text-white h-12 rounded-2xl shadow-2xl flex items-center justify-between px-6 pointer-events-auto">
-                    <div className="flex items-center gap-4 md:gap-8">
-                        <div className="flex items-center gap-2.5">
-                            <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
-                            <span className="text-[9px] font-black tracking-[0.2em] uppercase text-indigo-400 shrink-0 italic">Core Registry</span>
-                        </div>
-                        <div className="h-4 w-px bg-white/10 hidden md:block"></div>
-                        <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
-                            <span className="text-[9px] font-black uppercase text-gray-400 tracking-widest">Sync active</span>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-4 text-[9px] font-black tracking-widest uppercase text-gray-500">
-                        <span className="hidden sm:block">NodeID: {roomId?.slice(-8).toUpperCase()}</span>
-                        <div className="h-1.5 w-1.5 rounded-full bg-white/10 animate-pulse" />
-                    </div>
-                </div>
-            </div>
+
         </div>
     );
 };

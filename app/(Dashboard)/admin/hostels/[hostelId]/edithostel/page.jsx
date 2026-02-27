@@ -429,81 +429,56 @@ const EditHostelForm = () => {
                             </div>
                         </Card>
 
-                        {/* Inventory Specs Card */}
-                        <Card className="border border-gray-200 bg-gray-900 shadow-2xl overflow-hidden p-8 relative">
-                            <div className="absolute top-0 right-0 p-6 opacity-10">
-                                <ShieldCheck className="h-20 w-20 text-white" />
-                            </div>
-                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] mb-8 border-b border-white/5 pb-4">Lifecycle Audit Registry</p>
-                            <div className="space-y-6 relative z-10">
-                                <div className="space-y-3">
-                                    <Label className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex items-center justify-between">
-                                        Internal Log Description
-                                        <Sparkle className="h-3 w-3 text-blue-500" />
+                        {/* Hostel audit & details (same style as create hostel) */}
+                        <Card className="border border-gray-200 bg-white shadow-sm overflow-hidden">
+                            <CardHeader className="px-6 pt-6 pb-3 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between">
+                                <CardTitle className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.18em] flex items-center gap-2">
+                                    <ShieldCheck className="h-4 w-4 text-indigo-500" />
+                                    Hostel audit & details
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6 space-y-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center justify-between">
+                                        Description
+                                        <span className="text-[9px] font-medium text-gray-400 normal-case tracking-normal">
+                                            Optional notes for internal use
+                                        </span>
                                     </Label>
                                     <Textarea
-                                        className="bg-black/40 border-white/5 text-white/90 text-[11px] font-bold min-h-[160px] rounded-2xl focus:border-white/20 focus:ring-0 custom-scrollbar p-4 leading-relaxed"
-                                        placeholder="Enter detailed property specs and registry logs..."
+                                        className="bg-gray-50 border-gray-200 text-xs font-medium min-h-[140px] rounded-xl focus:border-indigo-400 focus:ring-indigo-400/40"
+                                        placeholder="Add details about the hostel, building condition, nearby landmarks, or any special notes."
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
                                     />
                                 </div>
-
-                                <div className="pt-6 border-t border-white/10 space-y-5">
-                                    <div
-                                        className="flex justify-between items-center group cursor-pointer"
-                                        onClick={() => setLaundry(laundry === 'Yes' ? 'No' : 'Yes')}
-                                    >
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Laundry Facility</span>
-                                            <span className="text-[9px] font-bold text-gray-600 group-hover:text-blue-400 transition-colors">On-site fabric care protocol</span>
-                                        </div>
-                                        <div className={`h-6 w-12 rounded-full p-1 transition-colors duration-300 ${laundry === 'Yes' ? 'bg-blue-600' : 'bg-gray-800'}`}>
-                                            <div className={`h-4 w-4 rounded-full bg-white transition-transform duration-300 shadow-sm ${laundry === 'Yes' ? 'translate-x-6' : 'translate-x-0'}`} />
-                                        </div>
-                                    </div>
-
-                                    <div
-                                        className="flex justify-between items-center group cursor-pointer"
-                                        onClick={() => setMess(mess === 'Yes' ? 'No' : 'Yes')}
-                                    >
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Mess / Dining</span>
-                                            <span className="text-[9px] font-bold text-gray-600 group-hover:text-amber-400 transition-colors">Managed dietary registry</span>
-                                        </div>
-                                        <div className={`h-6 w-12 rounded-full p-1 transition-colors duration-300 ${mess === 'Yes' ? 'bg-amber-600' : 'bg-gray-800'}`}>
-                                            <div className={`h-4 w-4 rounded-full bg-white transition-transform duration-300 shadow-sm ${mess === 'Yes' ? 'translate-x-6' : 'translate-x-0'}`} />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="pt-6 border-t border-white/10 grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Cleaning Cycle (hrs)</Label>
+                                <div className="grid grid-cols-2 gap-4 py-4 border-t border-gray-100">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Cleaning (hrs)</Label>
                                         <Input
                                             type="number"
-                                            className="bg-black/40 border-white/5 text-white/90 text-xs font-bold h-10 rounded-xl focus:border-white/20"
+                                            className="bg-gray-50 border-gray-200 h-10 rounded-xl text-xs font-medium focus:border-indigo-400 focus:ring-indigo-400/40"
                                             value={cleaningInterval}
                                             onChange={(e) => setCleaningInterval(e.target.value)}
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Laundry Cycle (hrs)</Label>
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Laundry (hrs)</Label>
                                         <Input
                                             type="number"
-                                            className="bg-black/40 border-white/5 text-white/90 text-xs font-bold h-10 rounded-xl focus:border-white/20"
+                                            className="bg-gray-50 border-gray-200 h-10 rounded-xl text-xs font-medium focus:border-indigo-400 focus:ring-indigo-400/40"
                                             value={laundryInterval}
                                             onChange={(e) => setLaundryInterval(e.target.value)}
                                         />
                                     </div>
                                 </div>
-
-                                <div className="pt-8 flex items-center gap-3 opacity-40">
-                                    <div className="h-px flex-1 bg-white/10" />
-                                    <span className="text-[9px] font-black text-white uppercase tracking-widest">Protocol V5.2</span>
-                                    <div className="h-px flex-1 bg-white/10" />
+                                <div className="flex items-center gap-2 pt-1">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                                    <span className="text-[10px] font-medium text-gray-500 uppercase tracking-widest">
+                                        Basic security checks in place
+                                    </span>
                                 </div>
-                            </div>
+                            </CardContent>
                         </Card>
                     </div>
                 </div>

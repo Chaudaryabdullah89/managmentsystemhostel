@@ -292,27 +292,35 @@ const CreateHostelPage = () => {
                             </div>
                         </Card>
 
-                        <Card className="border border-gray-200 bg-gray-900 shadow-xl overflow-hidden p-6 relative">
-                            <div className="absolute top-0 right-0 p-4 opacity-10">
-                                <ShieldCheck className="h-12 w-12 text-white" />
-                            </div>
-                            <p className="text-[10px] font-bold text-white uppercase tracking-[0.2em] mb-6">More Details</p>
-                            <div className="space-y-4">
+                        {/* Audit & extra details */}
+                        <Card className="border border-gray-200 bg-white shadow-sm overflow-hidden">
+                            <CardHeader className="px-6 pt-6 pb-3 border-b border-gray-100 bg-gray-50/60 flex items-center justify-between">
+                                <CardTitle className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.18em] flex items-center gap-2">
+                                    <ShieldCheck className="h-4 w-4 text-indigo-500" />
+                                    Hostel audit & details
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6 space-y-6">
                                 <div className="space-y-2">
-                                    <p className="text-[10px] font-bold text-white uppercase">Description</p>
+                                    <Label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest flex items-center justify-between">
+                                        Description
+                                        <span className="text-[9px] font-medium text-gray-400 normal-case tracking-normal">
+                                            Optional notes for internal use
+                                        </span>
+                                    </Label>
                                     <Textarea
-                                        className="bg-black/40 border-white/5 text-white/90 text-xs font-medium min-h-[140px] rounded-xl focus:border-white/20"
-                                        placeholder="Add any notes here..."
+                                        className="bg-gray-50 border-gray-200 text-xs font-medium min-h-[140px] rounded-xl focus:border-indigo-400 focus:ring-indigo-400/40"
+                                        placeholder="Add details about the hostel, building condition, nearby landmarks, or any special notes."
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4 py-4 border-t border-white/5">
+                                <div className="grid grid-cols-2 gap-4 py-4 border-t border-gray-100">
                                     <div className="space-y-1.5">
                                         <Label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Cleaning (hrs)</Label>
                                         <Input
                                             type="number"
-                                            className="bg-black/20 border-white/5 h-10 rounded-xl text-white font-bold"
+                                            className="bg-gray-50 border-gray-200 h-10 rounded-xl text-xs font-medium focus:border-indigo-400 focus:ring-indigo-400/40"
                                             value={cleaningInterval}
                                             onChange={(e) => setCleaningInterval(e.target.value)}
                                         />
@@ -321,17 +329,19 @@ const CreateHostelPage = () => {
                                         <Label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Laundry (hrs)</Label>
                                         <Input
                                             type="number"
-                                            className="bg-black/20 border-white/5 h-10 rounded-xl text-white font-bold"
+                                            className="bg-gray-50 border-gray-200 h-10 rounded-xl text-xs font-medium focus:border-indigo-400 focus:ring-indigo-400/40"
                                             value={laundryInterval}
                                             onChange={(e) => setLaundryInterval(e.target.value)}
                                         />
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 pt-2">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Secure Entry System</span>
+                                <div className="flex items-center gap-2 pt-1">
+                                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                                    <span className="text-[10px] font-medium text-gray-500 uppercase tracking-widest">
+                                        Basic security checks in place
+                                    </span>
                                 </div>
-                            </div>
+                            </CardContent>
                         </Card>
                     </div>
                 </div>
