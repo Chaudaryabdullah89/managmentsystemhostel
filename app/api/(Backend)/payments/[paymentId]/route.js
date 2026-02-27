@@ -41,32 +41,23 @@ export async function PATCH(request, { params }) {
         // Send email when payment is approved/paid
         if (status === "PAID" || status === "APPROVED" || status === "COMPLETED") {
             try {
-                // Fetch user details for the email
-                const fullPayment = await prisma.payment.findUnique({
-                    where: { id: paymentId },
-                    include: {
-                        user: { select: { name: true, email: true } },
-                        Hostel_Payment_hostelIdToHostel: { select: { name: true } },
-                    },
-                });
-
-                if (fullPayment?.user?.email) {
+                if (payment?.User?.email) {
                     sendEmail({
-                        to: fullPayment.user.email,
+                        to: payment.User.email,
                         subject: "Payment Approved — GreenView Hostels",
                         html: paymentApprovedEmail({
-                            name: fullPayment.user.name,
-                            paymentId: fullPayment.uid || paymentId,
-                            amount: fullPayment.amount,
-                            type: fullPayment.type,
-                            method: fullPayment.method || method,
-                            hostelName: fullPayment.Hostel_Payment_hostelIdToHostel?.name,
-                            date: fullPayment.updatedAt,
+                            name: payment.User.name,
+                            paymentId: payment.uid || paymentId,
+                            amount: payment.amount,
+                            type: payment.type,
+                            method: payment.method || method,
+                            hostelName: payment.Booking?.Room?.Hostel?.name || payment.User?.Hostel_User_hostelIdToHostel?.name || "GreenView",
+                            date: payment.updatedAt,
                         }),
                     }).catch(err => console.error("[Email] Payment approved email failed:", err));
                 }
             } catch (emailErr) {
-                console.error("[Email] Error fetching payment details for email:", emailErr);
+                console.error("[Email] Error preparing payment approval email:", emailErr);
             }
         }
 

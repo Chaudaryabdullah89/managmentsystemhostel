@@ -290,26 +290,6 @@ const CleaningPage = () => {
                 </div>
             </div>
 
-            {/* Architecture Bar */}
-            <div className="fixed bottom-0 w-full z-40 px-4 md:px-6 pb-4 pointer-events-none left-0">
-                <div className="max-w-[1600px] mx-auto bg-gray-950/90 backdrop-blur-xl border border-white/5 text-white h-12 rounded-2xl shadow-2xl flex items-center justify-between px-6 pointer-events-auto">
-                    <div className="flex items-center gap-4 md:gap-8">
-                        <div className="flex items-center gap-2.5">
-                            <Sparkle className="w-3.5 h-3.5 text-blue-400" />
-                            <span className="text-[9px] font-black tracking-[0.2em] uppercase text-blue-400 shrink-0">Hygiene Ops</span>
-                        </div>
-                        <div className="h-4 w-px bg-white/10 hidden md:block"></div>
-                        <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[9px] font-black uppercase text-gray-400 tracking-widest">Sanitation Confirmed</span>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-4 text-[9px] font-black tracking-widest uppercase text-gray-500">
-                        <span className="hidden sm:block">Node: ROOM_{roomData?.data?.roomNumber}</span>
-                        <div className="h-1.5 w-1.5 rounded-full bg-white/10 animate-pulse" />
-                    </div>
-                </div>
-            </div>
 
             {/* Edit Dialog - Updated Style */}
             <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>

@@ -191,7 +191,7 @@ const HostelOverviewPage = () => {
                                                 <Calendar className="h-3 w-3" /> Updated
                                             </span>
                                             <span className="text-[11px] font-black text-gray-900 uppercase tabular-nums">
-                                                {format(new Date(hostel.updatedAt), 'dd/MM/yy')}
+                                                {hostel.updatedAt ? format(new Date(hostel.updatedAt), 'dd/MM/yy') : '—'}
                                             </span>
                                         </div>
                                     </div>
@@ -325,7 +325,7 @@ const HostelOverviewPage = () => {
                                 <div className="flex flex-col">
                                     <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Created On</span>
                                     <span className="text-[11px] font-bold text-gray-900 mt-1 uppercase italic">
-                                        {format(new Date(hostel.createdAt), 'MMM dd, yyyy')}
+                                        {hostel.createdAt ? format(new Date(hostel.createdAt), 'MMM dd, yyyy') : '—'}
                                     </span>
                                 </div>
                                 <div className="flex flex-col">

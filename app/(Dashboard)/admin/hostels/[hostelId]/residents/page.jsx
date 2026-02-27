@@ -3,7 +3,7 @@ import React, { useState, Suspense } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, ArrowLeft, Filter, Phone, Mail, Home, User, MoreVertical, ShieldCheck, RefreshCw, LayoutGrid, Plus, Edit } from "lucide-react"
+import { Search, ArrowLeft, Filter, Phone, Mail, Home, User, Users, MoreVertical, ShieldCheck, RefreshCw, LayoutGrid, Plus, Edit } from "lucide-react"
 import Link from 'next/link'
 import {
     Table,
@@ -337,25 +337,7 @@ const ResidentsContent = () => {
                     )}
                 </Card>
 
-                {/* Audit Layer */}
-                <div className="pt-8 border-t border-gray-200 border-dashed">
-                    <Card className="border border-gray-100 bg-gray-950 shadow-2xl overflow-hidden p-6 md:p-10 relative">
-                        <div className="absolute top-0 right-0 p-8 opacity-5">
-                            <ShieldCheck className="h-32 w-32 text-indigo-500" />
-                        </div>
-                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 relative z-10">
-                            <div className="space-y-4">
-                                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em]">Registry Audit</p>
-                                <h3 className="text-2xl md:text-3xl font-black text-white tracking-tighter uppercase italic">Legacy Persistence</h3>
-                                <p className="text-gray-400 text-[11px] font-black leading-relaxed max-w-xl uppercase tracking-wider">All resident nodes are securely encrypted within the registry. Access protocols are limited to administrative nodes only.</p>
-                            </div>
-                            <div className="flex items-center gap-2 bg-white/5 px-4 py-2.5 rounded-2xl border border-white/10 shrink-0">
-                                <RefreshCw className="h-3.5 w-3.5 text-indigo-500" />
-                                <span className="text-[9px] font-mono font-black text-gray-400 uppercase tracking-widest">LAST_SYNC: {new Date().toLocaleTimeString()}</span>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
+
             </main>
         </div>
     )

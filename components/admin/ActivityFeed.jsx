@@ -24,7 +24,7 @@ export default function ActivityFeed({ events }) {
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-4">
                             <h4 className="text-sm font-semibold text-gray-900 truncate">{e.title}</h4>
-                            <span className="shrink-0 text-[11px] text-gray-500 whitespace-nowrap">{format(e.date, 'MMM dd, HH:mm')}</span>
+                            <span className="shrink-0 text-[11px] text-gray-500 whitespace-nowrap">{(e.date && !isNaN(e.date.getTime())) ? format(e.date, 'MMM dd, HH:mm') : '—'}</span>
                         </div>
                         <p className="text-xs text-gray-600 mt-1 line-clamp-2">{e.description}</p>
                         <div className="mt-2">

@@ -25,7 +25,8 @@ import {
     Boxes,
     BarChart3,
     History,
-    ShieldCheck
+    ShieldCheck,
+    PieChart
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,53 @@ import {
 } from "@/components/ui/select";
 import { useReports } from "@/hooks/useReports";
 import { format } from "date-fns";
+
+// SVG Bar Chart Component
+const BarChart = ({ data, height = 200 }) => {
+    if (!data || data.length === 0) return null;
+    const maxVal = Math.max(...data.map(d => Math.max(d.revenue || 0, d.expenses || 0, 1)));
+    const barW = 100 / (data.length * 3);
+    return (
+        <div className="w-full" style={{ height }}>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full" style={{ height: height - 28 }}>
+                {[25, 50, 75].map(pct => (
+                    <line key={pct} x1="0" y1={100 - pct} x2="100" y2={100 - pct} stroke="#f3f4f6" strokeWidth="0.5" />
+                ))}
+                {data.map((d, i) => {
+                    const x = (i / data.length) * 100 + barW * 0.5;
+                    const revH = Math.max(((d.revenue || 0) / maxVal) * 90, 0.5);
+                    const expH = Math.max(((d.expenses || 0) / maxVal) * 90, 0.5);
+                    return (
+                        <g key={i}>
+                            <rect x={x} y={100 - revH} width={barW} height={revH} fill="#10b981" rx="0.5" opacity="0.9" />
+                            <rect x={x + barW + 0.4} y={100 - expH} width={barW} height={expH} fill="#f43f5e" rx="0.5" opacity="0.7" />
+                        </g>
+                    );
+                })}
+            </svg>
+            <div className="flex justify-between mt-2">
+                {data.map((d, i) => (
+                    <span key={i} className="text-[8px] font-bold text-gray-400 uppercase text-center" style={{ width: `${100 / data.length}%` }}>
+                        {(d.month || '').slice(0, 3)}
+                    </span>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// Donut chart
+const OccupancyDonut = ({ rate = 0 }) => {
+    const r = 36, circ = 2 * Math.PI * r;
+    const filled = Math.min((rate / 100) * circ, circ);
+    return (
+        <svg viewBox="0 0 100 100" className="w-28 h-28 -rotate-90">
+            <circle cx="50" cy="50" r={r} fill="none" stroke="#f3f4f6" strokeWidth="12" />
+            <circle cx="50" cy="50" r={r} fill="none" stroke="#10b981" strokeWidth="12"
+                strokeDasharray={`${filled} ${circ - filled}`} strokeLinecap="round" />
+        </svg>
+    );
+};
 
 const ReportsPage = () => {
     const [selectedPeriod, setSelectedPeriod] = useState("month");
@@ -254,42 +302,63 @@ const ReportsPage = () => {
                 </Card>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Monthly Trend Log */}
+                    {/* Monthly Chart + Trend Log */}
                     <div className="lg:col-span-8">
                         <Card className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden h-full">
-                            <div className="p-8 border-b border-gray-50 bg-gray-50/20 flex items-center gap-4">
-                                <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                                    <BarChart3 className="h-5 w-5" />
+                            <div className="p-8 border-b border-gray-50 bg-gray-50/20 flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                                        <BarChart3 className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Revenue vs Expenses</h3>
+                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1 italic">6-Month financial trajectory</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Temporal Settlement Trend</h3>
-                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1 italic">6-Month financial trajectory</p>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Revenue</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="h-2.5 w-2.5 rounded-sm bg-rose-400" />
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Expenses</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="p-0 overflow-x-auto">
-                                <table className="w-full text-left">
-                                    <thead>
-                                        <tr className="bg-gray-50 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b">
-                                            <th className="px-8 py-4">Time Delta</th>
-                                            <th className="px-8 py-4 text-right">Revenue</th>
-                                            <th className="px-8 py-4 text-right">Magnitude</th>
-                                            <th className="px-8 py-4 text-center">Delta</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {trends.map((data, index) => (
-                                            <tr key={index} className="hover:bg-gray-50/50 transition-colors">
-                                                <td className="px-8 py-4 text-xs font-bold text-gray-900 uppercase tracking-tighter italic">{data.month}</td>
-                                                <td className="px-8 py-4 text-right text-xs font-bold text-gray-900">PKR {data.revenue.toLocaleString()}</td>
-                                                <td className="px-8 py-4 text-right text-xs font-black text-emerald-600">PKR {data.profit.toLocaleString()}</td>
-                                                <td className="px-8 py-4 text-center">
-                                                    <Badge className="bg-emerald-50 text-emerald-600 border-none text-[8px] font-black px-2 py-0.5 rounded-full">+12%</Badge>
-                                                </td>
+                            <div className="p-8">
+                                {trends.length > 0 ? (
+                                    <BarChart data={trends} height={220} />
+                                ) : (
+                                    <div className="flex items-center justify-center h-48 text-gray-200">
+                                        <BarChart3 className="h-12 w-12" />
+                                    </div>
+                                )}
+                            </div>
+                            {trends.length > 0 && (
+                                <div className="overflow-x-auto border-t border-gray-50">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="bg-gray-50 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b">
+                                                <th className="px-8 py-4">Period</th>
+                                                <th className="px-8 py-4 text-right">Revenue</th>
+                                                <th className="px-8 py-4 text-right">Expenses</th>
+                                                <th className="px-8 py-4 text-right">Net Profit</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {trends.map((d, index) => (
+                                                <tr key={index} className="hover:bg-gray-50/50 transition-colors">
+                                                    <td className="px-8 py-4 text-xs font-bold text-gray-900 uppercase tracking-tighter italic">{d.month}</td>
+                                                    <td className="px-8 py-4 text-right text-xs font-bold text-emerald-600">PKR {d.revenue?.toLocaleString()}</td>
+                                                    <td className="px-8 py-4 text-right text-xs font-bold text-rose-500">PKR {d.expenses?.toLocaleString()}</td>
+                                                    <td className="px-8 py-4 text-right text-sm font-black text-gray-900">PKR {d.profit?.toLocaleString()}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                         </Card>
                     </div>
 

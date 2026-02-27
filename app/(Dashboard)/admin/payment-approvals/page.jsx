@@ -235,7 +235,7 @@ const PaymentApprovalPage = () => {
                                         <span className="text-lg font-bold text-slate-900">PKR {payment.amount.toLocaleString()}</span>
                                         <div className="flex items-center gap-2 text-[9px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
                                             <Badge variant="outline" className="text-[8px] px-1.5 py-0 border-slate-100 bg-slate-50">{payment.method}</Badge>
-                                            <span>{format(new Date(payment.date), 'MMM dd')}</span>
+                                            <span>{payment.date || payment.createdAt ? format(new Date(payment.date || payment.createdAt), 'MMM dd') : '—'}</span>
                                         </div>
                                     </div>
 

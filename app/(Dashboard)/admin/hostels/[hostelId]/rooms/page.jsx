@@ -192,7 +192,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
                     {[
                         { label: 'Units', value: rooms.length, icon: Building2, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                         { label: 'Network Coverage', value: rooms.reduce((acc, r) => acc + r.capacity, 0), icon: Bed, color: 'text-purple-600', bg: 'bg-purple-50' },
-                        { label: 'Capital Logic', value: `PKR ${rooms.reduce((acc, r) => acc + (r.monthlyrent || 0), 0).toLocaleString()}`, icon: Coins, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Capital Logic', value: `PKR ${rooms.reduce((acc, r) => acc + (r.monthlyrent || r.montlyrent || r.price || 0), 0).toLocaleString()}`, icon: Coins, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                         { label: 'Security Node', value: 'Shielded', icon: ShieldCheck, color: 'text-amber-600', bg: 'bg-amber-50' },
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
@@ -306,7 +306,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Yield Curve</span>
-                                            <span className="text-[11px] font-black text-indigo-600 italic">PKR {room.monthlyrent?.toLocaleString()}/MO</span>
+                                            <span className="text-[11px] font-black text-indigo-600 italic">PKR {(room.monthlyrent || room.montlyrent || room.price || 0).toLocaleString()}/MO</span>
                                         </div>
                                     </div>
 

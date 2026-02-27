@@ -96,8 +96,8 @@ const AddGuestPage = () => {
         if (room) {
             setFormData(prev => ({
                 ...prev,
-                totalAmount: room.monthlyrent || 0,
-                securityDeposit: room.monthlyrent || 0
+                totalAmount: (room.monthlyrent || room.montlyrent || room.price || 0),
+                securityDeposit: (room.monthlyrent || room.montlyrent || room.price || 0)
             }));
         }
     }, [room]);

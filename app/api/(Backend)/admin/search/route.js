@@ -29,7 +29,8 @@ export async function GET(req) {
                         { email: { contains: query, mode: 'insensitive' } },
                         { name: { contains: query, mode: 'insensitive' } },
                         { phone: { contains: query, mode: 'insensitive' } },
-                        { id: { contains: query, mode: 'insensitive' } }
+                        { id: { contains: query, mode: 'insensitive' } },
+                        { cnic: { contains: query, mode: 'insensitive' } }
                     ]
                 },
                 select: {
@@ -46,12 +47,21 @@ export async function GET(req) {
                 take: 10
             }),
 
-            // Search bookings by UID or ID
+            // Search bookings by UID, ID or User fields
             prisma.booking.findMany({
                 where: {
                     OR: [
                         { uid: { contains: searchTerm, mode: 'insensitive' } },
-                        { id: { contains: query, mode: 'insensitive' } }
+                        { id: { contains: query, mode: 'insensitive' } },
+                        {
+                            User: {
+                                OR: [
+                                    { name: { contains: query, mode: 'insensitive' } },
+                                    { email: { contains: query, mode: 'insensitive' } },
+                                    { uid: { contains: searchTerm, mode: 'insensitive' } }
+                                ]
+                            }
+                        }
                     ]
                 },
                 include: {
@@ -77,13 +87,22 @@ export async function GET(req) {
                 take: 10
             }),
 
-            // Search payments by UID or transaction ID
+            // Search payments by UID, transaction ID or User fields
             prisma.payment.findMany({
                 where: {
                     OR: [
                         { uid: { contains: searchTerm, mode: 'insensitive' } },
                         { transactionId: { contains: query, mode: 'insensitive' } },
-                        { id: { contains: query, mode: 'insensitive' } }
+                        { id: { contains: query, mode: 'insensitive' } },
+                        {
+                            User: {
+                                OR: [
+                                    { name: { contains: query, mode: 'insensitive' } },
+                                    { email: { contains: query, mode: 'insensitive' } },
+                                    { uid: { contains: searchTerm, mode: 'insensitive' } }
+                                ]
+                            }
+                        }
                     ]
                 },
                 include: {
@@ -107,13 +126,21 @@ export async function GET(req) {
                 take: 10
             }),
 
-            // Search complaints by UID or title
+            // Search complaints by UID, title or User fields
             prisma.complaint.findMany({
                 where: {
                     OR: [
                         { uid: { contains: searchTerm, mode: 'insensitive' } },
                         { title: { contains: query, mode: 'insensitive' } },
-                        { id: { contains: query, mode: 'insensitive' } }
+                        { id: { contains: query, mode: 'insensitive' } },
+                        {
+                            User_Complaint_userIdToUser: {
+                                OR: [
+                                    { name: { contains: query, mode: 'insensitive' } },
+                                    { email: { contains: query, mode: 'insensitive' } }
+                                ]
+                            }
+                        }
                     ]
                 },
                 include: {
@@ -135,17 +162,25 @@ export async function GET(req) {
                 take: 10
             }),
 
-            // Search maintenance by UID or title
+            // Search maintenance by UID, title or User fields
             prisma.maintanance.findMany({
                 where: {
                     OR: [
                         { uid: { contains: searchTerm, mode: 'insensitive' } },
                         { title: { contains: query, mode: 'insensitive' } },
-                        { id: { contains: query, mode: 'insensitive' } }
+                        { id: { contains: query, mode: 'insensitive' } },
+                        {
+                            User_maintanance_userIdToUser: {
+                                OR: [
+                                    { name: { contains: query, mode: 'insensitive' } },
+                                    { email: { contains: query, mode: 'insensitive' } }
+                                ]
+                            }
+                        }
                     ]
                 },
                 include: {
-                    User: {
+                    User_maintanance_userIdToUser: {
                         select: {
                             id: true,
                             uid: true,

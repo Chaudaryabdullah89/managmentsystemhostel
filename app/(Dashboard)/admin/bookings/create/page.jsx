@@ -81,6 +81,7 @@ const CreateBookingPage = () => {
         checkOut: "",
         status: "PENDING",
         paymentStatus: "PENDING",
+        paymentMethod: "CASH",
         totalAmount: 0,
         securityDeposit: 0,
         advanceMonths: 1
@@ -97,7 +98,7 @@ const CreateBookingPage = () => {
             if (existingGuestQuery.length > 2) {
                 setIsSearching(true);
                 try {
-                    const res = await fetch(`/api/users?query=${existingGuestQuery}&role=GUEST`);
+                    const res = await fetch(`/api/users?query=${existingGuestQuery}&role=all`);
                     const data = await res.json();
                     setSearchResults(data.data || []);
                 } catch (error) {
@@ -151,7 +152,7 @@ const CreateBookingPage = () => {
 
     const calculateTotals = () => {
         if (!selectedRoom) return;
-        const rent = selectedRoom.monthlyrent || 0;
+        const rent = (selectedRoom.monthlyrent || selectedRoom.montlyrent || selectedRoom.price || 0);
         const deposit = parseFloat(formData.securityDeposit) || 0;
         const total = deposit + (rent * (parseInt(formData.advanceMonths) || 1));
 
@@ -378,7 +379,7 @@ const CreateBookingPage = () => {
                                                 ) : rooms.length > 0 ? (
                                                     rooms.map(r => (
                                                         <SelectItem key={r.id} value={r.id} disabled={r.status === 'OCCUPIED'} className="p-3 font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer">
-                                                            Room {r.roomNumber} ({r.type}) • PKR {r.monthlyrent}/mo {r.status === 'OCCUPIED' && '• [FULL]'}
+                                                            Room {r.roomNumber} ({r.type}) • PKR {r.monthlyrent || r.montlyrent || r.price || 0}/mo {r.status === 'OCCUPIED' && '• [FULL]'}
                                                         </SelectItem>
                                                     ))
                                                 ) : (
@@ -405,7 +406,7 @@ const CreateBookingPage = () => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Rent</p>
-                                            <p className="font-bold text-gray-900">PKR {selectedRoom.monthlyrent}</p>
+                                            <p className="font-bold text-gray-900">PKR {selectedRoom.monthlyrent || selectedRoom.montlyrent || selectedRoom.price || 0}</p>
                                         </div>
                                     </div>
                                 )}
@@ -472,6 +473,23 @@ const CreateBookingPage = () => {
                                                     </SelectContent>
                                                 </Select>
                                             </div>
+                                            {formData.paymentStatus === 'PAID' && (
+                                                <div className="space-y-2.5 col-span-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Payment Method</Label>
+                                                    <Select value={formData.paymentMethod} onValueChange={(v) => setFormData(p => ({ ...p, paymentMethod: v }))}>
+                                                        <SelectTrigger className="h-14 rounded-xl border-gray-100 font-bold">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="rounded-xl border-gray-100">
+                                                            <SelectItem value="CASH">Cash</SelectItem>
+                                                            <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
+                                                            <SelectItem value="CREDIT_CARD">Credit Card</SelectItem>
+                                                            <SelectItem value="CHEQUE">Cheque</SelectItem>
+                                                            <SelectItem value="OTHER">Other</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -503,7 +521,7 @@ const CreateBookingPage = () => {
                                             </div>
                                             <div className="flex justify-between items-center text-gray-400">
                                                 <span className="text-[10px] font-bold uppercase tracking-widest">Rent ({formData.advanceMonths} Months)</span>
-                                                <span className="font-bold text-white">PKR {(selectedRoom?.monthlyrent || 0) * formData.advanceMonths}</span>
+                                                <span className="font-bold text-white">PKR {((selectedRoom?.monthlyrent || selectedRoom?.montlyrent || selectedRoom?.price || 0)) * formData.advanceMonths}</span>
                                             </div>
                                             <div className="h-px bg-white/10 my-4" />
                                             <div className="flex justify-between items-end gap-4">

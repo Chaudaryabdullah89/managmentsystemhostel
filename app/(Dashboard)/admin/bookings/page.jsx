@@ -238,7 +238,7 @@ const GlobalBookingsPage = () => {
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text("(POLICE COPY)", doc.internal.pageSize.width / 2, 26, { align: "center" });
+            // doc.text("()", doc.internal.pageSize.width / 2, 26, { align: "center" });
 
             // Metadata Section Below Header
             doc.setTextColor(80, 80, 80);
@@ -313,7 +313,7 @@ const GlobalBookingsPage = () => {
                 }
             });
 
-            doc.save(`Police_Verification_Report_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+            doc.save(`Records_Report_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
             toast.success("PDF Verification Report Exported ✨");
         } catch (error) {
             toast.error("Failed to export PDF");
@@ -556,7 +556,7 @@ const GlobalBookingsPage = () => {
                                                 <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
                                                     <Calendar className="h-2.5 w-2.5" /> IN
                                                 </span>
-                                                <span className="text-[10px] font-black text-gray-900 uppercase">{format(new Date(booking.checkIn), 'MMM dd, yy')}</span>
+                                                <span className="text-[10px] font-black text-gray-900 uppercase">{booking.checkIn ? format(new Date(booking.checkIn), 'MMM dd, yy') : '—'}</span>
                                             </div>
                                             <div className="flex-1 h-[1px] bg-indigo-100 relative mx-2">
                                                 <div className="absolute -top-1 left-0 h-2 w-2 rounded-full bg-indigo-200" />
@@ -613,7 +613,7 @@ const GlobalBookingsPage = () => {
                                             <div className="flex items-center gap-2">
                                                 <div className={`h-1.5 w-1.5 rounded-full ${booking.Payment[0].status === 'PAID' ? 'bg-emerald-400' : 'bg-rose-400'} animate-pulse`} />
                                                 <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest">
-                                                    {format(new Date(booking.Payment[0].date), 'MMM dd')}
+                                                    {booking.Payment?.[0]?.date || booking.Payment?.[0]?.createdAt ? format(new Date(booking.Payment[0].date || booking.Payment[0].createdAt), 'MMM dd') : '—'}
                                                 </span>
                                             </div>
                                         </div>
@@ -639,56 +639,7 @@ const GlobalBookingsPage = () => {
                     )}
                 </div>
 
-                {/* Status Bar */}
-                <div className="pt-6 md:pt-10">
-                    <div className="bg-blue-600 text-white rounded-3xl md:rounded-[2rem] p-4 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6 shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-full bg-white/5 skew-x-12 translate-x-20 hidden md:block" />
-                        <div className="flex items-center gap-4 md:gap-6 relative z-10 px-2 md:px-4 w-full md:w-auto justify-between md:justify-start">
-                            <div className="flex items-center gap-4 md:gap-6">
-                                <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
-                                    <ShieldCheck className="h-4 w-4 md:h-5 md:w-5 text-white" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <h4 className="text-[9px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-100">System Status</h4>
-                                    <p className="text-[10px] md:text-[11px] font-bold mt-0.5">Bookings up to date</p>
-                                </div>
-                            </div>
-                            <div className="flex md:hidden items-center gap-2 relative z-10">
-                                <span className="text-[9px] font-bold uppercase text-white tracking-widest">Online</span>
-                                <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
-                            </div>
-                        </div>
 
-                        <div className="h-6 w-px bg-white/10 hidden md:block" />
-
-                        <div className="flex-1 flex items-center justify-around md:justify-start md:gap-12 px-2 md:px-8 w-full md:w-auto">
-                            <div className="flex flex-col items-center md:items-start">
-                                <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-100 tracking-widest">Last Sync</span>
-                                <span className="text-[9px] md:text-[10px] font-bold text-gray-200 uppercase mt-1">{new Date().toLocaleDateString()}</span>
-                            </div>
-                            <div className="flex flex-col items-center md:items-start">
-                                <span className="text-[7px] md:text-[8px] font-bold uppercase text-indigo-100 tracking-widest">Total Records</span>
-                                <span className="text-[9px] md:text-[10px] font-bold text-white uppercase mt-1">{bookings.length} Verified Records</span>
-                            </div>
-                        </div>
-
-                        <div className="hidden md:flex items-center gap-3 pr-6 relative z-10">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 px-4 rounded-lg bg-white/5 hover:bg-white/10 text-[9px] font-bold uppercase tracking-widest text-white gap-2"
-                                onClick={() => syncAutomation.mutate()}
-                                disabled={syncAutomation.isPending}
-                            >
-                                <RefreshCw className={`h-3 w-3 ${syncAutomation.isPending ? 'animate-spin' : ''}`} />
-                                Sync Data
-                            </Button>
-                            <div className="h-4 w-px bg-white/10" />
-                            <span className="text-[9px] font-bold uppercase text-white tracking-widest">Online</span>
-                            <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
-                        </div>
-                    </div>
-                </div>
             </div>
 
             {/* Export Wizard Dialog */}

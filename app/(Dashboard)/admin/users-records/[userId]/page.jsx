@@ -38,10 +38,13 @@ import {
     Download,
     History,
     MessageSquare,
-    UserCheck,
     Fingerprint,
     Info,
-    ArrowUpRight
+    UserCheck,
+    ArrowUpRight,
+    PhoneCall,
+    Printer,
+    Loader2
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -78,6 +81,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import ActivityFeed from "@/components/admin/ActivityFeed";
 import Loader from "@/components/ui/Loader";
+import { toast } from "sonner";
+import { useCreatePayment } from "@/hooks/usePayment";
 
 const DetailItem = ({ icon: Icon, label, value, color = "text-indigo-600" }) => (
     <div className="flex items-start gap-4">
@@ -107,6 +112,14 @@ const UserDetailsPage = () => {
     const [isAccessDialogOpen, setIsAccessDialogOpen] = useState(false);
     const [editData, setEditData] = useState(null);
     const [newPass, setNewPass] = useState("hostel123");
+
+    // Booking & Payment Dialog States
+    const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+    const [selectedBooking, setSelectedBooking] = useState(null);
+    const [paymentAmount, setPaymentAmount] = useState("");
+    const [paymentMethod, setPaymentMethod] = useState("CASH");
+
+    const createPayment = useCreatePayment();
 
     const handleToggleStatus = async () => {
         try {
@@ -187,7 +200,7 @@ const UserDetailsPage = () => {
                 type: 'payment',
                 title: 'Payment Received',
                 description: `Received ${p.amount} PKR via ${p.method}`,
-                date: new Date(p.date),
+                date: new Date(p.date || p.createdAt || Date.now()),
                 status: p.status,
                 icon: CreditCard,
                 color: 'text-emerald-600',
@@ -199,7 +212,7 @@ const UserDetailsPage = () => {
                 type: 'complaint',
                 title: 'New Complaint',
                 description: c.title,
-                date: new Date(c.createdAt),
+                date: new Date(c.createdAt || Date.now()),
                 status: c.status,
                 icon: AlertCircle,
                 color: 'text-amber-600',
@@ -211,7 +224,7 @@ const UserDetailsPage = () => {
                 type: 'booking',
                 title: 'Stay Started',
                 description: `Checked in at ${b.room?.Hostel?.name || 'Hostel'} (Room ${b.room?.roomNumber})`,
-                date: new Date(b.createdAt),
+                date: new Date(b.createdAt || Date.now()),
                 status: b.status,
                 icon: Building2,
                 color: 'text-indigo-600',
@@ -267,10 +280,34 @@ const UserDetailsPage = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        {user.phone && (
+                            <a href={`tel:${user.phone}`}>
+                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all shadow-none" title="Call User">
+                                    <PhoneCall className="h-4 w-4" />
+                                </Button>
+                            </a>
+                        )}
+                        {user.email && (
+                            <a href={`mailto:${user.email}`}>
+                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all shadow-none" title="Email User">
+                                    <Mail className="h-4 w-4" />
+                                </Button>
+                            </a>
+                        )}
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => window.print()}
+                            className="h-9 w-9 rounded-xl border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all hidden md:flex shadow-none print:hidden"
+                            title="Print Record"
+                        >
+                            <Printer className="h-4 w-4" />
+                        </Button>
+                        <div className="hidden md:block h-6 w-px bg-gray-200 mx-1 border-r border-dashed print:hidden" />
                         <Button
                             variant="outline"
                             onClick={handleToggleStatus}
-                            className={`h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all border ${user.isActive ? 'border-amber-100 text-amber-600 bg-amber-50/50' : 'border-emerald-100 text-emerald-600 bg-emerald-50/50'}`}
+                            className={`h-9 px-4 rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all border ${user.isActive ? 'border-amber-100 text-amber-600 bg-amber-50/50' : 'border-emerald-100 text-emerald-600 bg-emerald-50/50'} print:hidden`}
                         >
                             <Power className="h-3.5 w-3.5 mr-2" />
                             {user.isActive ? 'Deactivate' : 'Activate'}
@@ -346,7 +383,7 @@ const UserDetailsPage = () => {
                                     <DetailItem icon={Phone} label="Phone Number" value={user.phone} />
                                     <DetailItem icon={Fingerprint} label="CNIC / ID" value={user.cnic} />
                                     <DetailItem icon={MapPin} label="Address" value={user.address} />
-                                    <DetailItem icon={Calendar} label="Member Since" value={format(new Date(user.createdAt), 'MMMM dd, yyyy')} />
+                                    <DetailItem icon={Calendar} label="Member Since" value={user.createdAt ? format(new Date(user.createdAt), 'MMMM dd, yyyy') : '—'} />
                                 </div>
 
                                 {user.ResidentProfile && (
@@ -452,7 +489,7 @@ const UserDetailsPage = () => {
                                                         const rows = activityFeed.map(e => [
                                                             e.title,
                                                             e.description,
-                                                            format(e.date, 'yyyy-MM-dd HH:mm'),
+                                                            (e.date && !isNaN(e.date.getTime())) ? format(e.date, 'yyyy-MM-dd HH:mm') : 'N/A',
                                                             e.status
                                                         ]);
                                                         const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
@@ -540,10 +577,17 @@ const UserDetailsPage = () => {
                                         </TableHeader>
                                         <TableBody>
                                             {userDetails?.bookings?.map((b) => (
-                                                <TableRow key={b.id} className="border-gray-50 hover:bg-gray-50 transition-colors">
+                                                <TableRow
+                                                    key={b.id}
+                                                    className="border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                                                    onClick={() => {
+                                                        setSelectedBooking(b);
+                                                        setIsBookingDialogOpen(true);
+                                                    }}
+                                                >
                                                     <TableCell className="px-8 py-5">
                                                         <div className="flex flex-col">
-                                                            <span className="text-xs font-bold text-gray-900">{format(new Date(b.checkIn), 'MMM dd, yyyy')}</span>
+                                                            <span className="text-xs font-bold text-gray-900">{b.checkIn ? format(new Date(b.checkIn), 'MMM dd, yyyy') : '—'}</span>
                                                             <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">to {b.checkOut ? format(new Date(b.checkOut), 'MMM dd, yyyy') : 'Present'}</span>
                                                         </div>
                                                     </TableCell>
@@ -592,9 +636,13 @@ const UserDetailsPage = () => {
                                         </TableHeader>
                                         <TableBody>
                                             {userDetails?.payments?.map((p) => (
-                                                <TableRow key={p.id} className="border-gray-50 hover:bg-gray-50 transition-colors">
+                                                <TableRow
+                                                    key={p.id}
+                                                    className="border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                                                    onClick={() => router.push(`/admin/payments/${p.id}`)}
+                                                >
                                                     <TableCell className="px-8 py-5">
-                                                        <span className="text-xs font-bold text-gray-900">{format(new Date(p.date), 'MMMM dd, yyyy')}</span>
+                                                        <span className="text-xs font-bold text-gray-900">{p.date || p.createdAt ? format(new Date(p.date || p.createdAt), 'MMMM dd, yyyy') : '—'}</span>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-5">
                                                         <div className="flex flex-col">
@@ -643,7 +691,7 @@ const UserDetailsPage = () => {
                                                 <p className="text-xs text-gray-500 font-medium line-clamp-2 leading-relaxed italic">"{c.description}"</p>
                                             </div>
                                             <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{format(new Date(c.createdAt), 'MMM dd, yyyy')}</span>
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{c.createdAt ? format(new Date(c.createdAt), 'MMM dd, yyyy') : '—'}</span>
                                                 <Link href={`/admin/complaints/${c.id}`}>
                                                     <Button variant="ghost" className="h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50">View details</Button>
                                                 </Link>
@@ -735,6 +783,121 @@ const UserDetailsPage = () => {
                     </div>
                     <DialogFooter className="pt-8">
                         <Button onClick={handleResetKey} className="h-14 w-full rounded-2xl bg-rose-600 text-white font-black uppercase tracking-widest shadow-xl shadow-rose-100">Reset Now</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Booking Details & Payment Dialog */}
+            <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
+                <DialogContent className="rounded-3xl border-none p-10 max-w-2xl shadow-2xl bg-white">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-black uppercase tracking-tighter italic text-gray-900 flex items-center gap-3">
+                            <Building2 className="h-6 w-6 text-indigo-600" />
+                            Booking Details
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    {selectedBooking && (
+                        <div className="space-y-8 pt-6">
+                            {/* Booking Info Card */}
+                            <div className="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-6 relative overflow-hidden">
+                                <div className="absolute right-0 top-0 h-full w-32 bg-indigo-100/50 skew-x-12 translate-x-16" />
+                                <div className="relative z-10 grid grid-cols-2 gap-6">
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Hostel</p>
+                                        <p className="text-sm font-black text-indigo-900">{selectedBooking.room?.Hostel?.name}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Room</p>
+                                        <p className="text-sm font-black text-indigo-900">Room {selectedBooking.room?.roomNumber}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Check-In</p>
+                                        <p className="text-sm font-bold text-gray-700">{selectedBooking.checkIn ? format(new Date(selectedBooking.checkIn), 'MMM dd, yyyy') : '—'}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Total Amt</p>
+                                        <p className="text-lg font-black text-indigo-600">PKR {selectedBooking.totalAmount.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Payment Section */}
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <CreditCard className="h-5 w-5 text-gray-400" />
+                                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Record Payment</h3>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400">Amount (PKR)</Label>
+                                        <Input
+                                            type="number"
+                                            value={paymentAmount}
+                                            onChange={e => setPaymentAmount(e.target.value)}
+                                            placeholder="e.g. 5000"
+                                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 font-bold px-4"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400">Method</Label>
+                                        <select
+                                            className="w-full h-12 rounded-xl border border-gray-200 bg-gray-50/50 font-bold px-4 text-sm outline-none focus:ring-2 focus:ring-indigo-600"
+                                            value={paymentMethod}
+                                            onChange={e => setPaymentMethod(e.target.value)}
+                                        >
+                                            <option value="CASH">Cash</option>
+                                            <option value="CARD">Card</option>
+                                            <option value="BANK_TRANSFER">Bank Transfer</option>
+                                            <option value="UPI">UPI / Mobile</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <DialogFooter className="pt-8 flex gap-3 sm:justify-between w-full">
+                        {selectedBooking && (
+                            <Link href={`/admin/bookings/${selectedBooking.id}`}>
+                                <Button variant="outline" className="h-12 px-6 rounded-xl font-bold uppercase text-[10px] tracking-widest w-full sm:w-auto">
+                                    Full Details <ArrowUpRight className="h-4 w-4 ml-2" />
+                                </Button>
+                            </Link>
+                        )}
+                        <Button
+                            onClick={async () => {
+                                if (!paymentAmount || isNaN(paymentAmount)) {
+                                    toast.error("Please enter a valid amount");
+                                    return;
+                                }
+                                try {
+                                    await createPayment.mutateAsync({
+                                        bookingId: selectedBooking.id,
+                                        userId: userId,
+                                        amount: Number(paymentAmount),
+                                        method: paymentMethod,
+                                        date: new Date().toISOString(),
+                                        status: 'PAID',
+                                        notes: 'Logged directly from User Record popup'
+                                    });
+                                    setPaymentAmount("");
+                                    setIsBookingDialogOpen(false);
+                                } catch (error) {
+                                    // Error handled in hook
+                                }
+                            }}
+                            disabled={createPayment.isPending}
+                            className={`h-12 px-8 rounded-xl text-white font-black uppercase tracking-widest flex items-center justify-center flex-1 sm:flex-none transition-all ${createPayment.isPending ? 'bg-indigo-400 shadow-none cursor-not-allowed' : 'bg-indigo-600 shadow-xl shadow-indigo-100 hover:bg-indigo-700 hover:scale-[1.02] active:scale-95'}`}
+                        >
+                            {createPayment.isPending ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Processing...
+                                </>
+                            ) : (
+                                "Save Payment"
+                            )}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

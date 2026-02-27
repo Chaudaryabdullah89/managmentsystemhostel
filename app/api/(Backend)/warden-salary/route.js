@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { format } from "date-fns";
 import { sendEmail } from "@/lib/utils/sendmail";
 import { monthlyRentEmail } from "@/lib/utils/emailTemplates";
+import crypto from 'crypto';
 
 // GET /api/warden-salary
 export async function GET(request) {
@@ -104,6 +105,7 @@ export async function POST(request) {
 
             const payment = await prisma.wardenPayment.create({
                 data: {
+                    id: crypto.randomUUID(),
                     wardenId,
                     amount: Number(totalAmount),
                     basicSalary: Number(bSalary),
@@ -114,12 +116,22 @@ export async function POST(request) {
                     paymentDate: paymentDate ? new Date(paymentDate) : new Date(),
                     notes: notes || "Manual Entry",
                     status: "PAID",
-                    type: "WARDEN_SALARY"
+                    type: "WARDEN_SALARY",
+                    updatedAt: new Date()
                 },
                 include: {
                     Warden: { select: { id: true, name: true, email: true } }
                 }
             });
+
+            // Generate and assign UID
+            const wardenPaymentUid = `WDP-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+            await prisma.wardenPayment.update({
+                where: { id: payment.id },
+                data: { uid: wardenPaymentUid }
+            });
+
+            payment.uid = wardenPaymentUid;
 
             // Email Notification
             if (warden.email) {
@@ -173,16 +185,24 @@ export async function POST(request) {
             const allow = warden.allowances || 0;
             const totalAmount = bSalary + allow;
 
-            await prisma.wardenPayment.create({
+            const newPayment = await prisma.wardenPayment.create({
                 data: {
+                    id: crypto.randomUUID(),
                     wardenId: warden.id,
                     amount: totalAmount,
                     basicSalary: bSalary,
                     month,
                     status: "PAID",
                     type: "WARDEN_SALARY",
-                    notes: "Automated Payroll Generation"
+                    notes: "Automated Payroll Generation",
+                    updatedAt: new Date()
                 }
+            });
+
+            const wardenPaymentUid = `WDP-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+            await prisma.wardenPayment.update({
+                where: { id: newPayment.id },
+                data: { uid: wardenPaymentUid }
             });
 
             if (warden.email) {

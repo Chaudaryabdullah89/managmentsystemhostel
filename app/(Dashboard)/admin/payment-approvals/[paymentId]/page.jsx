@@ -16,6 +16,7 @@ import {
     Check,
     X,
     TrendingUp,
+    Wallet,
     Clock,
     Activity,
     AlertCircle,
@@ -217,14 +218,14 @@ const PaymentApprovalDetailPage = () => {
                                     {payment.status}
                                 </Badge>
                                 <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-4 py-2 rounded-xl border border-gray-100">
-                                    <Clock className="h-3 w-3" /> {format(new Date(payment.date), 'MMM dd, yyyy')}
+                                    <Clock className="h-3 w-3" /> {payment.date ? format(new Date(payment.date), 'MMM dd, yyyy') : '—'}
                                 </div>
                             </div>
                         </div>
 
                         <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-8 pt-8 border-t border-gray-100">
                             {[
-                                { label: 'Date', value: format(new Date(payment.date), 'MMMM yyyy'), icon: Calendar, sub: format(new Date(payment.date), 'MMM dd, yyyy') },
+                                { label: 'Date', value: payment.date ? format(new Date(payment.date), 'MMMM yyyy') : '—', icon: Calendar, sub: payment.date ? format(new Date(payment.date), 'MMM dd, yyyy') : '—' },
                                 { label: 'Method', value: payment.method, icon: CreditCard, sub: 'Payment Method' },
                                 { label: 'Type', value: payment.type, icon: Receipt, sub: 'Payment Category' },
                                 { label: 'Status', value: payment.status, icon: ShieldCheck, sub: 'Current State' }
@@ -342,16 +343,18 @@ const PaymentApprovalDetailPage = () => {
                                         </div>
                                         <div>
                                             <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-[0.2em]">Hostel</p>
-                                            <p className="text-sm font-bold uppercase">{payment.Booking?.Room?.Hostel?.name}</p>
+                                            <p className="text-sm font-bold uppercase">{payment.Booking?.Room?.Hostel?.name || payment.User?.Hostel_User_hostelIdToHostel?.name || 'N/A'}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between pt-3 border-t border-white/10">
                                         <div className="flex items-baseline gap-2">
-                                            <span className="text-xl font-bold">Room {payment.Booking?.Room?.roomNumber}</span>
+                                            <span className="text-xl font-bold">{payment.Booking?.Room?.roomNumber ? `Room ${payment.Booking.Room.roomNumber}` : 'Direct Payment'}</span>
                                         </div>
-                                        <Badge className="bg-white/20 text-white border-none rounded-lg px-2 py-1 text-[9px] font-bold uppercase tracking-tighter">
-                                            Floor {payment.Booking?.Room?.floor}
-                                        </Badge>
+                                        {payment.Booking?.Room?.floor && (
+                                            <Badge className="bg-white/20 text-white border-none rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase transition-all">
+                                                Floor {payment.Booking.Room.floor}
+                                            </Badge>
+                                        )}
                                     </div>
                                 </div>
 
@@ -372,6 +375,36 @@ const PaymentApprovalDetailPage = () => {
 
                 {/* Right Sidebar */}
                 <div className="space-y-8">
+                    {/* Resident Balance Overview */}
+                    <div className={`rounded-2xl p-6 shadow-sm border ${payment.userBalance > 0 ? 'bg-amber-50 border-amber-100 shadow-amber-200/20' : 'bg-emerald-50 border-emerald-100 shadow-emerald-200/20'} transition-all duration-500`}>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                                <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${payment.userBalance > 0 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                    <Wallet className="h-5 w-5" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <h4 className={`text-[10px] font-bold uppercase tracking-widest ${payment.userBalance > 0 ? 'text-amber-800' : 'text-emerald-800'}`}>Total Balance</h4>
+                                    <p className={`text-[9px] font-medium uppercase ${payment.userBalance > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>Pending & Overdue</p>
+                                </div>
+                            </div>
+                            <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter ${payment.userBalance > 0 ? 'bg-amber-200/50 text-amber-900 border border-amber-200' : 'bg-emerald-200/50 text-emerald-900 border border-emerald-200'}`}>
+                                {payment.userBalance > 0 ? 'Action Required' : 'Cleared'}
+                            </div>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                            <span className={`text-2xl font-black tracking-tight ${payment.userBalance > 0 ? 'text-amber-900' : 'text-emerald-900'}`}>PKR {payment.userBalance?.toLocaleString()}</span>
+                            <span className={`text-[10px] font-bold uppercase ${payment.userBalance > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>due</span>
+                        </div>
+                        {payment.userBalance > (payment.amount || 0) && (
+                            <div className="mt-4 p-3 bg-white/50 rounded-xl border border-amber-200/30">
+                                <p className="text-[10px] font-medium text-amber-700 leading-tight">
+                                    <AlertTriangle className="h-3 w-3 inline mr-1 mb-0.5" />
+                                    This student has other unpaid invoices totaling PKR {(payment.userBalance - payment.amount).toLocaleString()}.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+
                     {/* Booking Info Card */}
                     <div className="bg-indigo-600 text-white rounded-2xl p-8 shadow-2xl shadow-indigo-600/20 relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full blur-3xl -mr-24 -mt-24 transition-transform duration-700 group-hover:scale-125" />
@@ -382,14 +415,21 @@ const PaymentApprovalDetailPage = () => {
                         <div className="space-y-6">
                             <div>
                                 <span className="text-[9px] font-bold text-indigo-300 uppercase block mb-2 tracking-widest">Booking REF</span>
-                                <div className="flex items-center justify-between">
-                                    <p className="text-xl font-bold text-white tracking-tighter">BK-{payment.bookingId?.slice(-8).toUpperCase()}</p>
-                                    <Link href={`/admin/bookings/${payment.bookingId}`}>
-                                        <div className="h-7 w-7 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white hover:text-indigo-600 transition-all">
-                                            <ChevronRight className="h-4 w-4" />
-                                        </div>
-                                    </Link>
-                                </div>
+                                {payment.bookingId ? (
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-xl font-bold text-white tracking-tighter">BK-{payment.bookingId?.slice(-8).toUpperCase()}</p>
+                                        <Link href={`/admin/bookings/${payment.bookingId}`}>
+                                            <div className="h-7 w-7 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white hover:text-indigo-600 transition-all">
+                                                <ChevronRight className="h-4 w-4" />
+                                            </div>
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <p className="text-sm font-bold text-indigo-200">DIRECT ENTRY</p>
+                                        <p className="text-[10px] font-medium text-indigo-300 uppercase tracking-widest mt-1">No specific booking linked</p>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-6 pt-4 border-t border-white/10">
@@ -403,11 +443,13 @@ const PaymentApprovalDetailPage = () => {
                                 </div>
                             </div>
 
-                            <Link href={`/admin/bookings/${payment.bookingId}`}>
-                                <Button className="w-full h-11 bg-white/10 border border-white/20 hover:bg-white hover:text-indigo-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all mt-2 shadow-md">
-                                    View Full Booking <ArrowRight className="h-4 w-4 ml-2" />
-                                </Button>
-                            </Link>
+                            {payment.bookingId && (
+                                <Link href={`/admin/bookings/${payment.bookingId}`}>
+                                    <Button className="w-full h-11 bg-white/10 border border-white/20 hover:bg-white hover:text-indigo-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all mt-2 shadow-md">
+                                        View Full Booking <ArrowRight className="h-4 w-4 ml-2" />
+                                    </Button>
+                                </Link>
+                            )}
                         </div>
                     </div>
 
@@ -432,7 +474,7 @@ const PaymentApprovalDetailPage = () => {
                                         <span className="text-xs font-bold text-gray-900 uppercase tracking-tight">{item.event}</span>
                                         <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{item.desc}</p>
                                         <span className="text-[9px] font-bold text-indigo-600 mt-1.5 bg-indigo-50 self-start px-2 py-0.5 rounded-full">
-                                            {format(new Date(item.date), 'MMM dd, HH:mm')}
+                                            {item.date ? format(new Date(item.date), 'MMM dd, HH:mm') : '—'}
                                         </span>
                                     </div>
                                 </div>
@@ -461,8 +503,8 @@ const PaymentApprovalDetailPage = () => {
                         </Button>
                     </div>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 };
 

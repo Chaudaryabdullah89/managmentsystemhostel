@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { format } from "date-fns";
 import { sendEmail } from "@/lib/utils/sendmail";
 import { monthlyRentEmail } from "@/lib/utils/emailTemplates";
+import crypto from "crypto";
 
 export async function GET(request) {
     const auth = await checkRole([]);
@@ -102,6 +103,7 @@ export async function POST(request) {
 
             const newSalary = await prisma.salary.create({
                 data: {
+                    id: crypto.randomUUID(),
                     staffProfileId: staffId,
                     month,
                     amount,
@@ -119,6 +121,15 @@ export async function POST(request) {
                     }
                 }
             });
+
+            // Generate and assign UID
+            const salaryUid = `SAL-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+            await prisma.salary.update({
+                where: { id: newSalary.id },
+                data: { uid: salaryUid }
+            });
+
+            newSalary.uid = salaryUid;
 
             // Send salary notification email
             if (staff.User?.email) {
@@ -165,8 +176,9 @@ export async function POST(request) {
             });
 
             if (!existing) {
-                await prisma.salary.create({
+                const newSalary = await prisma.salary.create({
                     data: {
+                        id: crypto.randomUUID(),
                         staffProfileId: staff.id,
                         month: month,
                         amount: (staff.basicSalary || 0) + (staff.allowances || 0),
@@ -177,6 +189,12 @@ export async function POST(request) {
                         status: 'PENDING',
                         updatedAt: new Date()
                     }
+                });
+
+                const salaryUid = `SAL-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+                await prisma.salary.update({
+                    where: { id: newSalary.id },
+                    data: { uid: salaryUid }
                 });
                 results.created++;
 

@@ -572,16 +572,18 @@ const PaymentDetailPage = () => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-bold text-indigo-100 uppercase tracking-widest">Hostel Property</p>
-                                            <p className="text-base font-bold uppercase">{payment.Booking?.Room?.Hostel?.name}</p>
+                                            <p className="text-base font-bold uppercase">{payment.Booking?.Room?.Hostel?.name || payment.User?.Hostel_User_hostelIdToHostel?.name || 'N/A'}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between pt-4 border-t border-white/10">
                                         <div className="flex items-baseline gap-2">
-                                            <span className="text-2xl font-bold tracking-tighter">ROOM {payment.Booking?.Room?.roomNumber}</span>
+                                            <span className="text-2xl font-bold tracking-tighter">{payment.Booking?.Room?.roomNumber ? `ROOM ${payment.Booking.Room.roomNumber}` : 'DIRECT PAYMENT'}</span>
                                         </div>
-                                        <Badge className="bg-white/20 text-white border-none rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase">
-                                            {payment.Booking?.Room?.type || 'Standard'}
-                                        </Badge>
+                                        {payment.Booking?.Room?.type && (
+                                            <Badge className="bg-white/20 text-white border-none rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase">
+                                                {payment.Booking.Room.type}
+                                            </Badge>
+                                        )}
                                     </div>
                                 </div>
 
@@ -624,10 +626,19 @@ const PaymentDetailPage = () => {
                         <div className="space-y-6 relative overflow-hidden">
                             <div className="space-y-2">
                                 <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Reference ID</span>
-                                <div className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-xl border border-gray-100">
-                                    <p className="text-xs font-bold text-indigo-600 font-mono">BK-{payment.bookingId?.slice(-8).toUpperCase()}</p>
-                                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                </div>
+                                {payment.bookingId ? (
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-xs font-mono font-bold text-gray-900 text-ellipsis overflow-hidden">{payment.bookingId?.toUpperCase()}</p>
+                                        <Link href={`/warden/bookings/${payment.bookingId}`}>
+                                            <ArrowUpRight className="h-4 w-4 text-indigo-600 shrink-0" />
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-900">DIRECT ENTRY</p>
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">No specific booking linked</p>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
@@ -646,14 +657,16 @@ const PaymentDetailPage = () => {
                                 <p className="text-lg font-bold text-gray-900">PKR {payment.Booking?.totalAmount?.toLocaleString() || '0'}</p>
                             </div>
 
-                            <Button
-                                variant="outline"
-                                className="w-full h-11 border-gray-100 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100 transition-all flex items-center justify-center gap-2 group"
-                                onClick={() => router.push(`/warden/bookings/${payment.bookingId}/payments`)}
-                            >
-                                <Search className="h-4 w-4 text-gray-400 group-hover:text-indigo-600" />
-                                View Full Ledger
-                            </Button>
+                            {payment.bookingId && (
+                                <Button
+                                    variant="outline"
+                                    className="w-full h-11 border-gray-100 font-bold text-[10px] uppercase tracking-widest rounded-xl hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100 transition-all flex items-center justify-center gap-2 group"
+                                    onClick={() => router.push(`/warden/bookings/${payment.bookingId}/payments`)}
+                                >
+                                    <Search className="h-4 w-4 text-gray-400 group-hover:text-indigo-600" />
+                                    View Full Ledger
+                                </Button>
+                            )}
                         </div>
                     </div>
 

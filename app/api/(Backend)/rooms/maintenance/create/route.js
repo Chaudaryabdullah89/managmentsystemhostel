@@ -8,7 +8,7 @@ export async function POST(request) {
 
     try {
         const body = await request.json();
-        const { hostelId, roomId, title, description, priority, status } = body;
+        const { hostelId, roomId, title, description, priority, status, userId, images } = body;
 
         const record = await prisma.maintanance.create({
             data: {
@@ -17,13 +17,23 @@ export async function POST(request) {
                 title,
                 description,
                 priority: priority || "MEDIUM",
-                status: status || "PENDING"
+                status: status || "PENDING",
+                userId: userId || auth.user?.id,
+                images: images || [],
+                updatedAt: new Date()
             }
+        });
+
+        // Generate and assign UID
+        const uid = `MNT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+        const updatedRecord = await prisma.maintanance.update({
+            where: { id: record.id },
+            data: { uid }
         });
 
         return NextResponse.json({
             message: "Maintenance record created successfully",
-            data: record,
+            data: updatedRecord,
             success: true
         });
     } catch (error) {

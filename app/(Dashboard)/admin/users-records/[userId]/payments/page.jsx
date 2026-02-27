@@ -45,7 +45,7 @@ export default function PaymentsPage({ params }) {
                         <TableBody className="divide-y">
                             {payments.map((p) => (
                                 <TableRow key={p.id} className="hover:bg-gray-50 transition-colors">
-                                    <TableCell className="px-6 py-4 text-sm whitespace-nowrap">{format(new Date(p.date), 'MMM dd, yyyy')}</TableCell>
+                                    <TableCell className="px-6 py-4 text-sm whitespace-nowrap">{p.date || p.createdAt ? format(new Date(p.date || p.createdAt), 'MMM dd, yyyy') : '—'}</TableCell>
                                     <TableCell className="px-6 py-4 text-sm font-medium capitalize">{p.type}</TableCell>
                                     <TableCell className="px-6 py-4 text-sm font-bold text-gray-900">
                                         {p.amount.toLocaleString()}

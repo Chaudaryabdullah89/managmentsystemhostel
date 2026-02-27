@@ -21,6 +21,7 @@ import {
     Utensils,
     Megaphone,
     Wallet,
+    Plane,
     type LucideIcon,
 } from "lucide-react"
 import useAuthStore from "@/hooks/Authstate"
@@ -52,6 +53,7 @@ const items: Record<string, NavItem[]> = {
         { title: "Salaries (Warden)", url: "/admin/warden-salaries", icon: Users, role: "admin" },
         { title: "Users Records", url: "/admin/users-records", icon: Users, role: "admin" },
         { title: "Reports", url: "/admin/reports", icon: FileText, role: "admin" },
+        { title: "Leave Requests", url: "/admin/leaves", icon: Plane, role: "admin" },
         { title: "Audit & Search", url: "/admin/audit", icon: Search, role: "admin" },
         { title: "Complaints", url: "/admin/complaints", icon: MessageSquare, role: "admin" },
         { title: "Notice Board", url: "/admin/notices", icon: Megaphone, role: "admin" },
@@ -76,8 +78,10 @@ const items: Record<string, NavItem[]> = {
     ],
     guest: [
         { title: "Dashboard", url: "/guest/dashboard", icon: LayoutDashboard, role: "guest" },
+        { title: "My Room", url: "/guest/my-room", icon: Bed, role: "guest" },
         { title: "My Bookings", url: "/guest/bookings", icon: Calendar, role: "guest" },
         { title: "Payments", url: "/guest/payments", icon: CreditCard, role: "guest" },
+        { title: "Leave Requests", url: "/guest/leave", icon: Plane, role: "guest" },
         { title: "Mess Schedule", url: "/guest/mess", icon: Utensils, role: "guest" },
         { title: "Services & Support", url: "/guest/support", icon: LifeBuoy, role: "guest" },
         { title: "Profile", url: "/guest/profile", icon: User, role: "guest" },

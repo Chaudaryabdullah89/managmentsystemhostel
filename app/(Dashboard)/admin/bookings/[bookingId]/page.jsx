@@ -59,6 +59,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
 import CheckoutModal from "../CheckoutModal";
+import RoomTransferDialog from "@/components/RoomTransferDialog";
 
 
 const BookingDetailsPage = () => {
@@ -148,13 +149,22 @@ const BookingDetailsPage = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        {booking && !['CANCELLED', 'CHECKED_OUT', 'COMPLETED'].includes(booking.status) && (
+                            <RoomTransferDialog booking={booking} />
+                        )}
                         <Button
                             variant="outline"
                             className="h-9 px-5 rounded-xl border-gray-100 text-gray-600 font-bold text-[9px] uppercase tracking-widest hover:bg-gray-50 transition-all bg-white"
-                            onClick={() => router.push(`/admin/bookings/${bookingId}/edit`)}
+                            onClick={() => {
+                                if (bookingId && bookingId !== 'null') {
+                                    router.push(`/admin/bookings/${bookingId}/edit`);
+                                } else {
+                                    toast.error("Invalid Booking ID");
+                                }
+                            }}
                         >
                             <Edit3 className="h-3.5 w-3.5 mr-2" />
-                            Edit Booking
+                            Edit
                         </Button>
 
                         <Button
@@ -162,7 +172,7 @@ const BookingDetailsPage = () => {
                             className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] uppercase tracking-widest shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2"
                         >
                             <Printer className="h-4 w-4" />
-                            Print Receipt
+                            Print
                         </Button>
                     </div>
                 </div>
@@ -356,7 +366,13 @@ const BookingDetailsPage = () => {
                                 <span className="text-[9px] font-bold text-indigo-200 uppercase block mb-2 tracking-widest">Outstanding Balance</span>
                                 <div className="flex items-center justify-between">
                                     <p className="text-3xl font-bold text-white tracking-tighter">PKR {balance.toLocaleString()}</p>
-                                    <div className="h-8 w-8 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white hover:text-indigo-600 transition-all cursor-pointer" onClick={() => router.push(`/admin/bookings/${bookingId}/payments`)}>
+                                    <div className="h-8 w-8 rounded-xl bg-white/10 flex items-center justify-center hover:bg-white hover:text-indigo-600 transition-all cursor-pointer" onClick={() => {
+                                        if (bookingId && bookingId !== 'null') {
+                                            router.push(`/admin/bookings/${bookingId}/payments`);
+                                        } else {
+                                            toast.error("Invalid Booking ID");
+                                        }
+                                    }}>
                                         <ChevronRight className="h-5 w-5" />
                                     </div>
                                 </div>

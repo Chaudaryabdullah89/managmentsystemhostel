@@ -189,3 +189,26 @@ export function useDeletePayment() {
         },
     });
 }
+
+export function useBulkApprovePayments() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (paymentIds) => {
+            const response = await fetch('/api/payments/bulk-approve', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ paymentIds }),
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            return data;
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: PaymentQueryKeys.all() });
+            toast.success(data.message || "Bulk approval successful");
+        },
+        onError: (err) => {
+            toast.error(err.message || "Failed to process bulk approvals");
+        }
+    });
+}

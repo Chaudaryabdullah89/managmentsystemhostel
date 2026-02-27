@@ -32,11 +32,8 @@ export async function GET(request) {
                             select: { name: true }
                         }
                     }
-                },
-                attendance: {
-                    orderBy: { checkIn: 'desc' },
-                    take: 1
                 }
+                // No attendance relation on StaffProfile in current Prisma schema
             }
         });
 

@@ -286,7 +286,7 @@ const GlobalRoomsPage = () => {
                                         </div>
                                         <div className="flex flex-col min-w-0">
                                             <div className="flex items-center gap-2 md:gap-3">
-                                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight truncate">Suite {room.roomNumber}</h3>
+                                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight truncate">Room {room.roomNumber}</h3>
                                                 <Badge variant="outline" className={`${getStatusTheme(room.status)} text-[8px] font-bold px-2 py-0 rounded-full border shadow-sm`}>
                                                     {room.status}
                                                 </Badge>
@@ -343,7 +343,7 @@ const GlobalRoomsPage = () => {
                                         </div>
                                         <div className="flex flex-col">
                                             <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest">Rent</span>
-                                            <span className="text-[10px] md:text-[11px] font-bold text-emerald-600 italic">Rs. {room.monthlyrent?.toLocaleString()}</span>
+                                            <span className="text-[10px] md:text-[11px] font-bold text-emerald-600 italic">Rs. {(room.monthlyrent || room.montlyrent || room.price || 0).toLocaleString()}</span>
                                         </div>
                                     </div>
 

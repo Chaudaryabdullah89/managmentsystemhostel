@@ -28,7 +28,6 @@ export async function GET(req, { params }) {
                 lastLogin: true,
                 createdAt: true,
                 updatedAt: true,
-                uid: true,
                 hostelId: true,
                 Hostel_User_hostelIdToHostel: {
                     select: {

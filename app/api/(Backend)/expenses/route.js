@@ -1,6 +1,7 @@
 import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import ExpenseServices from "@/lib/services/expenseservices/expenseservices";
+import prisma from "@/lib/prisma";
 
 export async function GET(request) {
     const auth = await checkRole([]);
@@ -17,7 +18,9 @@ export async function GET(request) {
         const submittedById = searchParams.get("submittedById");
 
         if (stats === "true") {
-            const data = await ExpenseServices.getExpenseStats({ hostelId });
+            const data = await ExpenseServices.getExpenseStats({
+                hostelId: (hostelId === 'all' || hostelId === 'null' || hostelId === 'undefined') ? null : hostelId
+            });
             return NextResponse.json({ success: true, data });
         }
 
@@ -59,6 +62,12 @@ export async function POST(request) {
             }
         }
 
+        // Validate hostelId exists
+        if (body.hostelId && body.hostelId !== 'all') {
+            const hostel = await prisma.hostel.findUnique({ where: { id: body.hostelId }, select: { id: true } });
+            if (!hostel) return NextResponse.json({ success: false, error: "Target hostel does not exist." }, { status: 400 });
+        }
+
         const expense = await ExpenseServices.createExpense(body);
         return NextResponse.json({ success: true, data: expense });
     } catch (error) {
@@ -68,10 +77,24 @@ export async function POST(request) {
 }
 
 export async function PATCH(request) {
+    const auth = await checkRole(['ADMIN', 'SUPER_ADMIN', 'WARDEN']);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         console.log("Inbound Authorization Update:", body);
         const { id, ...data } = body;
+
+        // Prevent P2003 by validating User IDs
+        if (data.approvedById) {
+            const user = await prisma.user.findUnique({ where: { id: data.approvedById }, select: { id: true } });
+            if (!user) return NextResponse.json({ success: false, error: "Approving user does not exist. Please refresh." }, { status: 400 });
+        }
+        if (data.rejectedById) {
+            const user = await prisma.user.findUnique({ where: { id: data.rejectedById }, select: { id: true } });
+            if (!user) return NextResponse.json({ success: false, error: "Rejecting user does not exist. Please refresh." }, { status: 400 });
+        }
+
         const updated = await ExpenseServices.updateExpenseStatus(id, data);
         return NextResponse.json({ success: true, data: updated });
     } catch (error) {

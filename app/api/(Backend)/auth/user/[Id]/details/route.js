@@ -116,7 +116,7 @@ export async function GET(req, { params }) {
                         email: true,
                         description: true,
                         floors: true,
-                        image: true,
+                        images: true,
                         managerId: true,
                         createdAt: true,
                         updatedAt: true,
