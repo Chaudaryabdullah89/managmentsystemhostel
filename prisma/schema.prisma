@@ -99,6 +99,25 @@ model Hostel {
   Room                        Room[]
   User_User_hostelIdToHostel  User[]        @relation("User_hostelIdToHostel")
   maintanance                 maintanance[]
+  MessMenu                    MessMenu[]
+}
+
+model MessMenu {
+  id            String   @id @default(cuid())
+  hostelId      String
+  dayOfWeek     String
+  breakfast     String?
+  breakfastTime String?
+  lunch         String?
+  lunchTime     String?
+  dinner        String?
+  dinnerTime    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  Hostel Hostel @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+
+  @@unique([hostelId, dayOfWeek], name: "hostelId_dayOfWeek")
 }
 
 model OtpVerification {
