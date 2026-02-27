@@ -1,5 +1,6 @@
 
 import { NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/utils/sendmail";
 import { buildEmailTemplate } from "@/lib/utils/emailTemplates";
@@ -22,11 +23,12 @@ export async function POST(req: Request) {
     // console.log(`[API] POST /api/auth/change-email/send-otp - Saving OTP to DB`);
     await prisma.otpVerification.create({
       data: {
+        id: randomUUID(),
         email,
         otp,
         expiresAt,
-        type: "EMAIL_UPDATE"
-      }
+        type: "EMAIL_UPDATE",
+      },
     });
 
     // Send Email

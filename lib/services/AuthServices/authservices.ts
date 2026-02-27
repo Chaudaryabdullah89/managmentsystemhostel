@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { randomUUID } from "crypto";
 import prisma from "@/lib/prisma";
 
 
@@ -65,13 +66,14 @@ export default class AuthService {
 
             const user = await prisma.user.create({
                 data: {
+                    id: randomUUID(),
                     name,
                     email,
                     password: hashedPassword,
                     phone,
                     role: userRole as any,
-                    updatedAt: new Date()
-                }
+                    updatedAt: new Date(),
+                },
             });
 
             const token = jwt.sign(
@@ -153,6 +155,7 @@ export default class AuthService {
 
             await prisma.session.create({
                 data: {
+                    id: randomUUID(),
                     userId: user.id,
                     token,
                     device: userAgent || "Unknown Device",
