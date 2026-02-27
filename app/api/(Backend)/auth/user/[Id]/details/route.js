@@ -168,14 +168,6 @@ export async function GET(req, { params }) {
                         Room: {
                             include: {
                                 Hostel: true,
-                                CleaningLog: {
-                                    orderBy: { createdAt: 'desc' },
-                                    take: 10
-                                },
-                                LaundryLog: {
-                                    orderBy: { createdAt: 'desc' },
-                                    take: 10
-                                }
                             }
                         },
                         checkIn: true,

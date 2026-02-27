@@ -226,9 +226,30 @@ const RoomDetailsContent = () => {
                         {/* Operational Services */}
                         <div className="space-y-3">
                             {[
-                                { title: 'Maintenance', sub: `${room.maintanance?.length || 0} Records`, icon: Wrench, color: 'text-amber-500', bg: 'bg-amber-50', link: `/admin/complaints` },
-                                { title: 'Laundry', sub: `${room.LaundryLog?.length || 0} Batches`, icon: Shirt, color: 'text-purple-500', bg: 'bg-purple-50', link: `/admin/laundry` },
-                                { title: 'Cleaning', sub: `${room.CleaningLog?.length || 0} Cycles`, icon: Sparkle, color: 'text-blue-500', bg: 'bg-blue-50', link: `/admin/cleaning` }
+                                {
+                                    title: 'Maintenance',
+                                    sub: `${room.maintanance?.length || 0} Records`,
+                                    icon: Wrench,
+                                    color: 'text-amber-500',
+                                    bg: 'bg-amber-50',
+                                    link: `/admin/complaints`
+                                },
+                                {
+                                    title: 'Laundry',
+                                    sub: `${room.LaundryLog?.length || 0} Batches`,
+                                    icon: Shirt,
+                                    color: 'text-purple-500',
+                                    bg: 'bg-purple-50',
+                                    link: `/admin/hostels/${room.Hostel?.id}/room-details/room/${room.id}/laundry?hostelId=${room.hostelId}`
+                                },
+                                {
+                                    title: 'Cleaning',
+                                    sub: `${room.CleaningLog?.length || 0} Cycles`,
+                                    icon: Sparkle,
+                                    color: 'text-blue-500',
+                                    bg: 'bg-blue-50',
+                                    link: `/admin/hostels/${room.Hostel?.id}/room-details/room/${room.id}/cleaning?hostelId=${room.hostelId}`
+                                }
                             ].map((service, i) => (
                                 <Link
                                     key={i}

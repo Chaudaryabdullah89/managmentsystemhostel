@@ -3,6 +3,7 @@ import { checkRole } from '@/lib/checkRole';
 import prisma from "@/lib/prisma";
 import crypto from "crypto";
 import { sendEmail } from "@/lib/utils/sendmail";
+import { buildEmailTemplate } from "@/lib/utils/emailTemplates";
 
 export async function GET(req) {
     const auth = await checkRole([]);
@@ -89,52 +90,68 @@ export async function GET(req) {
                     const totalOutstanding = userPayments.reduce((acc, p) => acc + p.amount, 0);
 
                     // 4. Send Email
-                    const emailHtml = `
-                        <div style="font-family: 'Inter', sans-serif; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
-                            <div style="background-color: #000; color: #fff; padding: 50px 40px; text-align: center;">
-                                <h1 style="margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 3px; font-weight: 800;">Monthly Rent Protocol</h1>
-                                <p style="margin-top: 10px; opacity: 0.6; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Invoice for ${currentMonthIdentifier}</p>
-                            </div>
-                            <div style="padding: 40px; background-color: #ffffff;">
-                                <p style="font-size: 16px; color: #333; font-weight: 600;">Hello ${booking.User.name},</p>
-                                <p style="color: #666; font-size: 14px; line-height: 1.8;">The automated fiscal cycle for your residency has initiated. Your monthly rent invoice for <strong>${currentMonthIdentifier}</strong> is now available for settlement.</p>
-                                
-                                <div style="margin: 35px 0; padding: 30px; background-color: #f8f9fa; border-radius: 15px; border-left: 5px solid #000;">
-                                    <h3 style="margin: 0 0 20px 0; font-size: 11px; text-transform: uppercase; color: #999; letter-spacing: 1px; font-weight: 800;">Settlement Summary</h3>
-                                    <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
-                                        <tr>
-                                            <td style="padding: 10px 0; color: #777; font-weight: 500;">Unit Address:</td>
-                                            <td style="padding: 10px 0; font-weight: 700; text-align: right; color: #000;">Room ${booking.Room.roomNumber}, ${booking.Room.Hostel.name}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 10px 0; color: #777; font-weight: 500;">Tariff Type:</td>
-                                            <td style="padding: 10px 0; font-weight: 700; text-align: right; color: #000;">Monthly Rent</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 10px 0; color: #777; font-weight: 500;">Due On:</td>
-                                            <td style="padding: 10px 0; font-weight: 700; text-align: right; color: #000;">${new Date(newPayment.dueDate).toLocaleDateString()}</td>
-                                        </tr>
-                                        <tr style="border-top: 1px solid #eee;">
-                                            <td style="padding: 20px 0 0 0; color: #000; font-weight: 800; text-transform: uppercase; font-size: 10px;">Current Month:</td>
-                                            <td style="padding: 20px 0 0 0; font-weight: 900; text-align: right; color: #000; font-size: 14px;">PKR ${booking.Room.monthlyrent.toLocaleString()}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 10px 0 0 0; color: #000; font-weight: 800; text-transform: uppercase; font-size: 12px;">Total Liability:</td>
-                                            <td style="padding: 10px 0 0 0; font-weight: 900; text-align: right; color: #10b981; font-size: 20px;">PKR ${totalOutstanding.toLocaleString()}</td>
-                                        </tr>
-                                    </table>
-                                </div>
+                    const bodyHtml = `
+                      <p style="margin:0 0 14px; font-size:14px; color:#4b5563;">
+                        Hello <strong>${booking.User.name}</strong>,
+                      </p>
+                      <p style="margin:0 0 16px; font-size:14px; color:#4b5563;">
+                        Your monthly rent invoice for <strong>${currentMonthIdentifier}</strong> is now available.
+                      </p>
 
-                                <div style="text-align: center; margin-top: 40px;">
-                                    <a href="http://localhost:3000/admin/bookings/${booking.id}/payments" style="display: inline-block; padding: 18px 35px; background-color: #000; color: #fff; text-decoration: none; border-radius: 12px; font-weight: 800; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">Execute Payment Protocol</a>
-                                    <p style="font-size: 11px; color: #aaa; margin-top: 25px; font-weight: 500;">Please ensure settlement by the due date to avoid service disruptions.</p>
-                                </div>
-                            </div>
-                            <div style="background-color: #fafafa; padding: 25px; text-align: center; color: #bbb; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid #f0f0f0;">
-                                © 2026 GreenView Hostels • Advanced Housing Systems Node
-                            </div>
-                        </div>
+                      <div style="margin:26px 0 28px; padding:20px 18px; background:#f9fafb; border-radius:14px; border:1px solid #e5e7eb;">
+                        <h3 style="margin:0 0 14px; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:#9ca3af; font-weight:700;">
+                          Invoice summary
+                        </h3>
+                        <table style="width:100%; font-size:13px; border-collapse:collapse;">
+                          <tr>
+                            <td style="padding:6px 0; color:#6b7280;">Unit</td>
+                            <td style="padding:6px 0; color:#111827; font-weight:600; text-align:right;">
+                              Room ${booking.Room.roomNumber}, ${booking.Room.Hostel.name}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding:6px 0; color:#6b7280;">Tariff</td>
+                            <td style="padding:6px 0; color:#111827; font-weight:600; text-align:right;">
+                              Monthly rent
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding:6px 0; color:#6b7280;">Due date</td>
+                            <td style="padding:6px 0; color:#111827; font-weight:600; text-align:right;">
+                              ${new Date(newPayment.dueDate).toLocaleDateString()}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding:16px 0 4px; color:#6b7280; font-size:12px;">This month</td>
+                            <td style="padding:16px 0 4px; color:#111827; font-weight:700; text-align:right;">
+                              PKR ${booking.Room.monthlyrent.toLocaleString()}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td style="padding:4px 0; color:#6b7280; font-size:12px;">Total outstanding</td>
+                            <td style="padding:4px 0; color:#16a34a; font-weight:800; text-align:right; font-size:18px;">
+                              PKR ${totalOutstanding.toLocaleString()}
+                            </td>
+                          </tr>
+                        </table>
+                      </div>
+
+                      <div style="text-align:center; margin-top:24px;">
+                        <a href="http://localhost:3000/admin/bookings/${booking.id}/payments"
+                           style="display:inline-block; padding:12px 24px; background:#111827; color:#ffffff; text-decoration:none; border-radius:999px; font-size:13px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;">
+                          View & pay invoice
+                        </a>
+                        <p style="margin:10px 0 0; font-size:11px; color:#9ca3af;">
+                          Please complete payment by the due date to avoid service disruption.
+                        </p>
+                      </div>
                     `;
+
+                    const emailHtml = buildEmailTemplate({
+                        title: `Monthly rent invoice – ${currentMonthIdentifier}`,
+                        subtitle: `Unit ${booking.Room.roomNumber} • ${booking.Room.Hostel.name}`,
+                        bodyHtml,
+                    });
 
                     await sendEmail({
                         to: booking.User.email,
