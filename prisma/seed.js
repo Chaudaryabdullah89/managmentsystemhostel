@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const { randomUUID } = require('crypto');
 const bcrypt = require('bcrypt');
 
 const prisma = new PrismaClient();
@@ -55,6 +56,7 @@ async function main() {
     console.log('👤 Creating Admin...');
     const admin = await prisma.user.create({
         data: {
+            id: randomUUID(),
             name: 'Super Admin',
             email: '1@gmail.com',
             password: defaultPassword,
@@ -133,7 +135,31 @@ async function main() {
 
     const hostels = [];
     for (const data of hostelData) {
-        const hostel = await prisma.hostel.create({ data });
+        const hostel = await prisma.hostel.create({
+            data: {
+                id: randomUUID(),
+                name: data.name,
+                type: data.type,
+                address: data.address,
+                city: data.city,
+                state: data.state,
+                country: data.country,
+                phone: data.phone,
+                email: data.email,
+                description: data.description,
+                floors: data.floors,
+                montlyrent: data.monthlyRent,
+                pernightrent: data.perNightRent,
+                status: data.status,
+                completeaddress: data.completeAddress,
+                laundaryavailable: data.laundryAvailable,
+                messavailable: data.messAvailable,
+                totalRooms: data.rooms,
+                amenities: [],
+                images: [],
+                updatedAt: data.updatedAt,
+            },
+        });
         hostels.push(hostel);
     }
     console.log('✅ Hostels created.');
@@ -144,6 +170,7 @@ async function main() {
     for (let i = 0; i < hostels.length; i++) {
         const warden = await prisma.user.create({
             data: {
+                id: randomUUID(),
                 name: `Warden ${hostels[i].name.split(' ')[0]}`,
                 email: `warden${i + 1}@hostel.com`,
                 password: defaultPassword,
@@ -177,20 +204,20 @@ async function main() {
 
             const room = await prisma.room.create({
                 data: {
+                    id: randomUUID(),
                     hostelId: hostel.id,
                     roomNumber: `${Math.floor((i - 1) / 5) + 1}0${(i - 1) % 5 + 1}`,
                     floor: Math.floor((i - 1) / 5) + 1,
                     type: rType,
                     capacity: capacity,
                     price: monthlyRent,
-                    monthlyrent: monthlyRent,
-                    pricepernight: monthlyRent / 30, // Approximate daily rate
                     status: 'AVAILABLE',
                     amenities: ['WiFi', 'Cabinet', 'Bed', 'Fan'],
+                    images: [],
                     updatedAt: new Date()
                 }
             });
-            rooms.push(room);
+            rooms.push({ ...room, _seedMonthlyRent: monthlyRent });
         }
     }
     console.log('✅ Rooms created.');
@@ -204,12 +231,13 @@ async function main() {
 
     for (let i = 0; i < residentNames.length; i++) {
         const hostel = hostels[i % hostels.length];
-        const room = rooms.find(r => r.hostelId === hostel.id && r.occupied < r.capacity);
+        const room = rooms.find(r => r.hostelId === hostel.id);
 
         if (!room) continue;
 
         const resident = await prisma.user.create({
             data: {
+                id: randomUUID(),
                 name: residentNames[i],
                 email: `resident${i + 1}@example.com`,
                 password: defaultPassword,
@@ -220,9 +248,9 @@ async function main() {
                 updatedAt: new Date(),
                 ResidentProfile: {
                     create: {
+                        id: randomUUID(),
                         guardianName: 'Guardian Name',
                         guardianPhone: '0333-0000000',
-                        bloodGroup: 'B+',
                         emergencyContact: '0333-9999999'
                     }
                 }
@@ -235,34 +263,30 @@ async function main() {
 
         await prisma.booking.create({
             data: {
+                id: randomUUID(),
                 userId: resident.id,
                 roomId: room.id,
-                hostelId: hostel.id,
                 checkIn: checkIn,
                 status: 'CONFIRMED',
-                totalAmount: room.monthlyrent,
+                totalAmount: room._seedMonthlyRent,
                 securityDeposit: 5000,
                 updatedAt: new Date()
             }
         });
 
-        // Update room occupancy
-        await prisma.room.update({
-            where: { id: room.id },
-            data: { occupied: { increment: 1 }, status: room.occupied + 1 === room.capacity ? 'OCCUPIED' : 'AVAILABLE' }
-        });
-
         // Add Payment
         await prisma.payment.create({
             data: {
+                id: randomUUID(),
                 userId: resident.id,
-                hostelId: hostel.id,
-                amount: room.monthlyrent,
+                bookingId: null,
+                amount: room._seedMonthlyRent,
                 status: 'PAID',
                 method: 'CASH',
-                month: 'March 2026',
                 type: 'MONTHLY_RENT',
-                paymentDate: new Date(),
+                date: new Date(),
+                dueDate: null,
+                notes: 'Seed monthly rent payment',
                 updatedAt: new Date()
             }
         });
@@ -281,13 +305,17 @@ async function main() {
         const hostel = hostels[i % hostels.length];
         await prisma.user.create({
             data: {
+                id: randomUUID(),
                 name: staffRoles[i].name,
                 email: `staff${i + 1}@hostel.com`,
                 password: defaultPassword,
                 role: 'STAFF',
                 hostelId: hostel.id,
+                isActive: true,
+                updatedAt: new Date(),
                 StaffProfile: {
                     create: {
+                        id: randomUUID(),
                         designation: staffRoles[i].designation,
                         department: 'Operations',
                         basicSalary: staffRoles[i].salary,
@@ -304,14 +332,16 @@ async function main() {
     for (const hostel of hostels) {
         await prisma.expense.create({
             data: {
+                id: randomUUID(),
                 hostelId: hostel.id,
                 submittedById: admin.id,
                 title: 'Electricity Bill',
                 amount: 12000,
-                category: 'Utilities',
+                category: 'UTILITIES',
                 status: 'APPROVED',
                 description: 'Monthly electricity bill for the hostel.',
-                date: new Date()
+                date: new Date(),
+                updatedAt: new Date()
             }
         });
     }
@@ -324,6 +354,7 @@ async function main() {
         for (const day of days) {
             await prisma.messMenu.create({
                 data: {
+                    id: randomUUID(),
                     hostelId: hostel.id,
                     dayOfWeek: day,
                     breakfast: 'Eggs, Bread, Tea',
@@ -343,6 +374,7 @@ async function main() {
     for (const hostel of hostels) {
         await prisma.notice.create({
             data: {
+                id: randomUUID(),
                 title: 'Monthly Maintenance',
                 content: 'The hostel will undergo monthly maintenance this Sunday.',
                 targetRoles: ['GUEST', 'WARDEN', 'STAFF'],
