@@ -99,6 +99,7 @@ model Hostel {
   Room                        Room[]
   User_User_hostelIdToHostel  User[]        @relation("User_hostelIdToHostel")
   maintanance                 maintanance[]
+  Notice                      Notice[]
   MessMenu                    MessMenu[]
 }
 
@@ -118,6 +119,24 @@ model MessMenu {
   Hostel Hostel @relation(fields: [hostelId], references: [id], onDelete: Cascade)
 
   @@unique([hostelId, dayOfWeek], name: "hostelId_dayOfWeek")
+}
+
+model Notice {
+  id          String    @id @default(cuid())
+  title       String
+  content     String
+  priority    String    @default("MEDIUM")
+  category    String    @default("GENERAL")
+  targetRoles String[]
+  hostelId    String?
+  authorId    String
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  author User    @relation(fields: [authorId], references: [id])
+  hostel Hostel? @relation(fields: [hostelId], references: [id])
 }
 
 model OtpVerification {
@@ -258,6 +277,7 @@ model User {
   Hostel_User_hostelIdToHostel               Hostel?          @relation("User_hostelIdToHostel", fields: [hostelId], references: [id])
   maintanance_maintanance_assignedToIdToUser maintanance[]    @relation("maintanance_assignedToIdToUser")
   maintanance_maintanance_userIdToUser       maintanance[]    @relation("maintanance_userIdToUser")
+  Notice                                     Notice[]
 }
 
 model maintanance {
