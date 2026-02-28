@@ -84,7 +84,8 @@ import {
     useAllPayments,
     useFinancialStats,
     useUpdatePayment,
-    useDeletePayment
+    useDeletePayment,
+    useInitializeRent
 } from "@/hooks/usePayment";
 import {
     useRefundRequests,
@@ -107,6 +108,8 @@ const PaymentManagementPage = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
     const [filterHostel, setFilterHostel] = useState("All");
+    const [filterFromDate, setFilterFromDate] = useState("");
+    const [filterToDate, setFilterToDate] = useState("");
 
     // Approval Logic States
     const [rejectionReason, setRejectionReason] = useState("");
@@ -134,6 +137,7 @@ const PaymentManagementPage = () => {
     const bookings = bookingsResponse || [];
     const updatePayment = useUpdatePayment();
     const deletePayment = useDeletePayment();
+    const initializeRent = useInitializeRent();
     const updateRefundStatus = useUpdateRefundStatus();
 
     const hostels = hostelsData?.data || [];
@@ -162,10 +166,30 @@ const PaymentManagementPage = () => {
                 return (payment.status === 'PENDING' || payment.status === 'PARTIAL') && matchesSearch && matchesHostel;
             }
 
+            const pDate = payment.date ? new Date(payment.date) : null;
+            const matchesFromDate = !filterFromDate || (pDate && new Date(pDate.setHours(0, 0, 0, 0)) >= new Date(new Date(filterFromDate).setHours(0, 0, 0, 0)));
+            const matchesToDate = !filterToDate || (pDate && new Date(pDate.setHours(0, 0, 0, 0)) <= new Date(new Date(filterToDate).setHours(0, 0, 0, 0)));
+
             const matchesStatus = filterStatus === "All" || payment.status === filterStatus;
-            return matchesStatus && matchesHostel && matchesSearch;
+            return matchesStatus && matchesHostel && matchesSearch && matchesFromDate && matchesToDate;
         });
-    }, [paymentsData, filterStatus, filterHostel, searchQuery, activeTab]);
+    }, [paymentsData, filterStatus, filterHostel, searchQuery, activeTab, filterFromDate, filterToDate]);
+
+    const dynamicStats = useMemo(() => {
+        const totalRevenue = filteredPayments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0);
+        const pendingValue = filteredPayments.filter(p => p.status === 'PENDING' || p.status === 'PARTIAL').reduce((sum, p) => sum + p.amount, 0);
+        const overdueValue = filteredPayments.filter(p => p.status === 'OVERDUE').reduce((sum, p) => sum + p.amount, 0);
+        const totalReceivable = totalRevenue + pendingValue + overdueValue;
+        const collectionRate = totalReceivable > 0 ? (totalRevenue / totalReceivable) * 100 : 0;
+        const pendingCount = filteredPayments.filter(p => p.status === 'PENDING' || p.status === 'PARTIAL').length;
+
+        return {
+            totalRevenue,
+            collectionRate,
+            pendingCount,
+            overdueValue
+        };
+    }, [filteredPayments]);
 
     const handleApprove = async (paymentId) => {
         try {
@@ -498,6 +522,15 @@ const PaymentManagementPage = () => {
                     <div className="flex flex-wrap items-center gap-2 md:gap-3">
                         <Button
                             variant="outline"
+                            className="h-8 md:h-9 px-3 md:px-4 rounded-xl border-amber-200 bg-amber-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-amber-700 hover:bg-amber-100 transition-all shadow-sm flex items-center gap-2 flex-1 md:flex-none justify-center"
+                            onClick={() => initializeRent.mutate()}
+                            disabled={initializeRent.isPending}
+                        >
+                            {initializeRent.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                            <span className="truncate">Bulk Init</span>
+                        </Button>
+                        <Button
+                            variant="outline"
                             className="h-8 md:h-9 px-3 md:px-4 rounded-xl border-rose-200 bg-rose-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-rose-700 hover:bg-rose-100 transition-all shadow-sm flex items-center gap-2 flex-1 md:flex-none justify-center"
                             onClick={handleExportDefaultersList}
                             disabled={isExportingDefaulters}
@@ -529,10 +562,10 @@ const PaymentManagementPage = () => {
                 {/* Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Revenue', value: `PKR ${(stats?.totalRevenue / 1000).toFixed(1)}k`, icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Collected', value: `${((stats?.monthlyRevenue / (stats?.monthlyRevenue + stats?.pendingReceivables)) * 100 || 0).toFixed(0)}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Pending', value: paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Overdue', value: `PKR ${(stats?.overdueLiability / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' }
+                        { label: 'Revenue', value: `PKR ${(dynamicStats.totalRevenue / 1000).toFixed(1)}k`, icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Collected', value: `${dynamicStats.collectionRate.toFixed(0)}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Pending', value: dynamicStats.pendingCount, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Overdue', value: `PKR ${(dynamicStats.overdueValue / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default min-w-0">
                             <div className={`h-9 w-9 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -603,6 +636,39 @@ const PaymentManagementPage = () => {
                                 ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
+
+                        <div className="h-4 w-px bg-gray-200 shrink-0 hidden md:block" />
+
+                        <div className="flex items-center gap-2 px-2 overflow-x-auto scrollbar-hide">
+                            <div className="flex items-center gap-1.5 bg-white border border-gray-100 rounded-lg px-2 h-9 md:h-10 shrink-0">
+                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">From</span>
+                                <input
+                                    type="date"
+                                    className="bg-transparent border-none text-[10px] font-bold focus:outline-none w-24"
+                                    value={filterFromDate}
+                                    onChange={(e) => setFilterFromDate(e.target.value)}
+                                />
+                            </div>
+                            <div className="flex items-center gap-1.5 bg-white border border-gray-100 rounded-lg px-2 h-9 md:h-10 shrink-0">
+                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">To</span>
+                                <input
+                                    type="date"
+                                    className="bg-transparent border-none text-[10px] font-bold focus:outline-none w-24"
+                                    value={filterToDate}
+                                    onChange={(e) => setFilterToDate(e.target.value)}
+                                />
+                            </div>
+                            {(filterFromDate || filterToDate) && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-gray-400 hover:text-rose-600 shrink-0"
+                                    onClick={() => { setFilterFromDate(""); setFilterToDate(""); }}
+                                >
+                                    <RefreshCw className="h-3 w-3" />
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -969,10 +1035,10 @@ const PaymentManagementPage = () => {
                         </div>
                     </div>
                 </div>
-            </main>
+            </main >
 
             {/* Modals */}
-            <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+            < Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen} >
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white ring-1 ring-gray-100">
                     <div className="bg-rose-600 p-10 text-white text-center relative overflow-hidden">
                         <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
@@ -1004,7 +1070,7 @@ const PaymentManagementPage = () => {
                         </div>
                     </div>
                 </DialogContent>
-            </Dialog>
+            </Dialog >
 
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white ring-1 ring-gray-100">

@@ -84,7 +84,8 @@ import {
     useAllPayments,
     useFinancialStats,
     useUpdatePayment,
-    useDeletePayment
+    useDeletePayment,
+    useInitializeRent
 } from "@/hooks/usePayment";
 import {
     useRefundRequests,
@@ -108,6 +109,8 @@ const PaymentManagementPage = () => {
     const [filterStatus, setFilterStatus] = useState("All");
     const [filterHostel, setFilterHostel] = useState("All");
     const [filterMonth, setFilterMonth] = useState("All");
+    const [filterFromDate, setFilterFromDate] = useState("");
+    const [filterToDate, setFilterToDate] = useState("");
 
     // Approval Logic States
     const [rejectionReason, setRejectionReason] = useState("");
@@ -149,6 +152,7 @@ const PaymentManagementPage = () => {
     const bookings = bookingsResponse || [];
     const updatePayment = useUpdatePayment();
     const deletePayment = useDeletePayment();
+    const initializeRent = useInitializeRent();
     const updateRefundStatus = useUpdateRefundStatus();
 
     const hostels = hostelsData?.data || [];
@@ -177,12 +181,32 @@ const PaymentManagementPage = () => {
                 return (payment.status === 'PENDING' || payment.status === 'PARTIAL') && matchesSearch && matchesHostel;
             }
 
-            const matchesMonth = filterMonth === "All" || (payment.date && format(new Date(payment.date), 'MMMM') === filterMonth);
+            const pDate = payment.date ? new Date(payment.date) : null;
+            const matchesMonth = filterMonth === "All" || (pDate && format(pDate, 'MMMM') === filterMonth);
+
+            const matchesFromDate = !filterFromDate || (pDate && new Date(pDate.setHours(0, 0, 0, 0)) >= new Date(new Date(filterFromDate).setHours(0, 0, 0, 0)));
+            const matchesToDate = !filterToDate || (pDate && new Date(pDate.setHours(0, 0, 0, 0)) <= new Date(new Date(filterToDate).setHours(0, 0, 0, 0)));
 
             const matchesStatus = filterStatus === "All" || payment.status === filterStatus;
-            return matchesStatus && matchesHostel && matchesSearch && matchesMonth;
+            return matchesStatus && matchesHostel && matchesSearch && matchesMonth && matchesFromDate && matchesToDate;
         });
-    }, [paymentsData, filterStatus, filterHostel, searchQuery, activeTab, filterMonth]);
+    }, [paymentsData, filterStatus, filterHostel, searchQuery, activeTab, filterMonth, filterFromDate, filterToDate]);
+
+    const dynamicStats = useMemo(() => {
+        const totalRevenue = filteredPayments.filter(p => p.status === 'PAID').reduce((sum, p) => sum + p.amount, 0);
+        const pendingValue = filteredPayments.filter(p => p.status === 'PENDING' || p.status === 'PARTIAL').reduce((sum, p) => sum + p.amount, 0);
+        const overdueValue = filteredPayments.filter(p => p.status === 'OVERDUE').reduce((sum, p) => sum + p.amount, 0);
+        const totalReceivable = totalRevenue + pendingValue + overdueValue;
+        const collectionRate = totalReceivable > 0 ? (totalRevenue / totalReceivable) * 100 : 0;
+        const pendingCount = filteredPayments.filter(p => p.status === 'PENDING' || p.status === 'PARTIAL').length;
+
+        return {
+            totalRevenue,
+            collectionRate,
+            pendingCount,
+            overdueValue
+        };
+    }, [filteredPayments]);
 
     const handleApprove = async (paymentId) => {
         try {
@@ -570,7 +594,16 @@ const PaymentManagementPage = () => {
                     <div className="flex flex-wrap items-center gap-2 md:gap-3">
                         <Button
                             variant="outline"
-                            className="h-8 md:h-9 px-3 md:px-4 rounded-xl border-rose-200 bg-rose-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-rose-700 hover:bg-rose-100 transition-all shadow-sm flex items-center gap-2 flex-1 md:flex-none justify-center"
+                            className="h-8 md:h-9 px-3 md:px-4 cursor-pointer rounded-xl border-amber-200 bg-amber-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-amber-700 hover:bg-amber-100 transition-all shadow-sm flex items-center gap-2 flex-1 md:flex-none justify-center"
+                            onClick={() => initializeRent.mutate()}
+                            disabled={initializeRent.isPending}
+                        >
+                            {initializeRent.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                            <span className="truncate">Create Monthly Dues</span>
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="h-8 md:h-9 px-3 md:px-4 cursor-pointer rounded-xl border-rose-200 bg-rose-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-rose-700 hover:bg-rose-100 transition-all shadow-sm flex items-center gap-2 flex-1 md:flex-none justify-center"
                             onClick={() => setIsDefaulterOptionsOpen(true)}
                             disabled={isExportingDefaulters}
                         >
@@ -579,7 +612,7 @@ const PaymentManagementPage = () => {
                         </Button>
                         <Button
                             variant="outline"
-                            className="h-8 md:h-9 px-3 md:px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2 flex-1 md:flex-none justify-center"
+                            className="h-8 md:h-9 px-3 md:px-4 cursor-pointer rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2 flex-1 md:flex-none justify-center"
                             onClick={() => setIsExportDialogOpen(true)}
                             disabled={isExportingPayments}
                         >
@@ -587,10 +620,10 @@ const PaymentManagementPage = () => {
                             <span className="truncate">Report</span>
                         </Button>
                         <Button
-                            className="h-8 md:h-9 px-4 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex-1 md:flex-none justify-center"
+                            className="h-8 md:h-9 px-4 md:px-6 cursor-pointer rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex-1 md:flex-none justify-center"
                             onClick={() => router.push('/admin/bookings')}
                         >
-                            <Plus className="h-3.5 w-3.5 mr-1.5" /> <span className="truncate">New</span>
+                            <Plus className="h-3.5 w-3.5 mr-1.5 " /> <span className="truncate">Create New Dues</span>
                         </Button>
                     </div>
                 </div>
@@ -601,17 +634,17 @@ const PaymentManagementPage = () => {
                 {/* Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                     {[
-                        { label: 'Revenue', value: `PKR ${(stats?.totalRevenue / 1000).toFixed(1)}k`, icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Rate', value: `${((stats?.monthlyRevenue / (stats?.monthlyRevenue + stats?.pendingReceivables)) * 100 || 0).toFixed(0)}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Open', value: paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length || 0, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Late', value: `PKR ${(stats?.overdueLiability / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' }
+                        { label: 'Revenue', value: `PKR ${(dynamicStats.totalRevenue / 1000).toFixed(1)}k`, icon: CreditCard, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Rate', value: `${dynamicStats.collectionRate.toFixed(0)}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Pending', value: dynamicStats.pendingCount, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Late', value: `PKR ${(dynamicStats.overdueValue / 1000).toFixed(1)}k`, icon: AlertCircle, color: 'text-rose-600', bg: 'bg-rose-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default min-w-0">
                             <div className={`h-9 w-9 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">Stats</span>
+                                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
                                 <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate">{stat.value}</span>
                             </div>
                         </div>
@@ -678,24 +711,37 @@ const PaymentManagementPage = () => {
                         </DropdownMenu>
 
                         <div className="h-4 w-px bg-gray-200 shrink-0 hidden md:block" />
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
-                                    <Calendar className="h-3.5 w-3.5 mr-1.5 md:mr-2 text-gray-400" />
-                                    <span className="truncate">{filterMonth === 'All' ? 'Month' : filterMonth}</span>
+
+                        <div className="flex items-center gap-2 px-2">
+                            <div className="flex items-center gap-1.5 bg-white border border-gray-100 rounded-lg px-2 h-9 md:h-10">
+                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">From</span>
+                                <input
+                                    type="date"
+                                    className="bg-transparent border-none text-[10px] font-bold focus:outline-none w-24"
+                                    value={filterFromDate}
+                                    onChange={(e) => setFilterFromDate(e.target.value)}
+                                />
+                            </div>
+                            <div className="flex items-center gap-1.5 bg-white border border-gray-100 rounded-lg px-2 h-9 md:h-10">
+                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">To</span>
+                                <input
+                                    type="date"
+                                    className="bg-transparent border-none text-[10px] font-bold focus:outline-none w-24"
+                                    value={filterToDate}
+                                    onChange={(e) => setFilterToDate(e.target.value)}
+                                />
+                            </div>
+                            {(filterFromDate || filterToDate) && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-gray-400 hover:text-rose-600"
+                                    onClick={() => { setFilterFromDate(""); setFilterToDate(""); }}
+                                >
+                                    <RefreshCw className="h-3 w-3" />
                                 </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[180px] rounded-xl border-gray-100 shadow-xl p-2">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Months</DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-gray-50 mb-1" />
-                                <DropdownMenuItem onClick={() => setFilterMonth("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer">Show All</DropdownMenuItem>
-                                {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map(month => (
-                                    <DropdownMenuItem key={month} onClick={() => setFilterMonth(month)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer">
-                                        {month}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -706,13 +752,13 @@ const PaymentManagementPage = () => {
                                 value="ledger"
                                 className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all shrink-0"
                             >
-                                <Boxes className="h-3.5 w-3.5 mr-2" /> Total
+                                <Boxes className="h-3.5 w-3.5 mr-2" /> All Payments
                             </TabsTrigger>
                             <TabsTrigger
                                 value="verification"
                                 className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all relative shrink-0"
                             >
-                                <CheckCircle className="h-3.5 w-3.5 mr-2" /> Open
+                                <CheckCircle className="h-3.5 w-3.5 mr-2" /> Pending Approvals
                                 {(paymentsData?.payments?.filter(p => (p.status === 'PENDING' || p.status === 'PARTIAL')).length > 0) && (
                                     <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                 )}
@@ -922,20 +968,20 @@ const PaymentManagementPage = () => {
                                         </Button>
                                         <Button
                                             variant="outline"
-                                            className="flex-1 lg:w-28 h-11 md:h-12 rounded-xl border-rose-100 bg-rose-50 text-rose-600 font-bold text-[10px] uppercase tracking-wider hover:bg-rose-600 hover:text-white transition-all order-2 lg:order-1"
+                                            className="flex-1 cursor-pointer lg:w-28 h-11 md:h-12 rounded-xl border-rose-100 bg-rose-50 text-rose-600 font-bold text-[10px] uppercase tracking-wider hover:bg-rose-600 hover:text-white transition-all order-2 lg:order-1"
                                             onClick={() => {
                                                 setSelectedPaymentId(payment.id);
                                                 setIsRejectDialogOpen(true);
                                             }}
                                         >
-                                            Reject
+                                            {updatePayment.isPending && selectedPaymentId === payment.id ? "Rejecting..." : "Reject"}
                                         </Button>
                                         <Button
-                                            className="flex-1 lg:w-32 h-11 md:h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700 border-none font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 order-1 lg:order-2 active:scale-95"
+                                            className="flex-1 lg:w-32 cursor-pointer h-11 md:h-12 rounded-xl bg-blue-600 text-white hover:bg-blue-700 border-none font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 order-1 lg:order-2 active:scale-95"
                                             onClick={() => handleApprove(payment.id)}
                                         >
                                             <CheckCircle className="h-4 w-4" />
-                                            Approve
+                                            {updatePayment.isPending && selectedPaymentId === payment.id ? "Approving..." : "Approve"}
                                         </Button>
                                     </div>
                                 </div>

@@ -212,3 +212,24 @@ export function useBulkApprovePayments() {
         }
     });
 }
+export function useInitializeRent() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async () => {
+            const response = await fetch('/api/payments/initialize-dues', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            return data;
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: PaymentQueryKeys.all() });
+            toast.success(data.message || "Rent successfully initialized for all residents.");
+        },
+        onError: (err) => {
+            toast.error(err.message || "Failed to initialize rent records.");
+        }
+    });
+}
