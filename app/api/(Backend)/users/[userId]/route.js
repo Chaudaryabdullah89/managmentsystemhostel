@@ -100,6 +100,27 @@ export async function PATCH(request, { params }) {
             ...updateData
         } = body;
 
+        // Check if email/uid already exists for another user if they are being updated
+        if (updateData.email || updateData.uid) {
+            const existingUser = await prisma.user.findFirst({
+                where: {
+                    OR: [
+                        updateData.email ? { email: updateData.email } : null,
+                        updateData.uid ? { uid: updateData.uid } : null
+                    ].filter(Boolean),
+                    NOT: { id: userId }
+                }
+            });
+
+            if (existingUser) {
+                const conflictField = existingUser.email === updateData.email ? "Email" : "UID";
+                return NextResponse.json({
+                    success: false,
+                    error: `${conflictField} is already assigned to another identity. Please reconcile values.`
+                }, { status: 400 });
+            }
+        }
+
         const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: {
@@ -118,6 +139,16 @@ export async function PATCH(request, { params }) {
             user: updatedUser
         });
     } catch (error) {
+        console.error("User PATCH Error:", error);
+
+        // Handle specific Prisma errors if the findFirst check missed something (e.g. race condition)
+        if (error.code === 'P2002') {
+            return NextResponse.json({
+                success: false,
+                error: "Unique constraint violation: Email or UID already exists."
+            }, { status: 400 });
+        }
+
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
