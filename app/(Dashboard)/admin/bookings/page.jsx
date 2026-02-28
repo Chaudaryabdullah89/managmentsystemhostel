@@ -678,7 +678,7 @@ const GlobalBookingsPage = () => {
                             <ShieldCheck className="h-8 w-8 text-white stroke-[1.5]" />
                         </div>
                         <h2 className="text-xl font-black text-white uppercase tracking-tight relative z-10">Export</h2>
-                        <p className="text-indigo-100 text-[11px] font-bold uppercase tracking-widest mt-1 relative z-10">PDF</p>
+                        <p className="text-indigo-100 text-[11px] font-bold uppercase tracking-widest mt-1 relative z-10">PDF REPORT</p>
                     </div>
 
                     <div className="p-8 space-y-6 bg-white overflow-y-auto max-h-[60vh]">
@@ -741,77 +741,76 @@ const GlobalBookingsPage = () => {
                                     <option value="GUEST">Guest</option>
                                 </select>
                             </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">From Date</Label>
+                                <Input
+                                    type="date"
+                                    className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                                    value={exportConfig.dateFrom}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, dateFrom: e.target.value }))}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">To Date</Label>
+                                <Input
+                                    type="date"
+                                    className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                                    value={exportConfig.dateTo}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, dateTo: e.target.value }))}
+                                />
+                            </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">From Date</Label>
+                            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Search Keyword (Name/CNIC/Room)</Label>
                             <Input
-                                type="date"
+                                placeholder="Filter records by name or ID..."
                                 className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
-                                value={exportConfig.dateFrom}
-                                onChange={(e) => setExportConfig(prev => ({ ...prev, dateFrom: e.target.value }))}
+                                value={exportConfig.searchQuery}
+                                onChange={(e) => setExportConfig(prev => ({ ...prev, searchQuery: e.target.value }))}
                             />
                         </div>
 
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">To Date</Label>
-                            <Input
-                                type="date"
-                                className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
-                                value={exportConfig.dateTo}
-                                onChange={(e) => setExportConfig(prev => ({ ...prev, dateTo: e.target.value }))}
-                            />
+                        <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 flex gap-3">
+                            <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
+                            <p className="text-[10px] text-amber-700 font-medium leading-relaxed italic">
+                                Select required filters to generate the final directory report.
+                            </p>
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Search Keyword (Name/CNIC/Room)</Label>
-                        <Input
-                            placeholder="Filter records by name or ID..."
-                            className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
-                            value={exportConfig.searchQuery}
-                            onChange={(e) => setExportConfig(prev => ({ ...prev, searchQuery: e.target.value }))}
-                        />
+                    <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3 justify-end">
+                        <Button
+                            variant="ghost"
+                            className="h-12 px-6 rounded-xl font-bold text-[10px] uppercase tracking-widest text-gray-500 hover:bg-gray-100"
+                            onClick={() => setIsExportDialogOpen(false)}
+                            disabled={isExporting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            className="h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2"
+                            onClick={handleExportPoliceVerification}
+                            disabled={isExporting}
+                        >
+                            {isExporting ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Exporting...
+                                </>
+                            ) : (
+                                <>
+                                    <FileText className="h-4 w-4" />
+                                    Generate PDF
+                                </>
+                            )}
+                        </Button>
                     </div>
-
-                    <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 flex gap-3">
-                        <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
-                        <p className="text-[10px] text-amber-700 font-medium leading-relaxed italic">
-                            Select filters.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3 justify-end">
-                    <Button
-                        variant="ghost"
-                        className="h-12 px-6 rounded-xl font-bold text-[10px] uppercase tracking-widest text-gray-500 hover:bg-gray-100"
-                        onClick={() => setIsExportDialogOpen(false)}
-                        disabled={isExporting}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        className="h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2"
-                        onClick={handleExportPoliceVerification}
-                        disabled={isExporting}
-                    >
-                        {isExporting ? (
-                            <>
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Updates...
-                            </>
-                        ) : (
-                            <>
-                                <FileText className="h-4 w-4" />
-                                Export
-                            </>
-                        )}
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
-        </div >
+                </DialogContent>
+            </Dialog>
+        </div>
     );
 };
 
