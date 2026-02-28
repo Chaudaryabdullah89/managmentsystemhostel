@@ -1,5 +1,8 @@
 "use client"
 import React, { useState, Suspense } from 'react'
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -136,6 +139,66 @@ const ResidentsContent = () => {
         String(resident.id).toLowerCase().includes(searchTerm.toLowerCase())
     )
 
+    const handleExportPDF = () => {
+        if (!filteredResidents.length) return;
+
+        const doc = new jsPDF('landscape');
+
+        // Header styling
+        doc.setFillColor(31, 41, 55); // Dark charcoal
+        doc.rect(0, 0, doc.internal.pageSize.width, 35, 'F');
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(22);
+        doc.setFont("helvetica", "bold");
+        doc.text("RESIDENT DIRECTORY", doc.internal.pageSize.width / 2, 18, { align: "center" });
+
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text(`Hostel Management System - Generated on ${format(new Date(), 'PPP p')}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+
+        const headers = [["UID", "Name", "Room", "Contact", "Email", "CNIC", "Joined", "Status"]];
+        const rows = filteredResidents.map(r => [
+            r.uid || 'N/A',
+            r.name,
+            `Room ${r.room}`,
+            r.contact,
+            r.email,
+            r.cnic,
+            r.joinDate ? format(new Date(r.joinDate), 'MMM dd, yyyy') : 'N/A',
+            r.status
+        ]);
+
+        autoTable(doc, {
+            head: headers,
+            body: rows,
+            startY: 45,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [79, 70, 229], // Indigo-600
+                textColor: [255, 255, 255],
+                fontSize: 9,
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            columnStyles: {
+                0: { cellWidth: 30 },
+                1: { cellWidth: 40 },
+                2: { cellWidth: 20 },
+                3: { cellWidth: 30 },
+                4: { cellWidth: 50 },
+                5: { cellWidth: 35 },
+                6: { cellWidth: 30 },
+                7: { cellWidth: 25 }
+            },
+            alternateRowStyles: {
+                fillColor: [249, 250, 251]
+            }
+        });
+
+        doc.save(`Residents_Report_${format(new Date(), 'yyyyMMdd')}.pdf`);
+    };
+
     if (isLoading) return <Loader label="Loading" subLabel="Fetching resident list..." icon={Users} fullScreen={false} />;
 
     return (
@@ -161,6 +224,14 @@ const ResidentsContent = () => {
                             <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Active</span>
                             <span className="text-xs md:text-sm font-black text-gray-900 leading-none">{residents.filter(r => r.status === 'Active').length} People</span>
                         </div>
+                        <Button
+                            variant="ghost"
+                            onClick={handleExportPDF}
+                            className="h-9 md:h-10 px-4 rounded-xl border border-gray-100 text-[10px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 flex items-center gap-2"
+                        >
+                            <Download className="h-4 w-4" />
+                            <span className="hidden sm:inline">PDF</span>
+                        </Button>
                         <Button
                             variant="outline"
                             className="h-9 md:h-10 rounded-xl border-gray-100 bg-white font-black gap-2 text-[10px] uppercase tracking-widest"

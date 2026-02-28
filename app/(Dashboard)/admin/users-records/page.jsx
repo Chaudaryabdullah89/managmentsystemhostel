@@ -30,6 +30,8 @@ import { useHostel } from "@/hooks/usehostel";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const ROLES = ["all", "ADMIN", "WARDEN", "STAFF", "RESIDENT"];
 
@@ -125,7 +127,68 @@ const UserRecordPage = () => {
         link.href = URL.createObjectURL(blob);
         link.download = `Users_Directory_${format(new Date(), 'yyyyMMdd')}.csv`;
         link.click();
-        toast.success("Directory exported");
+        toast.success("Directory exported (CSV)");
+    };
+
+    const handleExportPDF = () => {
+        if (!filteredUsers.length) return toast.error("No users to export");
+
+        try {
+            const doc = new jsPDF('landscape');
+
+            // Header
+            doc.setFillColor(63, 63, 70);
+            doc.rect(0, 0, doc.internal.pageSize.width, 30, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(18);
+            doc.setFont("helvetica", "bold");
+            doc.text("USER RECORDS DIRECTORY", doc.internal.pageSize.width / 2, 15, { align: "center" });
+
+            doc.setFontSize(10);
+            doc.text(`Generated on: ${format(new Date(), 'PPP p')}`, doc.internal.pageSize.width / 2, 22, { align: "center" });
+
+            const headers = [["UID", "Name", "Email", "Phone", "CNIC", "Role", "Hostel", "Status", "Joined"]];
+            const rows = filteredUsers.map(u => [
+                u.uid || u.id?.slice(-8).toUpperCase(),
+                u.name,
+                u.email,
+                u.phone || 'N/A',
+                u.cnic || 'N/A',
+                u.role,
+                u.Hostel_User_hostelIdToHostel?.name || 'Global',
+                u.isActive ? 'Active' : 'Inactive',
+                u.createdAt ? format(new Date(u.createdAt), 'MMM dd, yyyy') : 'N/A'
+            ]);
+
+            autoTable(doc, {
+                head: headers,
+                body: rows,
+                startY: 40,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [79, 70, 229],
+                    textColor: [255, 255, 255],
+                    fontSize: 8,
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fontSize: 8,
+                    textColor: [50, 50, 50]
+                },
+                alternateRowStyles: {
+                    fillColor: [249, 250, 251]
+                },
+                margin: { top: 40 }
+            });
+
+            doc.save(`Users_Report_${format(new Date(), 'yyyyMMdd_HHmm')}.pdf`);
+            toast.success("Identity records exported (PDF)");
+        } catch (error) {
+            console.error("PDF generation failed:", error);
+            toast.error("Failed to generate PDF report");
+        }
     };
 
     const handleCreateUser = async () => {
@@ -201,9 +264,21 @@ const UserRecordPage = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="ghost" onClick={handleExport} className="h-9 px-4 rounded-xl border border-gray-100 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:bg-gray-50 flex items-center gap-2">
-                            <Download className="h-3.5 w-3.5" /> Report
-                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-9 px-4 rounded-xl border border-gray-100 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:bg-gray-50 flex items-center gap-2">
+                                    <Download className="h-3.5 w-3.5" /> Export
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-40 rounded-xl p-2 shadow-xl border-gray-100">
+                                <DropdownMenuItem onClick={handleExport} className="h-10 rounded-lg font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2">
+                                    <FileText className="h-4 w-4 text-gray-400" /> CSV Directory
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleExportPDF} className="h-10 rounded-lg font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2">
+                                    <Download className="h-4 w-4 text-emerald-500" /> PDF Report
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                         <Button variant="outline" onClick={() => setIsCreateDialogOpen(true)} className="h-9 px-4 rounded-xl border-gray-200 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
                             <Plus className="h-3.5 w-3.5" /> New
                         </Button>

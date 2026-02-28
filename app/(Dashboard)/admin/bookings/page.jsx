@@ -181,6 +181,7 @@ const GlobalBookingsPage = () => {
         hostelId: "All",
         status: "All",
         roomId: "All",
+        role: "All",
         dateFrom: "",
         dateTo: "",
         searchQuery: ""
@@ -194,6 +195,7 @@ const GlobalBookingsPage = () => {
             const passStatus = exportConfig.status === "All" || b.status === exportConfig.status;
             const passHostel = exportConfig.hostelId === "All" || b.Room?.Hostel?.name === exportConfig.hostelId;
             const passRoom = exportConfig.roomId === "All" || b.roomId === exportConfig.roomId;
+            const passRole = exportConfig.role === "All" || b.User?.role === exportConfig.role;
 
             // Date Range Logic
             let passDate = true;
@@ -217,7 +219,7 @@ const GlobalBookingsPage = () => {
                     (b.Room?.roomNumber?.toLowerCase()?.includes(q));
             }
 
-            return passStatus && passHostel && passRoom && passDate && passSearch;
+            return passStatus && passHostel && passRoom && passDate && passSearch && passRole;
         });
 
         // Setup mock delay for animation
@@ -256,7 +258,7 @@ const GlobalBookingsPage = () => {
             doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
 
             const headers = [
-                ["S.No", "Resident Name", "Father/Guardian", "CNIC", "Phone", "Address", "City", "Hostel", "Room", "Check-In", "Emg Contact", "Emg Phone", "Status"]
+                ["S.No", "Resident Name", "Father/Guardian", "CNIC", "Phone", "Role", "Address", "City", "Hostel", "Room", "Check-In", "Emg Contact", "Emg Phone", "Status"]
             ];
 
             const rows = customExportList.map((b, index) => {
@@ -267,6 +269,7 @@ const GlobalBookingsPage = () => {
                     profile.guardianName || 'N/A',
                     b.User?.cnic || 'N/A',
                     b.User?.phone || 'N/A',
+                    b.User?.role || 'N/A',
                     profile.address || b.User?.address || 'N/A',
                     profile.city || b.User?.city || 'N/A',
                     b.Room?.Hostel?.name || 'N/A',
@@ -298,8 +301,10 @@ const GlobalBookingsPage = () => {
                     fillColor: [248, 250, 252] // Slate-50
                 },
                 columnStyles: {
-                    0: { cellWidth: 10, halign: 'center' }, // S.No
-                    5: { cellWidth: 30 }, // Address
+                    0: { cellWidth: 8, halign: 'center' }, // S.No
+                    3: { cellWidth: 25 }, // CNIC
+                    5: { cellWidth: 15 }, // Role
+                    6: { cellWidth: 25 }, // Address
                 },
                 styles: {
                     overflow: 'linebreak',
@@ -725,73 +730,87 @@ const GlobalBookingsPage = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">From Date</Label>
-                                <Input
-                                    type="date"
-                                    className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
-                                    value={exportConfig.dateFrom}
-                                    onChange={(e) => setExportConfig(prev => ({ ...prev, dateFrom: e.target.value }))}
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">To Date</Label>
-                                <Input
-                                    type="date"
-                                    className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
-                                    value={exportConfig.dateTo}
-                                    onChange={(e) => setExportConfig(prev => ({ ...prev, dateTo: e.target.value }))}
-                                />
+                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Type (Role)</Label>
+                                <select
+                                    className="w-full h-12 rounded-xl bg-gray-50 border border-gray-100 px-4 text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                    value={exportConfig.role}
+                                    onChange={(e) => setExportConfig(prev => ({ ...prev, role: e.target.value }))}
+                                >
+                                    <option value="All">All</option>
+                                    <option value="RESIDENT">Resident</option>
+                                    <option value="GUEST">Guest</option>
+                                </select>
                             </div>
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Search Keyword (Name/CNIC/Room)</Label>
+                            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">From Date</Label>
                             <Input
-                                placeholder="Filter records by name or ID..."
+                                type="date"
                                 className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
-                                value={exportConfig.searchQuery}
-                                onChange={(e) => setExportConfig(prev => ({ ...prev, searchQuery: e.target.value }))}
+                                value={exportConfig.dateFrom}
+                                onChange={(e) => setExportConfig(prev => ({ ...prev, dateFrom: e.target.value }))}
                             />
                         </div>
 
-                        <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 flex gap-3">
-                            <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
-                            <p className="text-[10px] text-amber-700 font-medium leading-relaxed italic">
-                                Select filters.
-                            </p>
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">To Date</Label>
+                            <Input
+                                type="date"
+                                className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                                value={exportConfig.dateTo}
+                                onChange={(e) => setExportConfig(prev => ({ ...prev, dateTo: e.target.value }))}
+                            />
                         </div>
                     </div>
 
-                    <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3 justify-end">
-                        <Button
-                            variant="ghost"
-                            className="h-12 px-6 rounded-xl font-bold text-[10px] uppercase tracking-widest text-gray-500 hover:bg-gray-100"
-                            onClick={() => setIsExportDialogOpen(false)}
-                            disabled={isExporting}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            className="h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2"
-                            onClick={handleExportPoliceVerification}
-                            disabled={isExporting}
-                        >
-                            {isExporting ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Updates...
-                                </>
-                            ) : (
-                                <>
-                                    <FileText className="h-4 w-4" />
-                                    Export
-                                </>
-                            )}
-                        </Button>
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Search Keyword (Name/CNIC/Room)</Label>
+                        <Input
+                            placeholder="Filter records by name or ID..."
+                            className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                            value={exportConfig.searchQuery}
+                            onChange={(e) => setExportConfig(prev => ({ ...prev, searchQuery: e.target.value }))}
+                        />
                     </div>
-                </DialogContent>
-            </Dialog>
+
+                    <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 flex gap-3">
+                        <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
+                        <p className="text-[10px] text-amber-700 font-medium leading-relaxed italic">
+                            Select filters.
+                        </p>
+                    </div>
+                </div>
+
+                <div className="p-6 bg-gray-50 border-t border-gray-100 flex gap-3 justify-end">
+                    <Button
+                        variant="ghost"
+                        className="h-12 px-6 rounded-xl font-bold text-[10px] uppercase tracking-widest text-gray-500 hover:bg-gray-100"
+                        onClick={() => setIsExportDialogOpen(false)}
+                        disabled={isExporting}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        className="h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2"
+                        onClick={handleExportPoliceVerification}
+                        disabled={isExporting}
+                    >
+                        {isExporting ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Updates...
+                            </>
+                        ) : (
+                            <>
+                                <FileText className="h-4 w-4" />
+                                Export
+                            </>
+                        )}
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
         </div >
     );
 };
