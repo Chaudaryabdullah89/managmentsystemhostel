@@ -364,36 +364,7 @@ const ReportsPage = () => {
 
                     {/* Operational Summary Bento */}
                     <div className="lg:col-span-4 space-y-6">
-                        <Card className="bg-white border border-gray-100 text-gray-900 rounded-3xl p-8 relative overflow-hidden group shadow-sm hover:shadow-md transition-all">
-                            <div className="absolute top-0 right-0 h-full w-24 bg-indigo-50/50 skew-x-12 translate-x-10" />
-                            <div className="flex items-center gap-4 mb-6 relative z-10">
-                                <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
-                                    <ShieldCheck className="h-5 w-5 text-indigo-600" />
-                                </div>
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 italic">Trust Score</h4>
-                            </div>
-                            <div className="space-y-6 relative z-10">
-                                <div className="flex justify-between items-end border-b border-gray-50 pb-4">
-                                    <div className="flex flex-col">
-                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest italic">Paid Fee</span>
-                                        <span className="text-2xl font-bold tracking-tighter italic text-gray-900">94.2%</span>
-                                    </div>
-                                    <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 text-[8px] font-black mb-1">SAFE</Badge>
-                                </div>
-                                <div className="flex justify-between items-end border-b border-gray-50 pb-4">
-                                    <div className="flex flex-col">
-                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest italic">Growth</span>
-                                        <span className="text-2xl font-bold tracking-tighter italic text-gray-900">+18.5%</span>
-                                    </div>
-                                    <TrendingUp className="h-5 w-5 text-indigo-600 mb-1" />
-                                </div>
-                                <Link href="/admin/payments">
-                                    <Button className="w-full h-12 mt-4 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-600/10 transition-all flex items-center justify-center gap-3">
-                                        Open Payments <ChevronRight className="h-4 w-4" />
-                                    </Button>
-                                </Link>
-                            </div>
-                        </Card>
+
 
                         <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
                             <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 italic">Actions</h4>

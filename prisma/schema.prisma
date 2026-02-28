@@ -16,6 +16,7 @@ model Booking {
   status          BookingStatus @default(PENDING)
   totalAmount     Float
   securityDeposit Float         @default(0)
+  monthlyRent     Float?        @default(0)
   uid             String?       @unique
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt

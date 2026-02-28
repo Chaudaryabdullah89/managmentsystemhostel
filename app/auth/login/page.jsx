@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Mail, Lock, Eye, EyeOff, Loader2, Building2, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, Loader2, Building2, ArrowRight, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import Cookies from 'js-cookie';
 import useAuthStore from '@/hooks/Authstate';
@@ -117,6 +117,13 @@ export default function LoginPage() {
                             Enter your credentials to continue
                         </p>
                     </div>
+
+                    {error && (
+                        <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3 animate-in fade-in">
+                            <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+                            <p className="text-sm text-red-900">{error}</p>
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="space-y-5">
 

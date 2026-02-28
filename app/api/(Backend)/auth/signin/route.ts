@@ -28,6 +28,10 @@ export async function POST(request: NextRequest) {
 
     try {
         const response = await authService.login({ email, password, ipAddress, userAgent })
+        if (!response.success) {
+            console.warn(`[API] POST /api/auth/signin - Login failed for email: ${email}`);
+            return NextResponse.json(response, { status: 401 });
+        }
         console.log(`[API] POST /api/auth/signin - Login successful for email: ${email}`);
         return NextResponse.json(response)
     } catch (error: any) {

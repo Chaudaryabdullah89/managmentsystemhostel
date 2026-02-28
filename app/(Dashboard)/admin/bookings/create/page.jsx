@@ -84,6 +84,7 @@ const CreateBookingPage = () => {
         paymentMethod: "CASH",
         totalAmount: 0,
         securityDeposit: 0,
+        monthlyRent: 0,
         advanceMonths: 1
     });
 
@@ -141,9 +142,23 @@ const CreateBookingPage = () => {
             guestName: "",
             guestEmail: "",
             guestPhone: "",
-            cnic: ""
+            cnic: "",
+            address: "",
+            guardianName: "",
+            guardianPhone: "",
+            emergencyContact: "",
+            city: ""
         }));
     };
+
+    useEffect(() => {
+        if (selectedRoom) {
+            setFormData(prev => ({
+                ...prev,
+                monthlyRent: (selectedRoom.monthlyrent || selectedRoom.montlyrent || selectedRoom.price || 0)
+            }));
+        }
+    }, [selectedRoom]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -152,7 +167,7 @@ const CreateBookingPage = () => {
 
     const calculateTotals = () => {
         if (!selectedRoom) return;
-        const rent = (selectedRoom.monthlyrent || selectedRoom.montlyrent || selectedRoom.price || 0);
+        const rent = parseFloat(formData.monthlyRent) || 0;
         const deposit = parseFloat(formData.securityDeposit) || 0;
         const total = deposit + (rent * (parseInt(formData.advanceMonths) || 1));
 
@@ -164,7 +179,7 @@ const CreateBookingPage = () => {
 
     useEffect(() => {
         calculateTotals();
-    }, [selectedRoom, formData.advanceMonths, formData.securityDeposit]);
+    }, [selectedRoom, formData.advanceMonths, formData.securityDeposit, formData.monthlyRent]);
 
     const handleNext = () => {
         if (step === 1 && !formData.guestName) return toast.error("Guest profile required");
@@ -504,6 +519,22 @@ const CreateBookingPage = () => {
                                         <div className="space-y-4">
                                             <div className="flex flex-col gap-1">
                                                 <div className="flex justify-between items-center text-gray-400">
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest">Monthly Rent (Edit)</span>
+                                                </div>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">PKR</span>
+                                                    <Input
+                                                        type="number"
+                                                        name="monthlyRent"
+                                                        value={formData.monthlyRent}
+                                                        onChange={handleInputChange}
+                                                        className="h-10 pl-10 bg-white/10 border-white/20 text-white font-bold rounded-xl"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex justify-between items-center text-gray-400">
                                                     <span className="text-[10px] font-bold uppercase tracking-widest">Security Deposit (Edit)</span>
                                                 </div>
                                                 <div className="relative">
@@ -512,16 +543,14 @@ const CreateBookingPage = () => {
                                                         type="number"
                                                         name="securityDeposit"
                                                         value={formData.securityDeposit}
-                                                        onChange={(e) => {
-                                                            handleInputChange(e);
-                                                        }}
+                                                        onChange={handleInputChange}
                                                         className="h-10 pl-10 bg-white/10 border-white/20 text-white font-bold rounded-xl"
                                                     />
                                                 </div>
                                             </div>
                                             <div className="flex justify-between items-center text-gray-400">
                                                 <span className="text-[10px] font-bold uppercase tracking-widest">Rent ({formData.advanceMonths} Months)</span>
-                                                <span className="font-bold text-white">PKR {((selectedRoom?.monthlyrent || selectedRoom?.montlyrent || selectedRoom?.price || 0)) * formData.advanceMonths}</span>
+                                                <span className="font-bold text-white">PKR {(parseFloat(formData.monthlyRent) || 0) * formData.advanceMonths}</span>
                                             </div>
                                             <div className="h-px bg-white/10 my-4" />
                                             <div className="flex justify-between items-end gap-4">
@@ -588,13 +617,18 @@ const CreateBookingPage = () => {
                                         </div>
                                     </div>
 
-                                    <div className="bg-emerald-500 text-white rounded-3xl p-8 flex items-start justify-between">
+                                    <div className="bg-emerald-500 text-white rounded-3xl p-8 flex items-start justify-between shadow-xl shadow-emerald-500/20">
                                         <div>
-                                            <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">Amount</p>
+                                            <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1">Total Initial Payment</p>
                                             <h4 className="text-2xl font-bold">PKR {formData.totalAmount}</h4>
-                                            <p className="text-[10px] font-bold text-white/80 uppercase tracking-widest mt-2">{formData.advanceMonths} Month Advance + Security</p>
+                                            <div className="flex flex-col gap-1 mt-3">
+                                                <p className="text-[10px] font-bold text-white/80 uppercase tracking-widest">{formData.advanceMonths} Month Advance @ PKR {formData.monthlyRent}/mo</p>
+                                                <p className="text-[10px] font-bold text-white/80 uppercase tracking-widest">+ Security Deposit: PKR {formData.securityDeposit}</p>
+                                            </div>
                                         </div>
-                                        <ShieldCheck className="h-10 w-10 text-white/30" />
+                                        <div className="h-12 w-12 rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md">
+                                            <ShieldCheck className="h-6 w-6 text-white" />
+                                        </div>
                                     </div>
                                 </div>
 

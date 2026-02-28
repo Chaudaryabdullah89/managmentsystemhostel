@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
     ChevronLeft,
@@ -58,12 +58,25 @@ const PaymentHistoryPage = () => {
 
     const [paymentForm, setPaymentForm] = useState({
         amount: "", type: "RENT", method: "CASH", status: "PENDING", notes: "",
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        month: new Date().toLocaleString('default', { month: 'long' }),
+        year: new Date().getFullYear().toString()
     });
 
     const [reconcileForm, setReconcileForm] = useState({
         amount: "", method: "BANK_TRANSFER", notes: "Bulk settlement protocol."
     });
+
+    const duplicateWarning = useMemo(() => {
+        if (!booking?.Payment) return null;
+        const existing = booking.Payment.find(p =>
+            (p.type === 'RENT' || p.type === 'MONTHLY_RENT') &&
+            p.month === paymentForm.month &&
+            p.year === parseInt(paymentForm.year) &&
+            !['REJECTED', 'FAILED', 'REFUNDED'].includes(p.status)
+        );
+        return existing ? `Ledger already has ${paymentForm.month} ${paymentForm.year} (${existing.status})` : null;
+    }, [booking?.Payment, paymentForm.month, paymentForm.year]);
 
     const handleCreatePayment = async (e) => {
         e.preventDefault();
@@ -72,12 +85,16 @@ const PaymentHistoryPage = () => {
             await createPayment.mutateAsync({
                 bookingId, userId: booking.userId, amount: parseFloat(paymentForm.amount),
                 type: paymentForm.type, method: paymentForm.method, status: paymentForm.status,
-                notes: paymentForm.notes, date: paymentForm.date
+                notes: paymentForm.notes, date: paymentForm.date,
+                month: paymentForm.month, year: paymentForm.year,
+                allowDuplicate: !!duplicateWarning
             });
             setIsDialogOpen(false);
             setPaymentForm({
                 amount: "", type: "RENT", method: "CASH", status: "PENDING", notes: "",
-                date: new Date().toISOString().split('T')[0]
+                date: new Date().toISOString().split('T')[0],
+                month: new Date().toLocaleString('default', { month: 'long' }),
+                year: new Date().getFullYear().toString()
             });
         } catch (error) { console.error(error); }
     };
@@ -230,7 +247,42 @@ const PaymentHistoryPage = () => {
                                             <Input className="h-10 rounded-xl" type="number" value={paymentForm.amount} onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })} />
                                         </div>
                                     </div>
-                                    <Button className="w-full h-12 bg-black text-white font-black text-[10px] uppercase tracking-widest rounded-xl" onClick={handleCreatePayment}>Save Payment</Button>
+                                    <div className="grid grid-cols-2 gap-4 pt-2">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-bold uppercase text-gray-400">Month</Label>
+                                            <Select value={paymentForm.month} onValueChange={(v) => setPaymentForm({ ...paymentForm, month: v })}>
+                                                <SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map(m => (
+                                                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[10px] font-bold uppercase text-gray-400">Year</Label>
+                                            <Select value={paymentForm.year} onValueChange={(v) => setPaymentForm({ ...paymentForm, year: v })}>
+                                                <SelectTrigger className="h-10 rounded-xl"><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    {[2023, 2024, 2025, 2026].map(y => (
+                                                        <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    {(paymentForm.type === 'RENT' || paymentForm.type === 'MONTHLY_RENT') && duplicateWarning && (
+                                        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start gap-3 animate-pulse border-2 shadow-sm my-2">
+                                            <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+                                            <div className="space-y-1">
+                                                <p className="text-[11px] font-black text-rose-900 uppercase tracking-tight text-left">Duplicate Entry Warning</p>
+                                                <p className="text-[10px] font-bold text-rose-600 uppercase leading-snug text-left">{duplicateWarning}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <Button className={`w-full h-12 ${duplicateWarning ? 'bg-rose-600 hover:bg-rose-700' : 'bg-black'} text-white font-black text-[10px] uppercase tracking-widest rounded-xl`} onClick={handleCreatePayment}>
+                                        {duplicateWarning ? 'Commit Duplicate' : 'Save Payment'}
+                                    </Button>
                                 </div>
                             </DialogContent>
                         </Dialog>

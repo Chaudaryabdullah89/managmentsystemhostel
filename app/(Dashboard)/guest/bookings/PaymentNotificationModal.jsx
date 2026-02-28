@@ -65,18 +65,22 @@ export default function PaymentNotificationModal({ booking, children }) {
 
     const [selectedMonth, setSelectedMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
-    const duplicateWarning = useMemo(() => {
-        const payments = booking.Payment || [];
-        const existing = payments.find(p =>
-            p.month === selectedMonth &&
-            p.year === parseInt(selectedYear) &&
-            p.status !== "REJECTED"
-        );
-        return existing ? `A notification for ${selectedMonth} ${selectedYear} is already ${existing.status.toLowerCase()}.` : null;
-    }, [booking.Payment, selectedMonth, selectedYear]);
-
     const isSettled = stats.verifiedBalance <= 0;
 
+    const duplicateWarning = useMemo(() => {
+        const payments = booking.Payment || [];
+        const existing = payments.find(p => {
+            const pDate = p.date ? new Date(p.date) : new Date(p.createdAt);
+            const pMonth = p.month || pDate.toLocaleString('default', { month: 'long' });
+            const pYear = p.year || pDate.getUTCFullYear();
+
+            return (p.type === 'RENT' || p.type === 'MONTHLY_RENT') &&
+                pMonth === selectedMonth &&
+                pYear.toString() === selectedYear.toString() &&
+                !['REJECTED', 'FAILED', 'REFUNDED'].includes(p.status);
+        });
+        return existing ? `A notification for ${selectedMonth} ${selectedYear} is already ${existing.status.toLowerCase()}.` : null;
+    }, [booking.Payment, selectedMonth, selectedYear]);
 
     // Form State
     const [amount, setAmount] = useState("");
@@ -163,7 +167,8 @@ export default function PaymentNotificationModal({ booking, children }) {
             notes: finalNotes,
             receiptUrl: receiptUrl || null,
             status: "PENDING",
-            type: "RENT"
+            type: "RENT",
+            allowDuplicate: !!duplicateWarning
         };
 
         createPayment(paymentData, {
@@ -358,24 +363,27 @@ export default function PaymentNotificationModal({ booking, children }) {
                     </div>
 
                     {duplicateWarning && (
-                        <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex items-center gap-3">
-                            <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
-                            <p className="text-[10px] font-bold text-amber-900 uppercase leading-snug">{duplicateWarning}</p>
+                        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start gap-3 animate-pulse border-2 shadow-sm">
+                            <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+                            <div className="space-y-1">
+                                <p className="text-[11px] font-black text-rose-900 uppercase tracking-tight">Duplicate Notification Warning</p>
+                                <p className="text-[10px] font-bold text-rose-600 uppercase leading-snug">{duplicateWarning}</p>
+                            </div>
                         </div>
                     )}
 
                     <DialogFooter>
                         <Button
                             type="submit"
-                            disabled={isPending || isUploading || stats.availableToNotify <= 0 || !!duplicateWarning}
-                            className={`w-full h-11 ${!!duplicateWarning ? 'bg-slate-200 text-slate-400' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-indigo-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2`}
+                            disabled={isPending || isUploading || stats.availableToNotify <= 0}
+                            className={`w-full h-11 ${!!duplicateWarning ? 'bg-rose-600 hover:bg-rose-700' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2`}
                         >
                             {isPending ? (
                                 <Loader2 className="h-4 w-4 animate-spin text-white" />
                             ) : (
                                 <>
                                     <Send className="h-3.5 w-3.5" />
-                                    {!!duplicateWarning ? 'Blocked' : 'Notify Warden Now'}
+                                    {!!duplicateWarning ? 'Proceed Anyway' : 'Notify Warden Now'}
                                 </>
                             )}
                         </Button>
