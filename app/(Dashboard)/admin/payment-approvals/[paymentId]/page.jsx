@@ -16,6 +16,7 @@ import {
     Check,
     X,
     TrendingUp,
+    AlertTriangle,
     Wallet,
     Clock,
     Activity,
