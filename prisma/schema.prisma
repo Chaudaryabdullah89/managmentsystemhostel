@@ -343,12 +343,13 @@ model resetPassword {
 }
 
 model CleaningLog {
-  id        String   @id @default(cuid())
-  roomId    String
-  hostelId  String
-  status    String   @default("COMPLETED")
-  notes     String?
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  roomId      String
+  hostelId    String
+  status      String   @default("COMPLETED")
+  notes       String?
+  performedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
 
   Room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
   Hostel Hostel @relation(fields: [hostelId], references: [id], onDelete: Cascade)
@@ -361,6 +362,7 @@ model LaundryLog {
   itemsCount  Int       @default(0)
   status      String    @default("PENDING")
   notes       String?
+  receivedAt  DateTime  @default(now())
   createdAt   DateTime  @default(now())
   deliveredAt DateTime?
 
