@@ -19,6 +19,7 @@ import {
     Wallet,
     Clock,
     Activity,
+    AlertTriangle,
     AlertCircle,
     ArrowRight,
     MapPin,
