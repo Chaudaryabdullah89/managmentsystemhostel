@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -10,7 +10,6 @@ import {
     DialogDescription
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -20,375 +19,312 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useCreatePayment } from "@/hooks/usePayment";
+import { useUpdatePayment } from "@/hooks/usePayment";
 import {
     Loader2,
-    DollarSign,
-    Calendar,
-    ShieldCheck,
     Send,
     ImageIcon,
     CheckCircle,
-    Upload,
-    Badge,
-    X,
-    Receipt,
-    Wallet,
     AlertCircle,
-    UserCheck
+    Upload,
+    X,
+    Wallet,
+    CreditCard,
+    Bell
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { format } from "date-fns";
 
 export default function PaymentNotificationModal({ booking, children }) {
     const [open, setOpen] = useState(false);
     const fileInputRef = useRef(null);
 
-    // Optimized Financial State
-    const stats = useMemo(() => {
-        const payments = booking.Payment || [];
-        const paid = payments.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + curr.amount, 0);
-        const pending = payments.filter(p => p.status === 'PENDING' || p.status === 'PARTIAL').reduce((acc, curr) => acc + curr.amount, 0);
+    // PENDING payments that haven't been notified yet, OR payments that were REJECTED
+    const pendingPayments = useMemo(() => {
+        return (booking.Payment || []).filter(
+            p => (p.status === 'PENDING' && !p.receiptUrl) || p.status === 'REJECTED'
+        );
+    }, [booking.Payment]);
 
-        // Robust Total Calculation: Use Room Rent if Booking Total is 0
-        const roomRent = booking.Room?.monthlyrent || booking.Room?.price || 0;
-        const bookingTotal = (booking.totalAmount || 0) + (booking.securityDeposit || 0);
-        const total = bookingTotal > 0 ? bookingTotal : roomRent;
+    // Already submitted (PENDING + has receiptUrl = waiting admin review)
+    const submittedPayments = useMemo(() => {
+        return (booking.Payment || []).filter(
+            p => p.status === 'PENDING' && p.receiptUrl
+        );
+    }, [booking.Payment]);
 
-        return {
-            total,
-            paid,
-            pending,
-            verifiedBalance: Math.max(0, total - paid),
-            availableToNotify: Math.max(0, total - paid - pending)
-        };
-    }, [booking]);
-
-    const [selectedMonth, setSelectedMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
-    const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
-    const isSettled = stats.verifiedBalance <= 0;
-
-    const duplicateWarning = useMemo(() => {
-        const payments = booking.Payment || [];
-        const existing = payments.find(p => {
-            const pDate = p.date ? new Date(p.date) : new Date(p.createdAt);
-            const pMonth = p.month || pDate.toLocaleString('default', { month: 'long' });
-            const pYear = p.year || pDate.getUTCFullYear();
-
-            return (p.type === 'RENT' || p.type === 'MONTHLY_RENT') &&
-                pMonth === selectedMonth &&
-                pYear.toString() === selectedYear.toString() &&
-                !['REJECTED', 'FAILED', 'REFUNDED'].includes(p.status);
-        });
-        return existing ? `A notification for ${selectedMonth} ${selectedYear} is already ${existing.status.toLowerCase()}.` : null;
-    }, [booking.Payment, selectedMonth, selectedYear]);
-
-    // Form State
-    const [amount, setAmount] = useState("");
+    const [selectedPaymentId, setSelectedPaymentId] = useState("");
     const [method, setMethod] = useState("BANK_TRANSFER");
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [notes, setNotes] = useState("");
     const [receiptUrl, setReceiptUrl] = useState("");
     const [isUploading, setIsUploading] = useState(false);
 
-    const months = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-    const years = [
-        (new Date().getFullYear() - 1).toString(),
-        new Date().getFullYear().toString(),
-        (new Date().getFullYear() + 1).toString()
-    ];
+    const selectedPayment = useMemo(
+        () => pendingPayments.find(p => p.id === selectedPaymentId),
+        [pendingPayments, selectedPaymentId]
+    );
 
-    // Initialize amount when modal opens
-    useEffect(() => {
-        if (open) {
-            setAmount(stats.availableToNotify > 0 ? stats.availableToNotify.toString() : "");
-        }
-    }, [open, stats.availableToNotify]);
-
-    const { mutate: createPayment, isPending } = useCreatePayment();
+    const { mutate: updatePayment, isPending } = useUpdatePayment();
 
     const handleFileUpload = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
-
         if (file.size > 5 * 1024 * 1024) {
-            toast.error("File is too large! Max 5MB allowed.");
+            toast.error("File too large. Max 5MB.");
             return;
         }
-
         setIsUploading(true);
-        const toastId = toast.loading("Processing Proof...");
-
+        const toastId = toast.loading("Processing receipt...");
         try {
             const reader = new FileReader();
             reader.onloadend = () => {
-                // For demo/testing, we use the Base64 data as the URL.
-                // In production, you would upload this to S3/Cloudinary and store the response URL.
-                const base64String = reader.result;
-                setReceiptUrl(base64String);
+                setReceiptUrl(reader.result);
                 setIsUploading(false);
-                toast.success("Payment Proof Ready", { id: toastId });
+                toast.success("Receipt ready", { id: toastId });
             };
             reader.readAsDataURL(file);
-        } catch (error) {
-            toast.error("Upload Failed", { id: toastId });
+        } catch {
+            toast.error("Upload failed", { id: toastId });
             setIsUploading(false);
         }
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const numericAmount = parseFloat(amount);
-
-        if (!numericAmount || numericAmount <= 0) {
-            toast.error("Please enter a valid amount.");
+        if (!selectedPaymentId) {
+            toast.error("Please select which payment you are notifying about.");
+            return;
+        }
+        if (!receiptUrl) {
+            toast.error("Please attach your payment proof (screenshot/receipt).");
             return;
         }
 
-        // Method validation
-        if (method !== 'CASH' && !receiptUrl) {
-            toast.error("Proof of payment required.");
-            return;
-        }
+        const finalNotes = notes.trim()
+            ? `[GUEST_NOTIFICATION] ${notes.trim()}`
+            : "[GUEST_NOTIFICATION]";
 
-        // Add explicit Guest Notification marker in notes
-        const finalNotes = `[GUEST_NOTIFICATION] ${notes}`.trim();
-
-        const paymentData = {
-            userId: booking.userId,
-            bookingId: booking.id,
-            amount: numericAmount,
-            date: new Date(date),
-            month: selectedMonth,
-            year: parseInt(selectedYear),
-            method,
-            notes: finalNotes,
-            receiptUrl: receiptUrl || null,
-            status: "PENDING",
-            type: "RENT",
-            allowDuplicate: !!duplicateWarning
-        };
-
-        createPayment(paymentData, {
-            onSuccess: () => {
-                setOpen(false);
-                setAmount("");
-                setNotes("");
-                setReceiptUrl("");
-                toast.success("Warden Notified", {
-                    description: `Proof for ${selectedMonth} ${selectedYear} submitted.`
-                });
+        updatePayment(
+            {
+                id: selectedPaymentId,
+                receiptUrl,
+                method,
+                notes: finalNotes,
+                status: 'PENDING', // Send back to pending for re-review
             },
-            onError: (error) => {
-                toast.error(error.message || "Something went wrong.");
+            {
+                onSuccess: () => {
+                    setOpen(false);
+                    setSelectedPaymentId("");
+                    setNotes("");
+                    setReceiptUrl("");
+                    toast.success("Warden Notified! ✅", {
+                        description: "Your receipt has been submitted for review."
+                    });
+                },
+                onError: (err) => toast.error(err.message || "Something went wrong.")
             }
-        });
+        );
     };
 
+    const noPendingDues = pendingPayments.length === 0;
 
-    if (isSettled && !open) {
+    // If no pending dues at all — either all settled or all already submitted
+    if (noPendingDues && !open) {
+        const alreadySubmitted = submittedPayments.length > 0;
         return (
-            <div className="relative group inline-block" onClick={(e) => {
-                e.preventDefault();
-                toast.info("Account is already settled.");
-            }}>
-                <div className="opacity-50 grayscale pointer-events-none">
-                    {children}
-                </div>
+            <div
+                className="relative group inline-block"
+                onClick={() => {
+                    toast.info(
+                        alreadySubmitted
+                            ? "Receipt already submitted — waiting for admin review."
+                            : "No pending dues to notify about."
+                    );
+                }}
+            >
+                <div className="opacity-50 grayscale pointer-events-none">{children}</div>
             </div>
         );
     }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {children}
-            </DialogTrigger>
+            <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="max-w-[420px] p-0 border-0 shadow-2xl rounded-[1.5rem] bg-white overflow-hidden ring-1 ring-black/[0.05]">
-                {/* Slim Design Header */}
+
+                {/* Header */}
                 <DialogHeader className="p-6 bg-slate-900 text-white flex flex-row items-center gap-4 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-full bg-white/[0.03] skew-x-[30deg] translate-x-10" />
                     <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
-                        <Wallet className="h-5 w-5 text-white" />
+                        <Bell className="h-5 w-5 text-white" />
                     </div>
                     <div className="flex flex-col text-left">
-                        <DialogTitle className="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                        <DialogTitle className="text-sm font-bold uppercase tracking-widest">
                             Notify Warden
-                            <Badge className="bg-emerald-500/20 text-emerald-400 border-none text-[8px] px-1.5 py-0">Guest Mode</Badge>
                         </DialogTitle>
-                        <p className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1">Directly Alart management</p>
+                        <DialogDescription className="text-[9px] font-medium text-slate-400 uppercase tracking-widest mt-1">
+                            Confirm you have paid — attach your proof
+                        </DialogDescription>
                     </div>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                    {/* Compact Balance Cards */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex flex-col gap-1">
-                            <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Total Unpaid</span>
-                            <span className="text-xs font-bold text-slate-900">PKR {stats.verifiedBalance.toLocaleString()}</span>
-                        </div>
-                        <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-3 flex flex-col gap-1">
-                            <span className="text-[8px] font-bold text-indigo-400 uppercase tracking-widest">Remaining to Pay</span>
-                            <span className="text-xs font-bold text-indigo-600">PKR {stats.availableToNotify.toLocaleString()}</span>
-                        </div>
-                    </div>
 
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Fee Month</Label>
-                                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                                    <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-[10px] px-3">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-xl p-1 shadow-2xl border-slate-100">
-                                        {months.map(m => (
-                                            <SelectItem key={m} value={m} className="rounded-lg text-[10px] font-bold py-2">{m}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Fee Year</Label>
-                                <Select value={selectedYear} onValueChange={setSelectedYear}>
-                                    <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-[10px] px-3">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-xl p-1 shadow-2xl border-slate-100">
-                                        {years.map(y => (
-                                            <SelectItem key={y} value={y} className="rounded-lg text-[10px] font-bold py-2">{y}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Paid Amount</Label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">Rs</span>
-                                    <Input
-                                        type="number"
-                                        className="h-10 pl-8 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-xs focus:ring-1 focus:ring-indigo-600"
-                                        value={amount}
-                                        onChange={(e) => setAmount(e.target.value)}
-                                        placeholder="0"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Transfer Date</Label>
-                                <Input
-                                    type="date"
-                                    className="h-10 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-xs px-3"
-                                    value={date}
-                                    onChange={(e) => setDate(e.target.value)}
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Payment Method</Label>
-                            <Select value={method} onValueChange={setMethod}>
-                                <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-[10px] px-4">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl p-1 shadow-2xl border-slate-100">
-                                    <SelectItem value="BANK_TRANSFER" className="rounded-lg text-[10px] font-bold py-2">Bank Transfer</SelectItem>
-                                    <SelectItem value="EASYPAISA" className="rounded-lg text-[10px] font-bold py-2">EasyPaisa</SelectItem>
-                                    <SelectItem value="JAZZCASH" className="rounded-lg text-[10px] font-bold py-2">JazzCash</SelectItem>
-                                    {/* <SelectItem value="CASH" className="rounded-lg text-[10px] font-bold py-2">Manual Cash</SelectItem> */}
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Attach Transfer Proof</Label>
-                            {receiptUrl ? (
-                                <div className="relative h-12 flex items-center justify-between px-3 bg-emerald-50 border border-emerald-100 rounded-xl">
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center border border-emerald-100">
-                                            <ImageIcon className="h-3.5 w-3.5 text-emerald-500" />
-                                        </div>
-                                        <span className="text-[9px] font-bold text-emerald-800 uppercase tracking-tighter">Receipt Attached</span>
-                                    </div>
-                                    <Button
-                                        type="button"
-                                        variant="ghost"
-                                        onClick={() => setReceiptUrl("")}
-                                        className="h-6 w-6 p-0 text-emerald-900 hover:bg-emerald-100 rounded-lg"
-                                    >
-                                        <X className="h-3.5 w-3.5" />
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div
-                                    className={`h-12 border border-dashed rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all ${isUploading ? 'bg-slate-50' : 'hover:bg-slate-50 border-slate-200 hover:border-indigo-400 group'}`}
-                                    onClick={() => !isUploading && fileInputRef.current?.click()}
-                                >
-                                    <input
-                                        type="file"
-                                        className="hidden"
-                                        ref={fileInputRef}
-                                        accept="image/*"
-                                        onChange={handleFileUpload}
-                                    />
-                                    {isUploading ? (
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-500" />
-                                    ) : (
-                                        <Upload className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-500" />
-                                    )}
-                                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 group-hover:text-indigo-600">
-                                        {isUploading ? 'Uploading...' : 'Upload Image Receipt'}
-                                    </span>
-                                </div>
-                            )}
-                            <p className="text-[7px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1 text-center">Auto-tagged as "Notified by Guest"</p>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Additional Notes</Label>
-                            <Textarea
-                                className="rounded-xl border-slate-100 bg-slate-50/50 min-h-[60px] font-medium p-3 text-xs resize-none focus:ring-1 focus:ring-indigo-600"
-                                placeholder="Describe the payment..."
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    {duplicateWarning && (
-                        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start gap-3 animate-pulse border-2 shadow-sm">
-                            <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
-                            <div className="space-y-1">
-                                <p className="text-[11px] font-black text-rose-900 uppercase tracking-tight">Duplicate Notification Warning</p>
-                                <p className="text-[10px] font-bold text-rose-600 uppercase leading-snug">{duplicateWarning}</p>
+                    {/* Already submitted notice */}
+                    {submittedPayments.length > 0 && (
+                        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 flex items-start gap-3">
+                            <CheckCircle className="h-4 w-4 text-indigo-600 shrink-0 mt-0.5" />
+                            <div>
+                                <p className="text-[10px] font-black text-indigo-800 uppercase tracking-tight">
+                                    {submittedPayments.length} payment{submittedPayments.length > 1 ? 's' : ''} already under review
+                                </p>
+                                <p className="text-[9px] text-indigo-500 mt-0.5">You have additional unpaid dues below.</p>
                             </div>
                         </div>
                     )}
 
+                    {/* Rejected Warning Alert */}
+                    {selectedPayment && selectedPayment.status === 'REJECTED' && (
+                        <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
+                            <div>
+                                <p className="text-[10px] font-black text-rose-800 uppercase tracking-tight">
+                                    Previous notification rejected
+                                </p>
+                                <p className="text-[9px] text-rose-600 mt-0.5 leading-relaxed font-bold">
+                                    Your last receipt for this payment was rejected by the warden. Please upload a clear, valid payment proof to resubmit for review.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Select which pending payment to notify about */}
+                    <div className="space-y-1.5">
+                        <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">
+                            Which payment did you make? *
+                        </Label>
+                        <Select value={selectedPaymentId} onValueChange={setSelectedPaymentId}>
+                            <SelectTrigger className="h-11 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-[10px] px-3">
+                                <SelectValue placeholder="Select a pending due..." />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl p-1 shadow-2xl border-slate-100">
+                                {pendingPayments.map(p => (
+                                    <SelectItem key={p.id} value={p.id} className="rounded-lg text-[10px] font-bold py-2.5">
+                                        <div className="flex items-center gap-2">
+                                            <CreditCard className="h-3 w-3 text-slate-400" />
+                                            <span>
+                                                PKR {Number(p.amount).toLocaleString()} — {p.month || p.type} {p.year || ""}
+                                            </span>
+                                        </div>
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Show selected payment details */}
+                    {selectedPayment && (
+                        <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 grid grid-cols-2 gap-2">
+                            <div>
+                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Amount Due</p>
+                                <p className="text-sm font-black text-slate-900">PKR {Number(selectedPayment.amount).toLocaleString()}</p>
+                            </div>
+                            <div>
+                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Period</p>
+                                <p className="text-sm font-black text-slate-900">{selectedPayment.month || selectedPayment.type} {selectedPayment.year || ""}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Payment Method */}
+                    <div className="space-y-1.5">
+                        <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Payment Method Used *</Label>
+                        <Select value={method} onValueChange={setMethod}>
+                            <SelectTrigger className="h-10 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-[10px] px-4">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl p-1 shadow-2xl border-slate-100">
+                                <SelectItem value="BANK_TRANSFER" className="rounded-lg text-[10px] font-bold py-2">Bank Transfer</SelectItem>
+                                <SelectItem value="EASYPAISA" className="rounded-lg text-[10px] font-bold py-2">EasyPaisa</SelectItem>
+                                <SelectItem value="JAZZCASH" className="rounded-lg text-[10px] font-bold py-2">JazzCash</SelectItem>
+                                <SelectItem value="CASH" className="rounded-lg text-[10px] font-bold py-2">Cash (Hand-Delivered)</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Receipt Upload */}
+                    <div className="space-y-1.5">
+                        <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">
+                            Attach Payment Proof *
+                        </Label>
+                        {receiptUrl ? (
+                            <div className="relative h-12 flex items-center justify-between px-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+                                <div className="flex items-center gap-2">
+                                    <div className="h-7 w-7 rounded-lg bg-white flex items-center justify-center border border-emerald-100">
+                                        <ImageIcon className="h-3.5 w-3.5 text-emerald-500" />
+                                    </div>
+                                    <span className="text-[9px] font-bold text-emerald-800 uppercase tracking-tighter">Receipt Attached ✓</span>
+                                </div>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={() => setReceiptUrl("")}
+                                    className="h-6 w-6 p-0 text-emerald-900 hover:bg-emerald-100 rounded-lg"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </Button>
+                            </div>
+                        ) : (
+                            <div
+                                className={`h-12 border border-dashed rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all ${isUploading ? 'bg-slate-50' : 'hover:bg-slate-50 border-slate-200 hover:border-indigo-400 group'}`}
+                                onClick={() => !isUploading && fileInputRef.current?.click()}
+                            >
+                                <input
+                                    type="file"
+                                    className="hidden"
+                                    ref={fileInputRef}
+                                    accept="image/*"
+                                    onChange={handleFileUpload}
+                                />
+                                {isUploading
+                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-500" />
+                                    : <Upload className="h-3.5 w-3.5 text-slate-400 group-hover:text-indigo-500" />
+                                }
+                                <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 group-hover:text-indigo-600">
+                                    {isUploading ? 'Processing...' : 'Upload Screenshot / Receipt'}
+                                </span>
+                            </div>
+                        )}
+                        <p className="text-[7px] font-bold text-slate-400 uppercase tracking-[0.2em] px-1 text-center">
+                            Screenshot, bank slip, or JazzCash/EasyPaisa confirmation
+                        </p>
+                    </div>
+
+                    {/* Notes */}
+                    <div className="space-y-1.5">
+                        <Label className="text-[9px] font-bold uppercase tracking-widest text-slate-400 ml-1">Additional Note (Optional)</Label>
+                        <Textarea
+                            className="rounded-xl border-slate-100 bg-slate-50/50 min-h-[60px] font-medium p-3 text-xs resize-none focus:ring-1 focus:ring-indigo-600"
+                            placeholder="e.g. Transfer ID: 12345, paid on 1st March"
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                        />
+                    </div>
+
                     <DialogFooter>
                         <Button
                             type="submit"
-                            disabled={isPending || isUploading || stats.availableToNotify <= 0}
-                            className={`w-full h-11 ${!!duplicateWarning ? 'bg-rose-600 hover:bg-rose-700' : 'bg-indigo-600 hover:bg-indigo-700'} text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2`}
+                            disabled={isPending || isUploading || !selectedPaymentId || !receiptUrl}
+                            className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                         >
-                            {isPending ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-white" />
-                            ) : (
-                                <>
-                                    <Send className="h-3.5 w-3.5" />
-                                    {!!duplicateWarning ? 'Proceed Anyway' : 'Notify Warden Now'}
-                                </>
-                            )}
+                            {isPending
+                                ? <Loader2 className="h-4 w-4 animate-spin text-white" />
+                                : <><Send className="h-3.5 w-3.5" /> Notify Warden Now</>
+                            }
                         </Button>
                     </DialogFooter>
-
                 </form>
             </DialogContent>
         </Dialog>

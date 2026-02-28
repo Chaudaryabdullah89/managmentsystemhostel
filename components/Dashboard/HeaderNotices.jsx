@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge"
 
 const HeaderNotices = () => {
     const { user } = useAuthStore()
-    const { data: notices } = useNotices({ hostelId: user?.hostelId })
+    const { data: notices } = useNotices({ hostelId: user?.hostelId ?? undefined })
 
     const activeNotices = notices?.slice(0, 5) || []
 

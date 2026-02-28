@@ -22,6 +22,7 @@ import {
     Megaphone,
     Wallet,
     Plane,
+    BarChart3,
     type LucideIcon,
 } from "lucide-react"
 import useAuthStore from "@/hooks/Authstate"
@@ -52,7 +53,8 @@ const items: Record<string, NavItem[]> = {
         { title: "Salaries (Staff)", url: "/admin/salaries", icon: DollarSign, role: "admin" },
         { title: "Salaries (Warden)", url: "/admin/warden-salaries", icon: Users, role: "admin" },
         { title: "Users Records", url: "/admin/users-records", icon: Users, role: "admin" },
-        { title: "Reports", url: "/admin/reports", icon: FileText, role: "admin" },
+        { title: "Payments Reports", url: "/admin/payment-analytics", icon: BarChart3, role: "admin" },
+        { title: "Hostels Reports", url: "/admin/reports", icon: FileText, role: "admin" },
         { title: "Leave Requests", url: "/admin/leaves", icon: Plane, role: "admin" },
         { title: "Audit & Search", url: "/admin/audit", icon: Search, role: "admin" },
         { title: "Complaints", url: "/admin/complaints", icon: MessageSquare, role: "admin" },

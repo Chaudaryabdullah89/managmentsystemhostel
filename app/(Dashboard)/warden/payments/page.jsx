@@ -92,7 +92,7 @@ import {
     useUpdateRefundStatus
 } from "@/hooks/useRefunds";
 import { useHostel } from "@/hooks/usehostel";
-import { Undo2 } from "lucide-react";
+import { Undo2, Bell } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
@@ -691,6 +691,15 @@ const PaymentManagementPage = () => {
                                 )}
                             </TabsTrigger>
                             <TabsTrigger
+                                value="submissions"
+                                className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all relative shrink-0"
+                            >
+                                <Bell className="h-3.5 w-3.5 mr-2" /> Resident Submissions
+                                {(paymentsData?.payments?.filter(p => p.status === 'PENDING' && p.receiptUrl).length > 0) && (
+                                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 bg-indigo-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+                                )}
+                            </TabsTrigger>
+                            <TabsTrigger
                                 value="refunds"
                                 className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-rose-600 data-[state=active]:text-white transition-all relative shrink-0"
                             >
@@ -922,6 +931,86 @@ const PaymentManagementPage = () => {
                                 <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1 max-w-[320px] mx-auto leading-relaxed">No payments waiting for approval.</p>
                             </div>
                         )}
+                    </TabsContent>
+
+                    {/* ── RESIDENT SUBMISSIONS TAB ─────────────────────────────────────── */}
+                    <TabsContent value="submissions" className="space-y-4 outline-none">
+                        {(() => {
+                            const submissions = (paymentsData?.payments || []).filter(p => p.status === 'PENDING' && p.receiptUrl);
+                            return submissions.length > 0 ? (
+                                submissions.map((payment) => (
+                                    <div
+                                        key={payment.id}
+                                        className="bg-white border border-indigo-100 rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-all group relative overflow-hidden"
+                                    >
+                                        <div className="absolute top-0 left-0 w-1 md:w-1.5 h-full bg-indigo-500 opacity-70" />
+
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6 flex-1 min-w-0 w-full">
+                                            {/* Receipt Thumbnail */}
+                                            <div className="h-14 w-14 md:h-16 md:w-16 rounded-xl border border-indigo-100 overflow-hidden bg-indigo-50 shrink-0 shadow-sm cursor-pointer"
+                                                onClick={() => router.push(`/admin/payment-approvals/${payment.id}`)}>
+                                                <img
+                                                    src={payment.receiptUrl}
+                                                    alt="Receipt"
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                />
+                                            </div>
+
+                                            {/* Info */}
+                                            <div className="flex flex-col min-w-0 flex-1 gap-1">
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <h4 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight truncate">{payment.User?.name}</h4>
+                                                    <Badge className="bg-indigo-50 text-indigo-700 border border-indigo-100 text-[8px] font-black px-2 py-0.5 uppercase tracking-widest">
+                                                        <Bell className="h-2.5 w-2.5 mr-1" />
+                                                        Resident Notified
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                                                    <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">{payment.Booking?.Room?.Hostel?.name || '—'}</span>
+                                                    <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                                                    <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">{payment.type}</span>
+                                                    {payment.month && (<>
+                                                        <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
+                                                        <span className="text-[9px] md:text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded uppercase">{payment.month} {payment.year}</span>
+                                                    </>)}
+                                                </div>
+                                                {payment.notes && (
+                                                    <p className="text-[9px] text-gray-400 italic mt-0.5 truncate max-w-xs">"{payment.notes}"</p>
+                                                )}
+                                            </div>
+
+                                            {/* Amount */}
+                                            <div className="flex sm:flex-col items-center sm:items-end gap-3 sm:gap-1 shrink-0">
+                                                <span className="text-lg md:text-xl font-black text-indigo-600 tracking-tight">PKR {Number(payment.amount).toLocaleString()}</span>
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                                                    {payment.date ? format(new Date(payment.date), 'dd MMM yyyy') : '—'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Action */}
+                                        <div className="flex items-center gap-2 w-full lg:w-auto mt-2 lg:mt-0 border-t lg:border-none pt-4 lg:pt-0 justify-end">
+                                            <Button
+                                                className="h-9 md:h-10 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-lg shadow-indigo-600/20 cursor-pointer flex items-center gap-2"
+                                                onClick={() => router.push(`/admin/payment-approvals/${payment.id}`)}
+                                            >
+                                                <Eye className="h-3.5 w-3.5" /> Review &amp; Approve
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center border-dashed shadow-sm">
+                                    <div className="h-16 w-16 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-6 border border-indigo-100">
+                                        <Bell className="h-8 w-8 text-indigo-400" />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">No Resident Submissions</h3>
+                                    <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1 max-w-[320px] mx-auto leading-relaxed">
+                                        No residents have uploaded a payment receipt awaiting your review.
+                                    </p>
+                                </div>
+                            );
+                        })()}
                     </TabsContent>
 
                     <TabsContent value="refunds" className="space-y-4 outline-none">

@@ -110,11 +110,11 @@ export function usePaymentById(id) {
 export function useUpdatePayment() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, status, notes, amount, type, method }) => {
+        mutationFn: async ({ id, status, notes, amount, type, method, receiptUrl }) => {
             const response = await fetch(`/api/payments/${id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status, notes, amount, type, method }),
+                body: JSON.stringify({ status, notes, amount, type, method, receiptUrl }),
             });
             const data = await response.json();
             if (!data.success) throw new Error(data.error);
