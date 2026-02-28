@@ -145,7 +145,7 @@ const ReportsPage = () => {
             <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
                 <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
                     <div className="flex items-center gap-3 md:gap-4">
-                        <div className="h-8 w-1 bg-black rounded-full shrink-0" />
+                        <div className="h-8 w-1 bg-indigo-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
                             <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Reports</h1>
                             <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ const ReportsPage = () => {
                             </SelectContent>
                         </Select>
                         <Button
-                            className="h-9 px-4 md:px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap"
+                            className="h-9 px-4 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-lg shadow-indigo-600/10 transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap"
                             onClick={handleExport}
                         >
                             <Download className="h-3.5 w-3.5" /> <span className="hidden xs:inline">Report</span>
@@ -243,7 +243,7 @@ const ReportsPage = () => {
                 <Card className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
                     <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/20">
                         <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-xl bg-black flex items-center justify-center text-white shadow-lg shadow-black/10">
+                            <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
                                 <Building2 className="h-5 w-5" />
                             </div>
                             <div>
@@ -277,7 +277,7 @@ const ReportsPage = () => {
                                             <div className="flex items-center gap-3">
                                                 <div className="flex-1 bg-gray-100/50 rounded-full h-1.5 w-24 overflow-hidden border border-gray-100">
                                                     <div
-                                                        className="bg-black h-full rounded-full transition-all duration-1000"
+                                                        className="bg-indigo-600 h-full rounded-full transition-all duration-1000"
                                                         style={{ width: `${hostel.occupancy}%` }}
                                                     />
                                                 </div>
@@ -289,7 +289,7 @@ const ReportsPage = () => {
                                         <td className="px-8 py-6 text-right text-sm font-black text-emerald-600 italic">PKR {hostel.profit.toLocaleString()}</td>
                                         <td className="px-8 py-6 text-center">
                                             <Link href={`/admin/hostels/${hostel.id}`}>
-                                                <Button variant="ghost" className="h-8 w-8 rounded-lg p-0 hover:bg-black hover:text-white transition-all">
+                                                <Button variant="ghost" className="h-8 w-8 rounded-lg p-0 hover:bg-indigo-600 hover:text-white transition-all">
                                                     <Zap className="h-3.5 w-3.5" />
                                                 </Button>
                                             </Link>
@@ -364,32 +364,32 @@ const ReportsPage = () => {
 
                     {/* Operational Summary Bento */}
                     <div className="lg:col-span-4 space-y-6">
-                        <Card className="bg-black text-white rounded-3xl p-8 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 h-full w-24 bg-white/5 skew-x-12 translate-x-10" />
+                        <Card className="bg-white border border-gray-100 text-gray-900 rounded-3xl p-8 relative overflow-hidden group shadow-sm hover:shadow-md transition-all">
+                            <div className="absolute top-0 right-0 h-full w-24 bg-indigo-50/50 skew-x-12 translate-x-10" />
                             <div className="flex items-center gap-4 mb-6 relative z-10">
-                                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
-                                    <ShieldCheck className="h-5 w-5 text-emerald-400" />
+                                <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100">
+                                    <ShieldCheck className="h-5 w-5 text-indigo-600" />
                                 </div>
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 italic">Score</h4>
+                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 italic">Trust Score</h4>
                             </div>
                             <div className="space-y-6 relative z-10">
-                                <div className="flex justify-between items-end border-b border-white/10 pb-4">
+                                <div className="flex justify-between items-end border-b border-gray-50 pb-4">
                                     <div className="flex flex-col">
-                                        <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest italic">Paid</span>
-                                        <span className="text-2xl font-bold tracking-tighter italic">94.2%</span>
+                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest italic">Paid Fee</span>
+                                        <span className="text-2xl font-bold tracking-tighter italic text-gray-900">94.2%</span>
                                     </div>
-                                    <Badge className="bg-emerald-500/20 text-emerald-400 border-none text-[8px] font-black mb-1">SAFE</Badge>
+                                    <Badge className="bg-emerald-50 text-emerald-600 border-emerald-100 text-[8px] font-black mb-1">SAFE</Badge>
                                 </div>
-                                <div className="flex justify-between items-end border-b border-white/10 pb-4">
+                                <div className="flex justify-between items-end border-b border-gray-50 pb-4">
                                     <div className="flex flex-col">
-                                        <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest italic">Growth</span>
-                                        <span className="text-2xl font-bold tracking-tighter italic">+18.5%</span>
+                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest italic">Growth</span>
+                                        <span className="text-2xl font-bold tracking-tighter italic text-gray-900">+18.5%</span>
                                     </div>
-                                    <TrendingUp className="h-5 w-5 text-blue-400 mb-1" />
+                                    <TrendingUp className="h-5 w-5 text-indigo-600 mb-1" />
                                 </div>
                                 <Link href="/admin/payments">
-                                    <Button className="w-full h-12 mt-4 bg-white text-black font-black text-[10px] uppercase tracking-[0.2em] rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-3">
-                                        Open <ChevronRight className="h-4 w-4" />
+                                    <Button className="w-full h-12 mt-4 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-[0.2em] rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-600/10 transition-all flex items-center justify-center gap-3">
+                                        Open Payments <ChevronRight className="h-4 w-4" />
                                     </Button>
                                 </Link>
                             </div>
@@ -405,8 +405,8 @@ const ReportsPage = () => {
                                     { label: 'Hostel', icon: Building2, link: '/admin/hostels' }
                                 ].map((node, i) => (
                                     <Link key={i} href={node.link}>
-                                        <Button variant="outline" className="w-full h-12 rounded-xl border-gray-100 font-bold text-[9px] uppercase tracking-widest flex items-center justify-start px-4 hover:bg-black hover:text-white transition-all group">
-                                            <node.icon className="h-3.5 w-3.5 mr-3 text-gray-400 group-hover:text-white" /> {node.label}
+                                        <Button variant="outline" className="w-full h-12 rounded-xl border-gray-100 font-bold text-[9px] uppercase tracking-widest flex items-center justify-start px-4 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all group">
+                                            <node.icon className="h-3.5 w-3.5 mr-3 text-indigo-600 transition-colors group-hover:text-white" /> {node.label}
                                         </Button>
                                     </Link>
                                 ))}

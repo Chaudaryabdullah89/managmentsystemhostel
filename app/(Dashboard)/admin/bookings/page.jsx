@@ -99,6 +99,7 @@ const GlobalBookingsPage = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
     const [hostelFilter, setHostelFilter] = useState("All");
+    const [monthFilter, setMonthFilter] = useState("All");
     const [selectedIds, setSelectedIds] = useState(new Set());
 
     const toggleSelect = (id) => {
@@ -161,10 +162,12 @@ const GlobalBookingsPage = () => {
             booking.Room?.roomNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
             booking.Room?.Hostel?.name.toLowerCase().includes(searchQuery.toLowerCase());
 
+        const matchesMonth = monthFilter === "All" || (booking.checkIn && format(new Date(booking.checkIn), 'MMMM') === monthFilter);
+
         const matchesStatus = statusFilter === "All" || booking.status === statusFilter;
         const matchesHostel = hostelFilter === "All" || (booking.Room?.Hostel?.name === hostelFilter);
 
-        return matchesSearch && matchesStatus && matchesHostel;
+        return matchesSearch && matchesStatus && matchesHostel && matchesMonth;
     });
 
     const activeBookings = bookings.filter(b => b.status === "CHECKED_IN").length;
@@ -353,14 +356,14 @@ const GlobalBookingsPage = () => {
                             onClick={() => setIsExportDialogOpen(true)}
                         >
                             <ShieldCheck className="h-3.5 w-3.5 text-indigo-700" />
-                            <span className="hidden xs:inline">Report</span> <span className="xs:hidden">REPORT</span>
+                            <span className="hidden xs:inline">PDF Report</span> <span className="xs:hidden">PDF REPORT</span>
                         </Button>
                         <Button
                             className="h-9 px-4 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center gap-2"
                             onClick={() => router.push('/admin/bookings/create')}
                         >
                             <Plus className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                            <span className="hidden xs:inline">New</span> <span className="xs:hidden">NEW</span>
+                            <span className="hidden xs:inline">Add Booking</span> <span className="xs:hidden">ADD BOOKING</span>
                         </Button>
                     </div>
                 </div>
@@ -425,7 +428,7 @@ const GlobalBookingsPage = () => {
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0">
+                                <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0" title="Filter by Hostel">
                                     <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
                                     {hostelFilter === 'All' ? 'Hostel' : hostelFilter}
                                 </Button>
@@ -435,6 +438,25 @@ const GlobalBookingsPage = () => {
                                 {hostels.map(h => (
                                     <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">
                                         {h.name}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <div className="h-4 w-px bg-gray-200 shrink-0" />
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0">
+                                    <Calendar className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                    {monthFilter === 'All' ? 'Month' : monthFilter}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-[180px] rounded-xl border-gray-100 shadow-xl p-1">
+                                <DropdownMenuItem onClick={() => setMonthFilter("All")} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg cursor-pointer">Show All</DropdownMenuItem>
+                                {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map(month => (
+                                    <DropdownMenuItem key={month} onClick={() => setMonthFilter(month)} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg cursor-pointer">
+                                        {month}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
@@ -770,7 +792,7 @@ const GlobalBookingsPage = () => {
                     </div>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 };
 

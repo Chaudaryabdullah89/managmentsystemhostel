@@ -107,6 +107,7 @@ const PaymentManagementPage = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
     const [filterHostel, setFilterHostel] = useState("All");
+    const [filterMonth, setFilterMonth] = useState("All");
 
     // Approval Logic States
     const [rejectionReason, setRejectionReason] = useState("");
@@ -115,8 +116,22 @@ const PaymentManagementPage = () => {
 
     // Edit & Delete States
     const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+    const [paymentExportOptions, setPaymentExportOptions] = useState({
+        fromDate: "",
+        toDate: "",
+        hostel: "All",
+        status: "All",
+        type: "All"
+    });
     const [isExportingDefaulters, setIsExportingDefaulters] = useState(false);
     const [isExportingPayments, setIsExportingPayments] = useState(false);
+    const [isDefaulterOptionsOpen, setIsDefaulterOptionsOpen] = useState(false);
+    const [defaulterOptions, setDefaulterOptions] = useState({
+        dueDay: 5,
+        lateFeePerDay: 0,
+        month: new Date().getMonth(),
+        year: new Date().getFullYear()
+    });
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [editFormData, setEditFormData] = useState({
@@ -162,10 +177,12 @@ const PaymentManagementPage = () => {
                 return (payment.status === 'PENDING' || payment.status === 'PARTIAL') && matchesSearch && matchesHostel;
             }
 
+            const matchesMonth = filterMonth === "All" || (payment.date && format(new Date(payment.date), 'MMMM') === filterMonth);
+
             const matchesStatus = filterStatus === "All" || payment.status === filterStatus;
-            return matchesStatus && matchesHostel && matchesSearch;
+            return matchesStatus && matchesHostel && matchesSearch && matchesMonth;
         });
-    }, [paymentsData, filterStatus, filterHostel, searchQuery, activeTab]);
+    }, [paymentsData, filterStatus, filterHostel, searchQuery, activeTab, filterMonth]);
 
     const handleApprove = async (paymentId) => {
         try {
@@ -259,22 +276,14 @@ const PaymentManagementPage = () => {
     };
 
     const handleExportDefaultersList = async () => {
+        setIsDefaulterOptionsOpen(false);
         setIsExportingDefaulters(true);
 
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
-        const currentDay = now.getDate();
-
-        // Let's establish what date to check for. Usually rent is expected by 5th or 10th. 
-        // If it's before the 5th of the month, technically no one is a defaulter for THIS month yet, 
-        // but they might be for the PREVIOUS month. 
-        // For simplicity, we just check if they have a PAID RENT for the current month.
-        // If we want to strictly say "only consider them defaulters if it's past the 5th/10th", we can do:
-        const isPastDueDay = currentDay > 5; // Assuming 5th is the due date
-        // If it's not past the due date, we check for last month's payment instead.
-        const targetMonth = isPastDueDay ? currentMonth : (currentMonth === 0 ? 11 : currentMonth - 1);
-        const targetYear = (isPastDueDay || currentMonth !== 0) ? currentYear : currentYear - 1;
+        const targetMonth = defaulterOptions.month;
+        const targetYear = defaulterOptions.year;
 
         const defaultersList = bookings.filter(b => {
             // Respect UI hostel filter
@@ -292,6 +301,7 @@ const PaymentManagementPage = () => {
             return !hasPaidForTargetMonth;
         });
 
+        // Delay for aesthetic
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         try {
@@ -307,7 +317,7 @@ const PaymentManagementPage = () => {
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
             const monthName = new Date(targetYear, targetMonth, 1).toLocaleString('default', { month: 'long' });
-            doc.text(`Defaulters for: ${monthName} ${targetYear} (Past 5th)`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+            doc.text(`Defaulters for: ${monthName} ${targetYear} (Past ${defaulterOptions.dueDay}th)`, doc.internal.pageSize.width / 2, 26, { align: "center" });
             doc.setTextColor(80, 80, 80);
             doc.setFontSize(10);
             doc.setFont("helvetica", "bold");
@@ -324,18 +334,42 @@ const PaymentManagementPage = () => {
             doc.line(14, 49, doc.internal.pageSize.width - 14, 49);
 
             const headers = [
-                ["S.No", "Resident Name", "Phone", "Hostel", "Room", "Rent Amount", "Last Payment"]
+                ["S.No", "Resident Name", "Phone", "Hostel", "Room", "Rent", "Delay", "Late Fee", "Total Due", "Last Payment"]
             ];
 
             const rows = defaultersList.map((b, index) => {
                 const lastPayment = (b.Payment && b.Payment.length > 0) ? format(new Date(b.Payment[0].date), 'dd/MM/yyyy') : 'Never';
+
+                // Calculate Overdue Days & Late Fee
+                let lateFee = 0;
+                let overdueDays = 0;
+
+                const isTargetCurrent = targetMonth === currentMonth && targetYear === currentYear;
+
+                if (isTargetCurrent) {
+                    if (currentDay > defaulterOptions.dueDay) {
+                        overdueDays = currentDay - defaulterOptions.dueDay;
+                    }
+                } else {
+                    // Past Month: Assume they are overdue for all days past dueDay in that month
+                    // (Actually if it's now feb, Jan rent is overdue for whole Jan month - dueDay)
+                    const lastDayInTargetMonth = new Date(targetYear, targetMonth + 1, 0).getDate();
+                    overdueDays = lastDayInTargetMonth - defaulterOptions.dueDay;
+                }
+
+                lateFee = Math.max(0, overdueDays) * (defaulterOptions.lateFeePerDay || 0);
+                const totalDue = (b.totalAmount || 0) + lateFee;
+
                 return [
                     index + 1,
                     b.User?.name || 'N/A',
                     b.User?.phone || 'N/A',
                     b.Room?.Hostel?.name || 'N/A',
                     b.Room?.roomNumber || 'N/A',
-                    `PKR ${b.totalAmount ? b.totalAmount.toLocaleString() : 'N/A'}`,
+                    `PKR ${(b.totalAmount || 0).toLocaleString()}`,
+                    `${Math.max(0, overdueDays)} Days`,
+                    `PKR ${lateFee.toLocaleString()}`,
+                    `PKR ${totalDue.toLocaleString()}`,
                     lastPayment
                 ];
             });
@@ -361,6 +395,10 @@ const PaymentManagementPage = () => {
                 },
                 columnStyles: {
                     0: { cellWidth: 10, halign: 'center' }, // S.No
+                    5: { cellWidth: 25 }, // Rent
+                    6: { cellWidth: 15 }, // Delay
+                    7: { cellWidth: 25 }, // Late Fee
+                    8: { cellWidth: 25 }, // Total Due
                 },
                 styles: {
                     overflow: 'linebreak',
@@ -388,7 +426,34 @@ const PaymentManagementPage = () => {
 
     const handleExportPaymentsList = async () => {
         setIsExportingPayments(true);
+        setIsExportDialogOpen(false);
         try {
+            const rawPayments = paymentsData?.payments || [];
+
+            // Apply Advanced Export Filters
+            const listToExport = rawPayments.filter(p => {
+                const pDate = new Date(p.date || p.createdAt);
+
+                // Date Range
+                if (paymentExportOptions.fromDate && pDate < new Date(paymentExportOptions.fromDate)) return false;
+                if (paymentExportOptions.toDate) {
+                    const to = new Date(paymentExportOptions.toDate);
+                    to.setHours(23, 59, 59);
+                    if (pDate > to) return false;
+                }
+
+                // Hostel
+                if (paymentExportOptions.hostel !== "All" && p.Booking?.Room?.Hostel?.name !== paymentExportOptions.hostel) return false;
+
+                // Status
+                if (paymentExportOptions.status !== "All" && p.status !== paymentExportOptions.status) return false;
+
+                // Type
+                if (paymentExportOptions.type !== "All" && p.type !== paymentExportOptions.type) return false;
+
+                return true;
+            });
+
             const doc = new jsPDF('landscape');
             doc.setFont("helvetica", "bold");
 
@@ -400,12 +465,19 @@ const PaymentManagementPage = () => {
             doc.text("PAYMENTS REPORT", doc.internal.pageSize.width / 2, 18, { align: "center" });
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`Total Payments: ${filteredPayments.length}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+
+            let dateRangeStr = "Full History";
+            if (paymentExportOptions.fromDate && paymentExportOptions.toDate) dateRangeStr = `${paymentExportOptions.fromDate} to ${paymentExportOptions.toDate}`;
+            else if (paymentExportOptions.fromDate) dateRangeStr = `Since ${paymentExportOptions.fromDate}`;
+            else if (paymentExportOptions.toDate) dateRangeStr = `Until ${paymentExportOptions.toDate}`;
+
+            doc.text(`Range: ${dateRangeStr} | Count: ${listToExport.length}`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+
             doc.setTextColor(80, 80, 80);
             doc.setFontSize(10);
             doc.setFont("helvetica", "bold");
             doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
-            doc.text(`Filter Status: ${filterStatus}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
+            doc.text(`Filters - Hostel: ${paymentExportOptions.hostel} | Status: ${paymentExportOptions.status} | Type: ${paymentExportOptions.type}`, doc.internal.pageSize.width - 14, 45, { align: "right" });
 
             // Draw Line
             doc.setDrawColor(220, 220, 220);
@@ -416,7 +488,7 @@ const PaymentManagementPage = () => {
                 ["S.No", "Date", "Resident Name", "Hostel", "Room", "Amount", "Status", "Method", "Type"]
             ];
 
-            const rows = filteredPayments.map((p, index) => [
+            const rows = listToExport.map((p, index) => [
                 index + 1,
                 format(new Date(p.date || p.createdAt), 'dd/MM/yyyy'),
                 p.User?.name || 'N/A',
@@ -499,7 +571,7 @@ const PaymentManagementPage = () => {
                         <Button
                             variant="outline"
                             className="h-8 md:h-9 px-3 md:px-4 rounded-xl border-rose-200 bg-rose-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-rose-700 hover:bg-rose-100 transition-all shadow-sm flex items-center gap-2 flex-1 md:flex-none justify-center"
-                            onClick={handleExportDefaultersList}
+                            onClick={() => setIsDefaulterOptionsOpen(true)}
                             disabled={isExportingDefaulters}
                         >
                             {isExportingDefaulters ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <AlertCircle className="h-3.5 w-3.5" />}
@@ -508,7 +580,7 @@ const PaymentManagementPage = () => {
                         <Button
                             variant="outline"
                             className="h-8 md:h-9 px-3 md:px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2 flex-1 md:flex-none justify-center"
-                            onClick={handleExportPaymentsList}
+                            onClick={() => setIsExportDialogOpen(true)}
                             disabled={isExportingPayments}
                         >
                             {isExportingPayments ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
@@ -584,6 +656,8 @@ const PaymentManagementPage = () => {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
+                        <div className="h-4 w-px bg-gray-200 shrink-0 hidden md:block" />
+
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
@@ -598,6 +672,26 @@ const PaymentManagementPage = () => {
                                 {hostels.map(h => (
                                     <DropdownMenuItem key={h.id} onClick={() => setFilterHostel(h.name)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">
                                         {h.name}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <div className="h-4 w-px bg-gray-200 shrink-0 hidden md:block" />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
+                                    <Calendar className="h-3.5 w-3.5 mr-1.5 md:mr-2 text-gray-400" />
+                                    <span className="truncate">{filterMonth === 'All' ? 'Month' : filterMonth}</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-[180px] rounded-xl border-gray-100 shadow-xl p-2">
+                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Months</DropdownMenuLabel>
+                                <DropdownMenuSeparator className="bg-gray-50 mb-1" />
+                                <DropdownMenuItem onClick={() => setFilterMonth("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer">Show All</DropdownMenuItem>
+                                {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map(month => (
+                                    <DropdownMenuItem key={month} onClick={() => setFilterMonth(month)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer">
+                                        {month}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
@@ -936,39 +1030,192 @@ const PaymentManagementPage = () => {
 
                 </Tabs>
 
-                <div className="pt-10">
-                    <div className="bg-blue-600 text-white rounded-[2rem] p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-full bg-white/5 skew-x-12 translate-x-20" />
-                        <div className="flex items-center gap-6 relative z-10 px-4 w-full md:w-auto">
-                            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md shrink-0">
-                                <ShieldCheck className="h-5 w-5 text-white" />
+
+            </main>
+
+            <Dialog open={isDefaulterOptionsOpen} onOpenChange={setIsDefaulterOptionsOpen}>
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-white ring-1 ring-gray-100">
+                    <div className="bg-rose-600 p-10 text-white text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="h-16 w-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
+                            <Clock className="h-8 w-8 text-white stroke-[1.5]" />
+                        </div>
+                        <h2 className="text-2xl font-black uppercase tracking-tight">Late Fee Options</h2>
+                        <p className="text-[10px] text-rose-100 font-bold tracking-widest mt-2 uppercase">Configure Defaulters Report</p>
+                    </div>
+
+                    <div className="p-10 space-y-6">
+                        <div className="space-y-3">
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Rent Due Day (from 1st)</Label>
+                            <div className="relative">
+                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    type="number"
+                                    min="1"
+                                    max="31"
+                                    placeholder="e.g. 5"
+                                    value={defaulterOptions.dueDay}
+                                    onChange={(e) => setDefaulterOptions({ ...defaulterOptions, dueDay: Number(e.target.value) })}
+                                    className="h-14 pl-12 rounded-2xl border-gray-100 bg-gray-50 font-bold text-gray-900 focus:ring-rose-500"
+                                />
                             </div>
-                            <div className="flex flex-col">
-                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-100">System Status</h4>
-                                <p className="text-[11px] font-bold mt-0.5">Ready</p>
+                            <p className="text-[9px] text-gray-400 font-medium italic ml-1">
+                                Residents who haven't paid rent by this day will be marked as defaulters.
+                            </p>
+                        </div>
+
+                        <div className="space-y-3">
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Late Fee (per day)</Label>
+                            <div className="relative">
+                                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    type="number"
+                                    min="0"
+                                    placeholder="e.g. 100"
+                                    value={defaulterOptions.lateFeePerDay}
+                                    onChange={(e) => setDefaulterOptions({ ...defaulterOptions, lateFeePerDay: Number(e.target.value) })}
+                                    className="h-14 pl-12 rounded-2xl border-gray-100 bg-gray-50 font-bold text-gray-900 focus:ring-rose-500"
+                                />
+                            </div>
+                            <p className="text-[9px] text-gray-400 font-medium italic ml-1">
+                                Added to the total for each day past the due date.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-3">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Target Month</Label>
+                                <select
+                                    className="w-full h-14 rounded-2xl border-gray-100 bg-gray-50 font-bold text-gray-900 px-4 focus:ring-rose-500"
+                                    value={defaulterOptions.month}
+                                    onChange={(e) => setDefaulterOptions({ ...defaulterOptions, month: Number(e.target.value) })}
+                                >
+                                    {["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map((m, i) => (
+                                        <option key={i} value={i}>{m}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="space-y-3">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Target Year</Label>
+                                <select
+                                    className="w-full h-14 rounded-2xl border-gray-100 bg-gray-50 font-bold text-gray-900 px-4 focus:ring-rose-500"
+                                    value={defaulterOptions.year}
+                                    onChange={(e) => setDefaulterOptions({ ...defaulterOptions, year: Number(e.target.value) })}
+                                >
+                                    {[new Date().getFullYear() - 1, new Date().getFullYear(), new Date().getFullYear() + 1].map(y => (
+                                        <option key={y} value={y}>{y}</option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
-                        <div className="h-6 w-px bg-white/10 hidden md:block" />
-
-                        <div className="flex-1 flex items-center justify-start md:justify-center gap-8 md:gap-12 px-4 md:px-8 w-full md:w-auto">
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Today</span>
-                                <span className="text-[10px] font-bold text-gray-200 uppercase mt-1">{new Date().toLocaleDateString()}</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Revenue Flow</span>
-                                <span className="text-[10px] font-bold text-white uppercase mt-1">PKR {stats?.totalRevenue?.toLocaleString()}</span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 md:pr-6 relative z-10 w-full md:w-auto justify-end px-4 md:px-0">
-                            <span className="text-[9px] font-bold uppercase text-white tracking-widest">System Online</span>
-                            <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
+                        <div className="flex gap-4 pt-4">
+                            <Button
+                                variant="ghost"
+                                className="flex-1 rounded-2xl h-14 font-bold text-[10px] uppercase tracking-wider text-gray-400 hover:bg-gray-50"
+                                onClick={() => setIsDefaulterOptionsOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                className="flex-1 h-14 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-2xl shadow-lg shadow-rose-600/20 transition-all flex items-center justify-center gap-2"
+                                onClick={handleExportDefaultersList}
+                            >
+                                <Download className="h-4 w-4" /> Export PDF
+                            </Button>
                         </div>
                     </div>
-                </div>
-            </main>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-white ring-1 ring-gray-100">
+                    <div className="bg-indigo-600 p-10 text-white text-center relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="h-16 w-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
+                            <FileText className="h-8 w-8 text-white stroke-[1.5]" />
+                        </div>
+                        <h2 className="text-2xl font-black uppercase tracking-tight">Export Payments</h2>
+                        <p className="text-[10px] text-indigo-100 font-bold tracking-widest mt-2 uppercase">Custom Payment Report</p>
+                    </div>
+
+                    <div className="p-10 space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">From Date</Label>
+                                <Input
+                                    type="date"
+                                    className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                                    value={paymentExportOptions.fromDate}
+                                    onChange={(e) => setPaymentExportOptions({ ...paymentExportOptions, fromDate: e.target.value })}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">To Date</Label>
+                                <Input
+                                    type="date"
+                                    className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                                    value={paymentExportOptions.toDate}
+                                    onChange={(e) => setPaymentExportOptions({ ...paymentExportOptions, toDate: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Hostel</Label>
+                            <select
+                                className="w-full h-12 rounded-xl border-gray-100 bg-gray-50 font-bold text-sm px-4 focus:ring-indigo-500"
+                                value={paymentExportOptions.hostel}
+                                onChange={(e) => setPaymentExportOptions({ ...paymentExportOptions, hostel: e.target.value })}
+                            >
+                                <option value="All">All Hostels</option>
+                                {hostels.map(h => <option key={h.id} value={h.name}>{h.name}</option>)}
+                            </select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Status</Label>
+                                <select
+                                    className="w-full h-12 rounded-xl border-gray-100 bg-gray-50 font-bold text-sm px-4 focus:ring-indigo-500"
+                                    value={paymentExportOptions.status}
+                                    onChange={(e) => setPaymentExportOptions({ ...paymentExportOptions, status: e.target.value })}
+                                >
+                                    <option value="All">All Status</option>
+                                    {["PAID", "PENDING", "PARTIAL", "OVERDUE", "REJECTED"].map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Type</Label>
+                                <select
+                                    className="w-full h-12 rounded-xl border-gray-100 bg-gray-50 font-bold text-sm px-4 focus:ring-indigo-500"
+                                    value={paymentExportOptions.type}
+                                    onChange={(e) => setPaymentExportOptions({ ...paymentExportOptions, type: e.target.value })}
+                                >
+                                    <option value="All">All Types</option>
+                                    {["RENT", "SECURITY", "MAINTENANCE", "LATE_FEE", "OTHER"].map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4 pt-4">
+                            <Button
+                                variant="ghost"
+                                className="flex-1 rounded-2xl h-14 font-bold text-[10px] uppercase tracking-wider text-gray-400 hover:bg-gray-50"
+                                onClick={() => setIsExportDialogOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                className="flex-1 h-14 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-2xl shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-2"
+                                onClick={handleExportPaymentsList}
+                            >
+                                <Download className="h-4 w-4" /> Export
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Modals */}
             <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
