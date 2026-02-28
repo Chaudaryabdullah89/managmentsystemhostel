@@ -167,7 +167,7 @@ const ResidentsContent = () => {
                             onClick={() => refetch()}
                         >
                             <RefreshCw className={`h-3.5 w-3.5 text-gray-400 ${isFetching ? 'animate-spin' : ''}`} />
-                            <span className="hidden xs:inline">Sync Data</span>
+                            <span className="hidden sm:inline">Sync Data</span>
                         </Button>
                     </div>
                 </div>

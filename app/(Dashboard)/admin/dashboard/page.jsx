@@ -114,7 +114,7 @@ const AdminDashboard = () => {
                             className="h-9 px-3 md:px-4 rounded-xl border-gray-200 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 flex items-center gap-2"
                             onClick={handleRefresh}
                         >
-                            <RefreshCw className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Sync</span> <span className="xs:hidden">Sync</span>
+                            <RefreshCw className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden sm:inline">Sync</span> <span className="sm:hidden">Sync</span>
                         </Button>
                         <Button
                             className="h-9 px-4 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all flex items-center gap-2"
@@ -137,7 +137,7 @@ const AdminDashboard = () => {
                                 toast.success("Performance report exported");
                             }}
                         >
-                            <Download className="h-3.5 w-3.5" /> <span className="hidden xs:inline">Report</span> <span className="xs:hidden">Report</span>
+                            <Download className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Report</span> <span className="sm:hidden">Report</span>
                         </Button>
                     </div>
                 </div>
@@ -200,7 +200,7 @@ const AdminDashboard = () => {
                                     <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] md:tracking-[0.2em]">{stat.label}</span>
                                     <span className="text-sm md:text-2xl font-bold text-gray-900 tracking-tighter truncate">{stat.value}</span>
                                 </div>
-                                <div className={`xs:hidden mt-1 text-[8px] font-bold ${stat.isUp ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                <div className={`sm:hidden mt-1 text-[8px] font-bold ${stat.isUp ? 'text-emerald-600' : 'text-rose-600'}`}>
                                     {stat.isUp ? '+' : ''}{stat.change}
                                 </div>
                             </div>

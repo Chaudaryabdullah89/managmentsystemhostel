@@ -334,13 +334,13 @@ const ProfilePage = () => {
                         <Tabs defaultValue="overview" className="space-y-6 md:space-y-8">
                             <TabsList className="bg-white border border-gray-100 p-1 rounded-xl md:rounded-2xl h-11 md:h-14 shadow-sm w-full flex overflow-x-auto scrollbar-hide justify-start md:justify-center">
                                 <TabsTrigger value="overview" className="flex-1 md:flex-none h-full px-6 md:px-10 rounded-lg md:rounded-xl font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all whitespace-nowrap">
-                                    <Boxes className="h-3.5 w-3.5 mr-2 hidden xs:inline" /> Details
+                                    <Boxes className="h-3.5 w-3.5 mr-2 hidden sm:inline" /> Details
                                 </TabsTrigger>
                                 <TabsTrigger value="security" className="flex-1 md:flex-none h-full px-6 md:px-10 rounded-lg md:rounded-xl font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all whitespace-nowrap">
-                                    <ShieldCheck className="h-3.5 w-3.5 mr-2 hidden xs:inline" /> Security
+                                    <ShieldCheck className="h-3.5 w-3.5 mr-2 hidden sm:inline" /> Security
                                 </TabsTrigger>
                                 <TabsTrigger value="sessions" className="flex-1 md:flex-none h-full px-6 md:px-10 rounded-lg md:rounded-xl font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all whitespace-nowrap">
-                                    <Clock className="h-3.5 w-3.5 mr-2 hidden xs:inline" /> Sessions
+                                    <Clock className="h-3.5 w-3.5 mr-2 hidden sm:inline" /> Sessions
                                 </TabsTrigger>
                             </TabsList>
 

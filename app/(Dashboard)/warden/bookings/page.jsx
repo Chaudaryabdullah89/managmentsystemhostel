@@ -353,14 +353,14 @@ const GlobalBookingsPage = () => {
                             onClick={() => setIsExportDialogOpen(true)}
                         >
                             <ShieldCheck className="h-3.5 w-3.5 text-indigo-700" />
-                            <span className="hidden xs:inline">PDF</span> <span className="xs:hidden">PDF</span>
+                            <span className="hidden sm:inline">PDF</span> <span className="sm:hidden">PDF</span>
                         </Button>
                         <Button
                             className="h-9 px-4 md:px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex items-center gap-2"
                             onClick={() => router.push('/warden/bookings/create')}
                         >
                             <Plus className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                            <span className="hidden xs:inline">Add</span> <span className="xs:hidden">Add</span>
+                            <span className="hidden sm:inline">Add</span> <span className="sm:hidden">Add</span>
                         </Button>
                     </div>
                 </div>

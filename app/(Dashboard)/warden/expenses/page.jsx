@@ -311,7 +311,7 @@ const ExpensesPage = () => {
                                 className="h-9 px-3 md:px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 flex-1 sm:flex-none flex items-center justify-center gap-2"
                                 onClick={handleExportCSV}
                             >
-                                <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Export</span> CSV
+                                <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden sm:inline">Export CSV</span><span className="inline sm:hidden">CSV</span>
                             </Button>
                             <Button
                                 variant="outline"
@@ -320,14 +320,14 @@ const ExpensesPage = () => {
                                 disabled={isExportingExpenses}
                             >
                                 {isExportingExpenses ? <Loader2 className="h-3.5 w-3.5 text-indigo-700 animate-spin" /> : <Download className="h-3.5 w-3.5 text-indigo-700" />}
-                                <span className="hidden xs:inline">EXPORT</span> REPORTS
+                                <span className="hidden sm:inline">Export PDF</span><span className="inline sm:hidden">PDF</span>
                             </Button>
                         </div>
                         <Button
                             className="h-9 px-4 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all flex-1 sm:flex-none flex items-center justify-center gap-2"
                             onClick={() => setIsAddOpen(true)}
                         >
-                            <Plus className="h-3.5 w-3.5" /> <span className="hidden xs:inline">Add</span> Expense
+                            <Plus className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Add New</span><span className="inline sm:hidden">New</span>
                         </Button>
                     </div>
                 </div>
@@ -423,7 +423,7 @@ const ExpensesPage = () => {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
                     <TabsList className="bg-white border border-gray-100 p-1 rounded-xl h-11 w-full lg:w-auto shadow-sm overflow-x-auto scrollbar-hide flex justify-start lg:justify-center">
                         <TabsTrigger value="current" className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white shrink-0">
-                            <Zap className="h-3.5 w-3.5 mr-2" /> This Month <span className="hidden xs:inline">({currentMonthLabel})</span>
+                            <Zap className="h-3.5 w-3.5 mr-2" /> This Month <span className="hidden sm:inline">({currentMonthLabel})</span>
                         </TabsTrigger>
                         <TabsTrigger value="history" className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-indigo-600 data-[state=active]:text-white shrink-0">
                             <History className="h-3.5 w-3.5 mr-2" /> All Time

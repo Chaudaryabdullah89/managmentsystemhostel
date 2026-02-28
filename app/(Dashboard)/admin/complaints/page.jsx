@@ -306,7 +306,7 @@ const ComplaintsPage = () => {
                     <div className="flex items-center gap-3">
                         <Button variant="outline" onClick={handleExport}
                             className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-2">
-                            <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden xs:inline">Export</span> <span className="xs:hidden">Export</span>
+                            <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden sm:inline">Export</span> <span className="sm:hidden">Export</span>
                         </Button>
                     </div>
                 </div>

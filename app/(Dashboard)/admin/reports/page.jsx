@@ -171,7 +171,7 @@ const ReportsPage = () => {
                             className="h-9 px-4 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-lg shadow-indigo-600/10 transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap"
                             onClick={handleExport}
                         >
-                            <Download className="h-3.5 w-3.5" /> <span className="hidden xs:inline">Report</span>
+                            <Download className="h-3.5 w-3.5" /> <span className="hidden sm:inline">Report</span>
                         </Button>
                     </div>
                 </div>
