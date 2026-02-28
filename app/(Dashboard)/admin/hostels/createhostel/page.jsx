@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { ChevronDown, X, Save, ArrowLeft, Building2, ShieldCheck, MapPin, Info, Sparkle } from "lucide-react"
+import { ChevronDown, X, Save, ArrowLeft, Building2, ShieldCheck, MapPin, Badge, Info, Sparkle } from "lucide-react"
 import Link from 'next/link'
 import {
     DropdownMenu,
