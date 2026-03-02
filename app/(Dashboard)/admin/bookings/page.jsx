@@ -68,6 +68,7 @@ import { format } from "date-fns";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import Loader from "../../../../components/ui/Loader";
+import useAuthStore from "@/hooks/Authstate";
 
 const useSyncAutomation = () => {
     const queryClient = useQueryClient();
@@ -91,6 +92,9 @@ const GlobalBookingsPage = () => {
     const { data: hostelsResponse } = useHostel();
     const { mutate: updateStatus, isPending: isUpdating } = useUpdateBookingStatus();
     const syncAutomation = useSyncAutomation();
+    const user = useAuthStore((state) => state.user);
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
+    const isWarden = user?.role === 'WARDEN';
 
     useEffect(() => {
         syncAutomation.mutate();
@@ -154,6 +158,16 @@ const GlobalBookingsPage = () => {
             default: return "bg-gray-400";
         }
     };
+
+    useEffect(() => {
+        if (isWarden && hostels.length > 0 && user?.hostelId) {
+            const wardenHostel = hostels.find(h => h.id === user.hostelId);
+            if (wardenHostel) {
+                setHostelFilter(wardenHostel.name);
+                setExportConfig(prev => ({ ...prev, hostelId: wardenHostel.name }));
+            }
+        }
+    }, [isWarden, hostels, user?.hostelId]);
 
     const filteredBookings = bookings.filter(booking => {
         const matchesSearch =
@@ -431,24 +445,27 @@ const GlobalBookingsPage = () => {
 
                         <div className="h-4 w-px bg-gray-200 shrink-0" />
 
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0" title="Filter by Hostel">
-                                    <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    {hostelFilter === 'All' ? 'Hostel' : hostelFilter}
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[200px] rounded-xl border-gray-100 shadow-xl p-1">
-                                <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">Hostel</DropdownMenuItem>
-                                {hostels.map(h => (
-                                    <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">
-                                        {h.name}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        <div className="h-4 w-px bg-gray-200 shrink-0" />
+                        {isAdmin && (
+                            <>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0" title="Filter by Hostel">
+                                            <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                            {hostelFilter === 'All' ? 'Hostel' : hostelFilter}
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-[200px] rounded-xl border-gray-100 shadow-xl p-1">
+                                        <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">Hostel</DropdownMenuItem>
+                                        {hostels.map(h => (
+                                            <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2 font-black text-[9px] uppercase tracking-wider rounded-lg">
+                                                {h.name}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                <div className="h-4 w-px bg-gray-200 shrink-0" />
+                            </>
+                        )}
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -683,19 +700,21 @@ const GlobalBookingsPage = () => {
 
                     <div className="p-8 space-y-6 bg-white overflow-y-auto max-h-[60vh]">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Select Hostel</Label>
-                                <select
-                                    className="w-full h-12 rounded-xl bg-gray-50 border border-gray-100 px-4 text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                                    value={exportConfig.hostelId}
-                                    onChange={(e) => setExportConfig(prev => ({ ...prev, hostelId: e.target.value }))}
-                                >
-                                    <option value="All">All</option>
-                                    {hostels.map(h => (
-                                        <option key={h.id} value={h.name}>{h.name}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            {isAdmin && (
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Select Hostel</Label>
+                                    <select
+                                        className="w-full h-12 rounded-xl bg-gray-50 border border-gray-100 px-4 text-sm font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                        value={exportConfig.hostelId}
+                                        onChange={(e) => setExportConfig(prev => ({ ...prev, hostelId: e.target.value }))}
+                                    >
+                                        <option value="All">All</option>
+                                        {hostels.map(h => (
+                                            <option key={h.id} value={h.name}>{h.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
 
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Select Room</Label>

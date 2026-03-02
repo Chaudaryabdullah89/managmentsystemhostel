@@ -35,6 +35,7 @@ import { useHostel } from "@/hooks/usehostel";
 // Dynamically import recharts to avoid SSR hydration issues
 import dynamic from "next/dynamic";
 import { toast } from "sonner";
+import useAuthStore from "@/hooks/Authstate";
 
 const RechartsResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
 const RechartsXAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false });
@@ -60,18 +61,28 @@ const COLORS = {
 const PIE_COLORS = [COLORS.indigo, COLORS.emerald, COLORS.blue, COLORS.purple];
 
 export default function PaymentAnalyticsPage() {
-    const [selectedHostel, setSelectedHostel] = useState("all");
+    const user = useAuthStore((state) => state.user);
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    const isWarden = user?.role === 'WARDEN';
+
+    const [selectedHostel, setSelectedHostel] = useState(() => {
+        if (isWarden && !isAdmin) return user?.hostelId || "all";
+        return "all";
+    });
     const [timeFilter, setTimeFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [typeFilter, setTypeFilter] = useState("all");
 
-    const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ limit: 10000, hostelId: selectedHostel !== 'all' ? selectedHostel : null });
+    const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({
+        limit: 10000,
+        hostelId: (isWarden && !isAdmin) ? (user?.hostelId || undefined) : (selectedHostel !== 'all' ? selectedHostel : undefined)
+    });
     const { data: hostelsData } = useHostel();
     const hostels = hostelsData?.hostels || [];
     const payments = paymentsData?.payments || [];
 
     const resetFilters = () => {
-        setSelectedHostel("all");
+        setSelectedHostel(isWarden && !isAdmin ? (user?.hostelId || "all") : "all");
         setTimeFilter("all");
         setStatusFilter("all");
         setTypeFilter("all");
@@ -320,22 +331,24 @@ export default function PaymentAnalyticsPage() {
                     </div>
 
                     <div className="flex items-center gap-1.5 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none hover:bg-gray-100">
-                                    <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    <span className="truncate">{selectedHostel === 'all' ? 'Hostel' : hostels.find(h => h.id === selectedHostel)?.name}</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[200px] rounded-xl z-[100]">
-                                <DropdownMenuItem onClick={() => setSelectedHostel('all')} className="text-[10px] font-bold uppercase tracking-wider">All Hostels</DropdownMenuItem>
-                                {hostels.map(h => (
-                                    <DropdownMenuItem key={h.id} onClick={() => setSelectedHostel(h.id)} className="text-[10px] font-bold uppercase tracking-wider">
-                                        {h.name}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        {isAdmin && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none hover:bg-gray-100">
+                                        <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                        <span className="truncate">{selectedHostel === 'all' ? 'Hostel' : hostels.find(h => h.id === selectedHostel)?.name}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-[200px] rounded-xl z-[100]">
+                                    <DropdownMenuItem onClick={() => setSelectedHostel('all')} className="text-[10px] font-bold uppercase tracking-wider">All Hostels</DropdownMenuItem>
+                                    {hostels.map(h => (
+                                        <DropdownMenuItem key={h.id} onClick={() => setSelectedHostel(h.id)} className="text-[10px] font-bold uppercase tracking-wider">
+                                            {h.name}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>

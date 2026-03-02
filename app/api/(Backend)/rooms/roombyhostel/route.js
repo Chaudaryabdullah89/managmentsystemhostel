@@ -9,7 +9,23 @@ export async function GET(request) {
 
     try {
         const { searchParams } = new URL(request.url);
-        const hostelId = searchParams.get('hostelId');
+        let hostelId = searchParams.get('hostelId');
+
+        // Security: Wardens can ONLY see their assigned hostel's rooms
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            if (!hostelId || hostelId !== wardenHostelId) {
+                hostelId = wardenHostelId;
+            }
+        }
 
         if (!hostelId) {
             return NextResponse.json({

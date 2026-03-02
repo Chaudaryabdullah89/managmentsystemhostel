@@ -12,11 +12,30 @@ export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get("userId");
-        const hostelId = searchParams.get("hostelId");
+        let hostelId = searchParams.get("hostelId");
+
+        // Security: Wardens can ONLY see their assigned hostel's bookings
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            if (!hostelId || hostelId !== wardenHostelId) {
+                hostelId = wardenHostelId;
+            }
+        }
 
         let bookings;
         if (userId) {
             bookings = await new BookingServices().getBookingHistoryByUserId(userId);
+            if (auth.user.role === 'WARDEN') {
+                bookings = bookings.filter(b => b.Room?.hostelId === hostelId);
+            }
         } else {
             bookings = await new BookingServices().getBookings(hostelId);
         }
@@ -37,6 +56,29 @@ export async function POST(request) {
 
     try {
         const body = await request.json();
+
+        // Security: If warden, verify context
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            if (body.roomId) {
+                const room = await prisma.room.findUnique({
+                    where: { id: body.roomId },
+                    select: { hostelId: true }
+                });
+                if (room && room.hostelId !== wardenHostelId) {
+                    return NextResponse.json({ success: false, error: "Access Denied: You cannot create bookings for other hostels." }, { status: 403 });
+                }
+            }
+        }
+
         const booking = await new BookingServices().createBooking(body);
 
         return NextResponse.json({

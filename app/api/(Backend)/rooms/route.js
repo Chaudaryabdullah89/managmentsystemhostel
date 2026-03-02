@@ -8,7 +8,21 @@ export async function GET() {
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
     try {
-        const roomData = await new RoomServices().getRooms()
+        let hostelId = null;
+
+        // Security: Wardens can ONLY see their assigned hostel's rooms
+        if (auth.user.role === 'WARDEN') {
+            hostelId = auth.user.hostelId;
+            if (!hostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                hostelId = wardenProfile?.hostelId;
+            }
+        }
+
+        const roomData = await new RoomServices().getRooms(hostelId)
         return NextResponse.json({
             message: "Rooms fetched successfully",
             data: roomData,

@@ -12,11 +12,26 @@ export async function GET(request) {
         const userId = searchParams.get('userId');
         const paymentId = searchParams.get('paymentId');
 
+        let hostelId = null;
+
+        // Security: Wardens can ONLY see their assigned hostel's refunds
+        if (auth.user.role === 'WARDEN') {
+            hostelId = auth.user.hostelId;
+            if (!hostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                hostelId = wardenProfile?.hostelId;
+            }
+        }
+
         const where = {
             AND: [
                 status ? { status } : {},
                 userId ? { userId } : {},
-                paymentId ? { paymentId } : {}
+                paymentId ? { paymentId } : {},
+                hostelId ? { hostelId } : {}
             ]
         };
 

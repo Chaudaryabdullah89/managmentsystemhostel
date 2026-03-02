@@ -32,6 +32,7 @@ export function useAllUsers(filters = {}) {
             const params = new URLSearchParams();
             if (filters.role) params.append('role', filters.role);
             if (filters.query) params.append('query', filters.query);
+            if (filters.hostelId) params.append('hostelId', filters.hostelId);
 
             const response = await fetch(`/api/users?${params.toString()}`);
             const data = await response.json();

@@ -42,6 +42,14 @@ export async function GET(request) {
                 where: { id: query },
                 include: { ResidentProfile: true, StaffProfile: true }
             });
+
+            // Try as Reg Number if not found
+            if (!results.user) {
+                results.user = await prisma.user.findUnique({
+                    where: { regNumber: query },
+                    include: { ResidentProfile: true, StaffProfile: true }
+                });
+            }
         }
 
         // 2. Try to find Booking by ID

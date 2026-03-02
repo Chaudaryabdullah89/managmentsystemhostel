@@ -9,6 +9,28 @@ export async function POST(req) {
 
     try {
         const body = await req.json();
+
+        // Security: Wardens can ONLY update rooms in their assigned hostel
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            const room = await prisma.room.findUnique({
+                where: { id: body.id },
+                select: { hostelId: true }
+            });
+
+            if (room && room.hostelId !== wardenHostelId) {
+                return NextResponse.json({ success: false, error: "Access Denied: You cannot update rooms in other hostels." }, { status: 403 });
+            }
+        }
+
         const room = await new RoomServices().updateRoom(body)
         return NextResponse.json({
             message: "Room updated successfully",

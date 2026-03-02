@@ -22,6 +22,12 @@ type DecodedUser = {
     role?: string;
     lastLogin?: string;
     permissions?: string[];
+    canManageExpenses?: boolean;
+    canManageMess?: boolean;
+    canManageGeneral?: boolean;
+    canManageUtilities?: boolean;
+    canManageMaintenance?: boolean;
+    canManageSalaries?: boolean;
 };
 
 type AuthState = {

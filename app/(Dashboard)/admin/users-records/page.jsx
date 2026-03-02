@@ -30,6 +30,7 @@ import { useHostel } from "@/hooks/usehostel";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
+import useAuthStore from "@/hooks/Authstate";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -58,7 +59,14 @@ const UserRecordPage = () => {
     const [isAccessDialogOpen, setIsAccessDialogOpen] = useState(false);
     const [newPassword, setNewPassword] = useState("hostel123");
 
-    const { data: users, isLoading } = useAllUsers({ role: filterRole });
+    const user = useAuthStore((state) => state.user);
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    const isWarden = user?.role === 'WARDEN';
+
+    const { data: users, isLoading } = useAllUsers({
+        role: filterRole,
+        hostelId: isWarden && !isAdmin ? user?.hostelId : undefined
+    });
     const { data: hostelsData } = useHostel();
     const hostels = hostelsData?.data || [];
     const createUser = useCreateUser();
@@ -68,17 +76,20 @@ const UserRecordPage = () => {
 
     const [formData, setFormData] = useState({
         name: "", email: "", password: "password123", phone: "", cnic: "",
-        role: "RESIDENT", hostelId: "", designation: "", basicSalary: 0
+        role: "RESIDENT", hostelId: "", designation: "", basicSalary: 0,
+        canManageExpenses: false, canManageMess: false, canManageGeneral: false,
+        canManageUtilities: false, canManageMaintenance: false, canManageSalaries: false
     });
 
     const filteredUsers = useMemo(() => {
         if (!users) return [];
         let list = users.filter(u =>
-            u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            u.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            u.phone?.includes(searchQuery) ||
-            u.cnic?.includes(searchQuery) ||
-            u.uid?.toLowerCase().includes(searchQuery.toLowerCase())
+            (u.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (u.email?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (u.phone || "").includes(searchQuery) ||
+            (u.cnic || "").includes(searchQuery) ||
+            (u.uid?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+            (u.regNumber?.toLowerCase() || "").includes(searchQuery.toLowerCase())
         );
         list = list.sort((a, b) => {
             let av = a[sortBy] || '', bv = b[sortBy] || '';
@@ -113,8 +124,9 @@ const UserRecordPage = () => {
 
     const handleExport = () => {
         if (!filteredUsers.length) return toast.error("No users to export");
-        const headers = ["Name", "Email", "Phone", "CNIC", "Role", "Hostel", "Status", "UID", "Joined"];
+        const headers = ["Reg #", "Name", "Email", "Phone", "CNIC", "Role", "Hostel", "Status", "UID", "Joined"];
         const rows = filteredUsers.map(u => [
+            u.regNumber || '—',
             u.name, u.email, u.phone || '', u.cnic || '', u.role,
             u.Hostel_User_hostelIdToHostel?.name || 'Global',
             u.isActive ? 'Active' : 'Inactive',
@@ -148,17 +160,15 @@ const UserRecordPage = () => {
             doc.setFontSize(10);
             doc.text(`Generated on: ${format(new Date(), 'PPP p')}`, doc.internal.pageSize.width / 2, 22, { align: "center" });
 
-            const headers = [["UID", "Name", "Email", "Phone", "CNIC", "Role", "Hostel", "Status", "Joined"]];
+            const headers = [["Reg #", "Name", "Email", "Phone", "Role", "Hostel", "Status"]];
             const rows = filteredUsers.map(u => [
-                u.uid || u.id?.slice(-8).toUpperCase(),
+                u.regNumber || '—',
                 u.name,
                 u.email,
                 u.phone || 'N/A',
-                u.cnic || 'N/A',
                 u.role,
                 u.Hostel_User_hostelIdToHostel?.name || 'Global',
-                u.isActive ? 'Active' : 'Inactive',
-                u.createdAt ? format(new Date(u.createdAt), 'MMM dd, yyyy') : 'N/A'
+                u.isActive ? 'Active' : 'Inactive'
             ]);
 
             autoTable(doc, {
@@ -195,7 +205,7 @@ const UserRecordPage = () => {
         try {
             await createUser.mutateAsync(formData);
             setIsCreateDialogOpen(false);
-            setFormData({ name: "", email: "", password: "password123", phone: "", cnic: "", role: "RESIDENT", hostelId: "", designation: "", basicSalary: 0 });
+            setFormData({ name: "", email: "", password: "password123", phone: "", cnic: "", role: "RESIDENT", hostelId: "", designation: "", basicSalary: 0, canManageExpenses: false });
         } catch { }
     };
 
@@ -211,7 +221,7 @@ const UserRecordPage = () => {
 
     const handleUpdateRole = async () => {
         if (!selectedUser) return;
-        try { await updateAnyUser.mutateAsync({ id: selectedUser.id, data: { role: selectedUser.role } }); setIsRoleDialogOpen(false); } catch { }
+        try { await updateAnyUser.mutateAsync({ id: selectedUser.id, data: { role: selectedUser.role, canManageExpenses: selectedUser.canManageExpenses } }); setIsRoleDialogOpen(false); } catch { }
     };
 
     const handleDelete = (id) => {
@@ -385,7 +395,10 @@ const UserRecordPage = () => {
                                                         </div>
                                                         <div>
                                                             <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">{user.name}</p>
-                                                            {user.uid && <p className="text-[8px] font-mono text-gray-400">{user.uid}</p>}
+                                                            <div className="flex items-center gap-2">
+                                                                {user.regNumber && <p className="text-[9px] font-black text-blue-600 bg-blue-50 px-1 rounded uppercase tracking-widest">{user.regNumber}</p>}
+                                                                {user.uid && <p className="text-[8px] font-mono text-gray-400">{user.uid}</p>}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -473,7 +486,10 @@ const UserRecordPage = () => {
                                     </div>
                                     <Separator className="bg-gray-50 my-4" />
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[8px] font-mono text-gray-300">{user.uid || '#' + user.id?.slice(-8).toUpperCase()}</span>
+                                        <div className="flex flex-col">
+                                            {user.regNumber && <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">REG: {user.regNumber}</span>}
+                                            <span className="text-[8px] font-mono text-gray-300">{user.uid || '#' + user.id?.slice(-8).toUpperCase()}</span>
+                                        </div>
                                         <Link href={`/admin/users-records/${user.id}`}>
                                             <Button variant="outline" className="h-8 px-3 rounded-xl font-bold text-[9px] uppercase tracking-wider text-indigo-600 border-indigo-100 bg-indigo-50 hover:bg-indigo-600 hover:text-white transition-all">
                                                 View <ChevronRight className="h-3 w-3 ml-1" />
@@ -507,6 +523,42 @@ const UserRecordPage = () => {
                                 </div>
                             ))}
                         </div>
+                        {selectedUser?.role === 'WARDEN' && (
+                            <div className="space-y-4 pt-2">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Expense Permissions</Label>
+                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200">
+                                        <input
+                                            type="checkbox"
+                                            id="edit-manage-expenses"
+                                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                                            checked={selectedUser.canManageExpenses || false}
+                                            onChange={(e) => setSelectedUser({ ...selectedUser, canManageExpenses: e.target.checked })}
+                                        />
+                                        <Label htmlFor="edit-manage-expenses" className="text-[11px] font-bold text-gray-700 cursor-pointer uppercase">Master Access (All)</Label>
+                                    </div>
+                                    {[
+                                        { id: 'canManageMess', label: 'Mess' },
+                                        { id: 'canManageGeneral', label: 'General' },
+                                        { id: 'canManageUtilities', label: 'Utilities' },
+                                        { id: 'canManageMaintenance', label: 'Maintenance' },
+                                        { id: 'canManageSalaries', label: 'Salaries' },
+                                    ].map(p => (
+                                        <div key={p.id} className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                id={`edit-${p.id}`}
+                                                disabled={selectedUser.canManageExpenses}
+                                                className="h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                                                checked={selectedUser.canManageExpenses || selectedUser[p.id] || false}
+                                                onChange={(e) => setSelectedUser({ ...selectedUser, [p.id]: e.target.checked })}
+                                            />
+                                            <Label htmlFor={`edit-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${selectedUser.canManageExpenses ? 'text-gray-300' : 'text-gray-600'}`}>{p.label}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <div className="flex gap-3">
                             <Button variant="ghost" className="flex-1 h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
                             <Button className="flex-[2] h-12 bg-blue-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg" onClick={handleEditUser} disabled={updateAnyUser.isPending}>
@@ -556,6 +608,42 @@ const UserRecordPage = () => {
                                 <option value="RESIDENT">Student</option>
                             </select>
                         </div>
+                        {selectedUser?.role === 'WARDEN' && (
+                            <div className="space-y-4 pt-2">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Expense Permissions</Label>
+                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200">
+                                        <input
+                                            type="checkbox"
+                                            id="role-manage-expenses"
+                                            className="h-4 w-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                                            checked={selectedUser.canManageExpenses || false}
+                                            onChange={(e) => setSelectedUser({ ...selectedUser, canManageExpenses: e.target.checked })}
+                                        />
+                                        <Label htmlFor="role-manage-expenses" className="text-[11px] font-bold text-gray-700 cursor-pointer uppercase">Master Access (All)</Label>
+                                    </div>
+                                    {[
+                                        { id: 'canManageMess', label: 'Mess' },
+                                        { id: 'canManageGeneral', label: 'General' },
+                                        { id: 'canManageUtilities', label: 'Utilities' },
+                                        { id: 'canManageMaintenance', label: 'Maintenance' },
+                                        { id: 'canManageSalaries', label: 'Salaries' },
+                                    ].map(p => (
+                                        <div key={p.id} className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                id={`role-${p.id}`}
+                                                disabled={selectedUser.canManageExpenses}
+                                                className="h-3.5 w-3.5 rounded border-gray-300 text-amber-500 focus:ring-amber-500"
+                                                checked={selectedUser.canManageExpenses || selectedUser[p.id] || false}
+                                                onChange={(e) => setSelectedUser({ ...selectedUser, [p.id]: e.target.checked })}
+                                            />
+                                            <Label htmlFor={`role-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${selectedUser.canManageExpenses ? 'text-gray-300' : 'text-gray-600'}`}>{p.label}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <Button className="w-full h-12 bg-amber-500 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl" onClick={handleUpdateRole} disabled={updateAnyUser.isPending}>
                             {updateAnyUser.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
                         </Button>
@@ -619,6 +707,42 @@ const UserRecordPage = () => {
                                 </div>
                             </div>
                         )}
+                        {formData.role === 'WARDEN' && (
+                            <div className="space-y-4 pt-2">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Expense Permissions</Label>
+                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200">
+                                        <input
+                                            type="checkbox"
+                                            id="create-manage-expenses"
+                                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                            checked={formData.canManageExpenses || false}
+                                            onChange={(e) => setFormData({ ...formData, canManageExpenses: e.target.checked })}
+                                        />
+                                        <Label htmlFor="create-manage-expenses" className="text-[11px] font-bold text-gray-700 cursor-pointer uppercase">Master Access (All)</Label>
+                                    </div>
+                                    {[
+                                        { id: 'canManageMess', label: 'Mess' },
+                                        { id: 'canManageGeneral', label: 'General' },
+                                        { id: 'canManageUtilities', label: 'Utilities' },
+                                        { id: 'canManageMaintenance', label: 'Maintenance' },
+                                        { id: 'canManageSalaries', label: 'Salaries' },
+                                    ].map(p => (
+                                        <div key={p.id} className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                id={`create-${p.id}`}
+                                                disabled={formData.canManageExpenses}
+                                                className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                                checked={formData.canManageExpenses || formData[p.id] || false}
+                                                onChange={(e) => setFormData({ ...formData, [p.id]: e.target.checked })}
+                                            />
+                                            <Label htmlFor={`create-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${formData.canManageExpenses ? 'text-gray-300' : 'text-gray-600'}`}>{p.label}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <div className="flex gap-3 pt-2">
                             <Button variant="ghost" className="flex-1 h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest" onClick={() => setIsCreateDialogOpen(false)}>Cancel</Button>
                             <Button className="flex-[2] h-12 bg-indigo-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg flex items-center justify-center gap-2"
@@ -629,7 +753,7 @@ const UserRecordPage = () => {
                     </div>
                 </DialogContent>
             </Dialog>
-        </div>
+        </div >
     );
 };
 

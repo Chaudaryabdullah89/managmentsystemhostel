@@ -236,15 +236,24 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 const ComplaintsPage = () => {
     const user = useAuthStore((state) => state.user);
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    const isWarden = user?.role === 'WARDEN';
+
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
     const [priorityFilter, setPriorityFilter] = useState("All");
-    const [hostelFilter, setHostelFilter] = useState("All");
+    const [hostelFilter, setHostelFilter] = useState(() => {
+        if (isWarden && !isAdmin) return user?.hostelId || "All";
+        return "All";
+    });
 
     const { data: complaintsData, isLoading: isComplaintsLoading } = useComplaints({
-        hostelId: hostelFilter !== "All" ? hostelFilter : undefined
+        hostelId: (isWarden && !isAdmin) ? (user?.hostelId || undefined) : (hostelFilter !== "All" ? hostelFilter : undefined)
     });
-    const { data: statsData, isLoading: isStatsLoading } = useComplaints({ stats: "true" });
+    const { data: statsData, isLoading: isStatsLoading } = useComplaints({
+        stats: "true",
+        hostelId: (isWarden && !isAdmin) ? (user?.hostelId || undefined) : (hostelFilter !== "All" ? hostelFilter : undefined)
+    });
     const { data: hostelsData } = useHostel();
     const { data: staffData } = useStaffList();
 
@@ -392,24 +401,26 @@ const ComplaintsPage = () => {
                         </DropdownMenu>
 
                         {/* Hostel Filter */}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
-                                    <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
-                                    <span className="truncate">{hostelFilter === "All" ? "Hostel" : hostelFilter}</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[260px] rounded-xl border-gray-100 shadow-xl p-2">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Select Hostel</DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-gray-50 mb-1" />
-                                <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">Hostel</DropdownMenuItem>
-                                {hostels.map((h) => (
-                                    <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">
-                                        {h.name}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        {isAdmin && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
+                                        <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                        <span className="truncate">{hostelFilter === "All" ? "Hostel" : hostelFilter}</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-[260px] rounded-xl border-gray-100 shadow-xl p-2">
+                                    <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Select Hostel</DropdownMenuLabel>
+                                    <DropdownMenuSeparator className="bg-gray-50 mb-1" />
+                                    <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">Hostel</DropdownMenuItem>
+                                    {hostels.map((h) => (
+                                        <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">
+                                            {h.name}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
                     </div>
                 </div>
 

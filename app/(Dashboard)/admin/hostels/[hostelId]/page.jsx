@@ -38,12 +38,22 @@ import {
 import { useHostelById } from "@/hooks/usehostel";
 import { format } from "date-fns";
 import Loader from "@/components/ui/Loader";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const HostelOverviewPage = () => {
     const { hostelId } = useParams();
     const router = useRouter();
     const { data, isLoading } = useHostelById(hostelId);
     const hostel = data?.hostel;
+
+    const user = useAuthStore((state) => state.user);
+    const isWarden = user?.role === 'WARDEN';
+
+    React.useEffect(() => {
+        if (isWarden && user?.hostelId && hostelId !== user.hostelId) {
+            router.replace(`/admin/hostels/${user.hostelId}`);
+        }
+    }, [isWarden, user?.hostelId, hostelId, router]);
 
     if (isLoading) return <Loader label="Loading Hostel Details" subLabel="Fetching the latest information..." icon={Building2} fullScreen={false} />;
 

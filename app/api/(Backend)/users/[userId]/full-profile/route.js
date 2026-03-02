@@ -71,7 +71,8 @@ export async function GET(request, { params }) {
                 image: user.image,
                 role: user.role,
                 joinedAt: user.createdAt,
-                uid: user.uid
+                uid: user.uid,
+                regNumber: user.regNumber
             },
             resident: user.ResidentProfile,
             hostel: user.Hostel_User_hostelIdToHostel,

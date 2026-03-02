@@ -13,6 +13,38 @@ export async function POST(req) {
             return NextResponse.json({ success: false, error: 'bookingId and newRoomId are required' }, { status: 400 });
         }
 
+        // Security: Wardens can ONLY transfer bookings in their own hostel
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            // Check current booking and room
+            const currentBooking = await prisma.booking.findUnique({
+                where: { id: bookingId },
+                include: { Room: { select: { hostelId: true } } }
+            });
+
+            if (currentBooking && currentBooking.Room?.hostelId !== wardenHostelId) {
+                return NextResponse.json({ success: false, error: "Access Denied: You cannot transfer bookings in other hostels." }, { status: 403 });
+            }
+
+            // Check target room
+            const targetRoom = await prisma.room.findUnique({
+                where: { id: newRoomId },
+                select: { hostelId: true }
+            });
+
+            if (targetRoom && targetRoom.hostelId !== wardenHostelId) {
+                return NextResponse.json({ success: false, error: "Access Denied: You cannot transfer bookings to other hostels." }, { status: 403 });
+            }
+        }
+
         // Fetch current booking with room info
         const booking = await prisma.booking.findUnique({
             where: { id: bookingId },

@@ -27,6 +27,7 @@ export async function GET(req, { params }) {
                 isActive: true,
                 createdAt: true,
                 updatedAt: true,
+                canManageExpenses: true,
                 // Correct Prisma relation names from schema.prisma
                 ResidentProfile: {
                     select: {

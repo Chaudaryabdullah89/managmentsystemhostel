@@ -49,18 +49,28 @@ import { useAllPayments, useUpdatePayment } from "@/hooks/usePayment";
 import { useHostel } from "@/hooks/usehostel";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import useAuthStore from "@/hooks/Authstate";
 
 const PaymentApprovalPage = () => {
-    const router = useRouter();
+    const user = useAuthStore((state) => state.user);
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    const isWarden = user?.role === 'WARDEN';
+
     const [searchQuery, setSearchQuery] = useState("");
-    const [filterHostel, setFilterHostel] = useState("all");
+    const [filterHostel, setFilterHostel] = useState(() => {
+        if (isWarden && !isAdmin) return user?.hostelId || "all";
+        return "all";
+    });
     const [rejectionReason, setRejectionReason] = useState("");
     const [selectedPaymentId, setSelectedPaymentId] = useState(null);
     const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
     const [viewReceiptUrl, setViewReceiptUrl] = useState(null);
     const [isReceiptDialogOpen, setIsReceiptDialogOpen] = useState(false);
 
-    const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ limit: 1000 });
+    const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({
+        limit: 1000,
+        hostelId: (isWarden && !isAdmin) ? (user?.hostelId || undefined) : (filterHostel !== "all" ? filterHostel : undefined)
+    });
     const { data: hostelsData } = useHostel();
 
     const filteredPayments = useMemo(() => {
@@ -175,34 +185,49 @@ const PaymentApprovalPage = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white border border-slate-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm">
-                    <div className="flex-1 relative w-full group px-2">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
-                        <Input
-                            placeholder="Search..."
-                            className="w-full h-12 pl-12 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-slate-300"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
+                {isAdmin && (
+                    <div className="bg-white border border-slate-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm">
+                        <div className="flex-1 relative w-full group px-2">
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+                            <Input
+                                placeholder="Search..."
+                                className="w-full h-12 pl-12 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-slate-300"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
 
-                    <div className="h-8 w-px bg-slate-100 mx-2 hidden md:block" />
+                        <div className="h-8 w-px bg-slate-100 mx-2 hidden md:block" />
 
-                    <div className="w-full md:w-64 px-2">
-                        <Select value={filterHostel} onValueChange={setFilterHostel}>
-                            <SelectTrigger className="border-none bg-transparent shadow-none font-bold text-[10px] uppercase tracking-wider h-12 focus:ring-0">
-                                <Building2 className="h-3.5 w-3.5 mr-2 text-slate-400" />
-                                <SelectValue placeholder="Filter Hostel" />
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl border-slate-100 shadow-xl p-2">
-                                <SelectItem value="all" className="font-bold text-[10px] uppercase p-2.5 rounded-lg">All</SelectItem>
-                                {hostelsData?.hostels?.map((h) => (
-                                    <SelectItem key={h.id} value={h.id} className="font-bold text-[10px] uppercase p-2.5 rounded-lg">{h.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <div className="w-full md:w-64 px-2">
+                            <Select value={filterHostel} onValueChange={setFilterHostel}>
+                                <SelectTrigger className="border-none bg-transparent shadow-none font-bold text-[10px] uppercase tracking-wider h-12 focus:ring-0">
+                                    <Building2 className="h-3.5 w-3.5 mr-2 text-slate-400" />
+                                    <SelectValue placeholder="Filter Hostel" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-slate-100 shadow-xl p-2">
+                                    <SelectItem value="all" className="font-bold text-[10px] uppercase p-2.5 rounded-lg">All</SelectItem>
+                                    {hostelsData?.hostels?.map((h) => (
+                                        <SelectItem key={h.id} value={h.id} className="font-bold text-[10px] uppercase p-2.5 rounded-lg">{h.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
-                </div>
+                )}
+                {!isAdmin && (
+                    <div className="bg-white border border-slate-100 rounded-2xl p-2 flex items-center gap-4 shadow-sm">
+                        <div className="flex-1 relative w-full group px-2">
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
+                            <Input
+                                placeholder="Search payments..."
+                                className="w-full h-12 pl-12 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-slate-300"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* List */}
                 <div className="space-y-4">

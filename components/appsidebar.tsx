@@ -53,9 +53,9 @@ const items: Record<string, NavItem[]> = {
         { title: "Salaries (Staff)", url: "/admin/salaries", icon: DollarSign, role: "admin" },
         { title: "Salaries (Warden)", url: "/admin/warden-salaries", icon: Users, role: "admin" },
         { title: "Users Records", url: "/admin/users-records", icon: Users, role: "admin" },
-        { title: "Payments Reports", url: "/admin/payment-analytics", icon: BarChart3, role: "admin" },
+        // { title: "Payments Reports", url: "/admin/payment-analytics", icon: BarChart3, role: "admin" },
         { title: "Hostels Reports", url: "/admin/reports", icon: FileText, role: "admin" },
-        { title: "Leave Requests", url: "/admin/leaves", icon: Plane, role: "admin" },
+        // { title: "Leave Requests", url: "/admin/leaves", icon: Plane, role: "admin" },
         { title: "Audit & Search", url: "/admin/audit", icon: Search, role: "admin" },
         { title: "Complaints", url: "/admin/complaints", icon: MessageSquare, role: "admin" },
         { title: "Notice Board", url: "/admin/notices", icon: Megaphone, role: "admin" },
@@ -69,7 +69,7 @@ const items: Record<string, NavItem[]> = {
         { title: "Rooms", url: "/warden/rooms", icon: Bed, role: "warden" },
         { title: "Bookings", url: "/warden/bookings", icon: Calendar, role: "warden" },
         { title: "Payments", url: "/warden/payments", icon: CreditCard, role: "warden" },
-        { title: "Staff Salaries", url: "/warden/salaries", icon: DollarSign, role: "warden" },
+        // { title: "Staff Salaries", url: "/warden/salaries", icon: DollarSign, role: "warden" },
         { title: "My Salary", url: "/warden/my-salary", icon: Wallet, role: "warden" },
         { title: "Residents", url: "/warden/residents", icon: Users, role: "warden" },
         { title: "Complaints", url: "/warden/complaints", icon: MessageSquare, role: "warden" },
@@ -112,10 +112,26 @@ function getCurrentRole(pathname: string): "admin" | "warden" | "guest" | "staff
 
 export function AppSidebar() {
     const pathname = usePathname()
-    const currentRole = getCurrentRole(pathname)
     const logout = useAuthStore((state) => state.logout)
-    const rc = roleConfig[currentRole]
-    const navItems = items[currentRole]
+    const user = useAuthStore((state) => state.user)
+
+    // DECIDE NAV BASED ON REAL USER ROLE, NOT URL
+    const userRole = user?.role?.toLowerCase() || 'guest'
+    const rc = roleConfig[userRole] || roleConfig.guest
+    let navItems = items[userRole] || items.guest
+
+    // Extra safety: If they are on an admin page but are a warden, still show warden sidebar
+    // Enforce granular expense permissions for warden
+    const hasAnyExpensePermission = user?.canManageExpenses ||
+        user?.canManageMess ||
+        user?.canManageGeneral ||
+        user?.canManageUtilities ||
+        user?.canManageMaintenance ||
+        user?.canManageSalaries;
+
+    if (userRole === "warden" && !hasAnyExpensePermission) {
+        navItems = navItems.filter((item) => item.title !== "Expenses")
+    }
 
     return (
         <Sidebar>
@@ -132,10 +148,10 @@ export function AppSidebar() {
                     </div>
 
                     {/* Role badge */}
-                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${rc.bg}`}>
-                        <div className={`h-1.5 w-1.5 rounded-full ${rc.dot} flex-shrink-0`} />
-                        <span className={`text-[11px] font-bold uppercase tracking-wider ${rc.color}`}>
-                            {rc.label} Dashboard
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50`}>
+                        <div className={`h-1.5 w-1.5 rounded-full ${user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' ? 'bg-blue-600' : user?.role === 'WARDEN' ? 'bg-violet-600' : 'bg-emerald-600'} flex-shrink-0 animate-pulse`} />
+                        <span className={`text-[11px] font-bold uppercase tracking-wider text-gray-500`}>
+                            {user?.role?.replace('_', ' ') || 'Authorized'} Access
                         </span>
                     </div>
                 </div>
@@ -145,20 +161,7 @@ export function AppSidebar() {
             <SidebarContent className="px-3 py-3 overflow-y-auto">
                 <nav className="space-y-0.5">
                     {navItems.map((item) => {
-                        // An item is active if the pathname exactly matches it,
-                        // OR if the pathname starts with this URL — BUT only when
-                        // no other nav item has a longer (more specific) URL that
-                        // also matches. This prevents /admin/hostels from lighting
-                        // up when you're on /admin/hostels/rooms.
-                        const isActive = pathname === item.url || (
-                            pathname.startsWith(item.url + "/") &&
-                            !navItems.some(
-                                (other) =>
-                                    other.url !== item.url &&
-                                    other.url.startsWith(item.url) &&
-                                    (pathname === other.url || pathname.startsWith(other.url + "/"))
-                            )
-                        )
+                        const isActive = pathname === item.url || pathname.startsWith(item.url + "/")
                         const Icon = item.icon
 
                         return (

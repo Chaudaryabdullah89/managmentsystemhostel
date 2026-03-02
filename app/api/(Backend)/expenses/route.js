@@ -10,16 +10,61 @@ export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const stats = searchParams.get("stats");
-        const hostelId = searchParams.get("hostelId");
-        const status = searchParams.get("status");
-        const category = searchParams.get("category");
-        const startDate = searchParams.get("startDate");
-        const endDate = searchParams.get("endDate");
+        const hostelIdInput = searchParams.get("hostelId");
+        const statusInput = searchParams.get("status");
+        const categoryInput = searchParams.get("category");
+        const startDateInput = searchParams.get("startDate");
+        const endDateInput = searchParams.get("endDate");
         const submittedById = searchParams.get("submittedById");
+
+        const sanitize = (val) => (val === 'all' || val === 'null' || val === 'undefined' || !val) ? null : val;
+        let hostelId = sanitize(hostelIdInput);
+        const status = sanitize(statusInput);
+        const category = sanitize(categoryInput);
+
+        // Security: Wardens can ONLY see their own hostel's data
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+
+            // Fallback: If hostelId is missing in JWT, fetch it from DB
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            if (!hostelId) {
+                hostelId = wardenHostelId;
+            } else if (hostelId !== wardenHostelId && !auth.user.canManageExpenses) {
+                hostelId = wardenHostelId;
+            }
+        }
+
+        const startDate = (startDateInput && startDateInput !== "undefined") ? startDateInput : null;
+        const endDate = (endDateInput && endDateInput !== "undefined") ? endDateInput : null;
+
+        console.log(`[API] GET /api/expenses - Final Filter:`, { hostelId, status, category, startDate, endDate, role: auth.user.role });
+
+        let allowedCategories = undefined;
+        if (auth.user.role === 'WARDEN' && !auth.user.canManageExpenses) {
+            allowedCategories = [];
+            if (auth.user.canManageMess) allowedCategories.push('MESS');
+            if (auth.user.canManageGeneral) allowedCategories.push('GENERAL');
+            if (auth.user.canManageUtilities) allowedCategories.push('UTILITY_BILL');
+            if (auth.user.canManageMaintenance) allowedCategories.push('MAINTENANCE');
+            if (auth.user.canManageSalaries) allowedCategories.push('SALARY');
+
+            if (allowedCategories.length === 0) {
+                allowedCategories.push('NONE');
+            }
+        }
 
         if (stats === "true") {
             const data = await ExpenseServices.getExpenseStats({
-                hostelId: (hostelId === 'all' || hostelId === 'null' || hostelId === 'undefined') ? null : hostelId
+                hostelId,
+                allowedCategories
             });
             return NextResponse.json({ success: true, data });
         }
@@ -30,9 +75,11 @@ export async function GET(request) {
             category,
             startDate,
             endDate,
-            submittedById
+            submittedById,
+            allowedCategories
         });
 
+        console.log(`[API] GET /api/expenses - Results: ${expenses.length} records found`);
         return NextResponse.json({ success: true, data: expenses });
     } catch (error) {
         console.error("API Error in Expenses GET:", error);
@@ -46,6 +93,20 @@ export async function POST(request) {
 
     try {
         const body = await request.json();
+
+        // Security: Enforce Warden's hostel if they are a warden
+        if (auth.user.role === 'WARDEN' && !auth.user.canManageExpenses) {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+            body.hostelId = wardenHostelId;
+        }
+
         console.log("Inbound Expense Ingress:", body);
 
         // Validate user existence to prevent P2003 Foreign Key Violation
@@ -77,22 +138,24 @@ export async function POST(request) {
 }
 
 export async function PATCH(request) {
-    const auth = await checkRole(['ADMIN', 'SUPER_ADMIN', 'WARDEN']);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const auth = await checkRole(['ADMIN', 'SUPER_ADMIN']);
+    if (!auth.success) {
+        console.warn(`Unauthorized Status Update Attempt by role: ${auth.user?.role || 'Unknown'}`);
+        return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to change expense record status." }, { status: 403 });
+    }
 
     try {
         const body = await request.json();
-        console.log("Inbound Authorization Update:", body);
+        console.log("Authorized Expense Status Mutation:", body);
         const { id, ...data } = body;
 
-        // Prevent P2003 by validating User IDs
         if (data.approvedById) {
             const user = await prisma.user.findUnique({ where: { id: data.approvedById }, select: { id: true } });
-            if (!user) return NextResponse.json({ success: false, error: "Approving user does not exist. Please refresh." }, { status: 400 });
+            if (!user) return NextResponse.json({ success: false, error: "Approving administrator identity not found." }, { status: 400 });
         }
         if (data.rejectedById) {
             const user = await prisma.user.findUnique({ where: { id: data.rejectedById }, select: { id: true } });
-            if (!user) return NextResponse.json({ success: false, error: "Rejecting user does not exist. Please refresh." }, { status: 400 });
+            if (!user) return NextResponse.json({ success: false, error: "Rejecting administrator identity not found." }, { status: 400 });
         }
 
         const updated = await ExpenseServices.updateExpenseStatus(id, data);

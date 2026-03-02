@@ -53,6 +53,7 @@ export function useCreateExpense() {
             return data;
         },
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["expenses"] });
             toast.success("Expense record successfully archived");
         },
     });

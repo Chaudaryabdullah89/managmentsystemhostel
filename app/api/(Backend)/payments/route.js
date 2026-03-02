@@ -13,7 +13,42 @@ export async function POST(request) {
 
     try {
         const data = await request.json();
+
+        // Security: If warden, verify context
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            // Verify the resident belongs to warden's hostel
+            if (data.userId) {
+                const resident = await prisma.user.findUnique({
+                    where: { id: data.userId },
+                    select: { hostelId: true }
+                });
+                if (resident && resident.hostelId !== wardenHostelId) {
+                    return NextResponse.json({ success: false, error: "Access Denied: You cannot manage residents of other hostels." }, { status: 403 });
+                }
+            }
+        }
+
         const payment = await paymentServices.createPayment(data);
+
+        // Fetch payment details to get hostelId safely
+        const paymentDetail = await prisma.payment.findUnique({
+            where: { id: payment.id },
+            include: {
+                Booking: { include: { Room: true } },
+                User: true
+            }
+        });
+
+        const paymentHostelId = paymentDetail?.Booking?.Room?.hostelId || paymentDetail?.User?.hostelId;
 
         // ── NOTIFY ADMIN & WARDENS: A new payment needs approval ─────────
         try {
@@ -22,16 +57,17 @@ export async function POST(request) {
                 where: {
                     role: { in: ["ADMIN", "WARDEN"] },
                     isActive: true,
-                    email: { not: null }
+                    email: { not: null },
+                    // Targeted Notifications: Admin sees all, Wardens see only their hostel
+                    OR: [
+                        { role: "ADMIN" },
+                        { AND: [{ role: "WARDEN" }, { hostelId: paymentHostelId }] }
+                    ]
                 },
                 select: { email: true, name: true }
             });
 
-            const submitterUser = data.userId
-                ? await prisma.user.findUnique({ where: { id: data.userId }, select: { name: true } })
-                : null;
-
-            const submitterName = submitterUser?.name || "A resident";
+            const submitterName = paymentDetail?.User?.name || "A resident";
             const approvalLink = `${baseUrl}/admin/payment-approvals/${payment.id}`;
 
             for (const manager of managersToNotify) {
@@ -112,16 +148,39 @@ export async function GET(request) {
     try {
         const { searchParams } = new URL(request.url);
         const type = searchParams.get('type'); // 'stats' or 'all'
+        const hostelIdInput = searchParams.get('hostelId');
+
+        const sanitize = (val) => (val === 'all' || val === 'null' || val === 'undefined' || !val) ? null : val;
+        let hostelId = sanitize(hostelIdInput);
+
+        // Security: Wardens can ONLY see their assigned hostel's payments
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+
+            // Fallback: If missing in JWT, fetch from DB
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            if (!hostelId) {
+                hostelId = wardenHostelId;
+            } else if (hostelId !== wardenHostelId) {
+                hostelId = wardenHostelId;
+            }
+        }
 
         if (type === 'stats') {
-            const hostelId = searchParams.get('hostelId');
             const stats = await paymentServices.getFinancialStats(hostelId);
             return NextResponse.json({ success: true, stats });
         }
 
         const filters = {
             status: searchParams.get('status'),
-            hostelId: searchParams.get('hostelId'),
+            hostelId: hostelId,
             search: searchParams.get('search'),
             userId: searchParams.get('userId'),
             page: parseInt(searchParams.get('page')) || 1,
@@ -132,6 +191,7 @@ export async function GET(request) {
         return NextResponse.json({ success: true, ...result });
 
     } catch (error) {
+        console.error("API Error in Payments GET:", error);
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }

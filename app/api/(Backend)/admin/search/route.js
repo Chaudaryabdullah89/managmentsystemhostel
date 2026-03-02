@@ -30,7 +30,8 @@ export async function GET(req) {
                         { name: { contains: query, mode: 'insensitive' } },
                         { phone: { contains: query, mode: 'insensitive' } },
                         { id: { contains: query, mode: 'insensitive' } },
-                        { cnic: { contains: query, mode: 'insensitive' } }
+                        { cnic: { contains: query, mode: 'insensitive' } },
+                        { regNumber: { contains: query, mode: 'insensitive' } }
                     ]
                 },
                 select: {
@@ -58,7 +59,8 @@ export async function GET(req) {
                                 OR: [
                                     { name: { contains: query, mode: 'insensitive' } },
                                     { email: { contains: query, mode: 'insensitive' } },
-                                    { uid: { contains: searchTerm, mode: 'insensitive' } }
+                                    { uid: { contains: searchTerm, mode: 'insensitive' } },
+                                    { regNumber: { contains: query, mode: 'insensitive' } }
                                 ]
                             }
                         }
@@ -99,7 +101,8 @@ export async function GET(req) {
                                 OR: [
                                     { name: { contains: query, mode: 'insensitive' } },
                                     { email: { contains: query, mode: 'insensitive' } },
-                                    { uid: { contains: searchTerm, mode: 'insensitive' } }
+                                    { uid: { contains: searchTerm, mode: 'insensitive' } },
+                                    { regNumber: { contains: query, mode: 'insensitive' } }
                                 ]
                             }
                         }
@@ -137,7 +140,8 @@ export async function GET(req) {
                             User_Complaint_userIdToUser: {
                                 OR: [
                                     { name: { contains: query, mode: 'insensitive' } },
-                                    { email: { contains: query, mode: 'insensitive' } }
+                                    { email: { contains: query, mode: 'insensitive' } },
+                                    { regNumber: { contains: query, mode: 'insensitive' } }
                                 ]
                             }
                         }
@@ -173,7 +177,8 @@ export async function GET(req) {
                             User_maintanance_userIdToUser: {
                                 OR: [
                                     { name: { contains: query, mode: 'insensitive' } },
-                                    { email: { contains: query, mode: 'insensitive' } }
+                                    { email: { contains: query, mode: 'insensitive' } },
+                                    { regNumber: { contains: query, mode: 'insensitive' } }
                                 ]
                             }
                         }

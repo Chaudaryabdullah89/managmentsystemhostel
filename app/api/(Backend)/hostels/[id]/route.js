@@ -7,6 +7,23 @@ export async function GET(request, { params }) {
 
     try {
         const { id } = await params;
+
+        // Security: Wardens can ONLY see their assigned hostel
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            if (id !== wardenHostelId) {
+                return NextResponse.json({ success: false, message: "Access Denied: You cannot access information for other hostels." }, { status: 403 });
+            }
+        }
+
         const hostel = await prisma.hostel.findUnique({
             where: { id },
             include: {

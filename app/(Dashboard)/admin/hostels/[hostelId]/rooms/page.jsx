@@ -63,6 +63,7 @@ import { toast } from "sonner"
 import { QueryKeys } from '@/lib/queryclient'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import Loader from '../../../../../../components/ui/Loader'
+import { useAuthStore } from "@/store/useAuthStore";
 
 const useSyncAutomation = () => {
     const queryClient = useQueryClient();
@@ -90,6 +91,17 @@ const RoomsContent = ({ params: paramsPromise }) => {
     const [statusFilter, setStatusFilter] = useState('All')
     const [typeFilter, setTypeFilter] = useState('All')
     const [isDeleting, setIsDeleting] = useState(null)
+
+    const user = useAuthStore((state) => state.user);
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
+    const isWarden = user?.role === 'WARDEN';
+
+    useEffect(() => {
+        if (isWarden && user?.hostelId && hostelId !== user.hostelId) {
+            toast.error("Access Denied: You can only manage rooms in your assigned hostel.");
+            router.replace(`/admin/hostels/${user.hostelId}/rooms?hostelId=${user.hostelId}`);
+        }
+    }, [isWarden, user?.hostelId, hostelId, router]);
 
     const { data: hostel, isLoading: hostelLoading } = useHostelById(hostelId);
     const { data: roomsResponse, isLoading: roomsLoading, isFetching: isFetchingRooms } = useRoomByHostelId(hostelId);

@@ -68,6 +68,15 @@ const BookingDetailsPage = () => {
     const user = useAuthStore((state) => state.user);
     const { data: booking, isLoading } = useBookingById(bookingId);
 
+    const isWarden = user?.role === 'WARDEN';
+
+    React.useEffect(() => {
+        if (isWarden && booking && booking.Room?.hostelId && user?.hostelId && booking.Room.hostelId !== user.hostelId) {
+            toast.error("Access Denied: This booking belongs to another hostel.");
+            router.replace('/admin/bookings');
+        }
+    }, [isWarden, booking, user?.hostelId, router]);
+
     const updateStatus = useUpdateBookingStatus();
     const handlePrint = () => {
         window.print();

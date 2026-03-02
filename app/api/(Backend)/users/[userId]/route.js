@@ -129,7 +129,10 @@ export async function PATCH(request, { params }) {
             },
             include: {
                 StaffProfile: true,
-                ResidentProfile: true
+                ResidentProfile: true,
+                Hostel_User_hostelIdToHostel: {
+                    select: { name: true }
+                }
             }
         });
 

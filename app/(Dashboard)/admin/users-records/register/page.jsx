@@ -76,6 +76,12 @@ const defaultForm = {
     guardianPhone: "",
     emergencyContact: "",
     password: "hostel@123",
+    canManageExpenses: false,
+    canManageMess: false,
+    canManageGeneral: false,
+    canManageUtilities: false,
+    canManageMaintenance: false,
+    canManageSalaries: false,
 };
 
 export default function RegisterUserPage() {
@@ -151,6 +157,12 @@ export default function RegisterUserPage() {
                 designation: formData.designation || null,
                 basicSalary: formData.basicSalary ? Number(formData.basicSalary) : 0,
                 password: formData.password,
+                canManageExpenses: formData.role === "WARDEN" ? formData.canManageExpenses : false,
+                canManageMess: formData.role === "WARDEN" ? formData.canManageMess : false,
+                canManageGeneral: formData.role === "WARDEN" ? formData.canManageGeneral : false,
+                canManageUtilities: formData.role === "WARDEN" ? formData.canManageUtilities : false,
+                canManageMaintenance: formData.role === "WARDEN" ? formData.canManageMaintenance : false,
+                canManageSalaries: formData.role === "WARDEN" ? formData.canManageSalaries : false,
             });
             // Navigate back after success
             if (isAdmin) router.push("/admin/users-records");
@@ -472,6 +484,52 @@ export default function RegisterUserPage() {
                                                     />
                                                 </div>
                                             </div>
+
+                                            {formData.role === "WARDEN" && (
+                                                <div className="space-y-6 pt-4 md:col-span-2 bg-gray-50/50 p-6 rounded-3xl border border-gray-100">
+                                                    <div className="flex flex-col gap-1">
+                                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Expense Management Permissions</Label>
+                                                        <p className="text-[10px] text-gray-400 font-medium">Fine-tune which categories this warden can manage</p>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <input
+                                                                type="checkbox"
+                                                                id="canManageExpenses"
+                                                                checked={formData.canManageExpenses}
+                                                                onChange={(e) => handleChange("canManageExpenses", e.target.checked)}
+                                                                className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-600"
+                                                            />
+                                                            <Label htmlFor="canManageExpenses" className="text-[11px] font-bold text-gray-700 uppercase cursor-pointer">
+                                                                Master Access (All)
+                                                            </Label>
+                                                        </div>
+
+                                                        {[
+                                                            { id: 'canManageMess', label: 'Mess Expenses' },
+                                                            { id: 'canManageGeneral', label: 'General Expenses' },
+                                                            { id: 'canManageUtilities', label: 'Utilities / Bills' },
+                                                            { id: 'canManageMaintenance', label: 'Maintenance' },
+                                                            { id: 'canManageSalaries', label: 'Staff Salaries' },
+                                                        ].map((perm) => (
+                                                            <div key={perm.id} className="flex items-center gap-3">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    id={perm.id}
+                                                                    disabled={formData.canManageExpenses}
+                                                                    checked={formData.canManageExpenses || formData[perm.id]}
+                                                                    onChange={(e) => handleChange(perm.id, e.target.checked)}
+                                                                    className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-600 disabled:opacity-50"
+                                                                />
+                                                                <Label htmlFor={perm.id} className={`text-[11px] font-bold uppercase cursor-pointer ${formData.canManageExpenses ? 'text-gray-400' : 'text-gray-700'}`}>
+                                                                    {perm.label}
+                                                                </Label>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </>
                                     )}
                                 </div>

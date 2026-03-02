@@ -83,6 +83,8 @@ import ActivityFeed from "@/components/admin/ActivityFeed";
 import Loader from "@/components/ui/Loader";
 import { toast } from "sonner";
 import { useCreatePayment } from "@/hooks/usePayment";
+import { useReports } from "@/hooks/useReports";
+import { OccupancyDonutChart } from "@/components/ui/Charts";
 
 const DetailItem = ({ icon: Icon, label, value, color = "text-indigo-600" }) => (
     <div className="flex items-start gap-4">
@@ -110,6 +112,10 @@ const UserDetailsPage = () => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
     const [isAccessDialogOpen, setIsAccessDialogOpen] = useState(false);
+
+    // If the user is a WARDEN, fetch their hostel level report summary so admins can see their performance
+    const isWarden = user?.role === "WARDEN";
+    const { data: wardenReports, isLoading: reportsLoading } = useReports("month", isWarden ? user?.hostelId : null);
     const [editData, setEditData] = useState(null);
     const [newPass, setNewPass] = useState("hostel123");
 
@@ -163,7 +169,15 @@ const UserDetailsPage = () => {
         try {
             await updateUser({
                 id: userId,
-                data: { role: editData.role }
+                data: {
+                    role: editData.role,
+                    canManageExpenses: editData.canManageExpenses,
+                    canManageMess: editData.canManageMess,
+                    canManageGeneral: editData.canManageGeneral,
+                    canManageUtilities: editData.canManageUtilities,
+                    canManageMaintenance: editData.canManageMaintenance,
+                    canManageSalaries: editData.canManageSalaries
+                }
             });
             toast.success("User role updated");
             setIsRoleDialogOpen(false);
@@ -272,7 +286,13 @@ const UserDetailsPage = () => {
                                 {user.uid && (
                                     <>
                                         <div className="h-1 w-1 rounded-full bg-gray-300" />
-                                        <span className="text-[10px] font-mono font-bold tracking-wider text-gray-600 bg-gray-100 px-2 py-0.5 rounded">{user.uid}</span>
+                                        <span className="text-[10px] font-mono font-bold tracking-wider text-gray-600 bg-gray-100 px-2 py-0.5 rounded">ID: {user.uid}</span>
+                                    </>
+                                )}
+                                {user.regNumber && (
+                                    <>
+                                        <div className="h-1 w-1 rounded-full bg-gray-300" />
+                                        <span className="text-[10px] font-black tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">REG: {user.regNumber}</span>
                                     </>
                                 )}
                             </div>
@@ -373,7 +393,12 @@ const UserDetailsPage = () => {
                                     <p className="text-[10px] font-black uppercase text-indigo-500 tracking-[0.3em] mt-3">{user.role}</p>
                                     {user.uid && (
                                         <Badge className="mt-2 bg-gray-100 text-gray-500 border-none text-[9px] font-mono font-bold px-3 py-1">
-                                            {user.uid}
+                                            ID: {user.uid}
+                                        </Badge>
+                                    )}
+                                    {user.regNumber && (
+                                        <Badge className="mt-2 bg-indigo-600 text-white border-none text-[10px] font-black px-4 py-1.5 shadow-lg shadow-indigo-100 uppercase tracking-[0.2em]">
+                                            REG # {user.regNumber}
                                         </Badge>
                                     )}
                                 </div>
@@ -461,7 +486,42 @@ const UserDetailsPage = () => {
                                         <ActivityFeed events={activityFeed} />
                                     </Card>
 
-                                    <Card className="rounded-[2.5rem] bg-white p-8 border-none shadow-sm relative overflow-hidden group">
+                                    {isWarden && wardenReports && (
+                                        <Card className="rounded-[2.5rem] bg-white p-8 border-none shadow-sm relative overflow-hidden group">
+                                            <div className="absolute top-0 right-0 p-8">
+                                                <Building2 className="h-12 w-12 text-indigo-50 opacity-50 group-hover:scale-110 transition-transform" />
+                                            </div>
+                                            <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 mb-8">Warden Performance (Current Month)</h3>
+                                            <div className="space-y-6 relative z-10 hidden xs:block">
+                                                <div className="flex justify-between items-center border-b border-gray-50 pb-4">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Hostel Revenue</span>
+                                                        <span className="text-2xl font-black text-indigo-600 tracking-tight">PKR {(wardenReports.finances?.revenue?.current || 0).toLocaleString()}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-between items-center border-b border-gray-50 pb-4">
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Hostel Expenses</span>
+                                                        <span className="text-2xl font-black text-rose-500 tracking-tight">PKR {(wardenReports.finances?.expenses?.current || 0).toLocaleString()}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-4 mt-4">
+                                                    <div className="h-20 w-20 shrink-0">
+                                                        <OccupancyDonutChart occupancyRate={wardenReports.occupancy?.rate || 0} />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[9px] font-black uppercase text-gray-400 tracking-widest">Occupancy</span>
+                                                        <span className="text-sm font-black text-gray-900">{wardenReports.occupancy?.occupiedRooms || 0} / {wardenReports.occupancy?.totalRooms || 0} Rooms occupied</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="space-y-6 relative z-10 xs:hidden">
+                                                <span className="text-xs font-bold text-gray-500">Summary hidden on narrow screens</span>
+                                            </div>
+                                        </Card>
+                                    )}
+
+                                    <Card className={`rounded-[2.5rem] bg-white p-8 border-none shadow-sm relative overflow-hidden group ${isWarden ? "md:col-span-2" : ""}`}>
                                         <div className="absolute top-0 right-0 p-8">
                                             <Zap className="h-12 w-12 text-indigo-50 opacity-50 group-hover:scale-110 transition-transform" />
                                         </div>
@@ -736,6 +796,43 @@ const UserDetailsPage = () => {
                                 <Input value={editData?.cnic} onChange={e => setEditData({ ...editData, cnic: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
                             </div>
                         </div>
+
+                        {editData?.role === 'WARDEN' && (
+                            <div className="space-y-4 pt-2">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Expense Permissions</Label>
+                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200">
+                                        <input
+                                            type="checkbox"
+                                            id="edit-manage-expenses-detailed"
+                                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                            checked={editData?.canManageExpenses || false}
+                                            onChange={(e) => setEditData({ ...editData, canManageExpenses: e.target.checked })}
+                                        />
+                                        <Label htmlFor="edit-manage-expenses-detailed" className="text-[11px] font-bold text-gray-700 cursor-pointer uppercase">Master Access (All)</Label>
+                                    </div>
+                                    {[
+                                        { id: 'canManageMess', label: 'Mess' },
+                                        { id: 'canManageGeneral', label: 'General' },
+                                        { id: 'canManageUtilities', label: 'Utilities' },
+                                        { id: 'canManageMaintenance', label: 'Maintenance' },
+                                        { id: 'canManageSalaries', label: 'Salaries' },
+                                    ].map(p => (
+                                        <div key={p.id} className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                id={`edit-detailed-${p.id}`}
+                                                disabled={editData?.canManageExpenses}
+                                                className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                                checked={editData?.canManageExpenses || editData?.[p.id] || false}
+                                                onChange={(e) => setEditData({ ...editData, [p.id]: e.target.checked })}
+                                            />
+                                            <Label htmlFor={`edit-detailed-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${editData?.canManageExpenses ? 'text-gray-300' : 'text-gray-600'}`}>{p.label}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                     <DialogFooter className="pt-8">
                         <Button onClick={handleEditIdentity} disabled={isUpdating} className="h-14 w-full rounded-2xl bg-indigo-600 text-white font-black uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all hover:scale-[1.02]">Save Changes</Button>
@@ -748,17 +845,54 @@ const UserDetailsPage = () => {
                     <DialogHeader>
                         <DialogTitle className="text-xl font-black uppercase tracking-tighter italic text-center">Set User Role</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-3 pt-6">
+                    <div className="space-y-4 pt-6">
                         {['ADMIN', 'WARDEN', 'STAFF', 'RESIDENT', 'GUEST'].map(r => (
                             <Button
                                 key={r}
-                                onClick={() => setEditData({ role: r })}
+                                onClick={() => setEditData({ ...editData, role: r })}
                                 variant={editData?.role === r ? 'default' : 'outline'}
                                 className={`h-12 w-full rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${editData?.role === r ? 'bg-indigo-600 border-indigo-600' : 'border-gray-100 text-gray-400'}`}
                             >
                                 {r}
                             </Button>
                         ))}
+
+                        {editData?.role === 'WARDEN' && (
+                            <div className="space-y-4 pt-2 text-left">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Expense Permissions</Label>
+                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200">
+                                        <input
+                                            type="checkbox"
+                                            id="role-manage-expenses-detailed"
+                                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                            checked={editData?.canManageExpenses || false}
+                                            onChange={(e) => setEditData({ ...editData, canManageExpenses: e.target.checked })}
+                                        />
+                                        <Label htmlFor="role-manage-expenses-detailed" className="text-[11px] font-bold text-gray-700 cursor-pointer uppercase">Master Access (All)</Label>
+                                    </div>
+                                    {[
+                                        { id: 'canManageMess', label: 'Mess' },
+                                        { id: 'canManageGeneral', label: 'General' },
+                                        { id: 'canManageUtilities', label: 'Utilities' },
+                                        { id: 'canManageMaintenance', label: 'Maintenance' },
+                                        { id: 'canManageSalaries', label: 'Salaries' },
+                                    ].map(p => (
+                                        <div key={p.id} className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                id={`role-detailed-${p.id}`}
+                                                disabled={editData?.canManageExpenses}
+                                                className="h-3.5 w-3.5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                                                checked={editData?.canManageExpenses || editData?.[p.id] || false}
+                                                onChange={(e) => setEditData({ ...editData, [p.id]: e.target.checked })}
+                                            />
+                                            <Label htmlFor={`role-detailed-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${editData?.canManageExpenses ? 'text-gray-300' : 'text-gray-600'}`}>{p.label}</Label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                     <DialogFooter className="pt-8">
                         <Button onClick={handleUpdateRole} disabled={isUpdating} className="h-14 w-full rounded-2xl bg-gray-900 text-white font-black uppercase tracking-widest shadow-xl shadow-gray-200">Update Role</Button>

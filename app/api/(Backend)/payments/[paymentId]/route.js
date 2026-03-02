@@ -15,6 +15,24 @@ export async function GET(request, { params }) {
         const { paymentId } = await params;
         const payment = await paymentServices.getPaymentById(paymentId);
         if (!payment) return NextResponse.json({ success: false, error: "Payment node not found" }, { status: 404 });
+
+        // Security: If warden, verify payment belongs to their hostel
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            const paymentHostelId = payment.Booking?.Room?.hostelId || payment.User?.hostelId;
+            if (wardenHostelId && paymentHostelId && paymentHostelId !== wardenHostelId) {
+                return NextResponse.json({ success: false, error: "Access Denied: Payment belongs to another hostel." }, { status: 403 });
+            }
+        }
+
         return NextResponse.json({ success: true, payment });
     } catch (error) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -22,8 +40,39 @@ export async function GET(request, { params }) {
 }
 
 export async function PATCH(request, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const { paymentId } = await params;
+
+        // Security: If warden, verify payment belongs to their hostel before update
+        if (auth.user.role === 'WARDEN') {
+            const payment = await prisma.payment.findUnique({
+                where: { id: paymentId },
+                include: {
+                    Booking: { include: { Room: true } },
+                    User: true
+                }
+            });
+
+            if (!payment) return NextResponse.json({ success: false, error: "Payment not found" }, { status: 404 });
+
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            const paymentHostelId = payment.Booking?.Room?.hostelId || payment.User?.hostelId;
+            if (wardenHostelId && paymentHostelId && paymentHostelId !== wardenHostelId) {
+                return NextResponse.json({ success: false, error: "Access Denied: You cannot update payments from other hostels." }, { status: 403 });
+            }
+        }
+
         const body = await request.json();
         const { status, notes, amount, type, method, receiptUrl } = body;
 

@@ -9,6 +9,23 @@ export async function POST(req) {
 
     try {
         const body = await req.json();
+
+        // Security: Wardens can ONLY create rooms in their assigned hostel
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            if (!body.hostelId || body.hostelId !== wardenHostelId) {
+                return NextResponse.json({ success: false, error: "Access Denied: You cannot create rooms in other hostels." }, { status: 403 });
+            }
+        }
+
         const room = await new RoomServices().createRoom(body)
         return NextResponse.json({
             message: "Room created successfully",

@@ -29,6 +29,7 @@ export async function GET(req, { params }) {
                 createdAt: true,
                 updatedAt: true,
                 hostelId: true,
+                canManageExpenses: true,
                 Hostel_User_hostelIdToHostel: {
                     select: {
                         id: true,

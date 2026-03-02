@@ -340,6 +340,7 @@ const WardenProfilePage = () => {
                         <InfoRow icon={Phone} label="Phone Number" value={user.phone} />
                         <InfoRow icon={CreditCard} label="CNIC Number" value={user.cnic} />
                         <InfoRow icon={ShieldCheck} label="Account Role" value={user.role} />
+                        <InfoRow icon={Wallet} label="Expense Management" value={user.canManageExpenses ? "Allowed" : "Restricted"} />
                     </div>
 
                     {/* Location Info */}

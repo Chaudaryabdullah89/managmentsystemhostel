@@ -88,7 +88,8 @@ const CreateHostelPage = () => {
                 if (wardensRes.success) {
                     setWardenList(wardensRes.data.map((w) => ({
                         name: w.name,
-                        id: w.id
+                        id: w.id,
+                        canManageExpenses: w.canManageExpenses
                     })));
                 }
             } catch (error) {
@@ -97,6 +98,31 @@ const CreateHostelPage = () => {
         }
         getwarden();
     }, [])
+
+    const toggleExpensePermission = async (wardenId, currentStatus, e) => {
+        e.stopPropagation(); // Prevent dropdown from closing or selecting the warden
+        try {
+            const response = await fetch(`/api/users/profile/${wardenId}/update`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ canManageExpenses: !currentStatus }),
+            });
+            if (response.ok) {
+                toast.success("Expense management permission updated");
+                setWardenList(prev => prev.map(w =>
+                    w.id === wardenId ? { ...w, canManageExpenses: !currentStatus } : w
+                ));
+                // Also update the selected wardens state if this warden is selected
+                setwarden(prev => prev.map(w =>
+                    w.id === wardenId ? { ...w, canManageExpenses: !currentStatus } : w
+                ));
+            } else {
+                toast.error("Failed to update permission");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-50/50">
@@ -191,7 +217,20 @@ const CreateHostelPage = () => {
                                                             }
                                                         }}
                                                     >
-                                                        <span className="text-xs font-bold text-gray-700">{w.name}</span>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs font-bold text-gray-700">{w.name}</span>
+                                                            <div className="flex items-center mt-1">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="h-3 w-3 rounded border-gray-300 text-blue-600 focus:ring-blue-600 mr-2 cursor-pointer"
+                                                                    checked={w.canManageExpenses || false}
+                                                                    onChange={(e) => toggleExpensePermission(w.id, w.canManageExpenses, e)}
+                                                                />
+                                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                                                                    Expenses: {w.canManageExpenses ? "Allowed" : "Restricted"}
+                                                                </span>
+                                                            </div>
+                                                        </div>
                                                         <div className={`h-5 w-5 rounded-md border border-gray-200 flex items-center justify-center ${warden.some(existing => existing.id === w.id) ? 'bg-black border-black' : 'bg-white'}`}>
                                                             {warden.some(existing => existing.id === w.id) && <X className="h-3 w-3 text-white" />}
                                                         </div>

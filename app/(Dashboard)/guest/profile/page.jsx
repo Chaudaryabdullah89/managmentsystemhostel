@@ -114,9 +114,14 @@ const GuestProfile = () => {
                                         <Badge className={`${isCheckedOut ? 'bg-rose-500/20 text-rose-300' : 'bg-white/10 text-white'} hover:bg-white/20 border-0 text-[9px] uppercase font-bold tracking-widest backdrop-blur-md`}>
                                             {isCheckedOut ? 'Past Resident' : userData.role || 'Resident'}
                                         </Badge>
+                                        {userData.regNumber && (
+                                            <Badge className="bg-indigo-500/20 text-indigo-300 border-0 text-[10px] uppercase font-black tracking-widest backdrop-blur-md">
+                                                Reg # {userData.regNumber}
+                                            </Badge>
+                                        )}
                                         {userData.uid && (
                                             <Badge className="bg-white/10 hover:bg-white/20 text-white border-0 text-[9px] uppercase font-bold tracking-widest backdrop-blur-md font-mono">
-                                                {userData.uid}
+                                                ID: {userData.uid}
                                             </Badge>
                                         )}
                                     </div>

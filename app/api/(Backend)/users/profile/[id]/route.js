@@ -27,6 +27,12 @@ export async function GET(req, { params }) {
                 createdAt: true,
                 updatedAt: true,
                 hostelId: true,
+                canManageExpenses: true,
+                canManageMess: true,
+                canManageGeneral: true,
+                canManageUtilities: true,
+                canManageMaintenance: true,
+                canManageSalaries: true,
                 Hostel_User_hostelIdToHostel: {
                     select: {
                         id: true,
@@ -34,7 +40,6 @@ export async function GET(req, { params }) {
                         address: true,
                         email: true,
                         phone: true,
-
                     }
                 }
             }

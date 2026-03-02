@@ -1,0 +1,54 @@
+generator aiClient {
+    provider = "prisma-client-js"
+    output   = "../node_modules/@prisma/ai-client"
+}
+
+datasource aiDb {
+    provider = "postgresql"
+    url      = env("AI_DATABASE_URL")
+}
+
+model AiIntent {
+    id        String   @id @default(cuid())
+    name      String   @unique
+    weight    Float    @default(1.0)
+    keywords  String[]
+    replies   String[]
+    isActive  Boolean  @default(true)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model AiTraining {
+    id             String   @id @default(cuid())
+    query          String   @unique
+    detectedIntent String?
+    confidence     Float
+    isLearned      Boolean  @default(false)
+    hitCount       Int      @default(1)
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+}
+
+model AiSession {
+    id        String      @id @default(cuid())
+    userId    String
+    title     String?
+    isActive  Boolean     @default(true)
+    createdAt DateTime    @default(now())
+    updatedAt DateTime    @updatedAt
+    messages  AiMessage[]
+}
+
+model AiMessage {
+    id        String   @id @default(cuid())
+    sessionId String
+    role      String // "USER" or "AI"
+    content   String   @db.Text
+    intent    String?
+    score     Float?
+    sentiment String? // "HAPPY", "ANGRY", "NEUTRAL"
+    createdAt DateTime @default(now())
+
+    Session AiSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}

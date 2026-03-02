@@ -3,8 +3,8 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-    const auth = await checkRole(['WARDEN', 'ADMIN', 'SUPER_ADMIN']);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+  const auth = await checkRole(['WARDEN', 'ADMIN', 'SUPER_ADMIN']);
+  if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
   try {
     const wardens = await prisma.user.findMany({
@@ -21,7 +21,8 @@ export async function GET() {
         address: true,
         hostelId: true,
         basicSalary: true,
-        allowances: true
+        allowances: true,
+        canManageExpenses: true
       }
     });
 

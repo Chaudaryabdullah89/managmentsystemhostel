@@ -101,13 +101,21 @@ import { useBookings } from "@/hooks/useBooking";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import Loader from "@/components/ui/Loader";
+import useAuthStore from "@/hooks/Authstate";
 
 const PaymentManagementPage = () => {
     const router = useRouter();
+    const user = useAuthStore((state) => state.user);
+    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    const isWarden = user?.role === 'WARDEN';
+
     const [activeTab, setActiveTab] = useState("ledger");
     const [searchQuery, setSearchQuery] = useState("");
     const [filterStatus, setFilterStatus] = useState("All");
-    const [filterHostel, setFilterHostel] = useState("All");
+    const [filterHostel, setFilterHostel] = useState(() => {
+        if (isWarden && !isAdmin) return user?.hostelId || "All";
+        return "All";
+    });
     const [filterMonth, setFilterMonth] = useState("All");
     const [filterFromDate, setFilterFromDate] = useState("");
     const [filterToDate, setFilterToDate] = useState("");
@@ -144,9 +152,12 @@ const PaymentManagementPage = () => {
         notes: ""
     });
 
-    const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ limit: 1000 });
+    const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({
+        limit: 1000,
+        hostelId: (isWarden && !isAdmin) ? (user?.hostelId || undefined) : (filterHostel !== "All" ? filterHostel : undefined)
+    });
     const { data: refundRequests, isLoading: refundsLoading } = useRefundRequests();
-    const { data: stats, isLoading: statsLoading } = useFinancialStats();
+    const { data: stats, isLoading: statsLoading } = useFinancialStats((isWarden && !isAdmin) ? (user?.hostelId || undefined) : (filterHostel !== "All" ? filterHostel : undefined));
     const { data: hostelsData } = useHostel();
     const { data: bookingsResponse } = useBookings();
     const bookings = bookingsResponse || [];
@@ -690,26 +701,29 @@ const PaymentManagementPage = () => {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <div className="h-4 w-px bg-gray-200 shrink-0 hidden md:block" />
-
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
-                                    <Building2 className="h-3.5 w-3.5 mr-1.5 md:mr-2 text-gray-400" />
-                                    <span className="truncate">{filterHostel === 'All' ? 'Hostel' : filterHostel}</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[200px] md:w-[280px] rounded-xl border-gray-100 shadow-xl p-2">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Hostels</DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-gray-50 mb-1" />
-                                <DropdownMenuItem onClick={() => setFilterHostel("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">Show All</DropdownMenuItem>
-                                {hostels.map(h => (
-                                    <DropdownMenuItem key={h.id} onClick={() => setFilterHostel(h.name)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">
-                                        {h.name}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        {isAdmin && (
+                            <>
+                                <div className="h-4 w-px bg-gray-200 shrink-0 hidden md:block" />
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
+                                            <Building2 className="h-3.5 w-3.5 mr-1.5 md:mr-2 text-gray-400" />
+                                            <span className="truncate">{filterHostel === 'All' ? 'Hostel' : filterHostel}</span>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-[200px] md:w-[280px] rounded-xl border-gray-100 shadow-xl p-2">
+                                        <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Hostels</DropdownMenuLabel>
+                                        <DropdownMenuSeparator className="bg-gray-50 mb-1" />
+                                        <DropdownMenuItem onClick={() => setFilterHostel("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">Show All</DropdownMenuItem>
+                                        {hostels.map(h => (
+                                            <DropdownMenuItem key={h.id} onClick={() => setFilterHostel(h.name)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">
+                                                {h.name}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </>
+                        )}
 
                         <div className="h-4 w-px bg-gray-200 shrink-0 hidden md:block" />
 

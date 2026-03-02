@@ -11,7 +11,7 @@ const globalForPrisma = globalThis as unknown as {
 // Check if existing client is out of sync with new models/fields
 // We check for 'uid' existence in the payment model if it exists
 if (globalForPrisma.prisma) {
-    const isOutOfSync = !('payment' in globalForPrisma.prisma);
+    const isOutOfSync = !('payment' in globalForPrisma.prisma) || !('aiTraining' in globalForPrisma.prisma);
     if (isOutOfSync) {
         globalForPrisma.prisma = undefined;
     }

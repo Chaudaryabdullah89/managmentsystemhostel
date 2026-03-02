@@ -6,7 +6,7 @@ import { jwtVerify } from 'jose';
 // Route Permissions (RBAC)
 // ===============================
 const routePermissions: Record<string, string[]> = {
-    '/admin': ['ADMIN', 'SUPER_ADMIN', 'WARDEN'],
+    '/admin': ['ADMIN', 'SUPER_ADMIN'],
     '/staff': ['STAFF', 'WARDEN', 'ADMIN', 'SUPER_ADMIN'],
     '/warden': ['WARDEN', 'ADMIN', 'SUPER_ADMIN'],
     '/guest': ['GUEST', 'RESIDENT', 'ADMIN', 'SUPER_ADMIN', 'WARDEN', 'STAFF'],
@@ -93,7 +93,7 @@ export async function middleware(request: NextRequest) {
         const roleDashboardMap: Record<string, string> = {
             ADMIN: '/admin/dashboard',
             SUPER_ADMIN: '/admin/dashboard',
-            WARDEN: '/warden/dashboard',
+            WARDEN: '/warden/',
             STAFF: '/staff/dashboard',
             GUEST: '/guest/dashboard',
             RESIDENT: '/guest/dashboard',

@@ -19,6 +19,27 @@ export async function PUT(request) {
             return NextResponse.json({ error: "Booking ID and Status are required" }, { status: 400 });
         }
 
+        // Security: Wardens can ONLY update status for their own hostel's bookings
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            const booking = await prisma.booking.findUnique({
+                where: { id },
+                include: { Room: { select: { hostelId: true } } }
+            });
+
+            if (booking && booking.Room?.hostelId !== wardenHostelId) {
+                return NextResponse.json({ success: false, error: "Access Denied: You cannot update bookings for other hostels." }, { status: 403 });
+            }
+        }
+
         const data = await bookingServices.updateBookingStatus(id, status);
 
         // Send status update email

@@ -18,6 +18,27 @@ export async function DELETE(req) {
             }, { status: 400 });
         }
 
+        // Security: Wardens can ONLY delete rooms in their assigned hostel
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            const room = await prisma.room.findUnique({
+                where: { id: roomId },
+                select: { hostelId: true }
+            });
+
+            if (room && room.hostelId !== wardenHostelId) {
+                return NextResponse.json({ success: false, error: "Access Denied: You cannot delete rooms in other hostels." }, { status: 403 });
+            }
+        }
+
         const room = await new RoomServices().deleteRoom(roomId)
         return NextResponse.json({
             message: "Room decommissioned successfully",

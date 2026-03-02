@@ -61,49 +61,55 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import Loader from "../../../../components/ui/Loader";
+import { useAuthStore } from "@/store/useAuthStore";
 
 const HostelsPage = () => {
     const queryClient = useQueryClient()
     const router = useRouter()
     const { data: apiResponse, error: hosteldataerror, isLoading: hostelsloading, isFetching: isFetchingHostels } = useHostel();
+    const userProfile = useAuthStore((state) => state.user);
+    const isAdmin = userProfile?.role === 'ADMIN' || userProfile?.role === 'SUPERADMIN';
+    const isWarden = userProfile?.role === 'WARDEN';
 
     const [searchterm, setsearchterm] = useState('');
     const [filterType, setFilterType] = useState('All');
     const [deletingHostelId, setDeletingHostelId] = useState(null)
 
-    const hostelsToDisplay = (apiResponse?.data || []).map(h => ({
-        id: h.id,
-        name: h.name,
-        type: h.type,
-        status: h.status || "ACTIVE",
-        location: {
-            address: h.address,
-            city: h.city,
-            state: h.state,
-            country: h.country,
-            postalCode: h.zip,
-            fullAddress: h.completeaddress || `${h.address}, ${h.city}`
-        },
-        basicInfo: {
+    const hostelsToDisplay = (apiResponse?.data || [])
+        .filter(h => isAdmin || (isWarden && h.id === userProfile?.hostelId))
+        .map(h => ({
+            id: h.id,
+            name: h.name,
             type: h.type,
-            floors: h.floors,
-            contact: h.phone,
-            wardens: h.wardens || []
-        },
-        roomStats: {
-            totalRooms: (h.Room || []).length,
-            availableRooms: (h.Room || []).filter(r => r.status === 'AVAILABLE').length,
-            occupiedRooms: (h.Room || []).filter(r => r.status === 'OCCUPIED').length,
-            maintenanceRooms: (h.Room || []).filter(r => r.status === 'MAINTENANCE').length
-        },
-        description: h.description,
-        rooms: h.Room || [],
-        meta: {
-            createdOn: new Date(h.createdAt).toLocaleDateString(),
-            createdBy: "Admin",
-            updatedOn: new Date(h.updatedAt).toLocaleDateString()
-        }
-    }));
+            status: h.status || "ACTIVE",
+            location: {
+                address: h.address,
+                city: h.city,
+                state: h.state,
+                country: h.country,
+                postalCode: h.zip,
+                fullAddress: h.completeaddress || `${h.address}, ${h.city}`
+            },
+            basicInfo: {
+                type: h.type,
+                floors: h.floors,
+                contact: h.phone,
+                wardens: h.wardens || []
+            },
+            roomStats: {
+                totalRooms: (h.Room || []).length,
+                availableRooms: (h.Room || []).filter(r => r.status === 'AVAILABLE').length,
+                occupiedRooms: (h.Room || []).filter(r => r.status === 'OCCUPIED').length,
+                maintenanceRooms: (h.Room || []).filter(r => r.status === 'MAINTENANCE').length
+            },
+            description: h.description,
+            rooms: h.Room || [],
+            meta: {
+                createdOn: new Date(h.createdAt).toLocaleDateString(),
+                createdBy: "Admin",
+                updatedOn: new Date(h.updatedAt).toLocaleDateString()
+            }
+        }));
 
     const matchedData = hostelsToDisplay.filter((item) => {
         const matchesSearch = item.name.toLowerCase().includes(searchterm.toLowerCase()) ||

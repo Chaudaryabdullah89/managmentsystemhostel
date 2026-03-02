@@ -47,11 +47,14 @@ import { useRoomByHostelId } from "@/hooks/useRoom";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import useAuthStore from "@/hooks/Authstate";
 
 const CreateBookingPage = () => {
     const router = useRouter();
     const createBooking = useCreateBooking();
     const { data: hostelsResponse, isLoading: hostelsLoading } = useHostel();
+    const user = useAuthStore((state) => state.user);
+    const isWarden = user?.role === 'WARDEN';
 
     const [step, setStep] = useState(1);
     const [existingGuestQuery, setExistingGuestQuery] = useState("");
@@ -88,8 +91,17 @@ const CreateBookingPage = () => {
         advanceMonths: 1
     });
 
+    useEffect(() => {
+        if (isWarden && user?.hostelId) {
+            setFormData(prev => ({ ...prev, hostelId: user.hostelId }));
+        }
+    }, [isWarden, user?.hostelId]);
+
+    const hostels = isWarden && user?.hostelId
+        ? (hostelsResponse?.data || []).filter(h => h.id === user.hostelId)
+        : (hostelsResponse?.data || []);
+
     const { data: roomsResponse, isLoading: roomsLoading } = useRoomByHostelId(formData.hostelId);
-    const hostels = hostelsResponse?.data || [];
     const rooms = roomsResponse?.data || [];
     const selectedRoom = rooms.find(r => r.id === formData.roomId);
 

@@ -241,7 +241,7 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                     <div className="flex items-center gap-8">
                         <div>
                             <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">User ID</p>
-                            <p className="text-sm font-bold text-gray-900 mt-1">{user.uid || 'N/A'}</p>
+                            <p className="text-sm font-bold text-gray-900 mt-1">{user.uid || 'N/A'} • {user.regNumber || 'N/A'}</p>
                         </div>
                         <div className="h-8 w-px bg-gray-100" />
                         <div>
@@ -303,6 +303,7 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                                 { label: 'Full name', value: user.name },
                                                 { label: 'Email', value: user.email },
                                                 { label: 'CNIC / ID', value: user.cnic || '—' },
+                                                { label: 'Reg Number', value: user.regNumber || '—' },
                                                 { label: 'Emergency', value: details?.ResidentProfile?.emergencyContact || '—' },
                                                 { label: 'Address', value: user.address || '—' },
                                                 { label: 'Join Date', value: format(new Date(user.createdAt), 'MMMM dd, yyyy') },

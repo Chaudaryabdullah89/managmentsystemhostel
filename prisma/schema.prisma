@@ -26,25 +26,26 @@ model Booking {
 }
 
 model Complaint {
-  id                                String            @id @default(cuid())
+  id                                String             @id @default(cuid())
   userId                            String
   hostelId                          String
   roomNumber                        String?
   title                             String
   description                       String
   category                          ComplaintCategory
-  priority                          ComplaintPriority @default(MEDIUM)
-  status                            ComplaintStatus   @default(PENDING)
+  priority                          ComplaintPriority  @default(MEDIUM)
+  status                            ComplaintStatus    @default(PENDING)
   assignedToId                      String?
   resolutionNotes                   String?
   resolvedAt                        DateTime?
   images                            String[]
-  uid                               String?           @unique
-  createdAt                         DateTime          @default(now())
-  updatedAt                         DateTime          @updatedAt
-  User_Complaint_assignedToIdToUser User?             @relation("Complaint_assignedToIdToUser", fields: [assignedToId], references: [id])
-  Hostel                            Hostel            @relation(fields: [hostelId], references: [id])
-  User_Complaint_userIdToUser       User              @relation("Complaint_userIdToUser", fields: [userId], references: [id])
+  uid                               String?            @unique
+  createdAt                         DateTime           @default(now())
+  updatedAt                         DateTime           @updatedAt
+  User_Complaint_assignedToIdToUser User?              @relation("Complaint_assignedToIdToUser", fields: [assignedToId], references: [id])
+  Hostel                            Hostel             @relation(fields: [hostelId], references: [id])
+  User_Complaint_userIdToUser       User               @relation("Complaint_userIdToUser", fields: [userId], references: [id])
+  comments                          ComplaintComment[]
 }
 
 model Expense {
@@ -268,47 +269,55 @@ model StaffProfile {
 }
 
 model User {
-  id                                         String           @id @default(cuid())
+  id                                         String             @id @default(cuid())
   name                                       String
-  email                                      String           @unique
+  email                                      String             @unique
   password                                   String
-  uid                                        String?          @unique
-  assignedTasks                              StaffTask[]      @relation("Task_AssignedTo")
-  createdTasks                               StaffTask[]      @relation("Task_CreatedBy")
+  uid                                        String?            @unique
+  regNumber                                  String?            @unique
+  assignedTasks                              StaffTask[]        @relation("Task_AssignedTo")
+  createdTasks                               StaffTask[]        @relation("Task_CreatedBy")
   taskComments                               TaskComment[]
   WardenPayment                              WardenPayment[]
-  createdAt                                  DateTime         @default(now())
-  updatedAt                                  DateTime         @updatedAt
+  createdAt                                  DateTime           @default(now())
+  updatedAt                                  DateTime           @updatedAt
   cnic                                       String?
   image                                      String?
-  isActive                                   Boolean          @default(true)
+  isActive                                   Boolean            @default(true)
   phone                                      String?
-  role                                       UserRole         @default(GUEST)
+  role                                       UserRole           @default(GUEST)
+  canManageExpenses                          Boolean            @default(false)
+  canManageMess                              Boolean            @default(false)
+  canManageGeneral                           Boolean            @default(false)
+  canManageUtilities                         Boolean            @default(false)
+  canManageMaintenance                       Boolean            @default(false)
+  canManageSalaries                          Boolean            @default(false)
   address                                    String?
   lastLogin                                  DateTime?
   city                                       String?
   hostelId                                   String?
-  basicSalary                                Float            @default(0)
-  allowances                                 Float            @default(0)
+  basicSalary                                Float              @default(0)
+  allowances                                 Float              @default(0)
   wardens                                    String[]
   Booking                                    Booking[]
-  Complaint_Complaint_assignedToIdToUser     Complaint[]      @relation("Complaint_assignedToIdToUser")
-  Complaint_Complaint_userIdToUser           Complaint[]      @relation("Complaint_userIdToUser")
-  Expense_Expense_approvedByIdToUser         Expense[]        @relation("Expense_approvedByIdToUser")
-  Expense_Expense_rejectedByIdToUser         Expense[]        @relation("Expense_rejectedByIdToUser")
-  Expense_Expense_submittedByIdToUser        Expense[]        @relation("Expense_submittedByIdToUser")
-  Expense_Expense_userIdToUser               Expense[]        @relation("Expense_userIdToUser")
-  Hostel_Hostel_managerIdToUser              Hostel[]         @relation("Hostel_managerIdToUser")
+  Complaint_Complaint_assignedToIdToUser     Complaint[]        @relation("Complaint_assignedToIdToUser")
+  Complaint_Complaint_userIdToUser           Complaint[]        @relation("Complaint_userIdToUser")
+  Expense_Expense_approvedByIdToUser         Expense[]          @relation("Expense_approvedByIdToUser")
+  Expense_Expense_rejectedByIdToUser         Expense[]          @relation("Expense_rejectedByIdToUser")
+  Expense_Expense_submittedByIdToUser        Expense[]          @relation("Expense_submittedByIdToUser")
+  Expense_Expense_userIdToUser               Expense[]          @relation("Expense_userIdToUser")
+  Hostel_Hostel_managerIdToUser              Hostel[]           @relation("Hostel_managerIdToUser")
   Payment                                    Payment[]
   ResidentProfile                            ResidentProfile?
   Session                                    Session[]
   StaffProfile                               StaffProfile?
-  Hostel_User_hostelIdToHostel               Hostel?          @relation("User_hostelIdToHostel", fields: [hostelId], references: [id])
-  maintanance_maintanance_assignedToIdToUser maintanance[]    @relation("maintanance_assignedToIdToUser")
-  maintanance_maintanance_userIdToUser       maintanance[]    @relation("maintanance_userIdToUser")
+  Hostel_User_hostelIdToHostel               Hostel?            @relation("User_hostelIdToHostel", fields: [hostelId], references: [id])
+  maintanance_maintanance_assignedToIdToUser maintanance[]      @relation("maintanance_assignedToIdToUser")
+  maintanance_maintanance_userIdToUser       maintanance[]      @relation("maintanance_userIdToUser")
   Notice                                     Notice[]
   RefundRequest                              RefundRequest[]
   chatMessages                               ChatMessage[]
+  complaintComments                          ComplaintComment[]
 }
 
 model maintanance {
@@ -467,6 +476,10 @@ enum ComplaintCategory {
   NOISE
   SECURITY
   INTERNET
+  ELECTRICAL
+  PLUMBING
+  MESS
+  BEHAVIOR
   OTHER
 }
 
@@ -485,12 +498,11 @@ enum ComplaintStatus {
 }
 
 enum ExpenseCategory {
-  UTILITIES
+  MESS
+  GENERAL
+  UTILITY_BILL
   MAINTENANCE
-  SALARIES
-  SUPPLIES
-  GROCERIES
-  OTHER
+  SALARY
 }
 
 enum ExpenseStatus {
@@ -562,4 +574,15 @@ model RefundRequest {
   User    User    @relation(fields: [userId], references: [id])
   Payment Payment @relation(fields: [paymentId], references: [id])
   Hostel  Hostel  @relation(fields: [hostelId], references: [id])
+}
+
+model ComplaintComment {
+  id          String   @id @default(cuid())
+  complaintId String
+  userId      String
+  message     String
+  createdAt   DateTime @default(now())
+
+  Complaint Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  User      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

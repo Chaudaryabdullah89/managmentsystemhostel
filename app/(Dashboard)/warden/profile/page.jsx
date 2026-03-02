@@ -301,7 +301,12 @@ const ProfilePage = () => {
                                 <p className="text-[8px] md:text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mt-2 italic text-center">{user.role}</p>
                                 {user.uid && (
                                     <Badge className="mt-3 bg-gray-100 text-gray-700 border-none text-[10px] font-mono font-bold px-3 py-1">
-                                        {user.uid}
+                                        ID: {user.uid}
+                                    </Badge>
+                                )}
+                                {user.regNumber && (
+                                    <Badge className="mt-2 bg-indigo-600 text-white border-none text-[10px] font-black px-4 py-1 shadow-lg shadow-indigo-100 uppercase tracking-widest">
+                                        Reg # {user.regNumber}
                                     </Badge>
                                 )}
 

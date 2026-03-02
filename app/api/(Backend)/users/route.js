@@ -2,7 +2,7 @@ import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
-import { generateUID, UID_PREFIXES } from "@/lib/uid-generator";
+import { generateUID, generateRegNumber, UID_PREFIXES } from "@/lib/uid-generator";
 import { sendEmail } from "@/lib/utils/sendmail";
 import { welcomeEmail } from "@/lib/utils/emailTemplates";
 
@@ -14,15 +14,46 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const role = searchParams.get("role");
         const query = searchParams.get("query");
-        const hostelId = searchParams.get("hostelId");
+        const hostelIdInput = searchParams.get("hostelId");
 
+        const sanitize = (val) => (val === 'all' || val === 'null' || val === 'undefined' || !val) ? null : val;
+        let hostelId = sanitize(hostelIdInput);
         const where = {};
-        if (role && role !== "all") where.role = role;
-        if (hostelId && hostelId !== "null" && hostelId !== "undefined") {
-            where.OR = [
-                { hostelId: hostelId },
-                { ResidentProfile: { currentHostelId: hostelId } }
-            ];
+
+        // Define if this is a global "Find Account" search (e.g. for bookings)
+        const isGlobalSearch = query && (role === 'all' || role === 'GUEST');
+
+        if (isGlobalSearch) {
+            // GLOBAL SEARCH: Ignore role and hostelId to find account by query (email/name/etc)
+            // No strict filters here, construction continues at query block below
+        } else {
+            // LIST/FILTERED SEARCH: Apply role and security isolation
+            if (role && role !== "all") where.role = role;
+
+            if (auth.user.role === 'WARDEN') {
+                let wardenHostelId = auth.user.hostelId;
+
+                if (!wardenHostelId) {
+                    const wardenProfile = await prisma.user.findUnique({
+                        where: { id: auth.user.userId || auth.user.id },
+                        select: { hostelId: true }
+                    });
+                    wardenHostelId = wardenProfile?.hostelId;
+                }
+
+                // Apply isolation: My hostel OR unassigned (null)
+                where.OR = [
+                    { hostelId: wardenHostelId },
+                    { hostelId: null },
+                    { ResidentProfile: { currentHostelId: wardenHostelId } }
+                ];
+            } else if (hostelId) {
+                // Admin/Global logic
+                where.OR = [
+                    { hostelId: hostelId },
+                    { ResidentProfile: { currentHostelId: hostelId } }
+                ];
+            }
         }
 
         if (query) {
@@ -31,7 +62,9 @@ export async function GET(request) {
                     { name: { contains: query, mode: 'insensitive' } },
                     { email: { contains: query, mode: 'insensitive' } },
                     { phone: { contains: query, mode: 'insensitive' } },
-                    { cnic: { contains: query, mode: 'insensitive' } }
+                    { cnic: { contains: query, mode: 'insensitive' } },
+                    { uid: { contains: query, mode: 'insensitive' } },
+                    { regNumber: { contains: query, mode: 'insensitive' } }
                 ]
             };
 
@@ -64,6 +97,7 @@ export async function GET(request) {
             data: users
         });
     } catch (error) {
+        console.error("[API] GET /api/users Error:", error);
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
@@ -74,7 +108,10 @@ export async function POST(request) {
 
     try {
         const body = await request.json();
-        const { name, email, password, phone, role, hostelId, cnic, designation, basicSalary } = body;
+        const {
+            name, email, password, phone, role, hostelId, cnic, designation, basicSalary,
+            canManageExpenses, canManageMess, canManageGeneral, canManageUtilities, canManageMaintenance, canManageSalaries
+        } = body;
 
         // Check if user exists
         const existing = await prisma.user.findUnique({ where: { email } });
@@ -91,6 +128,12 @@ export async function POST(request) {
                 role: role,
                 cnic,
                 hostelId: hostelId || null,
+                canManageExpenses: !!canManageExpenses,
+                canManageMess: !!canManageMess,
+                canManageGeneral: !!canManageGeneral,
+                canManageUtilities: !!canManageUtilities,
+                canManageMaintenance: !!canManageMaintenance,
+                canManageSalaries: !!canManageSalaries,
                 updatedAt: new Date(),
                 ...(role === 'STAFF' || role === 'WARDEN' ? {
                     StaffProfile: {
@@ -115,11 +158,12 @@ export async function POST(request) {
             }
         });
 
-        // Generate and assign UID
+        // Generate and assign UID & Registration Number
         const uid = generateUID(UID_PREFIXES.USER, newUser.id);
+        const regNumber = generateRegNumber();
         const updatedUser = await prisma.user.update({
             where: { id: newUser.id },
-            data: { uid }
+            data: { uid, regNumber }
         });
 
         // Fetch hostel name for email

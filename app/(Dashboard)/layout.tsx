@@ -53,17 +53,31 @@ export default function RootLayout({
 
               <div className="flex items-center gap-4 min-w-0">
                 <HeaderNotices />
-                <div className="flex items-center gap-2 min-w-0">
-                  <Avatar className="h-8 w-8 rounded-lg shrink-0">
-                    <AvatarImage />
-                    <AvatarFallback className="rounded-lg">
-                      {user?.name?.charAt(0) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="text-sm text-left min-w-0 hidden md:block">
-                    <p className="font-medium truncate">{user?.name || "Loading..."}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user?.role || "Guest"}</p>
+                <div className="flex items-center gap-3 min-w-0">
+
+                  {/* Avatar */}
+                  <div className="relative shrink-0">
+                    <Avatar className="h-10 w-10 rounded-xl border border-gray-200 shadow-sm">
+                      <AvatarImage />
+                      <AvatarFallback className="rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 text-white font-semibold">
+                        {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    {/* Online indicator (optional) */}
+                    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></span>
                   </div>
+
+                  {/* User Info */}
+                  <div className="min-w-0 hidden md:block">
+                    <p className="text-sm font-semibold text-gray-900 truncate tracking-tight">
+                      {user?.name || "Loading..."}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {user?.role || "Guest"}
+                    </p>
+                  </div>
+
                 </div>
               </div>
             </div>

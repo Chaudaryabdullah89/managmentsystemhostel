@@ -337,7 +337,7 @@ async function main() {
                 submittedById: admin.id,
                 title: 'Electricity Bill',
                 amount: 12000,
-                category: 'UTILITIES',
+                category: 'UTILITY_BILL',
                 status: 'APPROVED',
                 description: 'Monthly electricity bill for the hostel.',
                 date: new Date(),

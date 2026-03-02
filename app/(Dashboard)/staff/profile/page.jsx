@@ -193,9 +193,14 @@ const StaffProfilePage = () => {
                                 <div>
                                     <div className="flex items-center justify-center md:justify-start gap-3 mb-1">
                                         <h2 className="text-3xl font-bold tracking-tight">{user.name}</h2>
-                                        <Badge className="bg-white/10 hover:bg-white/20 text-white border-0 text-[9px] uppercase font-bold tracking-widest backdrop-blur-md">
+                                        <Badge className="bg-white/10 hover:bg-white/20 text-white border-0 text-[10px] uppercase font-black tracking-widest backdrop-blur-md">
                                             {user.role}
                                         </Badge>
+                                        {user.regNumber && (
+                                            <Badge className="bg-emerald-500/20 text-emerald-300 border-0 text-[10px] uppercase font-black tracking-widest backdrop-blur-md">
+                                                Reg # {user.regNumber}
+                                            </Badge>
+                                        )}
                                     </div>
                                     <p className="text-gray-400 font-medium">{user.email}</p>
                                 </div>
@@ -319,7 +324,8 @@ const StaffProfilePage = () => {
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Employee UID</p>
-                                            <h4 className="text-xl font-bold text-gray-900 tracking-tight">#{user?.id?.slice(-8).toUpperCase()}</h4>
+                                            <h4 className="text-xl font-bold text-gray-900 tracking-tight">{user.uid || '—'}</h4>
+                                            {user.regNumber && <p className="text-[9px] font-black text-indigo-600 uppercase tracking-widest mt-1">Registry: {user.regNumber}</p>}
                                             <Badge variant="outline" className="bg-emerald-50 text-emerald-600 text-[8px] font-bold border-none px-2 mt-1">Verified</Badge>
                                         </div>
                                     </div>

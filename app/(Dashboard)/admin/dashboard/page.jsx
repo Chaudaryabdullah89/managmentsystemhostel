@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { useReports } from "@/hooks/useReports";
 import { useComplaints, useUpdateComplaint } from "@/hooks/usecomplaints";
@@ -50,9 +51,16 @@ import { RevenueExpenseChart, HostelPerformanceChart, OccupancyDonutChart, Compl
 
 const AdminDashboard = () => {
     const [selectedPeriod, setSelectedPeriod] = useState("month");
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
 
     // Queries
-    const { data: reportData, isLoading: reportsLoading, refetch: refetchReports } = useReports(selectedPeriod);
+    const { data: reportData, isLoading: reportsLoading, refetch: refetchReports } = useReports(
+        selectedPeriod === "custom" ? "" : selectedPeriod,
+        null,
+        selectedPeriod === "custom" && startDate ? startDate : null,
+        selectedPeriod === "custom" && endDate ? endDate : null
+    );
     const { data: complaintsData, isLoading: complaintsLoading } = useComplaints({ stats: "true" });
     const { data: pendingComplaints, isLoading: pendingLoading } = useComplaints({ status: "PENDING" });
     const { data: financialStats, isLoading: financialsLoading } = useFinancialStats();
@@ -108,7 +116,23 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide py-1">
+                        <select
+                            className="h-9 px-3 rounded-xl border border-gray-100 text-[10px] uppercase font-bold text-gray-600 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-100 cursor-pointer"
+                            value={selectedPeriod}
+                            onChange={(e) => setSelectedPeriod(e.target.value)}
+                        >
+                            <option value="month">Current Month</option>
+                            <option value="year">Current Year</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                        {selectedPeriod === 'custom' && (
+                            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-300 hidden md:flex">
+                                <Input type="date" className="h-9 min-w-[120px] text-[10px] font-bold uppercase tracking-wider bg-gray-50 border-gray-100 rounded-xl" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                                <span className="text-gray-300 font-bold text-[9px]">TO</span>
+                                <Input type="date" className="h-9 min-w-[120px] text-[10px] font-bold uppercase tracking-wider bg-gray-50 border-gray-100 rounded-xl" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                            </div>
+                        )}
                         <Button
                             variant="outline"
                             className="h-9 px-3 md:px-4 rounded-xl border-gray-200 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 flex items-center gap-2"

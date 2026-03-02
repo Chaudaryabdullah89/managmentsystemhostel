@@ -96,7 +96,7 @@ const EditHostelForm = () => {
                 if (response.ok) {
                     const res = await response.json()
                     if (res.success) {
-                        setWardenList(res.data.map((w) => ({ name: w.name, id: w.id })));
+                        setWardenList(res.data.map((w) => ({ name: w.name, id: w.id, canManageExpenses: w.canManageExpenses })));
                     }
                 }
             } catch (error) {
@@ -105,6 +105,31 @@ const EditHostelForm = () => {
         }
         getwarden();
     }, [])
+
+    const toggleExpensePermission = async (wardenId, currentStatus, e) => {
+        e.stopPropagation();
+        try {
+            const response = await fetch(`/api/users/profile/${wardenId}/update`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ canManageExpenses: !currentStatus }),
+            });
+            if (response.ok) {
+                toast.success("Expense management permission updated");
+                setWardenList(prev => prev.map(w =>
+                    w.id === wardenId ? { ...w, canManageExpenses: !currentStatus } : w
+                ));
+                // Update selected wardens
+                setSelectedWardens(prev => prev.map(w =>
+                    w.id === wardenId ? { ...w, canManageExpenses: !currentStatus } : w
+                ));
+            } else {
+                toast.error("Failed to update permission");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+        }
+    };
 
     useEffect(() => {
         if (wardenlist.length > 0 && wardens.length > 0) {
@@ -275,6 +300,17 @@ const EditHostelForm = () => {
                                                         >
                                                             <div className="flex flex-col">
                                                                 <span className="text-xs font-black text-gray-700">{w.name}</span>
+                                                                <div className="flex items-center mt-1">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className="h-3 w-3 rounded border-gray-300 text-blue-600 focus:ring-blue-600 mr-2 cursor-pointer"
+                                                                        checked={w.canManageExpenses || false}
+                                                                        onChange={(e) => toggleExpensePermission(w.id, w.canManageExpenses, e)}
+                                                                    />
+                                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                                                                        Expenses: {w.canManageExpenses ? "Allowed" : "Restricted"}
+                                                                    </span>
+                                                                </div>
                                                                 <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Warden #ID-{w.id.slice(-4)}</span>
                                                             </div>
                                                             <div className={`h-5 w-5 rounded-md border flex items-center justify-center transition-all ${wardens.includes(w.id) ? 'bg-black border-black shadow-sm' : 'bg-white border-gray-200'}`}>

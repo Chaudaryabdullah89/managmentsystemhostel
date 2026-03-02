@@ -25,6 +25,7 @@ const AiAssistant = () => {
     const [chat, setChat] = useState([
         { role: 'bot', content: "Hello! I'm your **Hostel AI**. \n\nI can help you check the **mess menu**, view **pending bills**, or check your **room details**. \n\nHow can I assist you today?" }
     ]);
+    const [suggestions, setSuggestions] = useState(["Mess menu", "My bill status", "Report a problem"]);
     const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef(null);
     const user = useAuthStore((state) => state.user);
@@ -35,11 +36,29 @@ const AiAssistant = () => {
         }
     }, [chat]);
 
-    const handleSend = async (e) => {
-        e.preventDefault();
-        if (!message.trim() || isLoading) return;
+    // Fetch chat history from DB on load
+    useEffect(() => {
+        const fetchHistory = async () => {
+            if (!user?.id) return;
+            try {
+                const res = await fetch(`/api/ai-assistant?userId=${user.id}`);
+                const data = await res.json();
+                if (data.success && data.messages && data.messages.length > 0) {
+                    setChat(data.messages);
+                }
+            } catch (err) {
+                console.error("Failed to load chat history:", err);
+            }
+        };
+        fetchHistory();
+    }, [user?.id]);
 
-        const userMsg = message;
+    const handleSend = async (e, customMsg = null) => {
+        if (e) e.preventDefault();
+        const msgToSend = customMsg || message;
+        if (!msgToSend.trim() || isLoading) return;
+
+        const userMsg = msgToSend;
         setMessage('');
         setChat(prev => [...prev, { role: 'user', content: userMsg }]);
         setIsLoading(true);
@@ -54,6 +73,9 @@ const AiAssistant = () => {
 
             if (data.success) {
                 setChat(prev => [...prev, { role: 'bot', content: data.reply }]);
+                if (data.suggestions) {
+                    setSuggestions(data.suggestions);
+                }
             } else {
                 setChat(prev => [...prev, { role: 'bot', content: "Oops! I'm having trouble connecting to the hostel servers. Please try again later." }]);
             }
@@ -64,15 +86,6 @@ const AiAssistant = () => {
         }
     };
 
-    const QuickAction = ({ icon: Icon, label, query }) => (
-        <button
-            onClick={() => setMessage(query)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-indigo-50 border border-gray-100 hover:border-indigo-100 rounded-xl transition-all group"
-        >
-            <Icon className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-600" />
-            <span className="text-[10px] font-bold text-gray-500 group-hover:text-indigo-600 uppercase tracking-wider">{label}</span>
-        </button>
-    );
 
     return (
         <div className="fixed bottom-6 right-6 z-[100] font-sans">
@@ -82,7 +95,7 @@ const AiAssistant = () => {
                         initial={{ opacity: 0, scale: 0.95, y: 10 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                        className="absolute bottom-20 right-0 w-[340px] h-[520px] bg-white rounded-[2rem] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] border border-gray-100 overflow-hidden flex flex-col"
+                        className="absolute bottom-20 right-0 w-[340px] h-[580px] bg-white rounded-[2rem] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] border border-gray-100 overflow-hidden flex flex-col"
                     >
                         {/* Slim Header */}
                         <div className="px-6 py-5 bg-white border-b border-gray-50 relative">
@@ -108,12 +121,7 @@ const AiAssistant = () => {
                             </div>
                         </div>
 
-                        {/* Quick Actions - Slimmer */}
-                        <div className="px-4 py-3 border-b border-gray-50/50 flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
-                            <QuickAction icon={Utensils} label="Mess" query="Mess menu" />
-                            <QuickAction icon={CreditCard} label="Bills" query="My bill status" />
-                            <QuickAction icon={Command} label="News" query="Latest announcements" />
-                        </div>
+
 
                         {/* Chat area */}
                         <div
@@ -162,8 +170,27 @@ const AiAssistant = () => {
                             )}
                         </div>
 
+                        {/* Message Suggestions */}
+                        {!isLoading && suggestions.length > 0 && (
+                            <div className="px-5 py-2 flex flex-wrap gap-2">
+                                {suggestions.map((suggestion, idx) => (
+                                    <motion.button
+                                        key={idx}
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleSend(null, suggestion)}
+                                        className="px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded-lg border border-indigo-100 hover:bg-indigo-100 transition-colors"
+                                    >
+                                        {suggestion}
+                                    </motion.button>
+                                ))}
+                            </div>
+                        )}
+
                         {/* Input - Slimmer */}
-                        <form onSubmit={handleSend} className="p-5 bg-white">
+                        <form onSubmit={(e) => handleSend(e)} className="p-5 bg-white">
                             <div className="relative">
                                 <input
                                     type="text"

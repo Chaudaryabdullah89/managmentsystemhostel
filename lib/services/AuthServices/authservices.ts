@@ -30,6 +30,12 @@ interface AuthResponse {
         email: string;
         role: string;
         lastLogin?: Date | string | null;
+        canManageExpenses?: boolean;
+        canManageMess?: boolean;
+        canManageGeneral?: boolean;
+        canManageUtilities?: boolean;
+        canManageMaintenance?: boolean;
+        canManageSalaries?: boolean;
     };
 }
 
@@ -77,7 +83,15 @@ export default class AuthService {
             });
 
             const token = jwt.sign(
-                { userId: user.id, email: user.email, name: user.name, role: user.role },
+                {
+                    userId: user.id, email: user.email, name: user.name, role: user.role,
+                    canManageExpenses: user.canManageExpenses,
+                    canManageMess: user.canManageMess,
+                    canManageGeneral: user.canManageGeneral,
+                    canManageUtilities: user.canManageUtilities,
+                    canManageMaintenance: user.canManageMaintenance,
+                    canManageSalaries: user.canManageSalaries
+                },
                 this.JWT_SECRET,
                 { expiresIn: '7d' }
             );
@@ -90,7 +104,13 @@ export default class AuthService {
                     id: user.id,
                     name: user.name,
                     email: user.email,
-                    role: user.role
+                    role: user.role,
+                    canManageExpenses: user.canManageExpenses,
+                    canManageMess: user.canManageMess,
+                    canManageGeneral: user.canManageGeneral,
+                    canManageUtilities: user.canManageUtilities,
+                    canManageMaintenance: user.canManageMaintenance,
+                    canManageSalaries: user.canManageSalaries
                 }
             };
         } catch (error) {
@@ -144,7 +164,15 @@ export default class AuthService {
             });
 
             const token = jwt.sign(
-                { userId: user.id, email: user.email, name: user.name, role: user.role },
+                {
+                    userId: user.id, email: user.email, name: user.name, role: user.role,
+                    canManageExpenses: user.canManageExpenses,
+                    canManageMess: user.canManageMess,
+                    canManageGeneral: user.canManageGeneral,
+                    canManageUtilities: user.canManageUtilities,
+                    canManageMaintenance: user.canManageMaintenance,
+                    canManageSalaries: user.canManageSalaries
+                },
                 this.JWT_SECRET,
                 { expiresIn: '7d' }
             );
@@ -174,7 +202,13 @@ export default class AuthService {
                     name: user.name,
                     email: user.email,
                     role: user.role,
-                    lastLogin: new Date()
+                    lastLogin: new Date(),
+                    canManageExpenses: user.canManageExpenses,
+                    canManageMess: user.canManageMess,
+                    canManageGeneral: user.canManageGeneral,
+                    canManageUtilities: user.canManageUtilities,
+                    canManageMaintenance: user.canManageMaintenance,
+                    canManageSalaries: user.canManageSalaries
                 }
 
             };
