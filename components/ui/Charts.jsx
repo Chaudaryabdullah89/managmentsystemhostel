@@ -180,3 +180,91 @@ export function ComplaintStatusChart({ stats = {} }) {
         </div>
     );
 }
+// Expense Distribution (Pie)
+export function ExpenseDistributionChart({ data = [] }) {
+    const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#f43f5e', '#8b5cf6', '#64748b'];
+
+    if (!data.length) return <div className="h-[200px] flex items-center justify-center text-[11px] font-black text-gray-400 uppercase">No data</div>;
+
+    return (
+        <div className="w-full h-[240px]">
+            <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                    <Pie data={data} cx="50%" cy="50%" innerRadius={60} outerRadius={85} dataKey="value" paddingAngle={5}>
+                        {data.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                    </Pie>
+                    <Tooltip content={<RevenueTooltip />} />
+                    <Legend
+                        verticalAlign="bottom"
+                        iconType="circle"
+                        iconSize={8}
+                        formatter={(value) => <span style={{ fontSize: 9, fontWeight: 900, textTransform: 'uppercase', color: '#64748b' }}>{value}</span>}
+                    />
+                </PieChart>
+            </ResponsiveContainer>
+        </div>
+    );
+}
+
+// Category Distribution Bar Chart (Complaints or Rooms)
+export function CategoryDistributionChart({ data = [], color = "#6366f1" }) {
+    return (
+        <div className="w-full h-[220px]">
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+                    <XAxis type="number" hide />
+                    <YAxis
+                        dataKey="name"
+                        type="category"
+                        tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b', textTransform: 'uppercase' }}
+                        axisLine={false}
+                        tickLine={false}
+                        width={80}
+                    />
+                    <Tooltip cursor={{ fill: 'transparent' }} />
+                    <Bar dataKey="value" fill={color} radius={[0, 4, 4, 0]} barSize={12} />
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
+    );
+}
+
+// Utility Trend Chart (Stacked Area for Utilities vs Maintenance)
+export function UtilityTrendChart({ data = [] }) {
+    return (
+        <div className="w-full h-[260px]">
+            <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id="colorUtil" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="colorMaint" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.4} />
+                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                    <XAxis
+                        dataKey="month"
+                        tick={{ fontSize: 10, fontWeight: 700, fill: '#94a3b8' }}
+                        axisLine={false}
+                        tickLine={false}
+                    />
+                    <YAxis
+                        tick={{ fontSize: 9, fontWeight: 700, fill: '#94a3b8' }}
+                        axisLine={false}
+                        tickLine={false}
+                        tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                    />
+                    <Tooltip content={<RevenueTooltip />} />
+                    <Area type="monotone" dataKey="utilities" name="Utilities" stackId="1" stroke="#3b82f6" fill="url(#colorUtil)" />
+                    <Area type="monotone" dataKey="maintenance" name="Maintenance" stackId="1" stroke="#8b5cf6" fill="url(#colorMaint)" />
+                </AreaChart>
+            </ResponsiveContainer>
+        </div>
+    );
+}

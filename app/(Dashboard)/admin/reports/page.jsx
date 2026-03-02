@@ -373,6 +373,7 @@ const ReportsPage = () => {
                                     { label: 'Payments', icon: Receipt, link: '/admin/payments' },
                                     { label: 'Booking', icon: Calendar, link: '/admin/bookings' },
                                     { label: 'Salary', icon: Users, link: '/admin/salaries' },
+                                    { label: 'Analytics', icon: BarChart3, link: '/admin/advanced-analytics' },
                                     { label: 'Hostel', icon: Building2, link: '/admin/hostels' }
                                 ].map((node, i) => (
                                     <Link key={i} href={node.link}>

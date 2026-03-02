@@ -365,36 +365,33 @@ const AdminDashboard = () => {
                                 </CardContent>
                             </Card>
 
-                            <Card className="rounded-[2rem] md:rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden group">
-                                <CardHeader className="bg-gray-50/50 p-5 md:p-6 flex flex-row items-center justify-between border-b border-gray-50">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-8 w-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                                            <ShieldCheck className="h-4 w-4" />
+                            <div className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-6 shadow-sm space-y-5 md:space-y-6">
+                                {recentPayments?.payments?.length > 0 ? recentPayments.payments.slice(0, 4).map((pmt) => (
+                                    <div key={pmt.id} className="flex items-center justify-between group cursor-pointer w-full">
+                                        <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
+                                            <div className={`h-9 w-9 md:h-10 md:w-10 rounded-xl ${pmt.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-50 text-gray-400'} flex items-center justify-center border border-gray-100 group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0`}>
+                                                <DollarSign className="h-4 w-4" />
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-[10px] md:text-[11px] font-bold text-gray-900 uppercase tracking-tight truncate">{pmt.User?.name || 'Guest User'}</span>
+                                                <span className="text-[7px] md:text-[8px] font-black text-gray-400 uppercase tracking-widest mt-0.5">{format(new Date(pmt.date), 'MMM dd, HH:mm')}</span>
+                                            </div>
                                         </div>
-                                        <CardTitle className="text-[10px] md:text-[11px] font-bold uppercase tracking-widest text-gray-900">Finances</CardTitle>
-                                    </div>
-                                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
-                                </CardHeader>
-                                <CardContent className="p-5 md:p-6">
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">Collection Rate</span>
-                                            <span className="text-sm md:text-base font-bold text-emerald-600">98.4%</span>
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">System Load</span>
-                                            <span className="text-sm md:text-base font-bold text-gray-900 uppercase">Optimal</span>
-                                        </div>
-                                        <div className="pt-2 md:pt-4">
-                                            <Link href="/admin/payment-approvals">
-                                                <Button variant="outline" className="w-full h-10 border-gray-200 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all">
-                                                    Checks
-                                                </Button>
-                                            </Link>
+                                        <div className="text-right flex flex-col items-end shrink-0 ml-2">
+                                            <span className="text-[10px] md:text-[11px] font-bold text-gray-900">Rs. {pmt.amount.toLocaleString()}</span>
+                                            <Badge variant="outline" className={`text-[7px] font-black rounded-full px-2 py-0 border-none ${pmt.status === 'PAID' ? 'text-emerald-500 bg-emerald-50/50' : 'text-amber-500 bg-amber-50/50'}`}>
+                                                {pmt.status}
+                                            </Badge>
                                         </div>
                                     </div>
-                                </CardContent>
-                            </Card>
+                                )) : (
+                                    <div className="py-10 text-center">
+                                        <Activity className="h-8 w-8 text-gray-100 mx-auto mb-3" />
+                                        <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Clear</p>
+                                    </div>
+                                )}
+
+                            </div>
                         </div>
                     </div>
 
@@ -412,7 +409,7 @@ const AdminDashboard = () => {
                                     { label: 'Complaints', icon: MessageSquare, href: '/admin/complaints', color: 'text-rose-600', bg: 'bg-rose-50' },
                                     { label: 'Notices', icon: Megaphone, href: '/admin/notices', color: 'text-indigo-600', bg: 'bg-indigo-50' },
                                     { label: 'Expenses', icon: Receipt, href: '/admin/expenses', color: 'text-blue-600', bg: 'bg-blue-50' },
-                                    // { label: 'Asset Log', icon: History, href: '/admin/maintenances', color: 'text-amber-600', bg: 'bg-amber-50' },
+                                    // { label: 'Smart Insights', icon: BarChart3, href: '/admin/advanced-analytics', color: 'text-indigo-600', bg: 'bg-indigo-50' },
                                     { label: 'Salaries', icon: Wallet, href: '/admin/salaries', color: 'text-purple-600', bg: 'bg-purple-50' },
                                 ].map((item, i) => (
                                     <Link key={i} href={item.href}>
@@ -427,11 +424,12 @@ const AdminDashboard = () => {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 px-2">
-                            <div className="h-5 w-1 bg-rose-600 rounded-full" />
-                            <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Alerts</h3>
-                        </div>
+
                         <div className="bg-white border border-rose-100 rounded-[2rem] p-5 md:p-6 shadow-sm space-y-4">
+                            <div className="flex items-center gap-3 px-2">
+                                <div className="h-5 w-1 bg-rose-600 rounded-full" />
+                                <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Alerts</h3>
+                            </div>
                             {pendingComplaints?.length > 0 ? pendingComplaints.filter(c => c.priority === 'URGENT').slice(0, 3).map((complaint) => (
                                 <div key={complaint.id} className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100 group">
                                     <div className="flex items-start justify-between gap-3">
@@ -469,7 +467,7 @@ const AdminDashboard = () => {
                             </Link>
                         </div>
 
-                        <div className="flex items-center gap-3 px-2">
+                        {/* <div className="flex items-center gap-3 px-2">
                             <div className="h-5 w-1 bg-blue-600 rounded-full" />
                             <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Logs</h3>
                         </div>
@@ -499,7 +497,7 @@ const AdminDashboard = () => {
                                 </div>
                             )}
 
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </main>

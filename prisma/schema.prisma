@@ -308,6 +308,7 @@ model User {
   maintanance_maintanance_userIdToUser       maintanance[]    @relation("maintanance_userIdToUser")
   Notice                                     Notice[]
   RefundRequest                              RefundRequest[]
+  chatMessages                               ChatMessage[]
 }
 
 model maintanance {
@@ -340,6 +341,16 @@ model resetPassword {
   userId    String   @unique
 
   @@index([email])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  role      String // "user" | "assistant"
+  content   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model CleaningLog {

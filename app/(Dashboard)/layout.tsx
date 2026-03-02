@@ -12,6 +12,7 @@ import useAuthStore, { checkAuth } from "@/hooks/Authstate"
 import { useBookings } from "@/hooks/useBooking"
 import { AlertCircle } from "lucide-react"
 import HeaderNotices from "@/components/Dashboard/HeaderNotices"
+import AiAssistant from "@/components/Dashboard/AiAssistant"
 
 
 export default function RootLayout({
@@ -74,6 +75,7 @@ export default function RootLayout({
           </div>
           <Footer />
         </main>
+        {(user?.role === 'RESIDENT' || user?.role === 'GUEST') && <AiAssistant />}
       </SidebarProvider>
     </>
   )
