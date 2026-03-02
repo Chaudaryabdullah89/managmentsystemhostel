@@ -381,8 +381,9 @@ const PaymentManagementPage = () => {
                     overdueDays = lastDayInTargetMonth - defaulterOptions.dueDay;
                 }
 
+                const monthlyRentPrice = (b.monthlyRent || b.Room?.montlyrent || b.Room?.price || (b.totalAmount - (b.securityDeposit || 0)));
                 lateFee = Math.max(0, overdueDays) * (defaulterOptions.lateFeePerDay || 0);
-                const totalDue = (b.totalAmount || 0) + lateFee;
+                const totalDue = (monthlyRentPrice || 0) + lateFee;
 
                 return [
                     index + 1,
@@ -390,7 +391,7 @@ const PaymentManagementPage = () => {
                     b.User?.phone || 'N/A',
                     b.Room?.Hostel?.name || 'N/A',
                     b.Room?.roomNumber || 'N/A',
-                    `PKR ${(b.totalAmount || 0).toLocaleString()}`,
+                    `PKR ${(monthlyRentPrice || 0).toLocaleString()}`,
                     `${Math.max(0, overdueDays)} Days`,
                     `PKR ${lateFee.toLocaleString()}`,
                     `PKR ${totalDue.toLocaleString()}`,

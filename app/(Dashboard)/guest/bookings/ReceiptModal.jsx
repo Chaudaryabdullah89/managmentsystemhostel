@@ -113,7 +113,7 @@ const ReceiptModal = ({ children, booking }) => {
                         <div class="label" style="margin-bottom: 16px;">Fee details</div>
                         <div class="term-row">
                             <span class="term-label">Monthly Rent</span>
-                            <span class="term-value">PKR ${Number(booking.totalAmount || 0).toLocaleString()}</span>
+                            <span class="term-value">PKR ${(booking.monthlyRent || booking.Room?.montlyrent || booking.Room?.price || (booking.totalAmount - (booking.securityDeposit || 0))).toLocaleString()}</span>
                         </div>
                         <div class="term-row">
                             <span class="term-label">Security Deposit (Refundable)</span>
@@ -195,7 +195,7 @@ const ReceiptModal = ({ children, booking }) => {
                         <div className="flex justify-between items-start relative z-10">
                             <div className="text-left">
                                 <span className="text-[10px] font-bold text-indigo-100 uppercase tracking-widest">Monthly Rent</span>
-                                <h1 className="text-2xl font-bold text-white mt-1">PKR {Number(booking.totalAmount || 0).toLocaleString()}</h1>
+                                <h1 className="text-2xl font-bold text-white mt-1">PKR {(booking.monthlyRent || booking.Room?.montlyrent || booking.Room?.price || (booking.totalAmount - (booking.securityDeposit || 0))).toLocaleString()}</h1>
                             </div>
                             <div className="text-right">
                                 <span className="text-[10px] font-bold text-indigo-100 uppercase tracking-widest">Security</span>
@@ -312,7 +312,7 @@ const ReceiptModal = ({ children, booking }) => {
                             <tbody>
                                 <tr className="border-b border-gray-100">
                                     <td className="py-3 font-medium text-gray-600">Monthly Rent</td>
-                                    <td className="py-3 text-right font-bold text-black">PKR {Number(booking.totalAmount || 0).toLocaleString()}</td>
+                                    <td className="py-3 text-right font-bold text-black">PKR ${(booking.monthlyRent || booking.Room?.montlyrent || booking.Room?.price || (booking.totalAmount - (booking.securityDeposit || 0))).toLocaleString()}</td>
                                 </tr>
                                 <tr className="border-b border-gray-100">
                                     <td className="py-3 font-medium text-gray-600">Security Deposit (Refundable)</td>

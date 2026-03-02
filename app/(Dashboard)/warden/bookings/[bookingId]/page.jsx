@@ -124,9 +124,10 @@ const BookingDetailsPage = () => {
     );
 
     const totalPaid = booking.Payment?.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + curr.amount, 0) || 0;
-    const totalPayable = (booking.totalAmount || 0) + (booking.securityDeposit || 0);
+    // totalAmount already includes security deposit + advance rent
+    const totalPayable = (booking.totalAmount || 0);
     const balance = totalPayable - totalPaid;
-    const paymentProgress = ((totalPaid / totalPayable) * 100).toFixed(0);
+    const paymentProgress = totalPayable > 0 ? ((totalPaid / totalPayable) * 100).toFixed(0) : 0;
 
     const getStatusStyle = (status) => {
         switch (status?.toUpperCase()) {
@@ -220,7 +221,7 @@ const BookingDetailsPage = () => {
                             {[
                                 { label: 'Check-In', value: booking.checkIn ? format(new Date(booking.checkIn), 'MMM dd, yyyy') : 'N/A', icon: Calendar, sub: 'Target Date' },
                                 { label: 'Check-Out', value: booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'No End Date', icon: Clock, sub: 'End Date' },
-                                { label: 'Monthly Rent', value: `PKR ${booking.totalAmount.toLocaleString()}`, icon: Receipt, sub: 'Per Month' },
+                                { label: 'Monthly Rent', value: `PKR ${(booking.monthlyRent || booking.Room?.montlyrent || booking.Room?.price || (booking.totalAmount - (booking.securityDeposit || 0))).toLocaleString()}`, icon: Receipt, sub: 'Per Month' },
                                 { label: 'Security Deposit', value: `PKR ${booking.securityDeposit?.toLocaleString() || '0'}`, icon: CreditCard, sub: 'Refundable' }
                             ].map((item, i) => (
                                 <div key={i} className="flex flex-col gap-2 group">
@@ -506,7 +507,7 @@ const BookingDetailsPage = () => {
                         <tbody>
                             <tr className="border-b border-gray-100">
                                 <td className="py-3 font-medium">Monthly Rent</td>
-                                <td className="py-3 text-right font-mono">{booking.totalAmount?.toLocaleString() || '0'}</td>
+                                <td className="py-3 text-right font-mono">{(booking.monthlyRent || booking.Room?.montlyrent || booking.Room?.price || (booking.totalAmount - (booking.securityDeposit || 0))).toLocaleString()}</td>
                             </tr>
                             <tr className="border-b border-gray-100">
                                 <td className="py-3 font-medium">Security Deposit</td>
