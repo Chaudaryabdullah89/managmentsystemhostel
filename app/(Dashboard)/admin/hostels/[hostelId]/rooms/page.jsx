@@ -63,7 +63,7 @@ import { toast } from "sonner"
 import { QueryKeys } from '@/lib/queryclient'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import Loader from '../../../../../../components/ui/Loader'
-import { useAuthStore } from "@/store/useAuthStore";
+import useAuthStore from "@/hooks/Authstate";
 
 const useSyncAutomation = () => {
     const queryClient = useQueryClient();

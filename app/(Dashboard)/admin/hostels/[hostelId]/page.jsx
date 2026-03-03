@@ -38,7 +38,7 @@ import {
 import { useHostelById } from "@/hooks/usehostel";
 import { format } from "date-fns";
 import Loader from "@/components/ui/Loader";
-import { useAuthStore } from "@/store/useAuthStore";
+import useAuthStore from "@/hooks/Authstate";
 
 const HostelOverviewPage = () => {
     const { hostelId } = useParams();

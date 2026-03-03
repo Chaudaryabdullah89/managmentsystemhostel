@@ -61,7 +61,7 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import Loader from "../../../../components/ui/Loader";
-import { useAuthStore } from "@/store/useAuthStore";
+import useAuthStore from "@/hooks/Authstate";
 
 const HostelsPage = () => {
     const queryClient = useQueryClient()

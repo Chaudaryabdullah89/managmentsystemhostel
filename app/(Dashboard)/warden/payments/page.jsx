@@ -1129,6 +1129,9 @@ const PaymentManagementPage = () => {
             {/* Modals */}
             < Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen} >
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white ring-1 ring-gray-100">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Reject Payment</DialogTitle>
+                    </DialogHeader>
                     <div className="bg-rose-600 p-10 text-white text-center relative overflow-hidden">
                         <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
                         <div className="h-16 w-16 bg-black/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-black/10 shadow-lg">
@@ -1163,6 +1166,9 @@ const PaymentManagementPage = () => {
 
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white ring-1 ring-gray-100">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Edit Payment</DialogTitle>
+                    </DialogHeader>
                     <div className="bg-blue-600 p-10 text-white text-center relative overflow-hidden">
                         <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
                         <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
