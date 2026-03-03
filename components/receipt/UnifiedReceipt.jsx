@@ -54,7 +54,7 @@ const UnifiedReceipt = ({ data, type, children }) => {
             id: "",
             date: new Date(),
             status: "N/A",
-            brand: "GreenView Hostels",
+            brand: "Mubarak Group Of Hostels (MGH)",
             customerName: "N/A",
             customerDetail: "",
             contextLabel: "Property",
@@ -118,7 +118,7 @@ const UnifiedReceipt = ({ data, type, children }) => {
                 mapped.customerName = data.StaffProfile?.User?.name;
                 mapped.customerDetail = `${data.StaffProfile?.designation} - ${data.StaffProfile?.User?.email}`;
                 mapped.contextLabel = "Organization";
-                mapped.contextValue = data.StaffProfile?.User?.Hostel_User_hostelIdToHostel?.name || "GreenView Networks";
+                mapped.contextValue = data.StaffProfile?.User?.Hostel_User_hostelIdToHostel?.name || "MGH Admin Office";
                 mapped.items = [
                     { label: "Basic Retainer", value: data.basicSalary },
                     { label: "Allowances & Perks", value: data.allowances || 0 },

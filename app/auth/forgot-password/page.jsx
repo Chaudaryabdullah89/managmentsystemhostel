@@ -34,8 +34,6 @@ export default function ForgotPasswordPage() {
             body: JSON.stringify({ email }),
         });
 
-        setIsLoading(true);
-
         const data = await response.json();
         if (data.message === "Email sent successfully") {
             setIsSubmitted(true);
@@ -87,10 +85,10 @@ export default function ForgotPasswordPage() {
                         </div>
                         <div>
                             <h1 className="text-lg font-bold tracking-tight">
-                                GreenView Hostels
+                                MGH
                             </h1>
                             <p className="text-[10px] uppercase tracking-widest text-slate-400">
-                                Management System
+                                Mubarak Group of Hostels
                             </p>
                         </div>
                     </div>
@@ -161,7 +159,7 @@ export default function ForgotPasswordPage() {
                                     <Input
                                         id="email"
                                         type="email"
-                                        placeholder="admin@greenview.com"
+                                        placeholder="admin@mghostels.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         className={`pl-12 h-12 rounded-xl border-slate-200 focus:ring-2 focus:ring-primary ${error ? "border-red-500" : ""

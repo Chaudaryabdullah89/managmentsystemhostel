@@ -44,7 +44,7 @@ When you create a hostel, you send the selected wardens' details to variables.
 - **Payload:** The API expects a `wardens` array containing objects with at least an `id`.
   ```json
   {
-    "hostelname": "GreenView",
+    "hostelname": "MGH",
     "wardens": [ { "id": "warden_id_1" }, { "id": "warden_id_2" } ],
     ...
   }

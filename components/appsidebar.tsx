@@ -142,8 +142,10 @@ export function AppSidebar() {
                             <Building2 className="h-4.5 w-4.5 text-white" style={{ height: 18, width: 18 }} />
                         </div>
                         <div>
-                            <p className="text-[13px] font-bold text-gray-900 leading-none">GreenView</p>
-                            <p className="text-[10px] text-gray-400 mt-0.5 leading-none">Hostel Management</p>
+                            {/* <h1 className="text-lg font-bold tracking-tight">MGH</h1> */}
+                            <p className="text-[10px] uppercase tracking-widest text-slate-400">
+                                Mubarak Group of Hostels
+                            </p>
                         </div>
                     </div>
 

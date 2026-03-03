@@ -97,8 +97,8 @@ function ResetPasswordForm() {
                             <Home className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-lg font-bold tracking-tight">GreenView Hostels</h1>
-                            <p className="text-[10px] uppercase tracking-widest text-slate-400">Management System</p>
+                            <h1 className="text-lg font-bold tracking-tight">MGH</h1>
+                            <p className="text-[10px] uppercase tracking-widest text-slate-400">Mubarak Group of Hostels</p>
                         </div>
                     </div>
 

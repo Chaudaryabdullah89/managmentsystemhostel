@@ -44,7 +44,7 @@ export default function NotFound() {
                 </div>
 
                 <div className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.2em] pt-8">
-                    GreenView Hostels System
+                    Mubarak Group of Hostels (MGH)
                 </div>
             </div>
         </div>

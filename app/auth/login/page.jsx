@@ -104,9 +104,9 @@ export default function LoginPage() {
                             <Building2 className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-lg font-bold tracking-tight">GreenView</h1>
+                            <h1 className="text-lg font-bold tracking-tight">MGH</h1>
                             <p className="text-[10px] uppercase tracking-widest text-slate-400">
-                                Management Node
+                                Mubarak Group of Hostels
                             </p>
                         </div>
                     </div>
@@ -136,7 +136,7 @@ export default function LoginPage() {
                                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                                 <input
                                     type="email"
-                                    placeholder="you@greenview.io"
+                                    placeholder="you@mghostels.com"
                                     value={formData.email}
                                     onChange={(e) =>
                                         setFormData((p) => ({ ...p, email: e.target.value }))

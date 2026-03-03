@@ -138,7 +138,7 @@ const SalarySlip = ({ salary }) => {
             {/* Printable Content (Hidden on screen) */}
             <div className="hidden print:block bg-white text-black p-10 font-sans">
                 <div className="text-center border-b-2 border-black pb-8 mb-8">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">GreenView Hostels</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">MGH - Mubarak Group Of Hostels</p>
                     <h1 className="text-2xl font-black uppercase">Official Pay Slip</h1>
                     <p className="text-xs font-mono font-bold mt-2">#{salary.id?.toUpperCase()}</p>
                 </div>
