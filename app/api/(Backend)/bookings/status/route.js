@@ -59,7 +59,7 @@ export async function PUT(request) {
             if (fullBooking?.User?.email) {
                 sendEmail({
                     to: fullBooking.User.email,
-                    subject: `Booking ${status.charAt(0) + status.slice(1).toLowerCase()} — GreenView Hostels`,
+                    subject: `Booking ${status.charAt(0) + status.slice(1).toLowerCase()} — Mubarak Group of Hostels`,
                     html: bookingStatusEmail({
                         name: fullBooking.User.name,
                         bookingId: fullBooking.uid || fullBooking.id,

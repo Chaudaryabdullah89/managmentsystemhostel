@@ -89,14 +89,14 @@ export async function PATCH(request, { params }) {
         const payment = await paymentServices.updatePayment(paymentId, updateData);
         const hostelName = payment.Booking?.Room?.Hostel?.name
             || payment.User?.Hostel_User_hostelIdToHostel?.name
-            || "GreenView Hostels";
+            || "Mubarak Group of Hostels";
 
         // ── APPROVED: Email the resident ─────────────────────────────────
         if (status === "PAID" || status === "APPROVED" || status === "COMPLETED") {
             if (payment?.User?.email) {
                 sendEmail({
                     to: payment.User.email,
-                    subject: "Payment Approved ✅ — GreenView Hostels",
+                    subject: "Payment Approved ✅ — Mubarak Group of Hostels",
                     html: paymentApprovedEmail({
                         name: payment.User.name,
                         paymentId: payment.uid || paymentId,
@@ -115,7 +115,7 @@ export async function PATCH(request, { params }) {
             if (payment?.User?.email) {
                 sendEmail({
                     to: payment.User.email,
-                    subject: "Payment Rejected ❌ — GreenView Hostels",
+                    subject: "Payment Rejected ❌ — Mubarak Group of Hostels",
                     html: buildEmailTemplate({
                         title: "Payment Not Approved",
                         subtitle: `Hello ${payment.User.name}, your payment submission was reviewed and could not be approved at this time.`,

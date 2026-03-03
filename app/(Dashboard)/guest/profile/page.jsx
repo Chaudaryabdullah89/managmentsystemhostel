@@ -185,7 +185,7 @@ const GuestProfile = () => {
                                     <div>
                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Hostel Name</p>
                                         <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                                            <h5 className="font-bold text-gray-900">{hostel.name || "GreenView Hostel"}</h5>
+                                            <h5 className="font-bold text-gray-900">{hostel.name || "Mubarak Group of Hostels"}</h5>
                                             <p className="text-xs text-gray-500 mt-1">{hostel.address || "Address not available"}</p>
                                             {hostel.phone && <p className="text-xs text-gray-400 mt-2 font-mono">{hostel.phone}</p>}
                                         </div>

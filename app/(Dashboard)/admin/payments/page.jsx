@@ -446,7 +446,7 @@ const PaymentManagementPage = () => {
                     doc.setFontSize(8);
                     doc.setTextColor(150, 150, 150);
                     doc.text(str, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
-                    doc.text("Official GreenView Hostels Records", 14, doc.internal.pageSize.height - 10);
+                    doc.text("Official Mubarak Group of Hostels Records", 14, doc.internal.pageSize.height - 10);
                 }
             });
 
@@ -568,7 +568,7 @@ const PaymentManagementPage = () => {
                     doc.setFontSize(8);
                     doc.setTextColor(150, 150, 150);
                     doc.text(str, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: "center" });
-                    doc.text("Official GreenView Hostels Records", 14, doc.internal.pageSize.height - 10);
+                    doc.text("Official Mubarak Group of Hostels Records", 14, doc.internal.pageSize.height - 10);
                 }
             });
 

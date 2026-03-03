@@ -117,7 +117,7 @@ export async function POST(request) {
 
                         sendEmail({
                             to: user.email,
-                            subject: `Monthly Rent Due — ${monthName} ${year} — GreenView Hostels`,
+                            subject: `Monthly Rent Due — ${monthName} ${year} — Mubarak Group of Hostels`,
                             html: monthlyRentEmail({
                                 name: user.name,
                                 amount: data.amount,

@@ -57,7 +57,7 @@ export async function PATCH(request, context) {
             const html = `
                 <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 40px auto; border: 1px solid #f1f5f9; border-radius: 24px; overflow: hidden; background: #fff; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);">
                     <div style="background: #000; padding: 48px; border-bottom: 8px solid #10b981;">
-                        <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: -0.025em;">GreenView Hostels</h1>
+                        <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: -0.025em;">Mubarak Group of Hostels</h1>
                         <p style="margin: 8px 0 0; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #10b981;">Institutional Hub • Payroll Node</p>
                     </div>
                     
@@ -110,7 +110,7 @@ export async function PATCH(request, context) {
                         </div>
 
                         <div style="text-align: center; border-top: 1px solid #f1f5f9; padding-top: 32px;">
-                            <p style="margin: 0; font-size: 11px; color: #94a3b8; font-weight: 600; line-height: 1.6;"> This digital manifest is an official record of GreenView Hostels Node Management. Please archive this transmission for fiscal auditing purposes. </p>
+                            <p style="margin: 0; font-size: 11px; color: #94a3b8; font-weight: 600; line-height: 1.6;"> This digital manifest is an official record of Mubarak Group of Hostels Node Management. Please archive this transmission for fiscal auditing purposes. </p>
                         </div>
                     </div>
                 </div>
@@ -119,7 +119,7 @@ export async function PATCH(request, context) {
             try {
                 await sendEmail({
                     to: userEmail,
-                    subject: `Fiscal Settlement: ${month} Payroll - GreenView Hostels`,
+                    subject: `Fiscal Settlement: ${month} Payroll - Mubarak Group of Hostels`,
                     html
                 });
             } catch (emailError) {

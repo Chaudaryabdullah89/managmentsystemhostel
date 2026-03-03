@@ -184,7 +184,7 @@ export async function POST(request) {
         const rawPassword = password || "password123";
         sendEmail({
             to: email,
-            subject: "Welcome to GreenView Hostels — Your Account Details",
+            subject: "Welcome to Mubarak Group of Hostels — Your Account Details",
             html: welcomeEmail({ name, email, password: rawPassword, role, hostelName }),
         }).catch(err => console.error("[Email] Welcome email failed:", err));
 

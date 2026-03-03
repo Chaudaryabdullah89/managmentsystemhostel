@@ -44,7 +44,7 @@ export async function POST(req) {
             Hello <strong>${user.name || "User"}</strong>,
           </p>
           <p style="margin:0 0 16px; font-size:14px; color:#4b5563;">
-            We received a request to reset the password for your GreenView Hostels account.
+            We received a request to reset the password for your Mubarak Group of Hostels account.
           </p>
           <p style="margin:0 0 24px; font-size:14px; color:#4b5563;">
             Click the button below to choose a new password. This link will be valid for <strong>1 hour</strong>.
@@ -62,7 +62,7 @@ export async function POST(req) {
 
     const html = buildEmailTemplate({
       title: "Reset your password",
-      subtitle: "Secure access to your GreenView Hostels account",
+      subtitle: "Secure access to your Mubarak Group of Hostels account",
       bodyHtml,
     });
 
@@ -84,7 +84,7 @@ export async function POST(req) {
 
 
     console.log(`[API] POST /api/mails/forget-password - Sending email to: ${email}`);
-    await sendEmail({ to: email, subject: "Password Reset - GreenView Hostels", html });
+    await sendEmail({ to: email, subject: "Password Reset - Mubarak Group of Hostels", html });
     console.log(`[API] POST /api/mails/forget-password - Email sent successfully`);
 
     return NextResponse.json({ message: "Email sent successfully" }, { status: 200 });

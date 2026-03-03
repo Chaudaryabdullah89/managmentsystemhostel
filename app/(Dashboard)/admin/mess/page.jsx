@@ -144,7 +144,7 @@ const AdminMessMenu = () => {
             doc.setTextColor(100, 116, 139); // slate-500
             doc.setFontSize(10);
             doc.text(`Generated On: ${format(new Date(), 'PPP p')}`, 14, 45);
-            doc.text(`Official GreenView Management Document`, pageWidth - 14, 45, { align: "right" });
+            doc.text(`Official MGH Management Document`, pageWidth - 14, 45, { align: "right" });
 
             // Horizontal Line
             doc.setDrawColor(226, 232, 240); // slate-200
@@ -234,7 +234,7 @@ const AdminMessMenu = () => {
                 doc.setPage(i);
                 doc.setFontSize(8);
                 doc.setTextColor(148, 163, 184); // slate-400
-                doc.text(`© GreenView Hostel Management System - Page ${i} of ${totalPages}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
+                doc.text(`© Mubarak Group of Hostels Management System - Page ${i} of ${totalPages}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
             }
 
             doc.save(`${hostelName.replace(/\s+/g, '_')}_Mess_Schedule.pdf`);

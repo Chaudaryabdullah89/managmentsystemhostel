@@ -138,7 +138,7 @@ export async function POST(request) {
                 const [mName, yName] = month.split(" ");
                 sendEmail({
                     to: warden.email,
-                    subject: `Salary Disbursed — ${month} — GreenView Hostels`,
+                    subject: `Salary Disbursed — ${month} — Mubarak Group of Hostels`,
                     html: monthlyRentEmail({
                         name: warden.name,
                         amount: totalAmount,
@@ -209,7 +209,7 @@ export async function POST(request) {
                 const [mName, yName] = month.split(" ");
                 sendEmail({
                     to: warden.email,
-                    subject: `Salary Disbursed — ${month} — GreenView Hostels`,
+                    subject: `Salary Disbursed — ${month} — Mubarak Group of Hostels`,
                     html: monthlyRentEmail({
                         name: warden.name,
                         amount: totalAmount,

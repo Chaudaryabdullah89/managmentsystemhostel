@@ -333,7 +333,7 @@ const StaffProfilePage = () => {
                                     <div className="space-y-1.5">
                                         <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">Assigned Hostel</Label>
                                         <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                                            <h5 className="font-bold text-gray-900">{user?.Hostel_User_hostelIdToUser?.name || "GreenView Central"}</h5>
+                                            <h5 className="font-bold text-gray-900">{user?.Hostel_User_hostelIdToUser?.name || "MGH Central"}</h5>
                                             <p className="text-xs text-gray-500 mt-1">{user?.Hostel_User_hostelIdToUser?.address || "Main Branch"}</p>
                                         </div>
                                     </div>

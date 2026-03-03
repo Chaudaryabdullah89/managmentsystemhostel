@@ -110,11 +110,11 @@ const AddSalaryPage = () => {
 
     // Mock employee data - replace with actual API call
     const employees = [
-        { id: "EMP_001", name: "Ali Ahmed", designation: "Warden", hostel: "GreenView Hostel 1" },
-        { id: "EMP_002", name: "Sara Khan", designation: "Assistant Warden", hostel: "GreenView Hostel 2" },
-        { id: "EMP_003", name: "Hassan Ali", designation: "Security Guard", hostel: "GreenView Hostel 1" },
-        { id: "EMP_004", name: "Fatima Noor", designation: "Cleaning Staff", hostel: "GreenView Hostel 3" },
-        { id: "EMP_005", name: "Usman Tariq", designation: "Maintenance Staff", hostel: "GreenView Hostel 2" }
+        { id: "EMP_001", name: "Ali Ahmed", designation: "Warden", hostel: "Mubarak Group of Hostels 1" },
+        { id: "EMP_002", name: "Sara Khan", designation: "Assistant Warden", hostel: "Mubarak Group of Hostels 2" },
+        { id: "EMP_003", name: "Hassan Ali", designation: "Security Guard", hostel: "Mubarak Group of Hostels 1" },
+        { id: "EMP_004", name: "Fatima Noor", designation: "Cleaning Staff", hostel: "Mubarak Group of Hostels 3" },
+        { id: "EMP_005", name: "Usman Tariq", designation: "Maintenance Staff", hostel: "Mubarak Group of Hostels 2" }
     ];
 
     const handleEmployeeSelect = (employeeId) => {

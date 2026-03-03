@@ -34,7 +34,7 @@ export async function POST(req: Request) {
         // Send Email
     const bodyHtml = `
           <p style="margin:0 0 16px; font-size:14px; color:#4b5563; text-align:left;">
-            You requested to update the email address associated with your GreenView Hostels account.
+            You requested to update the email address associated with your Mubarak Group of Hostels account.
           </p>
           <p style="margin:0 0 12px; font-size:14px; color:#4b5563; text-align:left;">
             Use the verification code below to confirm this change:
@@ -69,7 +69,7 @@ export async function POST(req: Request) {
     });
 
         // console.log(`[API] POST /api/auth/change-email/send-otp - Sending email`);
-        await sendEmail({ to: email, subject: "Verify your new email - GreenView Hostels", html });
+        await sendEmail({ to: email, subject: "Verify your new email - Mubarak Group of Hostels", html });
         // console.log(`[API] POST /api/auth/change-email/send-otp - OTP sent successfully`);
 
         return NextResponse.json({ message: "OTP sent successfully" });
