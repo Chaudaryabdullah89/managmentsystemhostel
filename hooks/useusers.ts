@@ -24,7 +24,7 @@ export const useUsers = () => {
 };
 
 export const useUserById = (id: string) => {
-    const { data, isLoading, error } = useQuery({
+    const { data, isLoading, error, refetch } = useQuery({
         queryKey: QueryKeys.userbyid(id),
         queryFn: async () => {
             if (!id) return null;
@@ -40,7 +40,7 @@ export const useUserById = (id: string) => {
         gcTime: 30 * 60 * 1000,
         staleTime: 60 * 1000,
     });
-    return { data, isLoading, error };
+    return { data, isLoading, error, refetch };
 
 };
 
@@ -118,7 +118,7 @@ export const useTerminateAllSessions = () => {
     });
 };
 export const useuserbyrole = (role: string) => {
-    const { data, isLoading, error } = useQuery({
+    const { data, isLoading, error, refetch } = useQuery({
         queryKey: QueryKeys.userbyrole(role),
         queryFn: async () => {
             const response = await fetch(`/api/users/warden`);
@@ -130,7 +130,7 @@ export const useuserbyrole = (role: string) => {
         gcTime: 30 * 60 * 1000,
         staleTime: 60 * 1000,
     });
-    return { data, isLoading, error };
+    return { data, isLoading, error, refetch };
 }
 
 export const useUserDetailedProfile = (id: string) => {

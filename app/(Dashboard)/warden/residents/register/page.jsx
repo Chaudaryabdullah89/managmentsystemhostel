@@ -51,7 +51,7 @@ const ROLES = [
     { value: "WARDEN", label: "Warden", icon: UserCog, color: "text-amber-600", bg: "bg-amber-50", desc: "Hostel warden / manager" },
 ];
 
-const ADMIN_ONLY_ROLES = ["WARDEN", "ADMIN"];
+const ADMIN_ONLY_ROLES = ["WARDEN", "ADMIN", "STAFF"];
 
 const STEPS = [
     { id: 1, label: "Role", icon: Shield },

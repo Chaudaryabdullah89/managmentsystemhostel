@@ -1,43 +1,67 @@
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
     Building2,
-    Bed,
     Users,
     MapPin,
-    Phone,
-    Mail,
     Layers,
-    ArrowUpRight,
-    ChevronRight,
     Activity,
-    CheckCircle2
+    CheckCircle2,
+    DollarSign,
+    Zap,
+    MessageSquare,
+    ShieldCheck,
+    Sparkles,
+    Globe,
+    Info,
+    RefreshCw,
+    Hash,
+    ChevronRight,
+    LayoutGrid,
+    Phone,
+    Calendar,
+    X,
+    CreditCard,
+    BedDouble,
+    TrendingUp,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+    Dialog,
+    DialogContent,
+} from "@/components/ui/dialog";
 import useAuthStore from '@/hooks/Authstate';
 import { useHostelById } from '@/hooks/usehostel';
 import Loader from '@/components/ui/Loader';
+import { toast } from "sonner";
+import { format } from "date-fns";
 
 const WardenHostelsPage = () => {
     const { user } = useAuthStore();
-    const { data: hostelData, isLoading } = useHostelById(user?.hostelId);
+    const { data: hostelData, isLoading, refetch } = useHostelById(user?.hostelId);
     const hostel = hostelData?.hostel;
+    const [showInfo, setShowInfo] = useState(false);
 
-    if (isLoading) return <Loader label="Loading" subLabel="Fetching hostel details..." icon={Building2} fullScreen={false} />;
+    if (isLoading) return <Loader label="LOADING" subLabel="Getting hostel info..." icon={Activity} fullScreen={false} />;
 
     if (!hostel) {
         return (
-            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-center">
-                <div className="h-20 w-20 rounded-3xl bg-white border border-gray-100 flex items-center justify-center mb-6 shadow-sm">
-                    <Building2 className="h-10 w-10 text-gray-200" />
+            <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center p-6 text-center">
+                <div className="h-12 w-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm mb-4">
+                    <Building2 className="h-5 w-5 text-gray-300" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 uppercase tracking-tight">No hostel found</h2>
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2 max-w-xs">
-                    You are not currently assigned to any hostel.
+                <h2 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Access Denied</h2>
+                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5 max-w-xs">
+                    Your account is not linked to any hostel.
                 </p>
+                <Link href="/warden" className="mt-6">
+                    <Button variant="outline" className="h-9 px-5 rounded-xl border-gray-200 text-[10px] font-bold uppercase tracking-widest">
+                        Go Home
+                    </Button>
+                </Link>
             </div>
         );
     }
@@ -45,206 +69,383 @@ const WardenHostelsPage = () => {
     const roomStats = {
         total: hostel.totalRooms || hostel.Room?.length || 0,
         occupied: hostel.Room?.filter(r => r.status === 'OCCUPIED').length || 0,
-        available: hostel.Room?.filter(r => r.status === 'AVAILABLE').length || 0
+        available: hostel.Room?.filter(r => r.status === 'AVAILABLE').length || 0,
+        maintenance: hostel.Room?.filter(r => r.status === 'MAINTENANCE').length || 0,
+    };
+
+    const occupancyRate = roomStats.total > 0 ? Math.round((roomStats.occupied / roomStats.total) * 100) : 0;
+
+    const handleRefresh = async () => {
+        const promise = refetch();
+        toast.promise(promise, {
+            loading: 'Refreshing...',
+            success: 'Updated',
+            error: 'Failed to update'
+        });
     };
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
             {/* Header */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="h-8 w-1 bg-indigo-600 rounded-full" />
+                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-1.5 bg-indigo-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Profile</h1>
+                            <h1 className="text-sm md:text-base font-bold text-gray-900 tracking-tight uppercase">My Hostel</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">System</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-600">Active</span>
+                                <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Manage</span>
+                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
+                                <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600">Live</span>
                             </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <Badge variant="outline" className="h-7 px-4 rounded-full bg-emerald-50/50 text-emerald-700 border-emerald-100 text-[9px] font-black uppercase tracking-widest shadow-sm">
-                            {hostel.status || 'ACTIVE'}
-                        </Badge>
-                    </div>
+                    <Button
+                        variant="ghost"
+                        className="h-9 px-4 rounded-xl border border-gray-100 font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-gray-50 flex items-center gap-2"
+                        onClick={handleRefresh}
+                    >
+                        <RefreshCw className="h-3.5 w-3.5 text-gray-400" /> Refresh
+                    </Button>
                 </div>
             </div>
 
-            <main className="max-w-[1400px] mx-auto px-6 py-8 space-y-8">
-                {/* Stats Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <Card className="lg:col-span-2 bg-white border-gray-100 rounded-3xl p-8 md:p-10 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
-                            <Building2 className="h-40 w-40 -mr-10 -mt-10 rotate-12" />
-                        </div>
+            <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 space-y-6">
 
-                        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                            <div className="flex items-center gap-6">
-                                <div className="h-16 w-16 md:h-20 md:w-20 rounded-3xl bg-indigo-600 text-white flex items-center justify-center shadow-2xl shadow-indigo-200 shrink-0">
-                                    <Building2 className="h-8 md:h-10 w-8 md:w-10" />
-                                </div>
-                                <div className="space-y-1">
-                                    <h2 className="text-2xl md:text-4xl font-black text-gray-900 uppercase tracking-tighter leading-none">{hostel.name}</h2>
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex items-center gap-1.5">
-                                            <MapPin className="h-3 w-3 text-indigo-500" />
-                                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{hostel.city}</span>
-                                        </div>
-                                        <div className="h-1 w-1 rounded-full bg-gray-200" />
-                                        <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{hostel.type}</span>
-                                    </div>
-                                </div>
+                {/* Hero / Identity Card */}
+                <Card className="bg-white border-gray-100 rounded-2xl p-5 md:p-6 shadow-sm overflow-hidden">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+                        <div className="flex items-center gap-4">
+                            <div className="h-11 w-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
+                                <Building2 className="h-5 w-5" />
                             </div>
-
-                            <div className="flex gap-4 md:gap-8 border-t md:border-t-0 md:border-l border-gray-100 pt-6 md:pt-0 md:pl-8">
-                                <div className="text-center md:text-left">
-                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-1">Monthly Rent</span>
-                                    <span className="text-lg md:text-2xl font-black text-gray-900 tracking-tight">PKR {hostel.montlyrent?.toLocaleString()}</span>
+                            <div className="space-y-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-1.5">
+                                    <Badge variant="outline" className="bg-gray-50 border-gray-100 text-gray-400 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">{hostel.type}</Badge>
+                                    <Badge variant="outline" className="bg-emerald-50 border-emerald-100 text-emerald-600 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">Active</Badge>
                                 </div>
-                                <div className="text-center md:text-left">
-                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] block mb-1">Nightly Rent</span>
-                                    <span className="text-lg md:text-2xl font-black text-gray-900 tracking-tight">PKR {hostel.pernightrent?.toLocaleString()}</span>
+                                <h2 className="text-base font-black text-gray-900 tracking-tight uppercase leading-none truncate">{hostel.name}</h2>
+                                <div className="flex items-center gap-1.5 text-gray-400">
+                                    <MapPin className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                                    <span className="text-[10px] font-bold uppercase tracking-wider truncate">{hostel.address}, {hostel.city}</span>
                                 </div>
                             </div>
                         </div>
-                    </Card>
 
-                    <Card className="bg-gray-950 text-white rounded-3xl p-8 flex flex-col justify-between shadow-2xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl -mr-16 -mt-16" />
-                        <div className="relative z-10">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-400 mb-6">Availability</h3>
-                            <div className="space-y-6">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                        <span className="text-sm font-bold uppercase tracking-tight">Free</span>
-                                    </div>
-                                    <span className="text-2xl font-black">{roomStats.available}</span>
-                                </div>
-                                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-gradient-to-r from-emerald-500 to-indigo-500 rounded-full transition-all duration-1000"
-                                        style={{ width: `${(roomStats.available / (roomStats.total || 1)) * 100}%` }}
-                                    />
-                                </div>
-                                <div className="flex justify-between text-[9px] font-black text-gray-500 uppercase tracking-widest">
-                                    <span>{roomStats.occupied} Occupied</span>
-                                    <span>{roomStats.total} Total</span>
-                                </div>
+                        <div className="flex gap-6 md:pl-6 md:border-l border-gray-100">
+                            <div className="space-y-0.5">
+                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Monthly Rent</span>
+                                <span className="text-base font-black text-gray-900 tracking-tight">PKR {hostel.montlyrent?.toLocaleString()}</span>
+                            </div>
+                            <div className="space-y-0.5">
+                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Daily Rate</span>
+                                <span className="text-base font-black text-gray-900 tracking-tight">PKR {hostel.pernightrent?.toLocaleString()}</span>
                             </div>
                         </div>
-                        <Link href="/warden/rooms" className="mt-8 relative z-10 overflow-hidden">
-                            <Button className="w-full h-12 bg-white text-black hover:bg-gray-100 font-bold text-[10px] uppercase tracking-widest rounded-xl transition-all active:scale-95 group">
-                                Rooms
-                                <ChevronRight className="h-3.5 w-3.5 ml-2 group-hover:translate-x-1 transition-transform" />
-                            </Button>
-                        </Link>
-                    </Card>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Column: Details */}
-                    <div className="lg:col-span-2 space-y-8">
-                        {/* Information Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {[
-                                { label: 'Phone', value: hostel.phone || 'N/A', icon: Phone, color: 'text-blue-600', bg: 'bg-blue-50' },
-                                { label: 'Floors', value: `Floor ${hostel.floors}`, icon: Layers, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                                { label: 'Status', value: hostel.status || 'Active', icon: Activity, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                                { label: 'In', value: `${roomStats.occupied} Active`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' }
-                            ].map((item, i) => (
-                                <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 hover:shadow-md transition-all group">
-                                    <div className={`h-10 w-10 rounded-xl ${item.bg} ${item.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                                        <item.icon className="h-5 w-5" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{item.label}</span>
-                                        <span className="text-xs font-black text-gray-900 uppercase italic tracking-tight">{item.value}</span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Location Detail */}
-                        <Card className="bg-white border border-gray-100 rounded-3xl p-8 relative overflow-hidden shadow-sm">
-                            <div className="flex items-start gap-6">
-                                <div className="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100 shadow-inner">
-                                    <MapPin className="h-6 w-6 text-indigo-500" />
-                                </div>
-                                <div className="space-y-4">
-                                    <div className="space-y-1">
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Address</h3>
-                                        <p className="text-sm md:text-lg font-bold text-gray-900 italic uppercase">
-                                            {hostel.address}, {hostel.city}
-                                        </p>
-                                    </div>
-                                    <Button variant="ghost" className="h-8 px-0 text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:bg-transparent hover:text-indigo-700 flex items-center gap-2 group">
-                                        Map <ArrowUpRight className="h-3 w-3 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                                    </Button>
-                                </div>
-                            </div>
-                        </Card>
-
-                        {/* Description Section */}
-                        {hostel.description && (
-                            <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4">Description</h3>
-                                <p className="text-xs md:text-sm text-gray-600 font-medium leading-relaxed italic border-l-4 border-indigo-600/10 pl-6">
-                                    "{hostel.description}"
-                                </p>
-                            </div>
-                        )}
                     </div>
 
-                    {/* Right Column: Amenities & Quick Actions */}
-                    <div className="space-y-8">
-                        {/* Amenities */}
-                        <Card className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Amenities</h3>
-                                <div className="h-6 w-6 rounded-lg bg-indigo-50 flex items-center justify-center">
-                                    <CheckCircle2 className="h-3.5 w-3.5 text-indigo-600" />
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-5 pt-5 border-t border-gray-50">
+                        {[
+                            { label: 'Rooms', value: roomStats.total, sub: 'Total', icon: LayoutGrid, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                            { label: 'Occupancy', value: `${occupancyRate}%`, sub: 'Full', icon: Activity, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                            { label: 'Status', value: 'LIVE', sub: 'Ready', icon: ShieldCheck, color: 'text-blue-600', bg: 'bg-blue-50' },
+                            { label: 'Floors', value: hostel.floors, sub: 'Levels', icon: Layers, color: 'text-amber-600', bg: 'bg-amber-50' }
+                        ].map((stat, i) => (
+                            <div key={i} className="flex items-center gap-3 group/stat">
+                                <div className={`h-10 w-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 shadow-inner group-hover/stat:scale-110 transition-transform`}>
+                                    <stat.icon className="h-[18px] w-[18px]" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{stat.label}</span>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-sm font-black text-gray-900 tracking-tight uppercase leading-none tabular-nums">{stat.value}</span>
+                                        <span className="text-[9px] font-bold text-gray-300 uppercase italic leading-none">{stat.sub}</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                                {hostel.amenities?.length > 0 ? (
-                                    hostel.amenities.map((amenity, i) => (
-                                        <Badge key={i} variant="outline" className="h-8 px-4 rounded-xl font-bold text-[9px] uppercase tracking-widest border-gray-100 bg-gray-50/50 text-gray-500 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 transition-all cursor-default">
-                                            {amenity}
-                                        </Badge>
-                                    ))
-                                ) : (
-                                    <span className="text-[10px] font-bold text-gray-300 italic">None</span>
-                                )}
+                        ))}
+                    </div>
+                </Card>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                    {/* Main Content */}
+                    <div className="lg:col-span-8 space-y-5">
+
+                        {/* Room Status */}
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2 px-1">
+                                <div className="h-4 w-1 bg-indigo-600 rounded-full" />
+                                <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-900">Room Status</h3>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                {[
+                                    { label: 'Available', value: roomStats.available, color: 'bg-indigo-600', icon: CheckCircle2, sub: 'Ready' },
+                                    { label: 'Occupied', value: roomStats.occupied, color: 'bg-emerald-600', icon: Users, sub: 'Stayers' },
+                                    { label: 'Maintenance', value: roomStats.maintenance, color: 'bg-amber-500', icon: Activity, sub: 'Fixing' }
+                                ].map((node, i) => (
+                                    <Card key={i} className="bg-white border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group overflow-hidden">
+                                        <div className="flex flex-col gap-3">
+                                            <div className="flex items-center justify-between">
+                                                <div className="h-9 w-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-300 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                                    <node.icon className="h-4 w-4" />
+                                                </div>
+                                                <span className="text-xl font-black text-gray-900 tracking-tight">{node.value}</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-gray-900 uppercase tracking-widest leading-none mb-0.5">{node.label}</p>
+                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest italic">{node.sub}</p>
+                                            </div>
+                                            <div className="h-1 w-full bg-gray-50 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full ${node.color} rounded-full`}
+                                                    style={{ width: `${(node.value / (roomStats.total || 1)) * 100}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Card className="bg-white border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group">
+                                <MapPin className="absolute top-4 right-4 h-8 w-8 text-gray-50 transition-colors" />
+                                <div className="space-y-4 relative z-10">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Address</span>
+                                        <p className="text-sm font-bold text-gray-800 leading-tight uppercase">{hostel.address}</p>
+                                    </div>
+                                    <div className="pt-4 border-t border-gray-50 flex items-center gap-2">
+                                        <div className="h-7 w-7 rounded-lg bg-gray-50 flex items-center justify-center">
+                                            <Globe className="h-3.5 w-3.5 text-gray-400" />
+                                        </div>
+                                        <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{hostel.city} Branch</span>
+                                    </div>
+                                </div>
+                            </Card>
+
+                            <Card className="bg-slate-900 rounded-2xl p-5 shadow-xl relative overflow-hidden group">
+                                <div className="space-y-4 relative z-10 flex flex-col h-full justify-between">
+                                    <div className="space-y-2">
+                                        <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">About</span>
+                                        <p className="text-[11px] text-gray-400 font-medium leading-relaxed italic border-l-2 border-indigo-500/30 pl-3">
+                                            "{hostel.description || 'A premium hostel facility managed with high-quality service and security standards.'}"
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-7 w-7 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center">
+                                            <Info className="h-3.5 w-3.5 text-white/30" />
+                                        </div>
+                                        <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Info</p>
+                                    </div>
+                                </div>
+                            </Card>
+                        </div>
+
+                        {/* Amenities */}
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between px-1">
+                                <div className="flex items-center gap-2">
+                                    <div className="h-4 w-1 bg-indigo-600 rounded-full" />
+                                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-900">Amenities</h3>
+                                </div>
+                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{hostel.amenities?.length || 0} Total</span>
+                            </div>
+                            <Card className="bg-white border-gray-100 rounded-2xl p-4 shadow-sm">
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                                    {hostel.amenities?.length > 0 ? hostel.amenities.map((amenity, i) => (
+                                        <div key={i} className="p-3 bg-gray-50/50 rounded-xl border border-gray-50 hover:border-indigo-100 hover:bg-white hover:shadow-sm transition-all text-center group">
+                                            <div className="h-7 w-7 rounded-lg bg-white mx-auto mb-2 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                                                <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
+                                            </div>
+                                            <span className="text-[9px] font-black text-gray-600 uppercase tracking-tighter group-hover:text-indigo-600 truncate block">{amenity}</span>
+                                        </div>
+                                    )) : (
+                                        <div className="col-span-full py-8 text-center text-[10px] font-black text-gray-300 uppercase tracking-widest">No amenities listed</div>
+                                    )}
+                                </div>
+                            </Card>
+                        </div>
+                    </div>
+
+                    {/* Sidebar */}
+                    <div className="lg:col-span-4 space-y-5">
+                        {/* Management Card */}
+                        <Card className="bg-white border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group">
+                            <div className="space-y-5 relative z-10">
+                                <div>
+                                    <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest block mb-1">Management</span>
+                                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">Active Warden</h3>
+                                </div>
+
+                                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                    <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-600 font-black text-base uppercase shrink-0">
+                                        {user?.name?.charAt(0) || 'D'}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Official Warden</p>
+                                        <p className="text-sm font-black text-gray-900 uppercase tracking-tight truncate">{user?.name || 'Administrator'}</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3 px-1">
+                                    {[
+                                        { label: 'Hostel ID', value: hostel.id.slice(-8).toUpperCase(), icon: Hash },
+                                        { label: 'Security', value: 'Live', icon: Activity, color: 'text-emerald-500' },
+                                        { label: 'City', value: hostel.city, icon: Globe }
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
+                                            <div className="flex items-center gap-2 text-gray-400">
+                                                <item.icon className="h-3.5 w-3.5" />
+                                                <span>{item.label}</span>
+                                            </div>
+                                            <span className={item.color || 'text-gray-900'}>{item.value}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <Button
+                                    className="w-full h-10 bg-gray-950 hover:bg-black text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-95"
+                                    onClick={() => setShowInfo(true)}
+                                >
+                                    Check Info
+                                </Button>
                             </div>
                         </Card>
 
-                        {/* Quick Navigation */}
-                        <div className="space-y-3">
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 mb-4 block">Links</h3>
-                            {[
-                                { label: 'Residents', icon: Users, href: '/warden/residents', color: 'bg-indigo-600' },
-                                { label: 'Complaints', icon: Phone, href: '/warden/complaints', color: 'bg-indigo-600' },
-                                { label: 'Profile', icon: Activity, href: '/warden/profile', color: 'bg-indigo-600' }
-                            ].map((action, i) => (
-                                <Link key={i} href={action.href}>
-                                    <div className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between hover:border-indigo-200 hover:shadow-md transition-all group cursor-pointer mb-3 last:mb-0">
-                                        <div className="flex items-center gap-4">
-                                            <div className="h-9 w-9 rounded-xl bg-gray-50 text-gray-400 flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                                                <action.icon className="h-4 w-4" />
+                        {/* Quick Links */}
+                        <div className="space-y-2">
+                            <h3 className="text-[9px] font-black uppercase tracking-widest px-1 text-gray-400">Quick Links</h3>
+                            <div className="grid grid-cols-1 gap-2">
+                                {[
+                                    { title: 'Residents', sub: 'Manage People', icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50', link: '/warden/residents' },
+                                    { title: 'Bookings', sub: 'Room Requests', icon: Zap, color: 'text-indigo-600', bg: 'bg-indigo-50', link: '/warden/bookings' },
+                                    { title: 'Payments', sub: 'Cash Flow', icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50', link: '/warden/payments' },
+                                    { title: 'Complaints', sub: 'Fix Issues', icon: MessageSquare, color: 'text-rose-600', bg: 'bg-rose-50', link: '/warden/complaints' }
+                                ].map((item, i) => (
+                                    <Link href={item.link} key={i}>
+                                        <div className="group bg-white border border-gray-100 rounded-xl p-3.5 flex items-center justify-between hover:shadow-md hover:shadow-indigo-100/50 transition-all cursor-pointer">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`h-9 w-9 rounded-xl ${item.bg} ${item.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform`}>
+                                                    <item.icon className="h-4 w-4" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <h4 className="text-[11px] font-black text-gray-900 uppercase tracking-tight">{item.title}</h4>
+                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{item.sub}</p>
+                                                </div>
                                             </div>
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-600">{action.label}</span>
+                                            <ChevronRight className="h-3.5 w-3.5 text-gray-300 group-hover:text-indigo-600 transition-colors" />
                                         </div>
-                                        <ChevronRight className="h-3.5 w-3.5 text-gray-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
-                                    </div>
-                                </Link>
-                            ))}
+                                    </Link>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
             </main>
+
+            {/* ── Hostel Info Dialog ── */}
+            <Dialog open={showInfo} onOpenChange={setShowInfo}>
+                <DialogContent className="!max-w-2xl p-0 border-none shadow-2xl rounded-2xl overflow-hidden [&>button]:hidden">
+                    {/* Modal Header */}
+                    <div className="bg-gray-950 px-6 py-5 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center">
+                                <Building2 className="h-4 w-4 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-black text-white uppercase tracking-tight">{hostel.name}</h2>
+                                <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-0.5">Hostel Info</p>
+                            </div>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-xl text-white/40 hover:text-white hover:bg-white/10"
+                            onClick={() => setShowInfo(false)}
+                        >
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-4 border-b border-gray-100">
+                        {[
+                            { label: 'Total Rooms', value: roomStats.total, icon: BedDouble, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                            { label: 'Occupancy', value: `${occupancyRate}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                            { label: 'Floors', value: hostel.floors ?? '—', icon: Layers, color: 'text-amber-600', bg: 'bg-amber-50' },
+                            { label: 'Available', value: roomStats.available, icon: CheckCircle2, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        ].map((s, i) => (
+                            <div key={i} className="flex flex-col items-center gap-1.5 py-4 border-r border-gray-100 last:border-r-0">
+                                <div className={`h-8 w-8 rounded-lg ${s.bg} ${s.color} flex items-center justify-center`}>
+                                    <s.icon className="h-3.5 w-3.5" />
+                                </div>
+                                <span className="text-sm font-black text-gray-900 tabular-nums">{s.value}</span>
+                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest text-center">{s.label}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Body */}
+                    <div className="p-6 space-y-4 bg-gray-50/30">
+                        {/* Identity */}
+                        <div className="bg-white rounded-xl border border-gray-100 p-4 grid grid-cols-2 gap-4">
+                            {[
+                                { label: 'Hostel Name', value: hostel.name, icon: Building2 },
+                                { label: 'Type', value: hostel.type, icon: ShieldCheck },
+                                { label: 'City', value: hostel.city, icon: Globe },
+                                { label: 'Phone', value: hostel.phone || '—', icon: Phone },
+                                { label: 'Monthly Rent', value: `PKR ${hostel.montlyrent?.toLocaleString() || '—'}`, icon: CreditCard },
+                                { label: 'Night Rate', value: `PKR ${hostel.pernightrent?.toLocaleString() || '—'}`, icon: CreditCard },
+                                { label: 'Address', value: hostel.address || '—', icon: MapPin },
+                                { label: 'System ID', value: hostel.id.slice(-10).toUpperCase(), icon: Hash },
+                            ].map((f, i) => (
+                                <div key={i} className="flex items-start gap-2.5">
+                                    <div className="h-7 w-7 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 mt-0.5">
+                                        <f.icon className="h-3.5 w-3.5 text-gray-400" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{f.label}</p>
+                                        <p className="text-[11px] font-black text-gray-900 uppercase mt-0.5 truncate">{f.value}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Description */}
+                        {hostel.description && (
+                            <div className="bg-white rounded-xl border border-gray-100 p-4">
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Description</p>
+                                <p className="text-[11px] text-gray-600 leading-relaxed italic">"{hostel.description}"</p>
+                            </div>
+                        )}
+
+                        {/* Amenities */}
+                        {hostel.amenities?.length > 0 && (
+                            <div className="bg-white rounded-xl border border-gray-100 p-4">
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">Amenities ({hostel.amenities.length})</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {hostel.amenities.map((a, i) => (
+                                        <span key={i} className="text-[9px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg uppercase tracking-tighter">
+                                            {a}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Created At */}
+                        {hostel.createdAt && (
+                            <div className="flex items-center gap-2 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                                <Calendar className="h-3 w-3" />
+                                Registered: {format(new Date(hostel.createdAt), 'MMMM dd, yyyy')}
+                            </div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

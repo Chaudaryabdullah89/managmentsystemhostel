@@ -24,11 +24,19 @@ export async function GET(request) {
         const isGlobalSearch = query && (role === 'all' || role === 'GUEST');
 
         if (isGlobalSearch) {
-            // GLOBAL SEARCH: Ignore role and hostelId to find account by query (email/name/etc)
-            // No strict filters here, construction continues at query block below
+            // GLOBAL SEARCH: Used mainly for booking lookups
+            // Wardens can only lookup RESIDENT or GUEST to prevent probing of STAFF/ADMIN accounts
+            if (auth.user.role === 'WARDEN') {
+                where.role = { in: ['RESIDENT', 'GUEST'] };
+            }
         } else {
             // LIST/FILTERED SEARCH: Apply role and security isolation
-            if (role && role !== "all") where.role = role;
+            if (role && role !== "all") {
+                where.role = role;
+            } else if (auth.user.role === 'WARDEN') {
+                // If role = 'all', Warden is limited to Residents/Guests only
+                where.role = { in: ['RESIDENT', 'GUEST'] };
+            }
 
             if (auth.user.role === 'WARDEN') {
                 let wardenHostelId = auth.user.hostelId;
@@ -41,10 +49,9 @@ export async function GET(request) {
                     wardenHostelId = wardenProfile?.hostelId;
                 }
 
-                // Apply isolation: My hostel OR unassigned (null)
+                // Apply strict isolation: ONLY my hostel residents/guests
                 where.OR = [
                     { hostelId: wardenHostelId },
-                    { hostelId: null },
                     { ResidentProfile: { currentHostelId: wardenHostelId } }
                 ];
             } else if (hostelId) {

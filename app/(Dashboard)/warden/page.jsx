@@ -21,7 +21,9 @@ import {
     ClipboardList,
     Activity,
     ShieldCheck,
-    Megaphone
+    Megaphone,
+    Phone,
+    Search
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -104,6 +106,7 @@ const WardenDashboard = () => {
     };
 
     const trends = reportData?.monthlyTrends || [];
+    const hostelData = reportData?.hostelPerformance || [];
     const complaintStats = complaintsData || { total: 0, pending: 0, inProgress: 0, resolved: 0, urgent: 0 };
     const hostelInfo = user?.Hostel_User_hostelIdToHostel;
 
@@ -378,7 +381,7 @@ const WardenDashboard = () => {
                                     { label: 'Residents', icon: Users, href: '/warden/residents', color: 'text-blue-600', bg: 'bg-blue-50' },
                                     { label: 'Notices', icon: Megaphone, href: '/warden/notices', color: 'text-indigo-600', bg: 'bg-indigo-50' },
                                     { label: 'Rooms', icon: Bed, href: '/warden/rooms', color: 'text-amber-600', bg: 'bg-amber-50' },
-                                    { label: 'Hub', icon: History, href: '/warden/services', color: 'text-purple-600', bg: 'bg-purple-50' },
+                                    { label: 'Audit', icon: Search, href: '/warden/audit', color: 'text-purple-600', bg: 'bg-purple-50' },
                                 ].map((item, i) => (
                                     <Link key={i} href={item.href}>
                                         <div className="bg-white border border-gray-100 rounded-2xl p-3 md:p-4 flex flex-col items-center gap-2 md:gap-3 shadow-sm hover:shadow-md hover:border-indigo-600/20 transition-all text-center group h-full justify-center relative">

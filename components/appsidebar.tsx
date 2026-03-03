@@ -68,11 +68,14 @@ const items: Record<string, NavItem[]> = {
         { title: "My Hostel", url: "/warden/hostels", icon: Building2, role: "warden" },
         { title: "Rooms", url: "/warden/rooms", icon: Bed, role: "warden" },
         { title: "Bookings", url: "/warden/bookings", icon: Calendar, role: "warden" },
+
         { title: "Payments", url: "/warden/payments", icon: CreditCard, role: "warden" },
         // { title: "Staff Salaries", url: "/warden/salaries", icon: DollarSign, role: "warden" },
         { title: "My Salary", url: "/warden/my-salary", icon: Wallet, role: "warden" },
         { title: "Residents", url: "/warden/residents", icon: Users, role: "warden" },
         { title: "Complaints", url: "/warden/complaints", icon: MessageSquare, role: "warden" },
+        { title: "Audit & Search", url: "/warden/audit", icon: Search, role: "warden" },
+
         { title: "Notice Board", url: "/warden/notices", icon: Megaphone, role: "warden" },
         { title: "Expenses", url: "/warden/expenses", icon: DollarSign, role: "warden" },
         { title: "Mess Menu", url: "/warden/mess", icon: Utensils, role: "warden" },
@@ -163,7 +166,12 @@ export function AppSidebar() {
             <SidebarContent className="px-3 py-3 overflow-y-auto">
                 <nav className="space-y-0.5">
                     {navItems.map((item) => {
-                        const isActive = pathname === item.url || pathname.startsWith(item.url + "/")
+                        // Use exact match for root dashboard URLs to prevent them
+                        // matching every nested page (e.g. /warden matching /warden/hostels)
+                        const isDashboardItem = item.icon === LayoutDashboard || item.url === "/warden"
+                        const isActive = isDashboardItem
+                            ? pathname === item.url
+                            : pathname === item.url || pathname.startsWith(item.url + "/")
                         const Icon = item.icon
 
                         return (

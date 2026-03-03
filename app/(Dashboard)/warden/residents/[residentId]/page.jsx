@@ -1,631 +1,640 @@
 "use client"
-import React, { useState, use, useEffect, Suspense } from 'react'
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import React, { useState, useMemo, useEffect, Suspense } from "react";
+import Link from "next/link";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
-    ChevronRight,
-    Info,
-    ArrowLeft,
-    User,
-    Phone,
-    Mail,
-    CreditCard,
-    Calendar,
-    Home,
-    FileText,
-    ArrowUpRight,
-    MapPin,
-    Building2,
-    DollarSign,
-    AlertCircle,
-    Wrench,
-    CheckCircle2,
-    Clock,
-    Download,
-    Edit,
-    RefreshCw,
-    ShieldCheck,
-    Contact2,
-    History,
-    Zap,
-    Plus,
-    Receipt,
-    ExternalLink,
-    Eye,
-    Activity,
-    Trash2,
-    UserX,
-    Loader2
-} from "lucide-react"
-import Link from 'next/link'
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+    User, Mail, Phone, MapPin, Building2, Calendar, Shield, CreditCard,
+    TrendingUp, AlertCircle, Clock, CheckCircle2, Receipt, MoreVertical,
+    ChevronLeft, ShieldCheck, Eye, Settings2, Trash2, ChevronRight,
+    Search, Filter, Activity, Wallet, Globe, ExternalLink, Power,
+    Briefcase, Zap, Download, History, MessageSquare, Fingerprint,
+    Info, UserCheck, ArrowUpRight, PhoneCall, Printer, Loader2,
+    RefreshCw, UserX, Edit, Home, ArrowRight, FileText
+} from "lucide-react";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
-import { useUserDetailedProfile } from "@/hooks/useusers"
-import { useUpdateBookingStatus } from "@/hooks/useBooking"
-import { useCreateComplaint } from "@/hooks/usecomplaints"
-import { useCreatePayment } from "@/hooks/usePayment"
-import { format, isValid } from "date-fns"
-import { toast } from "sonner"
-import { generateInvoice } from "@/lib/utils/invoice-generator"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+    DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+    DropdownMenuSeparator, DropdownMenuLabel
+} from "@/components/ui/dropdown-menu";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-    DialogFooter,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+    Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+    DialogDescription
+} from "@/components/ui/dialog";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-import useAuthStore from '@/hooks/Authstate'
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import {
+    Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+} from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+import { useUserById, useUserDetailedProfile } from "@/hooks/useusers";
+import { useResetPassword, useDeleteUser, useUpdateAnyUser } from "@/hooks/useUsers";
+import { useUpdateBookingStatus } from "@/hooks/useBooking";
+import { useCreateComplaint } from "@/hooks/usecomplaints";
+import { useCreatePayment } from "@/hooks/usePayment";
+import useAuthStore from "@/hooks/Authstate";
+import { format, isValid } from "date-fns";
+import { toast } from "sonner";
+import Loader from "@/components/ui/Loader";
+import ActivityFeed from "@/components/admin/ActivityFeed";
+import { generateInvoice } from "@/lib/utils/invoice-generator";
+
+const DetailItem = ({ icon: Icon, label, value, color = "text-indigo-600" }) => (
+    <div className="flex items-start gap-4">
+        <div className={`h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 ${color}`}>
+            <Icon className="h-4 w-4" />
+        </div>
+        <div className="flex flex-col min-w-0">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">{label}</span>
+            <span className="text-sm font-bold text-gray-900 truncate tracking-tight">{value || "Not Provided"}</span>
+        </div>
+    </div>
+);
 
 const ResidentDetailContent = () => {
-    const params = useParams()
-    const router = useRouter()
-    const searchParams = useSearchParams()
-    const defaultTab = searchParams.get('tab') || 'payments'
-    const { residentId } = params || {}
-    const { user: currentWarden } = useAuthStore()
-    const { data: resident, isLoading, isFetching, refetch } = useUserDetailedProfile(residentId)
-    const updateBookingStatus = useUpdateBookingStatus()
-    const createComplaint = useCreateComplaint()
-    const createPayment = useCreatePayment()
+    const { residentId } = useParams();
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const { user: currentWarden } = useAuthStore();
 
-    // Strict Hostel Access Control
-    useEffect(() => {
-        if (resident && currentWarden?.hostelId && currentWarden.role === 'WARDEN') {
-            const residentHostelId = resident.hostelId || resident.ResidentProfile?.currentHostelId || resident.bookings?.find(b => b.status === 'CHECKED_IN' || b.status === 'CONFIRMED')?.Room?.hostelId;
-            if (residentHostelId && residentHostelId !== currentWarden.hostelId) {
-                toast.error("Security Alert: Data boundary breach detected.");
-                router.push('/warden/residents');
-            }
-        }
-    }, [resident, currentWarden, router]);
+    const [activeTab, setActiveTab] = useState("overview");
+    const { data: user, isLoading: userLoading, refetch: refetchUser } = useUserById(residentId);
+    const { data: userDetails, isLoading: detailsLoading, refetch: refetchDetails } = useUserDetailedProfile(residentId);
 
-    const [isCheckingOut, setIsCheckingOut] = useState(false)
-    const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false)
-    const [isGrievanceDialogOpen, setIsGrievanceDialogOpen] = useState(false)
+    const updateAnyUser = useUpdateAnyUser();
+    const resetPassword = useResetPassword();
+    const deleteUser = useDeleteUser();
+    const updateBookingStatus = useUpdateBookingStatus();
+    const createComplaint = useCreateComplaint();
+    const createPayment = useCreatePayment();
 
-    // Handle Quick Actions from URL
-    useEffect(() => {
-        const action = searchParams.get('action')
-        if (action === 'log-grievance') {
-            setIsGrievanceDialogOpen(true)
-        } else if (action === 'issue-invoice') {
-            setIsInvoiceDialogOpen(true)
-        }
-    }, [searchParams])
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isAccessDialogOpen, setIsAccessDialogOpen] = useState(false);
+    const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
+    const [isGrievanceDialogOpen, setIsGrievanceDialogOpen] = useState(false);
+
+    const [editData, setEditData] = useState(null);
+    const [newPass, setNewPass] = useState("hostel123");
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
 
     // Invoice Form State
     const [invoiceForm, setInvoiceForm] = useState({
-        amount: "",
-        type: "RENT",
-        dueDate: "",
-        notes: ""
-    })
+        amount: "", type: "RENT", dueDate: "", notes: ""
+    });
 
     // Grievance Form State
     const [grievanceForm, setGrievanceForm] = useState({
-        title: "",
-        category: "GENERAL",
-        priority: "MEDIUM",
-        description: ""
-    })
+        title: "", category: "GENERAL", priority: "MEDIUM", description: ""
+    });
 
-    const safeFormat = (date, formatStr, fallback = 'N/A') => {
-        if (!date) return fallback;
-        const d = new Date(date);
-        if (!isValid(d)) return fallback;
-        return format(d, formatStr);
-    }
+    // Security check - Warden can only view residents of their hostel
+    useEffect(() => {
+        if (user && currentWarden?.role === 'WARDEN' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+            const userHostelId = user.hostelId || user.ResidentProfile?.currentHostelId;
+            if (userHostelId && userHostelId !== currentWarden.hostelId) {
+                toast.error("Security Alert: Access restricted to your hostel residents.");
+                router.push('/warden/residents');
+            }
+        }
+    }, [user, currentWarden, router]);
 
-    const getStatusTheme = (status) => {
-        const s = status?.toUpperCase()
-        if (s === 'ACTIVE' || s === 'COMPLETED' || s === 'RESOLVED' || s === 'PAID')
-            return "bg-green-50 text-green-700 border-green-100"
-        if (s === 'IN_PROGRESS' || s === 'CONFIRMED' || s === 'CHECKED_IN')
-            return "bg-blue-50 text-blue-700 border-blue-100"
-        if (s === 'PENDING' || s === 'PARTIAL')
-            return "bg-yellow-50 text-yellow-700 border-yellow-100"
-        if (s === 'CANCELLED' || s === 'OVERDUE' || s === 'REJECTED')
-            return "bg-red-50 text-red-700 border-red-100"
-        return "bg-gray-50 text-gray-700 border-gray-100"
-    }
+    const stats = useMemo(() => {
+        if (!userDetails) return { totalPaid: 0, compl: 0, activeStay: false };
+        const activeBooking = userDetails.bookings?.find(b => b.status === 'CONFIRMED' || b.status === 'CHECKED_IN');
+        return {
+            totalPaid: userDetails.payments?.reduce((acc, curr) => acc + (curr.status === 'PAID' ? curr.amount : 0), 0) || 0,
+            compl: userDetails.complaints?.length || 0,
+            activeStay: !!activeBooking,
+            activeBookingId: activeBooking?.id
+        };
+    }, [userDetails]);
 
-    // Unified Booking Resolution: Priority given to LIVE/CONFIRMED nodes
-    const activeBooking = resident?.bookings?.find(b => b.status === 'CONFIRMED' || b.status === 'CHECKED_IN') || resident?.bookings?.[0];
-    const currentRoom = activeBooking?.room;
+    const activityFeed = useMemo(() => {
+        const events = [];
+        if (userDetails?.payments) {
+            userDetails.payments.forEach(p => events.push({
+                type: 'payment',
+                title: 'Payment Recorded',
+                description: `Payment of PKR ${p.amount} received`,
+                date: new Date(p.date || p.createdAt || Date.now()),
+                status: p.status,
+                icon: CreditCard,
+                color: 'text-emerald-600',
+                bgColor: 'bg-emerald-50'
+            }));
+        }
+        if (userDetails?.complaints) {
+            userDetails.complaints.forEach(c => events.push({
+                type: 'complaint',
+                title: 'Complaint Filed',
+                description: c.title,
+                date: new Date(c.createdAt || Date.now()),
+                status: c.status,
+                icon: AlertCircle,
+                color: 'text-amber-600',
+                bgColor: 'bg-amber-50'
+            }));
+        }
+        if (userDetails?.bookings) {
+            userDetails.bookings.forEach(b => events.push({
+                type: 'booking',
+                title: 'Booking Event',
+                description: `Room ${b.room?.roomNumber || 'N/A'} Booking`,
+                date: new Date(b.createdAt || Date.now()),
+                status: b.status,
+                icon: Building2,
+                color: 'text-indigo-600',
+                bgColor: 'bg-indigo-50'
+            }));
+        }
+        return events.sort((a, b) => b.date - a.date).slice(0, 10);
+    }, [userDetails]);
+
+    const handleToggleStatus = async () => {
+        try {
+            await updateAnyUser.mutateAsync({
+                id: residentId,
+                data: { isActive: !user.isActive }
+            });
+            toast.success(`Resident status updated`);
+            refetchUser();
+        } catch (error) { }
+    };
+
+    const handleEditIdentity = async () => {
+        try {
+            await updateAnyUser.mutateAsync({
+                id: residentId,
+                data: editData
+            });
+            toast.success("Identity profile updated");
+            setIsEditDialogOpen(false);
+            refetchUser();
+        } catch (error) { }
+    };
+
+    const handleResetKey = async () => {
+        try {
+            await resetPassword.mutateAsync({
+                id: residentId,
+                newPassword: newPass
+            });
+            toast.success("Security access updated");
+            setIsAccessDialogOpen(false);
+        } catch (error) { }
+    };
 
     const handleGenerateInvoice = async () => {
-        if (!activeBooking) return toast.error("No active booking found");
-        if (!invoiceForm.amount || !invoiceForm.dueDate) return toast.error("Please fill all required fields");
+        if (!stats.activeBookingId) return toast.error("No active stay session found");
+        if (!invoiceForm.amount || !invoiceForm.dueDate) return toast.error("Required fields missing");
 
         try {
             await createPayment.mutateAsync({
                 userId: residentId,
-                bookingId: activeBooking.id,
-                amount: invoiceForm.amount,
+                bookingId: stats.activeBookingId,
+                amount: Number(invoiceForm.amount),
                 dueDate: invoiceForm.dueDate,
                 type: invoiceForm.type,
                 notes: invoiceForm.notes,
                 status: "PENDING"
             });
+            toast.success("Invoice created");
             setIsInvoiceDialogOpen(false);
             setInvoiceForm({ amount: "", type: "RENT", dueDate: "", notes: "" });
-            refetch();
-        } catch (error) {
-            console.error("Invoice generation failed:", error);
-        }
-    }
+            refetchDetails();
+        } catch (error) { }
+    };
 
     const handleReportGrievance = async () => {
-        if (!grievanceForm.title || !grievanceForm.description) return toast.error("Please fill all required fields");
-
-        const effectiveHostelId = activeBooking?.room?.Hostel?.id || resident?.residentProfile?.currentHostelId || currentWarden?.hostelId;
+        if (!grievanceForm.title || !grievanceForm.description) return toast.error("Evidence details missing");
+        const hostelId = user?.hostelId || currentWarden?.hostelId;
 
         try {
             await createComplaint.mutateAsync({
                 userId: residentId,
-                hostelId: effectiveHostelId,
-                roomNumber: currentRoom?.roomNumber || "N/A",
+                hostelId: hostelId,
+                roomNumber: userDetails?.bookings?.find(b => b.status === 'CHECKED_IN')?.room?.roomNumber || "N/A",
                 title: grievanceForm.title,
                 category: grievanceForm.category,
                 priority: grievanceForm.priority,
                 description: grievanceForm.description
             });
+            toast.success("Complaint recorded");
             setIsGrievanceDialogOpen(false);
             setGrievanceForm({ title: "", category: "GENERAL", priority: "MEDIUM", description: "" });
-            refetch();
-        } catch (error) {
-            console.error("Grievance logging failed:", error);
-        }
-    }
+            refetchDetails();
+        } catch (error) { }
+    };
 
     const handleCheckout = async () => {
-        if (!activeBooking) {
-            toast.error("No active booking identified for checkout.")
-            return;
-        }
-
-        if (confirm(`Are you sure you want to checkout ${resident.name}? This will mark the room as vacant.`)) {
-            setIsCheckingOut(true)
+        if (!stats.activeBookingId) return toast.error("No active stay session identified");
+        if (confirm(`Check out ${user.name}? This will mark the room as available.`)) {
+            setIsCheckingOut(true);
             try {
                 await updateBookingStatus.mutateAsync({
-                    id: activeBooking.id,
+                    id: stats.activeBookingId,
                     status: 'COMPLETED'
-                })
-                toast.success("Resident checked out successfully")
-                refetch()
-            } catch (error) {
-                console.error("Checkout failed:", error)
-            } finally {
-                setIsCheckingOut(false)
+                });
+                toast.success("Checked out successfully");
+                refetchDetails();
+            } catch (error) { } finally {
+                setIsCheckingOut(false);
             }
         }
-    }
+    };
 
-    if (isLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white">
-            <div className="flex flex-col items-center gap-4">
-                <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
-                <p className="text-sm font-medium text-gray-500">Loading resident details...</p>
+    const handleArchiveRecord = async () => {
+        if (confirm("Permanently delete this resident? This cannot be undone.")) {
+            try {
+                await deleteUser.mutateAsync(residentId);
+                toast.success("Record archived");
+                router.push('/warden/residents');
+            } catch (error) { }
+        }
+    };
+
+    if (userLoading || detailsLoading) return (
+        <Loader label="Loading Profile..." subLabel="Getting resident data" icon={Fingerprint} fullScreen={true} />
+    );
+
+    if (!user) return (
+        <div className="flex h-screen items-center justify-center bg-white font-sans">
+            <div className="text-center space-y-6">
+                <div className="h-20 w-20 bg-gray-50 text-gray-400 rounded-[2rem] flex items-center justify-center mx-auto border border-gray-100 shadow-sm">
+                    <UserX className="h-10 w-10" />
+                </div>
+                <div className="space-y-1">
+                    <h1 className="text-xl font-bold text-gray-900 uppercase tracking-tight">Resident Not Found</h1>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">The resident was not found in our records.</p>
+                </div>
+                <Button onClick={() => router.back()} variant="outline" className="h-11 px-8 rounded-xl font-bold text-[10px] uppercase tracking-wider">
+                    Go Back
+                </Button>
             </div>
         </div>
-    )
-
-    if (!resident) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <div className="text-center">
-                <h2 className="text-xl font-bold text-gray-900">Resident not found</h2>
-                <Button onClick={() => router.back()} className="mt-4">Back to List</Button>
-            </div>
-        </div>
-    )
+    );
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20">
+        <div className="min-h-screen bg-gray-50/30 pb-20 font-sans tracking-tight">
             {/* Header */}
-            <header className="bg-white border-b sticky top-0 z-30 h-16">
+            <header className="bg-white border-b sticky top-0 z-50 h-16 shadow-sm">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9" onClick={() => router.back()}>
-                            <ArrowLeft className="h-4 w-4" />
+                        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9" onClick={() => router.back()}>
+                            <ChevronLeft className="h-5 w-5 text-gray-400" />
                         </Button>
-                        <div className="h-6 w-px bg-gray-200" />
-                        <div>
-                            <h1 className="text-lg font-bold text-gray-900 leading-none uppercase tracking-tight">{resident.name}</h1>
-                            <p className="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest flex items-center gap-2">
-                                <span className="h-1 w-1 rounded-full bg-indigo-500" />
-                                Resident ID: {resident.id?.slice(-8).toUpperCase()} • Warden Access
-                            </p>
+                        <div className="h-8 w-px bg-gray-100" />
+                        <div className="flex flex-col">
+                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase leading-none">{user.name}</h1>
+                            <div className="flex items-center gap-2 mt-1">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600">{user.role}</span>
+                                {user.regNumber && (
+                                    <>
+                                        <div className="h-1 w-1 rounded-full bg-gray-300" />
+                                        <span className="text-[9px] font-black tracking-widest text-blue-600 bg-blue-50 px-2 py-0.5 rounded uppercase">REG: {user.regNumber}</span>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         <Button
                             variant="outline"
-                            className="h-9 px-4 rounded-xl border-gray-200 font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50"
-                            onClick={() => refetch()}
-                            disabled={isFetching}
+                            onClick={() => { refetchUser(); refetchDetails(); }}
+                            className="h-9 px-4 rounded-xl border-gray-200 font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-gray-50"
                         >
-                            <RefreshCw className={`h-3.5 w-3.5 mr-2 text-gray-400 ${isFetching ? 'animate-spin' : ''}`} />
-                            Refresh
+                            <RefreshCw className="h-3.5 w-3.5 mr-2" /> Refresh
                         </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95">
+                                    <Settings2 className="h-3.5 w-3.5 mr-2" /> Actions
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-2xl border-gray-100 bg-white">
+                                <DropdownMenuLabel className="text-[9px] font-black uppercase text-gray-400 tracking-widest px-3 py-2">Warden Menu</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => { setEditData(user); setIsEditDialogOpen(true); }} className="rounded-xl px-4 py-3 font-bold text-[10px] uppercase tracking-widest gap-3 focus:bg-slate-50 cursor-pointer">
+                                    <Edit className="h-4 w-4 text-indigo-600" /> Edit Profile
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsAccessDialogOpen(true)} className="rounded-xl px-4 py-3 font-bold text-[10px] uppercase tracking-widest gap-3 focus:bg-slate-50 cursor-pointer">
+                                    <Zap className="h-4 w-4 text-indigo-600" /> Reset Pin
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleToggleStatus} className="rounded-xl px-4 py-3 font-bold text-[10px] uppercase tracking-widest gap-3 focus:bg-slate-50 cursor-pointer text-amber-600">
+                                    <Power className="h-4 w-4" /> {user.isActive ? 'Suspend access' : 'Restore access'}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator className="my-2 bg-slate-100" />
+                                <DropdownMenuItem onClick={handleArchiveRecord} className="rounded-xl px-4 py-3 font-bold text-[10px] uppercase tracking-widest gap-3 focus:bg-rose-50 text-rose-600 cursor-pointer">
+                                    <Trash2 className="h-4 w-4" /> Delete Profile
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-[1600px] mx-auto px-6 py-8">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Left Column: Basic Info */}
-                    <div className="lg:col-span-4 space-y-6">
-                        <Card className="rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
-                            <CardContent className="p-10 flex flex-col items-center text-center">
-                                <Avatar className="h-32 w-32 border-4 border-white shadow-xl mb-6">
-                                    <AvatarImage src={resident.image} />
-                                    <AvatarFallback className="text-3xl font-bold bg-indigo-50 text-indigo-600">
-                                        {resident.name?.split(' ').map(n => n[0]).join('')}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <h2 className="text-xl font-bold text-gray-900 uppercase tracking-tight">{resident.name}</h2>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-8">{resident.email}</p>
+            <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
+                {/* Metrics */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                        { label: 'Payments', value: `PKR ${stats.totalPaid.toLocaleString()}`, icon: Wallet, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                        { label: 'Complaints', value: stats.compl, icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50' },
+                        { label: 'Stay Status', value: stats.activeStay ? 'Checked-In' : 'No Stay', icon: CheckCircle2, color: stats.activeStay ? 'text-emerald-600' : 'text-gray-400', bg: stats.activeStay ? 'bg-emerald-50' : 'bg-gray-50' },
+                        { label: 'Room No', value: userDetails?.bookings?.find(b => b.status === 'CHECKED_IN')?.room?.roomNumber ? `RM-${userDetails.bookings.find(b => b.status === 'CHECKED_IN').room.roomNumber}` : 'N/A', icon: Home, color: 'text-pink-600', bg: 'bg-pink-50' }
+                    ].map((stat, i) => (
+                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+                            <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
+                                <stat.icon className="h-5 w-5" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
+                                <span className="text-lg font-black text-gray-900 tracking-tight uppercase">{stat.value}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
 
-                                <div className="w-full space-y-4">
-                                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50/50 border border-gray-100">
-                                        <div className="h-9 w-9 rounded-xl bg-white flex items-center justify-center border border-gray-100 text-indigo-600">
-                                            <Phone className="h-4 w-4" />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Contact</p>
-                                            <p className="text-xs font-bold text-gray-900">{resident.phone || 'N/A'}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50/50 border border-gray-100">
-                                        <div className="h-9 w-9 rounded-xl bg-white flex items-center justify-center border border-gray-100 text-indigo-600">
-                                            <MapPin className="h-4 w-4" />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Base Address</p>
-                                            <p className="text-xs font-bold text-gray-900 line-clamp-1">{resident.address || 'N/A'}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50/50 border border-gray-100">
-                                        <div className="h-9 w-9 rounded-xl bg-white flex items-center justify-center border border-gray-100 text-indigo-600">
-                                            <CreditCard className="h-4 w-4" />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Government ID</p>
-                                            <p className="text-xs font-bold text-gray-900">CNIC: {resident.cnic || 'N/A'}</p>
-                                        </div>
-                                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Profile */}
+                    <div className="lg:col-span-4 space-y-6">
+                        <Card className="rounded-[2.5rem] border-none shadow-xl shadow-gray-200/40 bg-white overflow-hidden">
+                            <div className="p-8 space-y-8">
+                                <div className="flex flex-col items-center">
+                                    <Avatar className="h-32 w-32 border-4 border-white shadow-2xl mb-6">
+                                        <AvatarImage src={user.image} />
+                                        <AvatarFallback className="text-3xl font-black bg-indigo-50 text-indigo-600 uppercase">
+                                            {user.name?.charAt(0)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight text-center leading-none">{user.name}</h2>
+                                    <p className="text-[10px] font-bold uppercase text-gray-400 tracking-widest mt-2">{user.email}</p>
+                                    {user.regNumber && (
+                                        <Badge className="mt-4 bg-indigo-600 text-white border-none text-[10px] font-black px-6 py-2 shadow-lg shadow-indigo-100 uppercase tracking-widest">
+                                            {user.regNumber}
+                                        </Badge>
+                                    )}
                                 </div>
-                            </CardContent>
+
+                                <div className="space-y-6 pt-6 border-t border-gray-50">
+                                    <DetailItem icon={Phone} label="Phone Number" value={user.phone} />
+                                    <DetailItem icon={Fingerprint} label="CNIC Number" value={user.cnic} />
+                                    <DetailItem icon={Calendar} label="Join Date" value={user.createdAt ? format(new Date(user.createdAt), 'MMM dd, yyyy') : '—'} />
+                                    <DetailItem icon={MapPin} label="Address" value={user.address} />
+                                </div>
+
+                                {user.ResidentProfile && (
+                                    <div className="p-6 bg-gray-50/50 rounded-3xl border border-gray-100 space-y-4">
+                                        <div className="flex items-center gap-3">
+                                            <Shield className="h-4 w-4 text-emerald-600" />
+                                            <span className="text-[9px] font-black uppercase text-gray-900 tracking-widest">Emergency Contact</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-3">
+                                            <div className="flex flex-col">
+                                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Guardian Name</span>
+                                                <span className="text-xs font-bold text-gray-700 uppercase">{user.ResidentProfile.guardianName}</span>
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Emergency Number</span>
+                                                <span className="text-xs font-bold text-gray-700">{user.ResidentProfile.emergencyContact}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </Card>
 
-                        <Card className="rounded-[2.5rem] border-none shadow-sm bg-white overflow-hidden">
-                            <CardHeader className="bg-gray-50/50 p-6 border-b border-gray-100">
-                                <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-gray-400 flex items-center gap-2">
-                                    <Zap className="h-3 w-3 text-indigo-600" /> Warden Controls
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-6 space-y-2">
-                                <Button
-                                    variant="outline"
-                                    className="w-full h-12 justify-between px-6 rounded-2xl border-gray-100 font-bold text-[10px] uppercase tracking-widest group"
-                                    onClick={() => activeBooking ? router.push(`/warden/bookings/${activeBooking.id}/payments`) : toast.error("No active booking found")}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <DollarSign className="h-4 w-4 text-emerald-600" />
-                                        <span>Financial History</span>
-                                    </div>
-                                    <ChevronRight className="h-3 w-3 text-gray-300 group-hover:text-indigo-600" />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="w-full h-12 justify-between px-6 rounded-2xl border-gray-100 font-bold text-[10px] uppercase tracking-widest group"
-                                    onClick={() => setIsInvoiceDialogOpen(true)}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Receipt className="h-4 w-4 text-indigo-600" />
-                                        <span>Issue Invoice</span>
-                                    </div>
-                                    <ChevronRight className="h-3 w-3 text-gray-300 group-hover:text-indigo-600" />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    className="w-full h-12 justify-between px-6 rounded-2xl border-gray-100 font-bold text-[10px] uppercase tracking-widest text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                                    onClick={handleCheckout}
-                                    disabled={isCheckingOut || !activeBooking}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        {isCheckingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserX className="h-4 w-4" />}
-                                        <span>Checkout Protocol</span>
-                                    </div>
-                                    <ChevronRight className="h-3 w-3 text-rose-300" />
-                                </Button>
-                            </CardContent>
+                        {/* Controls */}
+                        <Card className="rounded-[2.5rem] p-8 border-none shadow-sm bg-white overflow-hidden space-y-4">
+                            <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] mb-4">Warden Menu</h3>
+                            <Button
+                                variant="outline"
+                                className="w-full h-12 justify-between px-6 rounded-2xl border-gray-100 font-bold text-[10px] uppercase tracking-widest group"
+                                onClick={() => setIsInvoiceDialogOpen(true)}
+                                disabled={!stats.activeStay}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Receipt className="h-4 w-4 text-indigo-600" />
+                                    <span>Create Bill</span>
+                                </div>
+                                <ChevronRight className="h-3 w-3 text-gray-300 group-hover:text-indigo-600" />
+                            </Button>
+
+                            <Button
+                                variant="outline"
+                                className="w-full h-12 justify-between px-6 rounded-2xl border-rose-50 font-bold text-[10px] uppercase tracking-widest text-rose-600 hover:bg-rose-50"
+                                onClick={handleCheckout}
+                                disabled={isCheckingOut || !stats.activeStay}
+                            >
+                                <div className="flex items-center gap-3">
+                                    {isCheckingOut ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserX className="h-4 w-4" />}
+                                    <span>Checkout Resident</span>
+                                </div>
+                                <ArrowRight className="h-3 w-3" />
+                            </Button>
                         </Card>
                     </div>
 
-                    {/* Right Column: Detailed Info & History */}
+                    {/* Data Tabs */}
                     <div className="lg:col-span-8 space-y-8">
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <Card className="rounded-3xl border border-gray-100 shadow-sm p-6 bg-white group cursor-pointer hover:border-indigo-600/20 transition-all" onClick={() => currentRoom?.id && router.push(`/warden/rooms/${currentRoom.id}`)}>
-                                <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-inner">
-                                        <Home className="h-5 w-5" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Unit Registry</span>
-                                        <span className="text-base font-bold text-gray-900 uppercase">
-                                            {currentRoom?.roomNumber ? `RM-${currentRoom.roomNumber}` : 'NOT ASSIGNED'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </Card>
-                            <Card className="rounded-3xl border border-gray-100 shadow-sm p-6 bg-white">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner">
-                                        <DollarSign className="h-5 w-5" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Fiscal Yield</span>
-                                        <span className="text-base font-bold text-gray-900 uppercase">PKR {resident.payments?.reduce((acc, p) => acc + (p.status === 'PAID' ? p.amount : 0), 0).toLocaleString()}</span>
-                                    </div>
-                                </div>
-                            </Card>
-                            <Card className="rounded-3xl border border-gray-100 shadow-sm p-6 bg-white">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-inner">
-                                        <AlertCircle className="h-5 w-5" />
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Open Cases</span>
-                                        <span className="text-base font-bold text-gray-900 uppercase">{resident.complaints?.filter(c => c.status !== 'RESOLVED').length || 0} ACTIVE</span>
-                                    </div>
-                                </div>
-                            </Card>
-                        </div>
-
-                        {/* Tabs content */}
-                        <Tabs defaultValue={defaultTab} className="w-full">
-                            <TabsList className="bg-gray-100/50 p-1.5 rounded-2xl h-14 w-full justify-start gap-2 mb-8 border border-gray-100">
-                                <TabsTrigger value="payments" className="rounded-xl px-8 font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm">Payments</TabsTrigger>
-                                <TabsTrigger value="complaints" className="rounded-xl px-8 font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm">Complaints</TabsTrigger>
-                                <TabsTrigger value="profileplus" className="rounded-xl px-8 font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm">Advanced Profile</TabsTrigger>
+                        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+                            <TabsList className="bg-white border border-gray-100 p-1.5 rounded-2xl h-14 shadow-sm inline-flex">
+                                <TabsTrigger value="overview" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Overview</TabsTrigger>
+                                <TabsTrigger value="payments" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Payments</TabsTrigger>
+                                <TabsTrigger value="history" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Complaints</TabsTrigger>
+                                <TabsTrigger value="profile-plus" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Full Profile</TabsTrigger>
                             </TabsList>
 
-                            <TabsContent value="payments" className="mt-0">
-                                <Card className="rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
-                                    <div className="p-8 border-b border-gray-50 flex justify-between items-center">
-                                        <div>
-                                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Financial Ledger</h3>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Authorized Transaction Stream</p>
-                                        </div>
-                                    </div>
-                                    <div className="overflow-x-auto">
-                                        <Table>
-                                            <TableHeader className="bg-gray-50/50">
-                                                <TableRow className="border-gray-50">
-                                                    <TableHead className="text-[9px] font-bold uppercase tracking-widest py-6 px-8 text-gray-400">Date Logged</TableHead>
-                                                    <TableHead className="text-[9px] font-bold uppercase tracking-widest py-6 px-8 text-gray-400">Node Class</TableHead>
-                                                    <TableHead className="text-[9px] font-bold uppercase tracking-widest py-6 px-8 text-gray-400">Amount</TableHead>
-                                                    <TableHead className="text-[9px] font-bold uppercase tracking-widest py-6 px-8 text-gray-400">Status</TableHead>
-                                                    <TableHead className="text-[9px] font-bold uppercase tracking-widest py-6 px-8 text-gray-400 text-right">Actions</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {resident.payments?.length > 0 ? (
-                                                    resident.payments.map((p) => (
-                                                        <TableRow key={p.id} className="hover:bg-gray-50/50 transition-colors border-gray-50 group">
-                                                            <TableCell className="py-6 px-8">
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-xs font-bold text-gray-900 uppercase">{safeFormat(p.date, 'MMM dd, yyyy')}</span>
-                                                                    <span className="text-[9px] font-medium text-gray-400">{safeFormat(p.date, 'HH:mm')}</span>
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell className="py-6 px-8">
-                                                                <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-widest bg-gray-50/50 px-3 py-1 rounded-lg">
-                                                                    {p.type}
-                                                                </Badge>
-                                                            </TableCell>
-                                                            <TableCell className="py-6 px-8 font-bold text-sm text-gray-900">
-                                                                PKR {p.amount.toLocaleString()}
-                                                            </TableCell>
-                                                            <TableCell className="py-6 px-8">
-                                                                <Badge className={`${getStatusTheme(p.status)} border-none rounded-full px-3 py-1 text-[8px] font-bold uppercase tracking-widest shadow-sm`}>
-                                                                    {p.status}
-                                                                </Badge>
-                                                            </TableCell>
-                                                            <TableCell className="py-6 px-8 text-right">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="icon"
-                                                                    className="h-9 w-9 rounded-xl hover:bg-white border border-transparent hover:border-gray-100"
-                                                                    onClick={() => {
-                                                                        const paymentContext = resident.bookings?.find(b => b.id === p.bookingId) || activeBooking;
-                                                                        if (!paymentContext) return toast.error("Historical booking context missing");
-                                                                        generateInvoice(p, { ...paymentContext, User: resident });
-                                                                        toast.success("Invoice generated successfully");
-                                                                    }}
-                                                                >
-                                                                    <Download className="h-4 w-4 text-gray-400" />
-                                                                </Button>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))
-                                                ) : (
-                                                    <TableRow>
-                                                        <TableCell colSpan={5} className="py-20 text-center">
-                                                            <History className="h-12 w-12 text-gray-100 mx-auto mb-4" />
-                                                            <p className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.2em]">Zero Balance Recorded</p>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                )}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                </Card>
-                            </TabsContent>
-
-                            <TabsContent value="complaints" className="mt-0">
-                                <Card className="rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
-                                    <div className="p-8 border-b border-gray-50 flex justify-between items-center">
-                                        <div>
-                                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Grievance registry</h3>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Maintenance Node History</p>
-                                        </div>
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="h-11 px-6 rounded-xl border-gray-100 font-bold text-[10px] uppercase tracking-widest hover:bg-rose-50 hover:text-rose-600 transition-all"
-                                            onClick={() => setIsGrievanceDialogOpen(true)}
-                                        >
-                                            <Plus className="h-4 w-4 mr-2" />
-                                            Report Case
-                                        </Button>
-                                    </div>
-                                    <div className="overflow-x-auto">
-                                        <Table>
-                                            <TableHeader className="bg-gray-50/50">
-                                                <TableRow className="border-gray-50">
-                                                    <TableHead className="text-[9px] font-bold uppercase tracking-widest py-6 px-8 text-gray-400">Subject File</TableHead>
-                                                    <TableHead className="text-[9px] font-bold uppercase tracking-widest py-6 px-8 text-gray-400">Class</TableHead>
-                                                    <TableHead className="text-[9px] font-bold uppercase tracking-widest py-6 px-8 text-gray-400">Priority</TableHead>
-                                                    <TableHead className="text-[9px] font-bold uppercase tracking-widest py-6 px-8 text-gray-400">Phase</TableHead>
-                                                    <TableHead className="text-[9px] font-bold uppercase tracking-widest py-6 px-8 text-gray-400 text-right">Link</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {resident.complaints?.length > 0 ? (
-                                                    resident.complaints.map((c) => (
-                                                        <TableRow key={c.id} className="hover:bg-gray-50/50 transition-colors border-gray-50 group">
-                                                            <TableCell className="py-6 px-8">
-                                                                <div className="flex flex-col max-w-[200px]">
-                                                                    <span className="text-xs font-bold text-gray-900 uppercase tracking-tight truncate">{c.title}</span>
-                                                                    <span className="text-[9px] font-medium text-gray-400 truncate mt-0.5">{c.description}</span>
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell className="py-6 px-8">
-                                                                <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">{c.category}</span>
-                                                            </TableCell>
-                                                            <TableCell className="py-6 px-8">
-                                                                <div className="flex items-center gap-2">
-                                                                    <div className={`h-1.5 w-1.5 rounded-full ${c.priority === 'HIGH' || c.priority === 'URGENT' ? 'bg-red-500 animate-pulse' : 'bg-indigo-400'}`} />
-                                                                    <span className={`text-[9px] font-bold uppercase tracking-widest ${c.priority === 'HIGH' || c.priority === 'URGENT' ? 'text-red-600' : 'text-indigo-600'}`}>{c.priority}</span>
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell className="py-6 px-8">
-                                                                <Badge className={`${getStatusTheme(c.status)} border-none rounded-full px-3 py-1 text-[8px] font-bold uppercase tracking-widest shadow-sm`}>
-                                                                    {c.status}
-                                                                </Badge>
-                                                            </TableCell>
-                                                            <TableCell className="py-6 px-8 text-right">
-                                                                <Link href={`/warden/complaints`}>
-                                                                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-white border border-transparent hover:border-gray-100">
-                                                                        <ChevronRight className="h-4 w-4 text-gray-300" />
-                                                                    </Button>
-                                                                </Link>
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))
-                                                ) : (
-                                                    <TableRow>
-                                                        <TableCell colSpan={5} className="py-20 text-center">
-                                                            <CheckCircle2 className="h-12 w-12 text-gray-100 mx-auto mb-4" />
-                                                            <p className="text-[10px] font-bold text-gray-300 uppercase tracking-[0.2em]">All Systems Nominal</p>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                )}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                </Card>
-                            </TabsContent>
-
-                            <TabsContent value="profileplus" className="mt-0">
+                            <TabsContent value="overview" className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <Card className="rounded-[2.5rem] border-none shadow-sm bg-white p-8">
-                                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-8 flex items-center gap-2">
-                                            <Info className="h-3 w-3 text-indigo-600" /> Identity Matrix
-                                        </h4>
+                                    <Card className="rounded-[2.5rem] bg-white p-8 border-none shadow-sm space-y-6">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="text-xs font-black uppercase tracking-widest text-gray-900">Recent Stream</h3>
+                                            <History className="h-4 w-4 text-gray-400" />
+                                        </div>
+                                        <ActivityFeed events={activityFeed} />
+                                    </Card>
+
+                                    <Card className="rounded-[2.5rem] bg-white p-8 border-none shadow-sm relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 p-8">
+                                            <Zap className="h-12 w-12 text-indigo-50 opacity-40" />
+                                        </div>
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-8">Summary Metrics</h3>
                                         <div className="space-y-6">
-                                            <div className="flex flex-col">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Father/Guardian</span>
-                                                <span className="text-xs font-bold text-gray-900 mt-1 uppercase italic">{resident.residentProfile?.guardianName || 'N/A'}</span>
+                                            <div className="flex justify-between items-end border-b border-gray-50 pb-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Paid</span>
+                                                    <span className="text-2xl font-black text-indigo-600 tracking-tight">PKR {stats.totalPaid.toLocaleString()}</span>
+                                                </div>
+                                                <TrendingUp className="h-5 w-5 text-emerald-500" />
                                             </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Origin Inception</span>
-                                                <span className="text-xs font-bold text-gray-900 mt-1 uppercase italic">{safeFormat(resident.residentProfile?.dob, 'MMM dd, yyyy')}</span>
+                                            <div className="flex justify-between items-end border-b border-gray-50 pb-4">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Alert Count</span>
+                                                    <span className="text-2xl font-black text-amber-500 tracking-tight">{stats.compl} Reports</span>
+                                                </div>
+                                                <AlertCircle className="h-5 w-5 text-amber-500" />
                                             </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Biological Class</span>
-                                                <span className="text-xs font-bold text-rose-600 mt-1 uppercase italic">{resident.residentProfile?.bloodGroup || 'N/A'}</span>
+                                            <div className="pt-4">
+                                                <Button
+                                                    className="w-full h-12 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold text-[10px] uppercase tracking-widest border border-gray-100 shadow-none"
+                                                    onClick={() => toast.info("Report downloading...")}
+                                                >
+                                                    <Download className="h-4 w-4 mr-2" /> Download Full Report
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="payments" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <Card className="rounded-[2.5rem] bg-white overflow-hidden border-none shadow-sm">
+                                    <div className="p-8 border-b border-gray-50">
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Payment History</h3>
+                                    </div>
+                                    <Table>
+                                        <TableHeader className="bg-gray-50/50">
+                                            <TableRow className="border-none">
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Date</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Type</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Amount</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-8 text-right">Status</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {userDetails?.payments?.map((p) => (
+                                                <TableRow key={p.id} className="border-gray-50 hover:bg-gray-50/50 transition-colors group">
+                                                    <TableCell className="px-8 py-5">
+                                                        <span className="text-xs font-bold text-gray-900">{safeFormat(p.date || p.createdAt, 'MMM dd, yyyy')}</span>
+                                                    </TableCell>
+                                                    <TableCell className="px-4 py-5">
+                                                        <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-widest bg-gray-50/30 px-3 py-1 rounded-lg">
+                                                            {p.type}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="px-4 py-5 font-bold text-gray-900 text-xs">PKR {p.amount.toLocaleString()}</TableCell>
+                                                    <TableCell className="px-8 py-5 text-right">
+                                                        <Badge className={`rounded-full px-4 py-1.5 font-bold text-[8px] uppercase tracking-widest border shadow-none ${p.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
+                                                            {p.status}
+                                                        </Badge>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                            {(!userDetails?.payments || userDetails.payments.length === 0) && (
+                                                <TableRow>
+                                                    <TableCell colSpan={4} className="h-60 text-center">
+                                                        <History className="h-10 w-10 text-gray-100 mx-auto mb-3" />
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">No Payments Yet</p>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </Card>
+                            </TabsContent>
+
+                            <TabsContent value="history" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {userDetails?.complaints?.map((c) => (
+                                        <Card key={c.id} className="rounded-[2rem] bg-white p-8 border-none shadow-sm space-y-4 hover:shadow-md transition-shadow group">
+                                            <div className="flex justify-between items-start">
+                                                <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-inner">
+                                                    <AlertCircle className="h-5 w-5" />
+                                                </div>
+                                                <Badge className={`rounded-full px-3 py-1 font-bold text-[8px] uppercase tracking-widest shadow-none ${c.status === 'RESOLVED' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>{c.status}</Badge>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight">{c.title}</h4>
+                                                <p className="text-xs text-gray-500 font-medium line-clamp-2 leading-relaxed italic">{c.description}</p>
+                                            </div>
+                                            <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{safeFormat(c.createdAt, 'MMM dd, yyyy')}</span>
+                                                <Link href={`/warden/complaints`}>
+                                                    <Button variant="ghost" className="h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest text-indigo-600">View All</Button>
+                                                </Link>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                    {(!userDetails?.complaints || userDetails.complaints.length === 0) && (
+                                        <div className="md:col-span-2 h-60 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100 opacity-50">
+                                            <MessageSquare className="h-10 w-10 text-gray-200 mb-3" />
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No Complaints</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </TabsContent>
+
+                            <TabsContent value="profile-plus" className="m-0 space-y-6 animate-in fade-in duration-500">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <Card className="rounded-[2.5rem] bg-white p-10 border-none shadow-sm space-y-8">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 flex items-center gap-3">
+                                            <Info className="h-4 w-4 text-indigo-600" /> Personal Details
+                                        </h3>
+                                        <div className="grid grid-cols-1 gap-6">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Father / Guardian</span>
+                                                <span className="text-sm font-bold text-gray-800 uppercase italic underline decoration-indigo-600/20 underline-offset-4">{user.ResidentProfile?.guardianName || 'N/A'}</span>
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Blood Group</span>
+                                                <span className="text-sm font-bold text-rose-600 uppercase"> {user.ResidentProfile?.bloodGroup || 'N/A'}</span>
+                                            </div>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Date of Birth</span>
+                                                <span className="text-sm font-bold text-gray-800">{safeFormat(user.ResidentProfile?.dob, 'MMMM dd, yyyy')}</span>
                                             </div>
                                         </div>
                                     </Card>
 
-                                    <Card className="rounded-[2.5rem] border-none shadow-sm bg-white p-8">
-                                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-8 flex items-center gap-2">
-                                            <Contact2 className="h-3 w-3 text-indigo-600" /> Node Dossier
-                                        </h4>
-                                        <div className="space-y-6">
-                                            <div className="flex flex-col">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Emergency Pulse</span>
-                                                <span className="text-xs font-bold text-emerald-600 mt-1 uppercase italic">{resident.residentProfile?.emergencyContact || 'N/A'}</span>
+                                    <Card className="rounded-[2.5rem] bg-white p-10 border-none shadow-sm space-y-8">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 flex items-center gap-3">
+                                            <Building2 className="h-4 w-4 text-indigo-600" /> Institution Info
+                                        </h3>
+                                        <div className="grid grid-cols-1 gap-6">
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">University / College</span>
+                                                <span className="text-sm font-bold text-gray-800 uppercase italic line-clamp-1">{user.ResidentProfile?.institution || 'N/A'}</span>
                                             </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Institution Root</span>
-                                                <span className="text-xs font-bold text-gray-900 mt-1 uppercase italic line-clamp-1">{resident.residentProfile?.institution || 'N/A'}</span>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Occupation</span>
+                                                <span className="text-sm font-bold text-gray-800 uppercase italic line-clamp-1">{user.ResidentProfile?.occupation || 'N/A'}</span>
                                             </div>
-                                            <div className="flex flex-col">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Occupation Sector</span>
-                                                <span className="text-xs font-bold text-gray-900 mt-1 uppercase italic line-clamp-1">{resident.residentProfile?.occupation || 'N/A'}</span>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Full Address</span>
+                                                <span className="text-sm font-medium text-gray-500 line-clamp-2">{user.address || 'N/A'}</span>
                                             </div>
                                         </div>
                                     </Card>
 
-                                    <Card className="rounded-[2.5rem] border-none shadow-sm bg-white p-8 md:col-span-2">
-                                        <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 mb-8 flex items-center gap-2">
-                                            <FileText className="h-3 w-3 text-indigo-600" /> Vault Documents
-                                        </h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                            {resident.residentProfile?.documents && Object.keys(resident.residentProfile.documents).length > 0 ? (
-                                                Object.entries(resident.residentProfile.documents).map(([key, value], idx) => (
-                                                    <div key={idx} className="flex items-center justify-between p-4 rounded-2xl bg-gray-50/50 border border-gray-100 group hover:border-indigo-600/20 transition-all">
+                                    <Card className="md:col-span-2 rounded-[2.5rem] bg-white p-10 border-none shadow-sm">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-8 flex items-center gap-3">
+                                            <FileText className="h-4 w-4 text-indigo-600" /> Documents
+                                        </h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {user.ResidentProfile?.documents && Object.keys(user.ResidentProfile.documents).length > 0 ? (
+                                                Object.entries(user.ResidentProfile.documents).map(([key, value], idx) => (
+                                                    <div key={idx} className="p-4 rounded-[1.5rem] bg-gray-50/50 border border-gray-100 flex items-center justify-between group hover:border-indigo-600/20 transition-all">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center border border-gray-100 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-inner">
+                                                            <div className="h-9 w-9 rounded-xl bg-white flex items-center justify-center text-indigo-600 border border-gray-100 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
                                                                 <FileText className="h-4 w-4" />
                                                             </div>
-                                                            <span className="text-[10px] font-bold text-gray-700 uppercase tracking-tight">{key}</span>
+                                                            <span className="text-[10px] font-black uppercase tracking-wider text-gray-700">{key}</span>
                                                         </div>
-                                                        <Button variant="ghost" size="sm" className="h-8 text-indigo-600 hover:text-indigo-700 hover:bg-transparent font-bold text-[9px] uppercase tracking-widest" onClick={() => window.open(value, '_blank')}>
-                                                            Retrieve
+                                                        <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-indigo-600" onClick={() => window.open(value, '_blank')}>
+                                                            <ExternalLink className="h-4 w-4" />
                                                         </Button>
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="col-span-full py-8 text-center text-[10px] font-bold text-gray-300 uppercase tracking-[0.2em] bg-gray-50/30 rounded-3xl border border-dashed border-gray-100">
-                                                    Zero Documents Anchored
+                                                <div className="col-span-full py-12 text-center bg-gray-50/30 rounded-[2rem] border-2 border-dashed border-gray-100">
+                                                    <span className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.3em]">No Documents Uploaded</span>
                                                 </div>
                                             )}
                                         </div>
@@ -637,42 +646,94 @@ const ResidentDetailContent = () => {
                 </div>
             </main>
 
-            {/* Dialogs ported from Admin */}
+            {/* Dialogs */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent className="rounded-[2.5rem] border-none p-10 max-w-lg shadow-2xl bg-white font-sans">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-black uppercase tracking-tighter italic">Edit Resident Info</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-6 pt-6">
+                        <div className="grid grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-black uppercase tracking-widest pl-1 text-gray-400">Full Name</Label>
+                                <Input value={editData?.name} onChange={e => setEditData({ ...editData, name: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-black uppercase tracking-widest pl-1 text-gray-400">Email Address</Label>
+                                <Input value={editData?.email} onChange={e => setEditData({ ...editData, email: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-black uppercase tracking-widest pl-1 text-gray-400">Phone Number</Label>
+                                <Input value={editData?.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-black uppercase tracking-widest pl-1 text-gray-400">CNIC Number</Label>
+                                <Input value={editData?.cnic} onChange={e => setEditData({ ...editData, cnic: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
+                            </div>
+                        </div>
+                        <DialogFooter className="pt-4 gap-3">
+                            <Button variant="ghost" className="h-12 rounded-xl font-black text-[9px] uppercase tracking-widest flex-1" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                            <Button className="h-12 rounded-xl bg-indigo-600 text-white font-black text-[9px] uppercase tracking-widest flex-[2] shadow-lg" onClick={handleEditIdentity} disabled={updateAnyUser.isPending}>
+                                {updateAnyUser.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
+                            </Button>
+                        </DialogFooter>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isAccessDialogOpen} onOpenChange={setIsAccessDialogOpen}>
+                <DialogContent className="rounded-[2.5rem] border-none p-10 max-w-sm shadow-2xl bg-white font-sans">
+                    <DialogHeader className="text-center">
+                        <DialogTitle className="text-2xl font-black uppercase tracking-tighter">Reset Password</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-6 pt-6">
+                        <div className="space-y-2">
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 text-center block w-full">New Password</Label>
+                            <Input value={newPass} onChange={e => setNewPass(e.target.value)} className="h-14 rounded-2xl border-gray-100 bg-gray-50 text-center font-black tracking-[0.3em] text-lg uppercase" />
+                        </div>
+                        <Button className="w-full h-14 rounded-2xl bg-indigo-600 text-white font-black text-[9px] uppercase tracking-widest shadow-lg" onClick={handleResetKey} disabled={resetPassword.isPending}>
+                            {resetPassword.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update Password"}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Billing Dialog */}
             <Dialog open={isInvoiceDialogOpen} onOpenChange={setIsInvoiceDialogOpen}>
-                <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] border-none p-10 font-sans">
+                <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] border-none p-10 font-sans shadow-2xl bg-white">
                     <DialogHeader className="mb-8">
-                        <DialogTitle className="text-xl font-bold uppercase tracking-tight">Generate Fiscal Invoice</DialogTitle>
-                        <DialogDescription className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Authorized Warden Billing Protocol</DialogDescription>
+                        <DialogTitle className="text-xl font-black uppercase tracking-tight">Create Invoice / Bill</DialogTitle>
+                        <DialogDescription className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Warden Menu</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Invoice Amount (PKR)</Label>
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Invoice Value (PKR)</Label>
                             <Input
                                 type="number"
                                 placeholder="0.00"
-                                className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-bold text-lg px-6 focus:ring-indigo-600/20"
+                                className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-black text-lg px-6 focus:ring-indigo-600/20"
                                 value={invoiceForm.amount}
                                 onChange={(e) => setInvoiceForm({ ...invoiceForm, amount: e.target.value })}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Category</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Category</Label>
                                 <Select value={invoiceForm.type} onValueChange={(v) => setInvoiceForm({ ...invoiceForm, type: v })}>
                                     <SelectTrigger className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-bold text-xs uppercase px-6">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl">
-                                        <SelectItem value="RENT" className="text-xs font-bold uppercase">Monthly Rent</SelectItem>
-                                        <SelectItem value="MESS" className="text-xs font-bold uppercase">Mess Charges</SelectItem>
-                                        <SelectItem value="LAUNDRY" className="text-xs font-bold uppercase">Laundry Fee</SelectItem>
-                                        <SelectItem value="FINE" className="text-xs font-bold uppercase">Policy Fine</SelectItem>
-                                        <SelectItem value="OTHER" className="text-xs font-bold uppercase">Miscellaneous</SelectItem>
+                                        <SelectItem value="RENT" className="text-[10px] font-black uppercase tracking-widest">Monthly Rent</SelectItem>
+                                        <SelectItem value="MESS" className="text-[10px] font-black uppercase tracking-widest">Mess Charges</SelectItem>
+                                        <SelectItem value="LAUNDRY" className="text-[10px] font-black uppercase tracking-widest">Laundry Fee</SelectItem>
+                                        <SelectItem value="FINE" className="text-[10px] font-black uppercase tracking-widest">Policy Fine</SelectItem>
+                                        <SelectItem value="OTHER" className="text-[10px] font-black uppercase tracking-widest">Miscellaneous</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Due Date</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Due Date</Label>
                                 <Input
                                     type="date"
                                     className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-bold text-xs px-6"
@@ -682,9 +743,9 @@ const ResidentDetailContent = () => {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Audit Notes</Label>
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Notes</Label>
                             <Textarea
-                                placeholder="Details for the resident..."
+                                placeholder="Log details for reference..."
                                 className="min-h-[100px] rounded-2xl bg-gray-50/50 border-gray-100 font-medium p-6 resize-none focus:ring-indigo-600/20"
                                 value={invoiceForm.notes}
                                 onChange={(e) => setInvoiceForm({ ...invoiceForm, notes: e.target.value })}
@@ -692,70 +753,71 @@ const ResidentDetailContent = () => {
                         </div>
                     </div>
                     <DialogFooter className="mt-10 gap-3">
-                        <Button variant="ghost" className="rounded-2xl font-bold text-[10px] uppercase tracking-widest h-14 px-8" onClick={() => setIsInvoiceDialogOpen(false)}>Abort</Button>
+                        <Button variant="ghost" className="rounded-2xl font-black text-[9px] uppercase tracking-widest h-14 px-8" onClick={() => setIsInvoiceDialogOpen(false)}>Abort</Button>
                         <Button
-                            className="flex-1 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest h-14 transition-all shadow-lg"
+                            className="flex-1 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-widest h-14 transition-all shadow-lg"
                             onClick={handleGenerateInvoice}
                             disabled={createPayment.isPending}
                         >
-                            {createPayment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify & Issue Invoice"}
+                            {createPayment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create & Send"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
+            {/* Grievance Dialog */}
             <Dialog open={isGrievanceDialogOpen} onOpenChange={setIsGrievanceDialogOpen}>
-                <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] border-none p-10 font-sans">
+                <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] border-none p-10 font-sans shadow-2xl bg-white">
                     <DialogHeader className="mb-8">
-                        <DialogTitle className="text-xl font-bold uppercase tracking-tight">Log Resident Grievance</DialogTitle>
-                        <DialogDescription className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">Authorized Maintenance Protocol</DialogDescription>
+                        <DialogTitle className="text-xl font-black uppercase tracking-tight">Report Resident Problem</DialogTitle>
+                        <DialogDescription className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Warden Menu</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Reporting Subject</Label>
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Case Subject</Label>
                             <Input
-                                placeholder="Quick summary of the issue..."
-                                className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-bold text-xs px-6 uppercase focus:ring-indigo-600/20"
+                                placeholder="Core issue summary..."
+                                className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-black text-xs px-6 uppercase focus:ring-indigo-600/20"
                                 value={grievanceForm.title}
                                 onChange={(e) => setGrievanceForm({ ...grievanceForm, title: e.target.value })}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Category</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Category</Label>
                                 <Select value={grievanceForm.category} onValueChange={(v) => setGrievanceForm({ ...grievanceForm, category: v })}>
                                     <SelectTrigger className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-bold text-xs uppercase px-6">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl">
-                                        <SelectItem value="MAINTENANCE" className="text-xs font-bold uppercase">Maintenance</SelectItem>
-                                        <SelectItem value="MESS" className="text-xs font-bold uppercase">Mess/Food</SelectItem>
-                                        <SelectItem value="CLEANING" className="text-xs font-bold uppercase">Cleaning</SelectItem>
-                                        <SelectItem value="LAUNDRY" className="text-xs font-bold uppercase">Laundry</SelectItem>
-                                        <SelectItem value="SECURITY" className="text-xs font-bold uppercase">Security</SelectItem>
-                                        <SelectItem value="GENERAL" className="text-xs font-bold uppercase">General</SelectItem>
+                                        <SelectItem value="MAINTENANCE" className="text-[10px] font-black uppercase tracking-widest">Maintenance</SelectItem>
+                                        <SelectItem value="MESS" className="text-[10px] font-black uppercase tracking-widest">Mess / Food</SelectItem>
+                                        <SelectItem value="CLEANING" className="text-[10px] font-black uppercase tracking-widest">Cleaning</SelectItem>
+                                        <SelectItem value="LAUNDRY" className="text-[10px] font-black uppercase tracking-widest">Laundry</SelectItem>
+                                        <SelectItem value="SECURITY" className="text-[10px] font-black uppercase tracking-widest">Security</SelectItem>
+                                        <SelectItem value="GENERAL" className="text-[10px] font-black uppercase tracking-widest">General</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Priority</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Priority</Label>
                                 <Select value={grievanceForm.priority} onValueChange={(v) => setGrievanceForm({ ...grievanceForm, priority: v })}>
                                     <SelectTrigger className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-bold text-xs uppercase px-6">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl">
-                                        <SelectItem value="LOW" className="text-xs font-bold uppercase text-blue-600">Low</SelectItem>
-                                        <SelectItem value="MEDIUM" className="text-xs font-bold uppercase text-amber-600">Medium</SelectItem>
-                                        <SelectItem value="HIGH" className="text-xs font-bold uppercase text-orange-600">High</SelectItem>
-                                        <SelectItem value="URGENT" className="text-xs font-bold uppercase text-rose-600">Urgent</SelectItem>
+                                        <SelectItem value="LOW" className="text-[10px] font-black uppercase text-blue-600">Low</SelectItem>
+                                        <SelectItem value="MEDIUM" className="text-[10px] font-black uppercase text-amber-600">Medium</SelectItem>
+                                        <SelectItem value="HIGH" className="text-[10px] font-black uppercase text-orange-600">High</SelectItem>
+                                        <SelectItem value="URGENT" className="text-[10px] font-black uppercase text-rose-600">Urgent</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Detailed Case Dossier</Label>
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Dossier Details</Label>
                             <Textarea
-                                placeholder="Comprehensive description of the grievance..."
+                                placeholder="Evidence and context..."
                                 className="min-h-[120px] rounded-2xl bg-gray-50/50 border-gray-100 font-medium p-6 resize-none focus:ring-indigo-600/20"
                                 value={grievanceForm.description}
                                 onChange={(e) => setGrievanceForm({ ...grievanceForm, description: e.target.value })}
@@ -763,31 +825,31 @@ const ResidentDetailContent = () => {
                         </div>
                     </div>
                     <DialogFooter className="mt-10 gap-3">
-                        <Button variant="ghost" className="rounded-2xl font-bold text-[10px] uppercase tracking-widest h-14 px-8" onClick={() => setIsGrievanceDialogOpen(false)}>Void</Button>
+                        <Button variant="ghost" className="rounded-2xl font-black text-[9px] uppercase tracking-widest h-14 px-8" onClick={() => setIsGrievanceDialogOpen(false)}>Void</Button>
                         <Button
-                            className="flex-1 rounded-2xl bg-indigo-600 hover:bg-rose-600 text-white font-bold text-[10px] uppercase tracking-widest h-14 transition-all shadow-lg"
+                            className="flex-1 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-[9px] uppercase tracking-widest h-14 transition-all shadow-lg shadow-rose-100"
                             onClick={handleReportGrievance}
                             disabled={createComplaint.isPending}
                         >
-                            {createComplaint.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Commit Grievance Log"}
+                            {createComplaint.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Commit Log"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>
-    )
+    );
+};
+
+const safeFormat = (date, formatStr, fallback = '—') => {
+    if (!date) return fallback;
+    const d = new Date(date);
+    if (!isValid(d)) return fallback;
+    return format(d, formatStr);
 }
 
 export default function WardenResidentDetailPage() {
     return (
-        <Suspense fallback={
-            <div className="flex h-screen items-center justify-center bg-white">
-                <div className="flex flex-col items-center gap-4">
-                    <RefreshCw className="h-8 w-8 animate-spin text-gray-400" />
-                    <p className="text-sm font-medium text-gray-500 tracking-widest uppercase">Initializing Resident Dossier...</p>
-                </div>
-            </div>
-        }>
+        <Suspense fallback={<Loader label="Accessing Records" subLabel="Synchronizing dossier data" icon={Fingerprint} />}>
             <ResidentDetailContent />
         </Suspense>
     );
