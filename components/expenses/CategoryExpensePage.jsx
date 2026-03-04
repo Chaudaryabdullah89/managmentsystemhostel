@@ -21,6 +21,7 @@ import {
     Building2,
     User,
     FileText,
+    Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +45,7 @@ import {
     TabsTrigger,
 } from "@/components/ui/tabs";
 import useAuthStore from "@/hooks/Authstate";
-import { useExpenses, useExpenseStats, useCreateExpense, useUpdateExpenseStatus } from "@/hooks/useExpenses";
+import { useExpenses, useExpenseStats, useCreateExpense, useUpdateExpenseStatus, useDeleteExpense } from "@/hooks/useExpenses";
 import { useHostel } from "@/hooks/usehostel";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { toast } from "sonner";
@@ -110,6 +111,7 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
 
     const createExpense = useCreateExpense();
     const updateStatus = useUpdateExpenseStatus();
+    const deleteExpense = useDeleteExpense();
 
     const [newExpenseForm, setNewExpenseForm] = useState({
         title: "",
@@ -212,6 +214,17 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
             toast.success(`Status updated to ${newStatus}`);
         } catch (error) {
             toast.error(error.message || "Failed to update status");
+        }
+    };
+
+    const handleDeleteExpense = async (id) => {
+        if (!window.confirm("Are you sure you want to PERMANENTLY delete this expense record? This action cannot be undone.")) return;
+        try {
+            await deleteExpense.mutateAsync(id);
+            setIsDetailOpen(false);
+            setSelectedExpense(null);
+        } catch (error) {
+            toast.error(error.message || "Failed to delete record");
         }
     };
 
@@ -657,6 +670,14 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                             ) : (selectedExpense.status === 'APPROVED' || selectedExpense.status === 'PARTIAL') ? (
                                                 <Button className="w-full h-12 bg-blue-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-blue-100" onClick={() => handleStatusUpdate(selectedExpense.id, 'PAID')}>Mark as Settled</Button>
                                             ) : null}
+                                            <Button
+                                                variant="ghost"
+                                                className="h-12 px-4 rounded-xl text-rose-500 hover:bg-rose-50 hover:text-rose-600 group transition-all"
+                                                onClick={() => handleDeleteExpense(selectedExpense.id)}
+                                                disabled={deleteExpense.isPending}
+                                            >
+                                                {deleteExpense.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                            </Button>
                                         </div>
                                     )}
                                     <div className="flex-1 sm:max-w-[200px] order-1 sm:order-2 ml-auto">

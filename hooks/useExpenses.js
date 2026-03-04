@@ -95,3 +95,20 @@ export function useUpdateExpenseStatus() {
         },
     });
 }
+export function useDeleteExpense() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id) => {
+            const response = await fetch(`/api/expenses?id=${id}`, {
+                method: "DELETE",
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["expenses"] });
+            toast.success("Expense record permanently removed");
+        },
+    });
+}

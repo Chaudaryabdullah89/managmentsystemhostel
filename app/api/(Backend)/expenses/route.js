@@ -25,37 +25,30 @@ export async function GET(request) {
 
         // Security: Wardens can ONLY see their own hostel's data
         if (auth.user.role === 'WARDEN') {
-            let wardenHostelId = auth.user.hostelId;
-
-            // Fallback: If hostelId is missing in JWT, fetch it from DB
-            if (!wardenHostelId) {
-                const targetId = auth.user.userId || auth.user.id || auth.user.sub;
-                console.log(`[API] WARDEN fallback fetch for ID: ${targetId}`);
-                if (targetId) {
-                    const wardenProfile = await prisma.user.findUnique({
-                        where: { id: targetId },
-                        select: {
-                            hostelId: true,
-                            canManageExpenses: true,
-                            canManageMess: true,
-                            canManageGeneral: true,
-                            canManageUtilities: true,
-                            canManageMaintenance: true,
-                            canManageSalaries: true
-                        }
-                    });
-                    wardenHostelId = wardenProfile?.hostelId;
-                    // Also sync permissions if missing in JWT
-                    if (wardenProfile) {
-                        if (wardenProfile.canManageExpenses) auth.user.canManageExpenses = true;
-                        if (wardenProfile.canManageMess) auth.user.canManageMess = true;
-                        if (wardenProfile.canManageGeneral) auth.user.canManageGeneral = true;
-                        if (wardenProfile.canManageUtilities) auth.user.canManageUtilities = true;
-                        if (wardenProfile.canManageMaintenance) auth.user.canManageMaintenance = true;
-                        if (wardenProfile.canManageSalaries) auth.user.canManageSalaries = true;
-                    }
+            const targetId = auth.user.id || auth.user.userId || auth.user.sub;
+            const wardenProfile = await prisma.user.findUnique({
+                where: { id: targetId },
+                select: {
+                    hostelId: true,
+                    canManageExpenses: true,
+                    canManageMess: true,
+                    canManageGeneral: true,
+                    canManageUtilities: true,
+                    canManageMaintenance: true,
+                    canManageSalaries: true
                 }
+            });
+
+            if (wardenProfile) {
+                auth.user.hostelId = wardenProfile.hostelId;
+                auth.user.canManageExpenses = wardenProfile.canManageExpenses;
+                auth.user.canManageMess = wardenProfile.canManageMess;
+                auth.user.canManageGeneral = wardenProfile.canManageGeneral;
+                auth.user.canManageUtilities = wardenProfile.canManageUtilities;
+                auth.user.canManageMaintenance = wardenProfile.canManageMaintenance;
+                auth.user.canManageSalaries = wardenProfile.canManageSalaries;
             }
+            let wardenHostelId = auth.user.hostelId;
 
             console.log(`[API] Warden ID check:`, { hostelId, wardenHostelId });
 
@@ -204,6 +197,23 @@ export async function PATCH(request) {
         return NextResponse.json({ success: true, data: updated });
     } catch (error) {
         console.error("CRITICAL: Authorization State Update Failure:", error);
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+}
+export async function DELETE(request) {
+    const auth = await checkRole(['ADMIN', 'SUPER_ADMIN']);
+    if (!auth.success) return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to delete expense records." }, { status: 403 });
+
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get("id");
+
+        if (!id) return NextResponse.json({ success: false, error: "Record identity (ID) is required for deletion." }, { status: 400 });
+
+        const result = await ExpenseServices.deleteExpense(id);
+        return NextResponse.json({ success: true, data: result });
+    } catch (error) {
+        console.error("CRITICAL: Expense Record Deletion Failure:", error);
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
