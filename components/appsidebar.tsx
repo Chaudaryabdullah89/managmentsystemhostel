@@ -173,9 +173,25 @@ export function AppSidebar() {
                         // Use exact match for root dashboard URLs to prevent them
                         // matching every nested page (e.g. /warden matching /warden/hostels)
                         const isDashboardItem = item.icon === LayoutDashboard || item.url === "/warden"
-                        const isActive = isDashboardItem
-                            ? pathname === item.url
-                            : pathname === item.url || pathname.startsWith(item.url + "/")
+
+                        let isActive = false
+                        if (isDashboardItem) {
+                            isActive = pathname === item.url
+                        } else {
+                            // Exact match always wins
+                            if (pathname === item.url) {
+                                isActive = true
+                            } else if (pathname.startsWith(item.url + "/")) {
+                                // Special case for Admin: /admin/hostels vs /admin/hostels/rooms
+                                // If we are in "All Hostels" (/admin/hostels), we don't want it active 
+                                // if the current path is actually under "All Rooms" (/admin/hostels/rooms)
+                                if (item.url === "/admin/hostels" && pathname.startsWith("/admin/hostels/rooms")) {
+                                    isActive = false
+                                } else {
+                                    isActive = true
+                                }
+                            }
+                        }
                         const Icon = item.icon
 
                         return (
