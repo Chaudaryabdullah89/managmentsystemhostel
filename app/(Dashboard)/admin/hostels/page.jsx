@@ -94,7 +94,8 @@ const HostelsPage = () => {
                 type: h.type,
                 floors: h.floors,
                 contact: h.phone,
-                wardens: h.wardens || []
+                wardens: h.wardens || [],
+                wardenUsers: h.User_User_hostelIdToHostel || []
             },
             roomStats: {
                 totalRooms: (h.Room || []).length,
@@ -306,7 +307,7 @@ const HostelsPage = () => {
                                             <div className="flex flex-col">
                                                 <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Staff</span>
                                                 <div className="text-[10px] font-black text-gray-700 truncate max-w-[120px] uppercase">
-                                                    <WardenNames wardenIds={hostel.basicInfo.wardens} />
+                                                    <WardenNames wardenIds={hostel.basicInfo.wardens} wardenUsers={hostel.basicInfo.wardenUsers} />
                                                 </div>
                                             </div>
                                             <div className="flex flex-col text-right">
@@ -324,15 +325,30 @@ const HostelsPage = () => {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-52 p-1 rounded-xl border-gray-100 shadow-xl">
-                                                    <DropdownMenuItem className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/admin/hostels/${hostel.id}`)}>
+                                                    <DropdownMenuItem
+                                                        className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-600 cursor-pointer"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            router.push(`/admin/hostels/${hostel.id}`);
+                                                        }}
+                                                    >
                                                         <LayoutGrid className="h-3.5 w-3.5" /> View
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/admin/hostels/${encodeURIComponent(hostel.name)}/edithostel?hostelId=${hostel.id}`)}>
+                                                    <DropdownMenuItem
+                                                        className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-600 cursor-pointer"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            router.push(`/admin/hostels/${hostel.id}/edithostel?hostelId=${hostel.id}`);
+                                                        }}
+                                                    >
                                                         <Edit className="h-3.5 w-3.5" /> Edit
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-red-500 focus:bg-red-50 focus:text-red-600 cursor-pointer" onSelect={(e) => e.preventDefault()}>
                                                         <AlertDialog>
-                                                            <AlertDialogTrigger className="w-full text-left flex items-center gap-3">
+                                                            <AlertDialogTrigger
+                                                                className="w-full text-left flex items-center gap-3"
+                                                                onClick={(e) => e.stopPropagation()}
+                                                            >
                                                                 <Trash className="h-3.5 w-3.5" /> Delete
                                                             </AlertDialogTrigger>
                                                             <AlertDialogContent className="rounded-[2.5rem] border-none shadow-3xl overflow-hidden p-0 max-w-md">
@@ -356,7 +372,7 @@ const HostelsPage = () => {
                                                 className="h-9 px-4 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-[9px] shadow-sm flex items-center gap-2 group/btn w-full sm:w-auto justify-center"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    router.push(`/admin/hostels/${encodeURIComponent(hostel.name)}/rooms?role=admin&hostelId=${hostel.id}`);
+                                                    router.push(`/admin/hostels/${hostel.id}/rooms?role=admin&hostelId=${hostel.id}`);
                                                 }}
                                             >
                                                 Open
@@ -380,7 +396,7 @@ const HostelsPage = () => {
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         e.stopPropagation();
-                                                        router.push(`/admin/hostels/${encodeURIComponent(hostel.name)}/room-details/room/${room.id}?hostelId=${hostel.id}`);
+                                                        router.push(`/admin/hostels/${hostel.id}/room-details/room/${room.id}?hostelId=${hostel.id}`);
                                                     }}
                                                 >
                                                     <div className={`h-1.5 w-1.5 rounded-full ${room.status === 'AVAILABLE' ? 'bg-emerald-500' : 'bg-indigo-500'}`} />

@@ -35,6 +35,7 @@ import { useAllPayments, useFinancialStats } from "@/hooks/usePayment";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
+import { useSyncAutomation } from "@/hooks/useRoom";
 import Loader from "@/components/ui/Loader";
 import { RevenueExpenseChart, HostelPerformanceChart, OccupancyDonutChart, ComplaintStatusChart } from "@/components/ui/Charts";
 
@@ -76,6 +77,11 @@ const WardenDashboard = () => {
     });
 
     const updateMutation = useUpdateComplaint();
+    const syncAutomation = useSyncAutomation();
+
+    React.useEffect(() => {
+        syncAutomation.mutate();
+    }, []);
 
     const handleResolve = (id) => {
         updateMutation.mutate({ id, status: 'RESOLVED', resolutionNotes: 'Resolved from warden dashboard' });
@@ -380,6 +386,8 @@ const WardenDashboard = () => {
                                     ...(user?.canManageExpenses ? [{ label: 'Expenses', icon: Receipt, href: '/warden/expenses', color: 'text-indigo-600', bg: 'bg-indigo-50' }] : []),
                                     { label: 'Residents', icon: Users, href: '/warden/residents', color: 'text-blue-600', bg: 'bg-blue-50' },
                                     { label: 'Notices', icon: Megaphone, href: '/warden/notices', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                                    { label: 'Cleaning', icon: Activity, href: '/warden/cleaning', color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                                    { label: 'Laundry', icon: ClipboardList, href: '/warden/laundry', color: 'text-blue-600', bg: 'bg-blue-50' },
                                     { label: 'Rooms', icon: Bed, href: '/warden/rooms', color: 'text-amber-600', bg: 'bg-amber-50' },
                                     { label: 'Audit', icon: Search, href: '/warden/audit', color: 'text-purple-600', bg: 'bg-purple-50' },
                                 ].map((item, i) => (

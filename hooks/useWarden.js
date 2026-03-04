@@ -74,3 +74,15 @@ export const useWardenDueServices = (userId) => {
         enabled: !!userId,
     });
 };
+
+export function useAdminDueServices() {
+    return useQuery({
+        queryKey: ["admin", "due-services"],
+        queryFn: async () => {
+            const response = await fetch("/api/admin/services/due");
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            return data.data;
+        }
+    });
+}

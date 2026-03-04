@@ -96,8 +96,7 @@ export async function GET(req) {
                                 id: crypto.randomUUID(),
                                 roomId: room.id,
                                 hostelId: hostel.id,
-                                residentId: activeBooking.userId,
-                                status: "PENDING",
+                                status: "COMPLETED",
                                 notes: `Automated laundry protocol initiated via ${laundryInterval}hr service cycle.`,
                                 receivedAt: now,
                                 createdAt: now

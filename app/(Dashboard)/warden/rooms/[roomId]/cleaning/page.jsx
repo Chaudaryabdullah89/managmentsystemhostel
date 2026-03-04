@@ -7,8 +7,6 @@ import {
     Calendar,
     Clock,
     Search,
-    LayoutGrid,
-    CheckCircle2,
     History as HistoryIcon,
     Plus,
     Loader2,
@@ -43,16 +41,19 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { useSingleRoomByHostelId, useCreateCleaningLog, useUpdateCleaningLog } from "@/hooks/useRoom";
+import useAuthStore from "@/hooks/Authstate";
 import Loader from "@/components/ui/Loader";
+import { format } from "date-fns";
+import { toast } from "sonner";
 
-const CleaningPage = () => {
+const WardenRoomCleaningPage = () => {
     const params = useParams();
     const router = useRouter();
-    const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
-    const hostelId = searchParams.get('hostelId');
-    const { roomId, hostelId: hostelName } = params;
+    const { roomId } = params;
+    const { user } = useAuthStore();
+    const hostelId = user?.hostelId;
 
-    const { data: roomData, isLoading } = useSingleRoomByHostelId(hostelId, roomId);
+    const { data: roomResponse, isLoading, refetch } = useSingleRoomByHostelId(hostelId, roomId);
     const createCleaning = useCreateCleaningLog();
     const updateCleaning = useUpdateCleaningLog();
 
@@ -66,6 +67,9 @@ const CleaningPage = () => {
         status: "COMPLETED"
     });
 
+    const room = roomResponse?.data;
+    const logs = room?.CleaningLog || [];
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -76,8 +80,10 @@ const CleaningPage = () => {
             });
             setIsDialogOpen(false);
             setFormData({ notes: "", status: "COMPLETED" });
+            toast.success("Hygiene protocol committed");
+            refetch();
         } catch (error) {
-            console.error(error);
+            toast.error("Registry error");
         }
     };
 
@@ -90,12 +96,14 @@ const CleaningPage = () => {
             });
             setIsUpdateDialogOpen(false);
             setSelectedLog(null);
+            toast.success("Protocol updated");
+            refetch();
         } catch (error) {
-            console.error(error);
+            toast.error("Failed to update protocol");
         }
     };
 
-    const openUpdate = (log) => {
+    const openUpdateDialog = (log) => {
         setSelectedLog(log);
         setFormData({
             notes: log.notes || "",
@@ -104,9 +112,7 @@ const CleaningPage = () => {
         setIsUpdateDialogOpen(true);
     };
 
-    if (isLoading) return <Loader label="Loading Cleaning Logs" subLabel="Fetching cleaning sessions..." icon={Sparkle} fullScreen={false} />;
-
-    const logs = roomData?.data?.CleaningLog || [];
+    if (isLoading) return <Loader label="Cleaning" subLabel="Loading history..." icon={Sparkle} />;
 
     const stats = {
         total: logs.length,
@@ -120,44 +126,43 @@ const CleaningPage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50/30 pb-20">
-            <header className="bg-white border-b sticky top-0 z-40 py-2 md:h-16">
-                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
+        <div className="min-h-screen bg-gray-50/30 pb-20 font-sans tracking-tight">
+            <header className="bg-white border-b sticky top-0 z-40 h-16">
+                <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl hover:bg-gray-100 h-9 w-9 shrink-0">
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
                         <div className="h-6 w-px bg-gray-100 hidden md:block" />
                         <div className="flex flex-col min-w-0">
-                            <h1 className="text-sm md:text-lg font-black text-gray-900 tracking-tight leading-none truncate uppercase">Cleaning Log</h1>
-                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1 truncate">
-                                Room {roomData?.data?.roomNumber} • <span className="text-blue-500">{decodeURIComponent(hostelName)}</span>
+                            <h1 className="text-lg font-black text-gray-900 tracking-tight leading-none truncate uppercase">Cleaning Log</h1>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1 truncate">
+                                Room {room?.roomNumber} • <span className="text-indigo-500">{room?.Hostel?.name}</span>
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                         <div className="relative hidden lg:block">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
                             <Input
                                 className="pl-9 h-9 w-48 xl:w-64 bg-gray-50/50 border-none text-[10px] font-black uppercase tracking-widest focus:bg-white transition-all rounded-xl shadow-inner"
-                                placeholder="Search records..."
+                                placeholder="Search logs..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
                         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button className="h-9 px-4 md:px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg transition-all active:scale-95 gap-2">
+                                <Button className="h-10 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg transition-all active:scale-95 gap-2">
                                     <Plus className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Add Log</span>
-                                    <span className="sm:hidden">Add</span>
+                                    Add Log
                                 </Button>
                             </DialogTrigger>
                             <DialogContent className="sm:max-w-[400px] rounded-3xl p-0 overflow-hidden gap-0 border-none shadow-2xl">
                                 <div className="p-6 bg-gray-50 border-b border-gray-100">
-                                    <DialogTitle className="text-lg font-black tracking-tight uppercase">New Cleaning</DialogTitle>
-                                    <DialogDescription className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Record new cleaning session</DialogDescription>
+                                    <DialogTitle className="text-sm font-black tracking-widest uppercase">New Cleaning Log</DialogTitle>
+                                    <DialogDescription className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Record a new cleaning session</DialogDescription>
                                 </div>
                                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                                     <div className="space-y-1.5">
@@ -166,16 +171,16 @@ const CleaningPage = () => {
                                             <SelectTrigger className="h-10 rounded-xl font-black text-[10px] uppercase tracking-widest border-gray-100">
                                                 <SelectValue />
                                             </SelectTrigger>
-                                            <SelectContent className="rounded-xl border-gray-100">
-                                                <SelectItem value="COMPLETED">COMPLETED</SelectItem>
-                                                <SelectItem value="PENDING">PENDING</SelectItem>
+                                            <SelectContent className="rounded-xl border-gray-100 font-black text-[10px] uppercase">
+                                                <SelectItem value="COMPLETED">Done</SelectItem>
+                                                <SelectItem value="PENDING">Pending</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                     <div className="space-y-1.5">
                                         <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Notes</Label>
                                         <Textarea
-                                            placeholder="Room cleaned..."
+                                            placeholder="Example: Floor cleaned and bed set..."
                                             className="min-h-[100px] rounded-xl font-medium text-sm resize-none pt-3 border-gray-100 focus:ring-indigo-500"
                                             value={formData.notes}
                                             onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -192,12 +197,12 @@ const CleaningPage = () => {
             </header>
 
             <div className="max-w-[1600px] mx-auto px-6 py-8">
-                {/* Metrics Matrix */}
+                {/* Stats Matrix */}
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-10">
                     {[
-                        { label: 'Total Logs', value: stats.total, sub: 'All sessions', color: 'text-indigo-600', bg: 'bg-indigo-50', icon: HistoryIcon },
-                        { label: 'Cleaned', value: stats.completed, sub: 'Finished', color: 'text-emerald-600', bg: 'bg-emerald-50', icon: CheckCircle2 },
-                        { label: 'Pending', value: stats.pending, sub: 'Needs review', color: 'text-amber-600', bg: 'bg-amber-50', icon: Clock },
+                        { label: 'Total Cleaning', value: stats.total, sub: 'All records', color: 'text-indigo-600', bg: 'bg-indigo-50', icon: HistoryIcon },
+                        { label: 'Completed', value: stats.completed, sub: 'Cleaned rooms', color: 'text-emerald-600', bg: 'bg-emerald-50', icon: CheckCircle },
+                        { label: 'Pending', value: stats.pending, sub: 'Need review', color: 'text-amber-600', bg: 'bg-amber-50', icon: Clock },
                     ].map((s, i) => (
                         <Card key={i} className={`bg-white rounded-3xl p-5 border border-gray-100 shadow-sm flex items-center gap-4 group hover:shadow-md transition-all active:scale-[0.98] cursor-default relative overflow-hidden ${i === 2 ? 'col-span-2 lg:col-span-1' : ''}`}>
                             <div className={`absolute top-0 right-0 h-12 w-12 ${s.bg} opacity-10 rounded-bl-full translate-x-6 -translate-y-6`} />
@@ -213,11 +218,11 @@ const CleaningPage = () => {
                     ))}
                 </div>
 
-                {/* Audit Ribbon Feed */}
+                {/* History Feed */}
                 <div className="space-y-3">
                     {filteredLogs.length > 0 ? (
                         filteredLogs.map((log) => (
-                            <Card key={log.id} className="group bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-xl hover:border-indigo-100 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden active:scale-[0.99] cursor-pointer" onClick={() => openUpdate(log)}>
+                            <Card key={log.id} className="group bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-xl hover:border-indigo-100 transition-all flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden active:scale-[0.99] cursor-pointer" onClick={() => openUpdateDialog(log)}>
                                 <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${log.status === 'COMPLETED' ? 'bg-emerald-500' : 'bg-amber-500'} opacity-70`} />
                                 <div className="flex items-start gap-4 flex-1">
                                     <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-500 ${log.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white' : 'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white'}`}>
@@ -225,21 +230,21 @@ const CleaningPage = () => {
                                     </div>
                                     <div className="min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight truncate">{new Date(log.performedAt).toLocaleDateString()}</h3>
-                                            <Badge variant="outline" className={`h-5 border-none rounded-full text-[8px] font-black uppercase tracking-widest px-2 shadow-sm ${log.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                                            <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight truncate">{format(new Date(log.performedAt), 'MMM dd, yyyy')}</h3>
+                                            <Badge variant="outline" className={`h-5 border-none rounded-full text-[8px] font-black uppercase tracking-widest px-2 shadow-sm ${log.status === 'COMPLETED' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
                                                 {log.status === 'COMPLETED' ? 'Cleaned' : 'Pending'}
                                             </Badge>
                                         </div>
-                                        <p className="text-[11px] font-medium text-gray-500 line-clamp-1 italic">{log.notes || "Standard cleaning applied."}</p>
+                                        <p className="text-[11px] font-medium text-gray-500 line-clamp-1 italic">{log.notes || "No notes available."}</p>
                                         <div className="flex items-center gap-3 mt-2">
                                             <div className="flex items-center gap-1.5 text-[9px] font-black text-gray-400 uppercase tracking-widest">
                                                 <HistoryIcon className="h-3 w-3" />
-                                                Room {roomData?.data?.roomNumber}
+                                                Room {room?.roomNumber}
                                             </div>
                                             <span className="h-1 w-1 rounded-full bg-gray-200" />
                                             <div className="flex items-center gap-1.5 text-[9px] font-black text-gray-400 uppercase tracking-widest">
                                                 <Clock className="h-3 w-3" />
-                                                {new Date(log.performedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                {format(new Date(log.performedAt), 'HH:mm')}
                                             </div>
                                         </div>
                                     </div>
@@ -263,16 +268,16 @@ const CleaningPage = () => {
                                                     <MoreVertical className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-gray-100 shadow-2xl">
-                                                <DropdownMenuItem className="p-3 gap-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-gray-600 focus:bg-gray-50 cursor-pointer" onClick={() => openUpdate(log)}>
+                                            <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl border-gray-100 shadow-2xl font-black text-[10px] uppercase">
+                                                <DropdownMenuItem className="p-3 gap-3 rounded-xl focus:bg-gray-50 cursor-pointer" onClick={() => openUpdateDialog(log)}>
                                                     <Edit2 className="h-4 w-4" /> Edit Details
                                                 </DropdownMenuItem>
                                                 {log.status !== 'COMPLETED' && (
                                                     <DropdownMenuItem
-                                                        className="p-3 gap-3 rounded-xl font-black text-[10px] uppercase tracking-widest text-emerald-600 focus:bg-emerald-50 cursor-pointer"
-                                                        onClick={() => updateCleaning.mutate({ id: log.id, status: 'COMPLETED' })}
+                                                        className="p-3 gap-3 rounded-xl text-emerald-600 focus:bg-emerald-50 cursor-pointer"
+                                                        onClick={() => updateCleaning.mutate({ id: log.id, status: 'COMPLETED' }, { onSuccess: refetch })}
                                                     >
-                                                        <CheckCircle className="h-4 w-4" /> Approve
+                                                        <CheckCircle className="h-4 w-4" /> Mark Done
                                                     </DropdownMenuItem>
                                                 )}
                                             </DropdownMenuContent>
@@ -284,14 +289,13 @@ const CleaningPage = () => {
                     ) : (
                         <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-gray-100">
                             <Sparkle className="h-10 w-10 text-gray-100 mb-4 animate-pulse" />
-                            <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">No cleaning records found</p>
+                            <p className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em]">No logs found</p>
                         </div>
                     )}
                 </div>
             </div>
 
-
-            {/* Edit Dialog - Updated Style */}
+            {/* Edit Dialog */}
             <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
                 <DialogContent className="sm:max-w-[400px] rounded-3xl p-0 overflow-hidden gap-0 border-none shadow-2xl">
                     <div className="p-6 bg-gray-50 border-b border-gray-100">
@@ -305,14 +309,14 @@ const CleaningPage = () => {
                                 <SelectTrigger className="h-10 rounded-xl font-black text-[10px] uppercase tracking-widest border-gray-100">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-xl border-gray-100">
-                                    <SelectItem value="COMPLETED">COMPLETED</SelectItem>
-                                    <SelectItem value="PENDING">PENDING</SelectItem>
+                                <SelectContent className="rounded-xl border-gray-100 font-black text-[10px] uppercase">
+                                    <SelectItem value="COMPLETED">Done</SelectItem>
+                                    <SelectItem value="PENDING">Pending</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-1.5">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Update Notes</Label>
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Notes</Label>
                             <Textarea
                                 className="min-h-[100px] rounded-xl font-medium text-sm resize-none pt-3 border-gray-100"
                                 value={formData.notes}
@@ -329,4 +333,4 @@ const CleaningPage = () => {
     );
 };
 
-export default CleaningPage;
+export default WardenRoomCleaningPage;

@@ -13,6 +13,7 @@ import {
     LifeBuoy,
     MessageSquare,
     User,
+    Activity,
     Users,
     LogOut,
     Search,
@@ -23,6 +24,7 @@ import {
     Wallet,
     Plane,
     BarChart3,
+
     type LucideIcon,
 } from "lucide-react"
 import useAuthStore from "@/hooks/Authstate"
@@ -58,6 +60,7 @@ const items: Record<string, NavItem[]> = {
         // { title: "Leave Requests", url: "/admin/leaves", icon: Plane, role: "admin" },
         { title: "Audit & Search", url: "/admin/audit", icon: Search, role: "admin" },
         { title: "Complaints", url: "/admin/complaints", icon: MessageSquare, role: "admin" },
+        // { title: "Service Status", url: "/admin/services", icon: Activity, role: "admin" },
         { title: "Notice Board", url: "/admin/notices", icon: Megaphone, role: "admin" },
         { title: "Expenses", url: "/admin/expenses", icon: DollarSign, role: "admin" },
         { title: "Mess Menu", url: "/admin/mess", icon: Utensils, role: "admin" },
@@ -75,7 +78,8 @@ const items: Record<string, NavItem[]> = {
         { title: "Residents", url: "/warden/residents", icon: Users, role: "warden" },
         { title: "Complaints", url: "/warden/complaints", icon: MessageSquare, role: "warden" },
         { title: "Audit & Search", url: "/warden/audit", icon: Search, role: "warden" },
-
+        // { title: "Cleaning Log", url: "/warden/cleaning", icon: Activity, role: "warden" },
+        // { title: "Laundry Log", url: "/warden/laundry", icon: ClipboardList, role: "warden" },
         { title: "Notice Board", url: "/warden/notices", icon: Megaphone, role: "warden" },
         { title: "Expenses", url: "/warden/expenses", icon: DollarSign, role: "warden" },
         { title: "Mess Menu", url: "/warden/mess", icon: Utensils, role: "warden" },

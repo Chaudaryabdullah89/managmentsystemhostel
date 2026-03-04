@@ -139,7 +139,7 @@ const UnifiedServicesPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                     {[
                         { label: 'Active', value: stats.pending, icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50', sub: 'Tasks in queue' },
-                        { label: 'Suggestions', value: stats.overdue, icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50', sub: 'Calculated suggestions' },
+                        { label: 'Suggestions', value: stats.overdue, icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50', sub: 'Recommended tasks' },
                         { label: 'Done', value: stats.productivity, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50', sub: 'Rooms serviced' },
                     ].map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-[2rem] p-5 md:p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden flex-1 min-w-0">
@@ -211,7 +211,7 @@ const UnifiedServicesPage = () => {
                                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Suggestions based on last service time</p>
                                 </div>
                                 <Badge className="bg-blue-600 text-white border-none text-[10px] font-bold px-4 py-1.5 rounded-full shadow-lg shadow-blue-200">
-                                    {stats.overdue} MATCHES
+                                    {stats.overdue} ITEMS
                                 </Badge>
                             </div>
                             <div className="grid grid-cols-1 lg:grid-cols-2 divide-x divide-gray-100">
@@ -395,7 +395,7 @@ const DueItem = ({ room, type, refetch }) => {
                 body: JSON.stringify({
                     roomId: room.id,
                     hostelId: room.hostelId,
-                    notes: `Algorithmic trigger: ${room.overdueHours}h overdue`
+                    notes: `Auto scheduled: ${room.overdueHours}h overdue`
                 })
             });
             const data = await response.json();
@@ -427,7 +427,7 @@ const DueItem = ({ room, type, refetch }) => {
                 className="h-9 px-4 rounded-xl text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-blue-600 hover:bg-blue-50"
                 onClick={handleTrigger}
             >
-                Assign <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                Start <ChevronRight className="h-3.5 w-3.5 ml-1" />
             </Button>
         </div>
     );

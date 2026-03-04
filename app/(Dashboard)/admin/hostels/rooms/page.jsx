@@ -123,14 +123,14 @@ const GlobalRoomsPage = () => {
             });
             const data = await response.json();
             if (data.success) {
-                toast.success("Unit Decommissioned");
+                toast.success("Room Deleted");
                 queryClient.invalidateQueries({ queryKey: QueryKeys.Roomlist() });
             } else {
-                toast.error(data.error || "Decommission Protocol Failed");
+                toast.error(data.error || "Delete Failed");
             }
         } catch (error) {
             console.error("Delete room error:", error);
-            toast.error("Internal System Error");
+            toast.error("Error deleting room");
         } finally {
             setIsDeleting(null);
         }
@@ -293,7 +293,7 @@ const GlobalRoomsPage = () => {
                                             </div>
                                             <div className="flex items-center gap-1.5 mt-0.5">
                                                 <Building2 className="h-3 w-3 text-gray-400 min-w-3" />
-                                                <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{room.Hostel?.name || 'Asset Registry'} • LVL {room.floor}</span>
+                                                <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{room.Hostel?.name || 'Hostel'} • LVL {room.floor}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -408,7 +408,7 @@ const GlobalRoomsPage = () => {
                                             </span>
                                         ))}
                                         {(!room.amenities || room.amenities.length === 0) && (
-                                            <span className="text-[9px] font-bold text-gray-300 italic uppercase tracking-widest">Base configuration</span>
+                                            <span className="text-[9px] font-bold text-gray-300 italic uppercase tracking-widest">Basic room</span>
                                         )}
                                         {room.amenities?.length > 5 && (
                                             <span className="text-[9px] font-bold text-gray-400 uppercase bg-gray-100 px-2 py-1 rounded-md">+{room.amenities.length - 5}</span>
@@ -420,14 +420,14 @@ const GlobalRoomsPage = () => {
                     ) : (
                         <div className="py-20 flex flex-col items-center justify-center bg-white border border-gray-100 rounded-3xl shadow-sm border-dashed">
                             <Search className="h-10 w-10 text-gray-200 mb-4" />
-                            <h3 className="text-lg font-bold text-gray-900 uppercase">Registry Empty</h3>
-                            <p className="text-gray-400 font-bold uppercase tracking-widest text-[9px] mt-1">No units matched your query</p>
+                            <h3 className="text-lg font-bold text-gray-900 uppercase">No rooms found</h3>
+                            <p className="text-gray-400 font-bold uppercase tracking-widest text-[9px] mt-1">No rooms matched your search</p>
                             <Button
                                 variant="outline"
                                 className="mt-8 rounded-xl border-gray-200 uppercase tracking-widest text-[9px] font-bold h-10 px-8 hover:bg-gray-50 transition-all text-gray-400"
                                 onClick={() => { setSearchQuery(''); setStatusFilter('All'); }}
                             >
-                                Reset Registry
+                                Clear search
                             </Button>
                         </div>
                     )}

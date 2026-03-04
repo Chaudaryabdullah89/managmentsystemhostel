@@ -231,3 +231,20 @@ export function useUpdateLaundryLog() {
         },
     });
 }
+
+export function useSyncAutomation() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async () => {
+            const response = await fetch('/api/automation/sync-logs', { method: 'POST' });
+            return response.json();
+        },
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: [QueryKeys.Rooms] });
+            queryClient.invalidateQueries({ queryKey: ["warden", "logs"] });
+            if (data.data && (data.data.cleaning > 0 || data.data.laundry > 0)) {
+                toast.success(`Automation Sync: ${data.data.cleaning} cleaning & ${data.data.laundry} laundry logs generated.`);
+            }
+        }
+    });
+}

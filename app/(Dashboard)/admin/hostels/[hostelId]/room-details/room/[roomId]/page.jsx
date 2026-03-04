@@ -236,7 +236,7 @@ const RoomDetailsContent = () => {
                                 },
                                 {
                                     title: 'Laundry',
-                                    sub: `${room.LaundryLog?.length || 0} Batches`,
+                                    sub: `${room.LaundryLog?.length || 0} Logs`,
                                     icon: Shirt,
                                     color: 'text-purple-500',
                                     bg: 'bg-purple-50',
@@ -244,7 +244,7 @@ const RoomDetailsContent = () => {
                                 },
                                 {
                                     title: 'Cleaning',
-                                    sub: `${room.CleaningLog?.length || 0} Cycles`,
+                                    sub: `${room.CleaningLog?.length || 0} Logs`,
                                     icon: Sparkle,
                                     color: 'text-blue-500',
                                     bg: 'bg-blue-50',
@@ -305,7 +305,7 @@ export default function RoomDetailsPage() {
         <Suspense fallback={
             <Loader
                 label="Loading..."
-                subLabel="Preparing room data"
+                subLabel="Loading room"
                 icon={BedDouble}
                 fullScreen={false}
             />

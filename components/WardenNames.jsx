@@ -1,11 +1,18 @@
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 
-const WardenNames = ({ wardenIds }) => {
+const WardenNames = ({ wardenIds, wardenUsers = [] }) => {
     const [names, setNames] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // If we already have user objects, use them immediately
+        if (wardenUsers && wardenUsers.length > 0) {
+            setNames(wardenUsers.map(u => u.name));
+            setLoading(false);
+            return;
+        }
+
         const fetchNames = async () => {
             if (!wardenIds || wardenIds.length === 0) {
                 setNames([]);
@@ -33,19 +40,23 @@ const WardenNames = ({ wardenIds }) => {
         };
 
         fetchNames();
-    }, [wardenIds]);
+    }, [wardenIds, wardenUsers]);
 
-    if (loading) return <span className="text-xs text-gray-400">Loading...</span>;
-    if (names.length === 0) return <span className="text-xs text-gray-400 italic">No wardens assigned</span>;
+    if (loading && (!wardenUsers || wardenUsers.length === 0)) return <span className="text-xs text-gray-400 animate-pulse">Loading...</span>;
+    if (names.length === 0) return <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest italic">No warden assigned</span>;
 
     return (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1">
             {names.map((name, idx) => (
-                <Link href={`/admin/wardens/${wardenIds[idx]}`} key={idx} >
-                    <span key={idx} className="text-xs bg-gray-50 border border-gray-100 px-2 py-1 rounded-md text-gray-600">
+                <Link
+                    href={`/admin/wardens/${wardenUsers[idx]?.id || wardenIds?.[idx]}`}
+                    key={idx}
+                    onClick={(e) => e.stopPropagation()}
+                    className="hover:scale-105 transition-transform"
+                >
+                    <span className="text-[10px] font-bold bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg text-indigo-600 uppercase tracking-tight">
                         {name}
                     </span>
-
                 </Link>
             ))}
         </div>

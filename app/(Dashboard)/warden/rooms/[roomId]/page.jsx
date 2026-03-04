@@ -228,8 +228,8 @@ const WardenRoomDetailsPage = () => {
                         <div className="space-y-3">
                             {[
                                 { title: 'Maintenance', sub: `${room.maintanance?.length || 0} Logs`, icon: Wrench, color: 'text-amber-500', bg: 'bg-amber-50', link: `/warden/complaints` },
-                                { title: 'Laundry', sub: `${room.LaundryLog?.length || 0} Logs`, icon: Shirt, color: 'text-purple-500', bg: 'bg-purple-50', link: `/warden/laundry` },
-                                { title: 'Cleaning', sub: `${room.CleaningLog?.length || 0} Logs`, icon: Sparkle, color: 'text-blue-500', bg: 'bg-blue-50', link: `/warden/cleaning` }
+                                { title: 'Laundry', sub: `${room.LaundryLog?.length || 0} Logs`, icon: Shirt, color: 'text-purple-500', bg: 'bg-purple-50', link: `/warden/rooms/${roomId}/laundry` },
+                                { title: 'Cleaning', sub: `${room.CleaningLog?.length || 0} Logs`, icon: Sparkle, color: 'text-blue-500', bg: 'bg-blue-50', link: `/warden/rooms/${roomId}/cleaning` }
                             ].map((service, i) => (
                                 <Link
                                     key={i}

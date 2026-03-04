@@ -44,6 +44,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { useReports } from "@/hooks/useReports";
 import { useComplaints, useUpdateComplaint } from "@/hooks/usecomplaints";
 import { useAllPayments, useFinancialStats } from "@/hooks/usePayment";
+import { useSyncAutomation } from "@/hooks/useRoom";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import Loader from "@/components/ui/Loader";
@@ -67,6 +68,11 @@ const AdminDashboard = () => {
     const { data: recentPayments, isLoading: paymentsLoading } = useAllPayments({ limit: 5 });
 
     const updateMutation = useUpdateComplaint();
+    const syncAutomation = useSyncAutomation();
+
+    React.useEffect(() => {
+        syncAutomation.mutate();
+    }, []);
 
     const handleResolve = async (id) => {
         updateMutation.mutate({ id, status: 'RESOLVED', resolutionNotes: 'Dashboard fix' });

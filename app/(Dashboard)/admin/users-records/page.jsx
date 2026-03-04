@@ -236,7 +236,7 @@ const UserRecordPage = () => {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52 rounded-2xl p-2 shadow-2xl border-gray-100">
-                <DropdownMenuItem onClick={() => router.push(`/admin/users-records/${user.id}`)}
+                <DropdownMenuItem onClick={() => router.push(user.role === 'WARDEN' ? `/admin/wardens/${user.id}` : `/admin/users-records/${user.id}`)}
                     className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2">
                     <Eye className="h-4 w-4 text-gray-400" /> View
                 </DropdownMenuItem>
@@ -433,7 +433,7 @@ const UserRecordPage = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-1 justify-end">
-                                                        <Link href={`/admin/users-records/${user.id}`}>
+                                                        <Link href={user.role === 'WARDEN' ? `/admin/wardens/${user.id}` : `/admin/users-records/${user.id}`}>
                                                             <Button variant="ghost" size="sm" className="h-8 px-3 rounded-xl text-[9px] font-bold uppercase tracking-wider text-indigo-600 hover:bg-indigo-50">
                                                                 View <ChevronRight className="h-3 w-3 ml-1" />
                                                             </Button>
@@ -490,7 +490,7 @@ const UserRecordPage = () => {
                                             {user.regNumber && <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">REG: {user.regNumber}</span>}
                                             <span className="text-[8px] font-mono text-gray-300">{user.uid || '#' + user.id?.slice(-8).toUpperCase()}</span>
                                         </div>
-                                        <Link href={`/admin/users-records/${user.id}`}>
+                                        <Link href={user.role === 'WARDEN' ? `/admin/wardens/${user.id}` : `/admin/users-records/${user.id}`}>
                                             <Button variant="outline" className="h-8 px-3 rounded-xl font-bold text-[9px] uppercase tracking-wider text-indigo-600 border-indigo-100 bg-indigo-50 hover:bg-indigo-600 hover:text-white transition-all">
                                                 View <ChevronRight className="h-3 w-3 ml-1" />
                                             </Button>
