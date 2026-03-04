@@ -112,9 +112,15 @@ const WardenDashboard = () => {
     };
 
     const trends = reportData?.monthlyTrends || [];
-    const hostelData = reportData?.hostelPerformance || [];
+    const hostelInfo = reportData?.hostel || user?.Hostel_User_hostelIdToHostel;
+    const hostelData = reportData?.hostelPerformance || (hostelInfo ? [{
+        id: user?.hostelId || 'current',
+        name: hostelInfo.name,
+        occupancy: stats.occupancyRate,
+        revenue: stats.totalRevenue,
+        rooms: hostelInfo.totalRooms || 0
+    }] : []);
     const complaintStats = complaintsData || { total: 0, pending: 0, inProgress: 0, resolved: 0, urgent: 0 };
-    const hostelInfo = user?.Hostel_User_hostelIdToHostel;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
@@ -171,7 +177,8 @@ const WardenDashboard = () => {
                             isUp: stats.revenueChange >= 0,
                             icon: Wallet,
                             color: 'text-blue-600',
-                            bg: 'bg-blue-50'
+                            bg: 'bg-blue-50',
+                            show: true
                         },
                         {
                             label: 'Expenses',
@@ -180,7 +187,8 @@ const WardenDashboard = () => {
                             isUp: stats.expenseChange < 0,
                             icon: Receipt,
                             color: 'text-rose-600',
-                            bg: 'bg-rose-50'
+                            bg: 'bg-rose-50',
+                            show: hasAnyExpensePermission
                         },
                         {
                             label: 'Occupancy',
@@ -189,7 +197,8 @@ const WardenDashboard = () => {
                             isUp: stats.occupancyChange >= 0,
                             icon: Bed,
                             color: 'text-emerald-600',
-                            bg: 'bg-emerald-50'
+                            bg: 'bg-emerald-50',
+                            show: true
                         },
                         {
                             label: 'Profit',
@@ -198,9 +207,10 @@ const WardenDashboard = () => {
                             isUp: stats.profitChange >= 0,
                             icon: TrendingUp,
                             color: 'text-purple-600',
-                            bg: 'bg-purple-50'
+                            bg: 'bg-purple-50',
+                            show: hasAnyExpensePermission
                         }
-                    ].map((stat, i) => (
+                    ].filter(stat => stat.show).map((stat, i) => (
                         <div key={i} className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-24 h-full bg-gray-50/50 skew-x-12 translate-x-10 group-hover:translate-x-8 transition-transform" />
                             <div className="flex flex-col gap-4 relative z-10">
@@ -383,7 +393,7 @@ const WardenDashboard = () => {
                                     { label: 'Bookings', icon: ClipboardList, href: '/warden/bookings', color: 'text-orange-600', bg: 'bg-orange-50' },
                                     { label: 'Payments', icon: DollarSign, href: '/warden/payments', color: 'text-emerald-600', bg: 'bg-emerald-50', badge: recentPayments?.payments?.filter(p => p.status === 'PENDING').length || 0 },
                                     { label: 'Complaints', icon: MessageSquare, href: '/warden/complaints', color: 'text-rose-600', bg: 'bg-rose-50' },
-                                    ...(user?.canManageExpenses ? [{ label: 'Expenses', icon: Receipt, href: '/warden/expenses', color: 'text-indigo-600', bg: 'bg-indigo-50' }] : []),
+                                    ...(hasAnyExpensePermission ? [{ label: 'Expenses', icon: Receipt, href: '/warden/expenses', color: 'text-indigo-600', bg: 'bg-indigo-50' }] : []),
                                     { label: 'Residents', icon: Users, href: '/warden/residents', color: 'text-blue-600', bg: 'bg-blue-50' },
                                     { label: 'Notices', icon: Megaphone, href: '/warden/notices', color: 'text-indigo-600', bg: 'bg-indigo-50' },
                                     { label: 'Cleaning', icon: Activity, href: '/warden/cleaning', color: 'text-emerald-600', bg: 'bg-emerald-50' },

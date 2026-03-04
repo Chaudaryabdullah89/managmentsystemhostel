@@ -44,7 +44,7 @@ const HostelOverviewPage = () => {
     const { hostelId } = useParams();
     const router = useRouter();
     const { data, isLoading } = useHostelById(hostelId);
-    const hostel = data?.hostel;
+    const hostel = data?.data;
 
     const user = useAuthStore((state) => state.user);
     const isWarden = user?.role === 'WARDEN';

@@ -42,7 +42,7 @@ import { format } from "date-fns";
 const WardenHostelsPage = () => {
     const { user } = useAuthStore();
     const { data: hostelData, isLoading, refetch } = useHostelById(user?.hostelId);
-    const hostel = hostelData?.hostel;
+    const hostel = hostelData?.data;
     const [showInfo, setShowInfo] = useState(false);
 
     if (isLoading) return <Loader label="LOADING" subLabel="Getting hostel info..." icon={Activity} fullScreen={false} />;

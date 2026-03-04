@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import { ReportServices } from "@/lib/services/reportservices/reportservices";
+import prisma from "@/lib/prisma";
 
 export async function GET(request) {
     const auth = await checkRole([]);
@@ -14,14 +15,47 @@ export async function GET(request) {
         const startDate = searchParams.get('startDate');
         const endDate = searchParams.get('endDate');
 
+        let isWardenMaster = auth.user.canManageExpenses;
+        let granularPerms = {
+            canManageMess: auth.user.canManageMess,
+            canManageGeneral: auth.user.canManageGeneral,
+            canManageUtilities: auth.user.canManageUtilities,
+            canManageMaintenance: auth.user.canManageMaintenance,
+            canManageSalaries: auth.user.canManageSalaries
+        };
+
+        // Sync Warden permissions from DB to avoid staleness issues
+        if (auth.user.role === 'WARDEN') {
+            const wardenProfile = await prisma.user.findUnique({
+                where: { id: auth.user.id || auth.user.userId },
+                select: {
+                    canManageExpenses: true,
+                    canManageMess: true,
+                    canManageGeneral: true,
+                    canManageUtilities: true,
+                    canManageMaintenance: true,
+                    canManageSalaries: true
+                }
+            });
+            if (wardenProfile) {
+                isWardenMaster = wardenProfile.canManageExpenses;
+                granularPerms = wardenProfile;
+            }
+        }
+
         let allowedCategories = undefined;
-        if (auth.user.role === 'WARDEN' && !auth.user.canManageExpenses) {
+        if (auth.user.role === 'WARDEN' && !isWardenMaster) {
             allowedCategories = [];
-            if (auth.user.canManageMess) allowedCategories.push('MESS');
-            if (auth.user.canManageGeneral) allowedCategories.push('GENERAL');
-            if (auth.user.canManageUtilities) allowedCategories.push('UTILITY_BILL');
-            if (auth.user.canManageMaintenance) allowedCategories.push('MAINTENANCE');
-            if (auth.user.canManageSalaries) allowedCategories.push('SALARY');
+            if (granularPerms.canManageMess) allowedCategories.push('MESS');
+            if (granularPerms.canManageGeneral) allowedCategories.push('GENERAL');
+            if (granularPerms.canManageUtilities) allowedCategories.push('UTILITY_BILL');
+            if (granularPerms.canManageMaintenance) allowedCategories.push('MAINTENANCE');
+            if (granularPerms.canManageSalaries) allowedCategories.push('SALARY');
+
+            if (allowedCategories.length === 0) {
+                // Return something that yields zero rather than error if they have no perms
+                allowedCategories = ['NONE'];
+            }
         }
 
         let stats;

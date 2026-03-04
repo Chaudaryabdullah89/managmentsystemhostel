@@ -1092,38 +1092,7 @@ const PaymentManagementPage = () => {
 
                 </Tabs>
 
-                <div className="pt-10">
-                    <div className="bg-blue-600 text-white rounded-[2rem] p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-full bg-white/5 skew-x-12 translate-x-20" />
-                        <div className="flex items-center gap-6 relative z-10 px-4 w-full md:w-auto">
-                            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md shrink-0">
-                                <ShieldCheck className="h-5 w-5 text-white" />
-                            </div>
-                            <div className="flex flex-col">
-                                <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-100">System Status</h4>
-                                <p className="text-[11px] font-bold mt-0.5">Ready</p>
-                            </div>
-                        </div>
 
-                        <div className="h-6 w-px bg-white/10 hidden md:block" />
-
-                        <div className="flex-1 flex items-center justify-start md:justify-center gap-8 md:gap-12 px-4 md:px-8 w-full md:w-auto">
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Today</span>
-                                <span className="text-[10px] font-bold text-gray-200 uppercase mt-1">{new Date().toLocaleDateString()}</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[8px] font-bold uppercase text-blue-100 tracking-widest">Revenue Flow</span>
-                                <span className="text-[10px] font-bold text-white uppercase mt-1">PKR {stats?.totalRevenue?.toLocaleString()}</span>
-                            </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 md:pr-6 relative z-10 w-full md:w-auto justify-end px-4 md:px-0">
-                            <span className="text-[9px] font-bold uppercase text-white tracking-widest">System Online</span>
-                            <div className="h-2 w-2 rounded-full bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,0.4)]" />
-                        </div>
-                    </div>
-                </div>
             </main >
 
             {/* Modals */}

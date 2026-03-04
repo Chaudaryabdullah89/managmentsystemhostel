@@ -59,7 +59,7 @@ export async function GET(request, { params }) {
 
         delete formattedHostel.User_Hostel_managerIdToUser;
 
-        return NextResponse.json({ success: true, hostel: formattedHostel });
+        return NextResponse.json({ success: true, data: formattedHostel });
     } catch (error) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
