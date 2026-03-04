@@ -86,7 +86,7 @@ const items: Record<string, NavItem[]> = {
         { title: "My Room", url: "/guest/my-room", icon: Bed, role: "guest" },
         { title: "My Bookings", url: "/guest/bookings", icon: Calendar, role: "guest" },
         { title: "Payments", url: "/guest/payments", icon: CreditCard, role: "guest" },
-        { title: "Leave Requests", url: "/guest/leave", icon: Plane, role: "guest" },
+        // { title: "Leave Requests", url: "/guest/leave", icon: Plane, role: "guest" },
         { title: "Mess Schedule", url: "/guest/mess", icon: Utensils, role: "guest" },
         { title: "Services & Support", url: "/guest/support", icon: LifeBuoy, role: "guest" },
         { title: "Profile", url: "/guest/profile", icon: User, role: "guest" },

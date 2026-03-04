@@ -302,7 +302,7 @@ const ProfilePage = () => {
                                             className="w-full justify-start h-12 rounded-2xl px-6 font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-gray-50 hover:text-black transition-all"
                                         >
                                             <History className="h-4 w-4 mr-4 text-gray-400" />
-                                            Audit Logs
+                                            Activity
                                         </Button>
                                     </Link>
                                     <Separator className="my-2 opacity-10" />

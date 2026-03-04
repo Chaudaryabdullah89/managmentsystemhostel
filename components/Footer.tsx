@@ -12,10 +12,13 @@ export const Footer = () => {
                 {/* Bottom Bar */}
                 <div className="border-t mt-8 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-sm text-gray-600">
-                        &copy; {currentYear} Hostel Managment System. All rights reserved.
+                        &copy; {currentYear} Mubarak Group of Hostels.All rights reserved.
                     </p>
-                    <p className="text-sm text-gray-600 flex items-center gap-1">
-                        Made with <Heart className="w-4 h-4 text-red-500 fill-red-500" /> by Abdullah
+                    <p className=" flex flex-row gap-4 text-sm text-gray-600 flex items-center gap-1">
+                        {/* Made with <Heart className="w-4 h-4 text-red-500 fill-red-500" /> by Abdullah */}
+                        <Link href="/privacy-policy">Privacy Policy</Link>
+                        <Link href="/terms-of-service">Terms of Service</Link>
+
                     </p>
                 </div>
             </div>

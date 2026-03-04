@@ -37,7 +37,8 @@
     "**/*.mts",
     "app/api/(Backend)/auth/user/[Id]/route.js",
     "contexts/AuthContext.jsx",
-    "app/api/(Backend)/users/profile/[id]/route.js"
+    "app/api/(Backend)/users/profile/[id]/route.js",
+    "app/api/(Backend)/ai-assistant/route.js"
   ],
   "exclude": [
     "node_modules"
