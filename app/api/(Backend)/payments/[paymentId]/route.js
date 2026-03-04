@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import PaymentServices from "@/lib/services/paymentservices/paymentservices";

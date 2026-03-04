@@ -9,7 +9,7 @@ export const UserQueryKeys = {
 
 export function useUserDetails(id) {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: UserQueryKeys.byId(id),
         queryFn: async () => {
@@ -25,7 +25,7 @@ export function useUserDetails(id) {
 
 export function useAllUsers(filters = {}) {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: UserQueryKeys.list(filters),
         queryFn: async () => {

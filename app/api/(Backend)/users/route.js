@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
@@ -141,6 +142,7 @@ export async function POST(request) {
                 canManageUtilities: !!canManageUtilities,
                 canManageMaintenance: !!canManageMaintenance,
                 canManageSalaries: !!canManageSalaries,
+                basicSalary: Number(basicSalary) || 0,
                 updatedAt: new Date(),
                 ...(role === 'STAFF' || role === 'WARDEN' ? {
                     StaffProfile: {

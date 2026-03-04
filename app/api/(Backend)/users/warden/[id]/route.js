@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { checkRole } from '@/lib/checkRole';
 const { prisma } = require("@/lib/prisma");
 const { NextResponse } = require("next/server");

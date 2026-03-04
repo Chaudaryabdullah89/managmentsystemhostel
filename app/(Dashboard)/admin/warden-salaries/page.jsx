@@ -79,6 +79,13 @@ const WardenSalariesPage = () => {
         paymentMethod: "BANK_TRANSFER"
     });
 
+    const [editFormData, setEditFormData] = useState({
+        basicSalary: 0,
+        bonuses: 0,
+        deductions: 0,
+        notes: ""
+    });
+
     const { data: salaries, isLoading: salariesLoading } = useAllWardenSalaries({
         month: activeTab === "current" ? currentMonth : null
     });
@@ -244,6 +251,28 @@ const WardenSalariesPage = () => {
             setIsResolveDialogOpen(false);
             setResolveFormData({ appealStatus: "RESOLVED", appealResponse: "" });
         } catch (err) { }
+    };
+
+    const handleEditOpen = (salary) => {
+        setSelectedSalary(salary);
+        setEditFormData({
+            basicSalary: salary.basicSalary,
+            bonuses: salary.bonuses,
+            deductions: salary.deductions,
+            notes: salary.notes || ""
+        });
+        setIsEditDialogOpen(true);
+    };
+
+    const handleEditSubmit = async () => {
+        try {
+            await updateSalary.mutateAsync({
+                id: selectedSalary.id,
+                ...editFormData,
+                amount: Number(editFormData.basicSalary) + Number(editFormData.bonuses) - Number(editFormData.deductions)
+            });
+            setIsEditDialogOpen(false);
+        } catch (error) { }
     };
 
     if (salariesLoading) return (
@@ -479,7 +508,7 @@ const WardenSalariesPage = () => {
                                                         <MessageSquare className="h-4 w-4" /> Resolve Appeal
                                                     </DropdownMenuItem>
                                                 )}
-                                                <DropdownMenuItem className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
+                                                <DropdownMenuItem onClick={() => handleEditOpen(salary)} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
                                                     <Settings2 className="h-4 w-4" /> Edit
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => { setSelectedSalary(salary); setIsDeleteDialogOpen(true); }} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase text-rose-600 hover:bg-rose-50 cursor-pointer">
@@ -631,6 +660,50 @@ const WardenSalariesPage = () => {
                             {payWarden.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Pay"}
                         </Button>
                     </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Edit Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
+                    <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
+                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="flex items-center gap-3 relative z-10">
+                            <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                                <Calculator className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold uppercase tracking-tight">Edit</h2>
+                                <p className="text-[10px] text-indigo-100 font-medium">for {selectedSalary?.Warden?.name}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="p-8 space-y-5">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Basic Salary</Label>
+                                <Input type="number" value={editFormData.basicSalary} onChange={e => setEditFormData({ ...editFormData, basicSalary: Number(e.target.value) })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Bonuses</Label>
+                                <Input type="number" value={editFormData.bonuses} onChange={e => setEditFormData({ ...editFormData, bonuses: Number(e.target.value) })} className="rounded-xl border-emerald-50 bg-emerald-50/30 font-bold h-11 text-emerald-600 focus:ring-0" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-rose-500">Deductions</Label>
+                                <Input type="number" value={editFormData.deductions} onChange={e => setEditFormData({ ...editFormData, deductions: Number(e.target.value) })} className="rounded-xl border-rose-50 bg-rose-50/30 font-bold h-11 text-rose-600 focus:ring-0" />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Details</Label>
+                            <Textarea value={editFormData.notes} onChange={e => setEditFormData({ ...editFormData, notes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Add notes..." />
+                        </div>
+                        <div className="flex gap-3 pt-2">
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                            <Button className="flex-1 h-11 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-100" onClick={handleEditSubmit} disabled={updateSalary.isPending}>
+                                {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
+                            </Button>
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
 

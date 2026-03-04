@@ -9,7 +9,7 @@ export const TaskQueryKeys = {
 
 export function useTasks(filters: any = {}) {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: [...TaskQueryKeys.all, filters],
         queryFn: async () => {
@@ -27,7 +27,7 @@ export function useTasks(filters: any = {}) {
 
 export function useTaskById(id: string) {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: ["tasks", id],
         queryFn: async () => {

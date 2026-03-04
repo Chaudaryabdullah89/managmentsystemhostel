@@ -9,7 +9,7 @@ export const BookingQueryKeys = {
 export function useBookings(options = {}) {
     const { userId, hostelId } = options;
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: ["bookings", { userId, hostelId }],
         queryFn: async () => {
@@ -98,7 +98,7 @@ export function useUpdateBookingStatus() {
 
 export function useBookingById(id) {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: BookingQueryKeys.byId(id),
         queryFn: async () => {
@@ -148,5 +148,27 @@ export function useUpdateBooking() {
             queryClient.invalidateQueries({ queryKey: BookingQueryKeys.byId(variables.id) });
             toast.success("Booking updated successfully");
         },
+    });
+}
+
+export function useDeleteBooking() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (id) => {
+            const response = await fetch(`/api/bookings/${id}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" }
+            });
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error);
+            return result;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: BookingQueryKeys.all() });
+            toast.success("Booking deleted successfully");
+        },
+        onError: (err) => {
+            toast.error(err.message || "Failed to delete booking");
+        }
     });
 }

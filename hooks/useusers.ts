@@ -17,7 +17,7 @@ export const useUsers = () => {
             return data;
         },
         gcTime: 30 * 60 * 1000,
-        staleTime: 60 * 1000,
+        staleTime: 0,
 
     });
     return { data, isLoading, error };
@@ -38,7 +38,7 @@ export const useUserById = (id: string) => {
         },
         enabled: !!id,
         gcTime: 30 * 60 * 1000,
-        staleTime: 60 * 1000,
+        staleTime: 0,
     });
     return { data, isLoading, error, refetch };
 
@@ -81,7 +81,7 @@ export const useSessions = () => {
             return await response.json();
         },
         gcTime: 30 * 60 * 1000,
-        staleTime: 60 * 1000,
+        staleTime: 0,
     });
     return { data, isLoading, error, refetch };
 };
@@ -128,14 +128,14 @@ export const useuserbyrole = (role: string) => {
             return await response.json();
         },
         gcTime: 30 * 60 * 1000,
-        staleTime: 60 * 1000,
+        staleTime: 0,
     });
     return { data, isLoading, error, refetch };
 }
 
 export const useUserDetailedProfile = (id: string) => {
     const { data, isLoading, error, refetch, isFetching } = useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: QueryKeys.userDetailedProfile(id),
         queryFn: async () => {

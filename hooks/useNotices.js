@@ -8,7 +8,7 @@ export const NoticeQueryKeys = {
 
 export function useNotices(filters = {}) {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: [...NoticeQueryKeys.all, filters],
         queryFn: async () => {

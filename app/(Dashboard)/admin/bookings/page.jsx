@@ -57,7 +57,7 @@ import {
     DialogFooter
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useBookings, useUpdateBookingStatus } from "@/hooks/useBooking";
+import { useBookings, useUpdateBookingStatus, useDeleteBooking } from "@/hooks/useBooking";
 import { useHostel } from "@/hooks/usehostel";
 import { useRoom } from "@/hooks/useRoom";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -91,6 +91,7 @@ const GlobalBookingsPage = () => {
     const { data: bookingsResponse, isLoading, isFetching } = useBookings();
     const { data: hostelsResponse } = useHostel();
     const { mutate: updateStatus, isPending: isUpdating } = useUpdateBookingStatus();
+    const { mutate: deleteBooking, isPending: isDeleting } = useDeleteBooking();
     const syncAutomation = useSyncAutomation();
     const user = useAuthStore((state) => state.user);
     const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
@@ -129,6 +130,16 @@ const GlobalBookingsPage = () => {
         const ids = [...selectedIds];
         ids.forEach(id => updateStatus({ id, status: newStatus }));
         toast.success(`${ids.length} updated`);
+        clearSelection();
+    };
+
+    const handleBulkDelete = () => {
+        if (selectedIds.size === 0) return;
+        if (!confirm(`Are you sure you want to delete ${selectedIds.size} booking(s)? This action cannot be undone.`)) return;
+
+        const ids = [...selectedIds];
+        ids.forEach(id => deleteBooking(id));
+        toast.success(`${ids.length} booking(s) scheduled for deletion`);
         clearSelection();
     };
 
@@ -509,6 +520,15 @@ const GlobalBookingsPage = () => {
                                 disabled={isUpdating}
                             >
                                 <XCircle className="h-3.5 w-3.5 mr-1.5" /> Stop
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                className="h-8 rounded-xl bg-red-600 hover:bg-red-500 text-white text-[9px] font-black uppercase tracking-widest px-4"
+                                onClick={handleBulkDelete}
+                                disabled={isDeleting}
+                            >
+                                <AlertCircle className="h-3.5 w-3.5 mr-1.5" /> Delete
                             </Button>
                             <Button
                                 size="sm"

@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export const useWardenStats = (userId) => {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: ["warden", "stats", userId],
         queryFn: async () => {
@@ -17,7 +17,7 @@ export const useWardenStats = (userId) => {
 
 export const useWardenResidents = (userId) => {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: ["warden", "residents", userId],
         queryFn: async () => {
@@ -32,7 +32,7 @@ export const useWardenResidents = (userId) => {
 
 export const useWardenRooms = (userId) => {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: ["warden", "rooms", userId],
         queryFn: async () => {
@@ -47,7 +47,7 @@ export const useWardenRooms = (userId) => {
 
 export const useWardenLogs = (userId, type) => {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: ["warden", "logs", userId, type],
         queryFn: async () => {
@@ -62,7 +62,7 @@ export const useWardenLogs = (userId, type) => {
 
 export const useWardenDueServices = (userId) => {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: ["warden", "services", "due", userId],
         queryFn: async () => {

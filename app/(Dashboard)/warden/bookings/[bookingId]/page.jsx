@@ -52,7 +52,7 @@ import {
     DialogTrigger,
     DialogFooter,
 } from "@/components/ui/dialog";
-import { useBookingById, useUpdateBookingStatus } from "@/hooks/useBooking";
+import { useBookingById, useUpdateBookingStatus, useDeleteBooking } from "@/hooks/useBooking";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
@@ -65,6 +65,15 @@ const BookingDetailsPage = () => {
     const user = useAuthStore((state) => state.user);
     const { data: booking, isLoading } = useBookingById(bookingId);
     const updateStatus = useUpdateBookingStatus();
+    const { mutate: deleteBooking, isPending: isDeleting } = useDeleteBooking();
+
+    const handleDelete = async () => {
+        if (!confirm("Are you sure you want to delete this booking? This action cannot be undone.")) return;
+        try {
+            await deleteBooking(bookingId);
+            router.push('/warden/bookings');
+        } catch (error) { }
+    };
 
     const handleStatusUpdate = async (newStatus) => {
         try {
@@ -172,6 +181,15 @@ const BookingDetailsPage = () => {
                         >
                             <Edit3 className="h-3.5 w-3.5 mr-2" />
                             Edit Booking
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="h-9 px-5 rounded-xl border-red-100 text-red-600 font-bold text-[9px] uppercase tracking-widest hover:bg-red-50 transition-all bg-white"
+                            onClick={handleDelete}
+                            disabled={isDeleting}
+                        >
+                            <Trash2 className="h-3.5 w-3.5 mr-2" />
+                            Delete
                         </Button>
 
                         <Button

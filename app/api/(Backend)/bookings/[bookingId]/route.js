@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { checkRole } from '@/lib/checkRole';
 
 import { NextResponse } from "next/server";
@@ -78,6 +79,45 @@ export async function PUT(request, { params }) {
 
         const updatedBooking = await bookingServices.updateBooking(bookingId, data);
         return NextResponse.json({ success: true, booking: updatedBooking });
+    } catch (error) {
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    }
+}
+
+export async function DELETE(request, { params }) {
+    const auth = await checkRole([]);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
+    try {
+        const { bookingId } = await params;
+
+        if (!bookingId) {
+            return NextResponse.json({ success: false, error: "Booking ID is required" }, { status: 400 });
+        }
+
+        // Security: Wardens can ONLY delete their own hostel's bookings
+        if (auth.user.role === 'WARDEN') {
+            let wardenHostelId = auth.user.hostelId;
+            if (!wardenHostelId) {
+                const wardenProfile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                wardenHostelId = wardenProfile?.hostelId;
+            }
+
+            const booking = await prisma.booking.findUnique({
+                where: { id: bookingId },
+                include: { Room: { select: { hostelId: true } } }
+            });
+
+            if (booking && booking.Room?.hostelId !== wardenHostelId) {
+                return NextResponse.json({ success: false, error: "Access Denied: You cannot delete bookings from other hostels." }, { status: 403 });
+            }
+        }
+
+        await bookingServices.deleteBooking(bookingId);
+        return NextResponse.json({ success: true, message: "Booking deleted successfully" });
     } catch (error) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }

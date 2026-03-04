@@ -8,7 +8,7 @@ export const WardenSalaryQueryKeys = {
 
 export function useAllWardenSalaries(filters = {}) {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: WardenSalaryQueryKeys.all(filters),
         queryFn: async () => {
@@ -27,7 +27,7 @@ export function useAllWardenSalaries(filters = {}) {
 
 export function useWardenPayments(wardenId) {
     return useQuery({
-        staleTime: 5 * 60 * 1000,
+        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: WardenSalaryQueryKeys.byWardenId(wardenId),
         queryFn: async () => {
