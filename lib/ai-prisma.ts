@@ -5,7 +5,7 @@ const globalForAiPrisma = global as unknown as { aiPrisma: PrismaClient };
 
 export const aiPrisma = globalForAiPrisma.aiPrisma || new PrismaClient({
     datasources: {
-        db: {
+        aiDb: {
             url: process.env.AI_DATABASE_URL
         }
     }
