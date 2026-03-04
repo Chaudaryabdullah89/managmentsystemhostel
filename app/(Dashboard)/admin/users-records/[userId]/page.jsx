@@ -85,6 +85,7 @@ import { toast } from "sonner";
 import { useCreatePayment } from "@/hooks/usePayment";
 import { useReports } from "@/hooks/useReports";
 import { OccupancyDonutChart } from "@/components/ui/Charts";
+import SalarySlip from "@/components/SalarySlip";
 
 const DetailItem = ({ icon: Icon, label, value, color = "text-indigo-600" }) => (
     <div className="flex items-start gap-4">
@@ -112,6 +113,8 @@ const UserDetailsPage = () => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
     const [isAccessDialogOpen, setIsAccessDialogOpen] = useState(false);
+    const [isSlipDialogOpen, setIsSlipDialogOpen] = useState(false);
+    const [selectedSalary, setSelectedSalary] = useState(null);
 
     // If the user is a WARDEN, fetch their hostel level report summary so admins can see their performance
     const isWarden = user?.role === "WARDEN";
@@ -580,7 +583,8 @@ const UserDetailsPage = () => {
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Payroll Month</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Amount</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Mode</TableHead>
-                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-8 text-right">Status</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Status</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-8 text-right">Actions</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -599,13 +603,26 @@ const UserDetailsPage = () => {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-5 font-bold text-gray-700 text-xs uppercase tracking-wider">{s.paymentMethod || 'N/A'}</TableCell>
-                                                    <TableCell className="px-8 py-5 text-right">
+                                                    <TableCell className="px-4 py-5">
                                                         <Badge className={`rounded-lg px-3 py-1 font-bold text-[9px] uppercase tracking-widest border shadow-none ${s.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
                                                             s.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' :
                                                                 'bg-rose-50 text-rose-700 border-rose-100'
                                                             }`}>
                                                             {s.status}
                                                         </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="px-8 py-5 text-right">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setSelectedSalary(s);
+                                                                setIsSlipDialogOpen(true);
+                                                            }}
+                                                            className="h-8 px-3 rounded-xl text-[9px] font-bold uppercase tracking-wider text-indigo-600 hover:bg-indigo-50"
+                                                        >
+                                                            View Slip
+                                                        </Button>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -770,6 +787,23 @@ const UserDetailsPage = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Salary Slip Dialog */}
+            <Dialog open={isSlipDialogOpen} onOpenChange={setIsSlipDialogOpen}>
+                <DialogContent className="max-w-3xl p-0 bg-transparent border-none overflow-y-auto max-h-[95vh] shadow-none">
+                    {selectedSalary && (
+                        <SalarySlip
+                            salary={{
+                                ...selectedSalary,
+                                StaffProfile: {
+                                    User: user,
+                                    designation: user.role === 'WARDEN' ? 'Warden' : 'Staff'
+                                }
+                            }}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
 
             {/* Management Dialogs */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

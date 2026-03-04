@@ -45,6 +45,7 @@ import { toast } from "sonner";
 import Loader from "@/components/ui/Loader";
 import ActivityFeed from "@/components/admin/ActivityFeed";
 import { generateInvoice } from "@/lib/utils/invoice-generator";
+import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
 
 const DetailItem = ({ icon: Icon, label, value, color = "text-indigo-600" }) => (
     <div className="flex items-start gap-4">
@@ -505,7 +506,8 @@ const ResidentDetailContent = () => {
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Date</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Type</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Amount</TableHead>
-                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-8 text-right">Status</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-8 text-center">Status</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-8 text-right">Actions</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -520,16 +522,23 @@ const ResidentDetailContent = () => {
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-5 font-bold text-gray-900 text-xs">PKR {p.amount.toLocaleString()}</TableCell>
-                                                    <TableCell className="px-8 py-5 text-right">
+                                                    <TableCell className="px-8 py-5 text-center">
                                                         <Badge className={`rounded-full px-4 py-1.5 font-bold text-[8px] uppercase tracking-widest border shadow-none ${p.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
                                                             {p.status}
                                                         </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="px-8 py-5 text-right">
+                                                        <UnifiedReceipt data={p} type="payment">
+                                                            <Button variant="ghost" size="sm" className="h-8 px-3 rounded-xl text-[9px] font-bold uppercase tracking-wider text-indigo-600 hover:bg-indigo-50">
+                                                                View Receipt
+                                                            </Button>
+                                                        </UnifiedReceipt>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
                                             {(!userDetails?.payments || userDetails.payments.length === 0) && (
                                                 <TableRow>
-                                                    <TableCell colSpan={4} className="h-60 text-center">
+                                                    <TableCell colSpan={5} className="h-60 text-center">
                                                         <History className="h-10 w-10 text-gray-100 mx-auto mb-3" />
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">No Payments Yet</p>
                                                     </TableCell>

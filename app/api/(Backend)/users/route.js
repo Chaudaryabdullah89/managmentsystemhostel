@@ -3,6 +3,7 @@ import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { generateUID, generateRegNumber, UID_PREFIXES } from "@/lib/uid-generator";
 import { sendEmail } from "@/lib/utils/sendmail";
 import { welcomeEmail } from "@/lib/utils/emailTemplates";
@@ -127,14 +128,21 @@ export async function POST(request) {
 
         const hashedPassword = await bcrypt.hash(password || "password123", 10);
 
+        const userId = crypto.randomUUID();
+        const uid = generateUID(UID_PREFIXES.USER, userId);
+        const regNumber = generateRegNumber();
+
         const newUser = await prisma.user.create({
             data: {
+                id: userId,
                 name,
                 email,
                 password: hashedPassword,
                 phone,
                 role: role,
                 cnic,
+                uid,
+                regNumber,
                 hostelId: hostelId || null,
                 canManageExpenses: !!canManageExpenses,
                 canManageMess: !!canManageMess,
@@ -167,14 +175,6 @@ export async function POST(request) {
             }
         });
 
-        // Generate and assign UID & Registration Number
-        const uid = generateUID(UID_PREFIXES.USER, newUser.id);
-        const regNumber = generateRegNumber();
-        const updatedUser = await prisma.user.update({
-            where: { id: newUser.id },
-            data: { uid, regNumber }
-        });
-
         // Fetch hostel name for email
         let hostelName = null;
         if (hostelId) {
@@ -193,7 +193,7 @@ export async function POST(request) {
         return NextResponse.json({
             success: true,
             message: `User ${name} created successfully as ${role}`,
-            user: updatedUser
+            user: newUser
         });
     } catch (error) {
         console.error("User Creation Error:", error);

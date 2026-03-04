@@ -32,8 +32,9 @@ import {
 } from "@/components/ui/select";
 import { format } from "date-fns";
 import Loader from "@/components/ui/Loader";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { checkAuth } from "@/hooks/Authstate";
+import SalarySlip from "@/components/SalarySlip";
 
 const WardenProfilePage = () => {
     const params = useParams();
@@ -41,8 +42,10 @@ const WardenProfilePage = () => {
     const { data: payments, isLoading: paymentsLoading } = useWardenPayments(params.id);
     const payWarden = usePayWarden();
 
-    const [isPayDialogOpen, setIsPayDialogOpen] = React.useState(false);
-    const [formData, setFormData] = React.useState({
+    const [isPayDialogOpen, setIsPayDialogOpen] = useState(false);
+    const [isSlipDialogOpen, setIsSlipDialogOpen] = useState(false);
+    const [selectedPayment, setSelectedPayment] = useState(null);
+    const [formData, setFormData] = useState({
         amount: "0",
         basicSalary: "0",
         bonuses: "0",
@@ -427,7 +430,7 @@ const WardenProfilePage = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-8 px-6 border-l border-gray-100 md:h-12">
+                                        <div className="flex items-center gap-4 px-6 border-l border-gray-100 md:h-12">
                                             <div className="text-right">
                                                 <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 block mb-0.5">Base + Bonus</span>
                                                 <p className="text-[11px] font-bold text-gray-900">PKR {(payment.basicSalary + payment.bonuses).toLocaleString()}</p>
@@ -436,10 +439,22 @@ const WardenProfilePage = () => {
                                                 <span className="text-[8px] font-black uppercase tracking-widest text-rose-400 block mb-0.5">Deductions</span>
                                                 <p className="text-[11px] font-bold text-rose-600">PKR {payment.deductions.toLocaleString()}</p>
                                             </div>
-                                            <div className="text-right min-w-[120px]">
+                                            <div className="text-right min-w-[100px]">
                                                 <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 block mb-0.5">Total</span>
                                                 <p className="text-lg font-black text-gray-900 tracking-tight">PKR {payment.amount.toLocaleString()}</p>
                                             </div>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => {
+                                                    setSelectedPayment(payment);
+                                                    setIsSlipDialogOpen(true);
+                                                }}
+                                                className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-indigo-600 group/btn"
+                                                title="View Salary Slip"
+                                            >
+                                                <Eye className="h-4.5 w-4.5" />
+                                            </Button>
                                         </div>
                                     </div>
                                     {payment.notes && (
@@ -461,6 +476,23 @@ const WardenProfilePage = () => {
                     )}
                 </div>
             </main>
+
+            {/* Salary Slip Dialog */}
+            <Dialog open={isSlipDialogOpen} onOpenChange={setIsSlipDialogOpen}>
+                <DialogContent className="max-w-3xl p-0 bg-transparent border-none overflow-y-auto max-h-[95vh] shadow-none">
+                    {selectedPayment && (
+                        <SalarySlip
+                            salary={{
+                                ...selectedPayment,
+                                StaffProfile: {
+                                    User: user,
+                                    designation: user.designation || "Warden"
+                                }
+                            }}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };

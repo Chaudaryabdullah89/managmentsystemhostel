@@ -133,10 +133,13 @@ const BookingDetailsPage = () => {
     );
 
     const totalPaid = booking.Payment?.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + curr.amount, 0) || 0;
-    // totalAmount already includes security deposit + advance rent
-    const totalPayable = (booking.totalAmount || 0);
-    const balance = totalPayable - totalPaid;
+    // totalAmount already includes securityDeposit + advance rent — do NOT add securityDeposit again
+    const totalPayable = booking.totalAmount || 0;
+    const balance = Math.max(0, totalPayable - totalPaid);
     const paymentProgress = totalPayable > 0 ? ((totalPaid / totalPayable) * 100).toFixed(0) : 0;
+    // Monthly rent: prefer stored booking value, then room field, then derive from totalAmount
+    const monthlyRentDisplay = booking.monthlyRent || booking.Room?.montlyrent || booking.Room?.price || Math.max(0, (booking.totalAmount || 0) - (booking.securityDeposit || 0));
+    const securityDepositDisplay = booking.securityDeposit || 0;
 
     const getStatusStyle = (status) => {
         switch (status?.toUpperCase()) {
@@ -239,8 +242,8 @@ const BookingDetailsPage = () => {
                             {[
                                 { label: 'Check-In', value: booking.checkIn ? format(new Date(booking.checkIn), 'MMM dd, yyyy') : 'N/A', icon: Calendar, sub: 'Target Date' },
                                 { label: 'Check-Out', value: booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'No End Date', icon: Clock, sub: 'End Date' },
-                                { label: 'Monthly Rent', value: `PKR ${(booking.monthlyRent || booking.Room?.montlyrent || booking.Room?.price || (booking.totalAmount - (booking.securityDeposit || 0))).toLocaleString()}`, icon: Receipt, sub: 'Per Month' },
-                                { label: 'Security Deposit', value: `PKR ${booking.securityDeposit?.toLocaleString() || '0'}`, icon: CreditCard, sub: 'Refundable' }
+                                { label: 'Monthly Rent', value: `PKR ${monthlyRentDisplay.toLocaleString()}`, icon: Receipt, sub: 'Per Month' },
+                                { label: 'Security Deposit', value: `PKR ${securityDepositDisplay.toLocaleString()}`, icon: CreditCard, sub: 'Refundable' }
                             ].map((item, i) => (
                                 <div key={i} className="flex flex-col gap-2 group">
                                     <div className="flex items-center gap-2">
@@ -480,77 +483,78 @@ const BookingDetailsPage = () => {
                 </div>
             </main>
 
-            {/* Printable Receipt */}
-            <div className="hidden print:block bg-white text-black p-8 max-w-3xl mx-auto">
+            {/* Printable Receipt - Aligned with UnifiedReceipt style */}
+            <div className="hidden print:block bg-white text-slate-900 p-12 max-w-3xl mx-auto font-sans">
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+                    @media print {
+                        body { background: white !important; }
+                        * { font-family: 'Outfit', sans-serif !important; }
+                    }
+                ` }} />
+
                 {/* Header */}
-                <div className="border-b-2 border-gray-900 pb-6 mb-6 flex justify-between items-start">
+                <div className="text-center border-b-2 border-dashed border-slate-200 pb-8 mb-8">
+                    <p className="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em] mb-2">Mubarak Group of Hostels (MGH)</p>
+                    <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Booking Agreement</h1>
+                    <div className="flex justify-center gap-3 mt-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        <span>{booking.uid || `BKG-${bookingId.slice(-8).toUpperCase()}`}</span>
+                        <span>•</span>
+                        <span>{format(new Date(), 'MMM dd, yyyy')}</span>
+                    </div>
+                    <div className="mt-4 inline-block px-4 py-1.5 bg-slate-100 rounded-full text-[10px] font-black uppercase text-slate-600 tracking-wider">
+                        {booking.status}
+                    </div>
+                </div>
+
+                {/* Grid Info */}
+                <div className="grid grid-cols-2 gap-12 mb-10">
                     <div>
-                        <h1 className="text-2xl font-black uppercase tracking-tight text-gray-900">Hostel Management</h1>
-                        <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">Official Payment Receipt</p>
+                        <h3 className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-3 pb-2 border-b border-slate-100">Recipient Detail</h3>
+                        <p className="font-extrabold text-slate-900 uppercase text-sm">{booking.User?.name}</p>
+                        <p className="text-xs text-slate-500 mt-1.5 font-medium">{booking.User?.email}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 font-medium">{booking.User?.phone || 'N/A'}</p>
                     </div>
                     <div className="text-right">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Receipt No.</p>
-                        <p className="text-sm font-bold text-gray-900 font-mono">{booking.uid || bookingId.slice(-12).toUpperCase()}</p>
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">Date</p>
-                        <p className="text-sm font-bold text-gray-900">{format(new Date(), 'MMM dd, yyyy')}</p>
+                        <h3 className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-3 pb-2 border-b border-slate-100">Allocation Context</h3>
+                        <p className="font-extrabold text-slate-900 uppercase text-sm">{booking.Room?.Hostel?.name || 'N/A'}</p>
+                        <p className="text-xs text-slate-500 mt-1.5 font-medium">Room {booking.Room?.roomNumber || 'N/A'} • Floor {booking.Room?.floor || 'N/A'}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 font-medium">PKR {monthlyRentDisplay.toLocaleString()} / Month</p>
                     </div>
                 </div>
 
-                {/* Resident Details */}
-                <div className="grid grid-cols-2 gap-8 mb-8">
-                    <div>
-                        <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">Billed To</h3>
-                        <p className="font-bold text-gray-900 uppercase text-sm">{booking.User?.name}</p>
-                        <p className="text-xs text-gray-600 mt-1">Phone: {booking.User?.phone || 'N/A'}</p>
-                        <p className="text-xs text-gray-600 mt-0.5">CNIC: {booking.User?.cnic || 'N/A'}</p>
-                    </div>
-                    <div>
-                        <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">Room Information</h3>
-                        <p className="font-bold text-gray-900 uppercase text-sm">{booking.Room?.Hostel?.name || 'N/A'}</p>
-                        <p className="text-xs text-gray-600 mt-1">Room {booking.Room?.roomNumber || 'N/A'} (Floor {booking.Room?.floor || 'N/A'})</p>
-                        <p className="text-xs text-gray-600 mt-0.5">Stay: {booking.checkIn ? format(new Date(booking.checkIn), 'MMM dd, yyyy') : 'N/A'} - {booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'N/A'}</p>
+                {/* Summary Table */}
+                <div className="mb-10 pt-4 border-t border-slate-100">
+                    <h3 className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em] mb-4">Financial Summative</h3>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center py-3 border-b border-slate-50">
+                            <span className="text-xs font-bold text-slate-500 uppercase">Monthly Rent Settlement</span>
+                            <span className="text-xs font-black text-slate-900 font-mono">PKR {monthlyRentDisplay.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-3 border-b border-slate-50">
+                            <span className="text-xs font-bold text-slate-500 uppercase">Security Deposit (Refundable)</span>
+                            <span className="text-xs font-black text-slate-900 font-mono">PKR {securityDepositDisplay.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-3">
+                            <span className="text-xs font-black text-slate-900 uppercase">Gross Total Payable</span>
+                            <span className="text-xs font-black text-slate-900 font-mono">PKR {totalPayable.toLocaleString()}</span>
+                        </div>
                     </div>
                 </div>
 
-                {/* Payment Breakdown */}
-                <div className="mb-8">
-                    <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-200 pb-2 mb-3">Payment Summary</h3>
-                    <table className="w-full text-left text-sm mb-4">
-                        <thead>
-                            <tr className="border-b border-gray-200">
-                                <th className="py-2 text-xs font-bold text-gray-400 uppercase tracking-widest">Description</th>
-                                <th className="py-2 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Amount (PKR)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr className="border-b border-gray-100">
-                                <td className="py-3 font-medium">Monthly Rent</td>
-                                <td className="py-3 text-right font-mono">{(booking.monthlyRent || booking.Room?.montlyrent || booking.Room?.price || (booking.totalAmount - (booking.securityDeposit || 0))).toLocaleString()}</td>
-                            </tr>
-                            <tr className="border-b border-gray-100">
-                                <td className="py-3 font-medium">Security Deposit</td>
-                                <td className="py-3 text-right font-mono">{booking.securityDeposit?.toLocaleString() || '0'}</td>
-                            </tr>
-                            <tr>
-                                <td className="py-3 font-bold text-gray-900">Total Payable</td>
-                                <td className="py-3 text-right font-bold font-mono text-gray-900">{totalPayable.toLocaleString()}</td>
-                            </tr>
-                            <tr>
-                                <td className="py-2 font-bold text-gray-900">Total Paid</td>
-                                <td className="py-2 text-right font-bold font-mono text-gray-900">{totalPaid.toLocaleString()}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div className="flex justify-between items-center bg-gray-50 p-4 rounded-xl border border-gray-200">
-                        <span className="font-black uppercase tracking-tight text-gray-900">Balance Due</span>
-                        <span className="font-black font-mono text-xl text-gray-900">PKR {balance.toLocaleString()}</span>
+                {/* Final Total Box */}
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-8 mb-10 text-center flex flex-col items-center">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Net Outstanding Balance</span>
+                    <div className="text-3xl font-black text-slate-900 tracking-tighter">
+                        PKR {balance.toLocaleString()}
                     </div>
                 </div>
 
                 {/* Footer */}
-                <div className="mt-16 pt-8 border-t border-gray-200 text-center">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Thank you for your business</p>
-                    <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest mt-1">This is a system generated receipt and does not require a physical signature.</p>
+                <div className="mt-16 pt-8 border-t border-slate-100 text-center">
+                    <p className="text-[9px] font-extrabold text-slate-400 uppercase tracking-[0.1em]">Verified Digital Ledger Record • MGH</p>
+                    <p className="text-[8px] font-bold text-slate-300 uppercase tracking-[0.2em] mt-2">This is an electronically generated document and requires no physical signature.</p>
                 </div>
             </div>
         </div>

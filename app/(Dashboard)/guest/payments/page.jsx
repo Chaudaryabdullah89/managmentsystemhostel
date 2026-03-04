@@ -72,11 +72,13 @@ const GuestPayments = () => {
     }, [activeBooking, payments]);
 
     const stats = useMemo(() => {
-        const total = activeBooking ? (activeBooking.totalAmount || 0) + (activeBooking.securityDeposit || 0) : 0;
+        // totalAmount in DB already stores: monthlyRent + securityDeposit
+        // Do NOT add securityDeposit again
+        const total = activeBooking ? (activeBooking.totalAmount || 0) : 0;
         const paid = payments.filter(p => p.status === 'PAID' && p.type !== 'SECURITY_REFUND').reduce((sum, p) => sum + p.amount, 0);
         const refunded = payments.filter(p => p.status === 'REFUNDED' || p.type === 'SECURITY_REFUND').reduce((sum, p) => sum + p.amount, 0);
         const pending = payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + p.amount, 0);
-        const balance = Math.max(0, total - (paid - refunded));
+        const balance = Math.max(0, total - paid + refunded);
         return { total, paid, refunded, balance, pending };
     }, [activeBooking, payments]);
 

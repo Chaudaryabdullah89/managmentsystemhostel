@@ -75,8 +75,9 @@ const BookingDetailCard = ({ booking }) => {
 
     const financialData = useMemo(() => {
         const totalPaid = booking.Payment?.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + curr.amount, 0) || 0;
-        const totalDue = (booking.totalAmount || 0) + (booking.securityDeposit || 0);
-        const balance = totalDue - totalPaid;
+        // totalAmount in DB already stores monthlyRent + securityDeposit — do NOT add securityDeposit again
+        const totalDue = booking.totalAmount || 0;
+        const balance = Math.max(0, totalDue - totalPaid);
         const progress = totalDue > 0 ? ((totalPaid / totalDue) * 100).toFixed(0) : 0;
 
         return { totalPaid, totalDue, balance, progress };

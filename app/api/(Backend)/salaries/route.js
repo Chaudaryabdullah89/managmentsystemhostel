@@ -102,9 +102,13 @@ export async function POST(request) {
             const deductions = customDeductions || 0;
             const amount = customAmount || (basicSalary + allowances + bonuses - deductions);
 
+            const salaryId = crypto.randomUUID();
+            const salaryUid = `SAL-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+
             const newSalary = await prisma.salary.create({
                 data: {
-                    id: crypto.randomUUID(),
+                    id: salaryId,
+                    uid: salaryUid,
                     staffProfileId: staffId,
                     month,
                     amount,
@@ -122,15 +126,6 @@ export async function POST(request) {
                     }
                 }
             });
-
-            // Generate and assign UID
-            const salaryUid = `SAL-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
-            await prisma.salary.update({
-                where: { id: newSalary.id },
-                data: { uid: salaryUid }
-            });
-
-            newSalary.uid = salaryUid;
 
             // Send salary notification email
             if (staff.User?.email) {
@@ -177,9 +172,13 @@ export async function POST(request) {
             });
 
             if (!existing) {
+                const salaryId = crypto.randomUUID();
+                const salaryUid = `SAL-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+
                 const newSalary = await prisma.salary.create({
                     data: {
-                        id: crypto.randomUUID(),
+                        id: salaryId,
+                        uid: salaryUid,
                         staffProfileId: staff.id,
                         month: month,
                         amount: (staff.basicSalary || 0) + (staff.allowances || 0),
@@ -192,11 +191,6 @@ export async function POST(request) {
                     }
                 });
 
-                const salaryUid = `SAL-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
-                await prisma.salary.update({
-                    where: { id: newSalary.id },
-                    data: { uid: salaryUid }
-                });
                 results.created++;
 
                 // Send salary notification email

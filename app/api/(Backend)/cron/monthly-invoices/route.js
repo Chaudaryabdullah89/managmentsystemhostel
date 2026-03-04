@@ -60,6 +60,9 @@ export async function GET(req) {
           }
         });
 
+        // Use booking.monthlyRent (the stored value), fallback to room's montlyrent field
+        const rentAmount = booking.monthlyRent || booking.Room.montlyrent || booking.Room.price || 0;
+
         if (!existingPayment) {
           // 3. Create new payment record
           const newPayment = await prisma.payment.create({
@@ -67,7 +70,7 @@ export async function GET(req) {
               id: crypto.randomUUID(),
               userId: booking.userId,
               bookingId: booking.id,
-              amount: booking.Room.monthlyrent || 72000,
+              amount: rentAmount,
               type: 'RENT',
               status: 'PENDING',
               dueDate: new Date(today.getFullYear(), today.getMonth(), 10),
@@ -82,7 +85,7 @@ export async function GET(req) {
           await prisma.booking.update({
             where: { id: booking.id },
             data: {
-              totalAmount: { increment: booking.Room.monthlyrent || 72000 }
+              totalAmount: { increment: rentAmount }
             }
           });
 
@@ -127,12 +130,12 @@ export async function GET(req) {
                   <td style="padding:6px 0; color:#6b7280;">Due date</td>
                   <td style="padding:6px 0; color:#111827; font-weight:600; text-align:right;">
                     ${new Date(newPayment.dueDate).toLocaleDateString()}
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:16px 0 4px; color:#6b7280; font-size:12px;">This month</td>
-                  <td style="padding:16px 0 4px; color:#111827; font-weight:700; text-align:right;">
-                    PKR ${booking.Room.monthlyrent.toLocaleString()}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 0 4px; color:#6b7280; font-size:12px;">This month</td>
+                <td style="padding:16px 0 4px; color:#111827; font-weight:700; text-align:right;">
+                  PKR ${rentAmount.toLocaleString()}
                   </td>
                 </tr>
                 <tr>

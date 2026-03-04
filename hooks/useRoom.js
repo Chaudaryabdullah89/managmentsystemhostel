@@ -92,6 +92,8 @@ export function useCreateCleaningLog() {
         },
         onSuccess: () => {
             toast.success("Cleaning log added successfully");
+            queryClient.invalidateQueries({ queryKey: ["warden", "logs"] });
+            queryClient.invalidateQueries({ queryKey: ["rooms"] });
         },
     });
 }
@@ -110,6 +112,8 @@ export function useCreateLaundryLog() {
         },
         onSuccess: () => {
             toast.success("Laundry log recorded successfully");
+            queryClient.invalidateQueries({ queryKey: ["warden", "logs"] });
+            queryClient.invalidateQueries({ queryKey: ["rooms"] });
         },
     });
 }
@@ -183,6 +187,7 @@ export function useUpdateCleaningLog() {
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["rooms"] });
+            queryClient.invalidateQueries({ queryKey: ["warden", "logs"] });
         },
         onSuccess: () => {
             toast.success("Cleaning protocol updated");
@@ -219,6 +224,7 @@ export function useUpdateLaundryLog() {
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["rooms"] });
+            queryClient.invalidateQueries({ queryKey: ["warden", "logs"] });
         },
         onSuccess: () => {
             toast.success("Laundry log updated");

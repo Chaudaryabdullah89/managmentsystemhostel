@@ -139,7 +139,15 @@ const GuestDashboard = () => {
                                         <>
                                             <span className="h-1 w-1 rounded-full bg-gray-200" />
                                             <Badge className="bg-gray-100 text-gray-500 border-none text-[8px] font-mono font-bold px-1.5 py-0">
-                                                {user.uid}
+                                                ID: {user.uid}
+                                            </Badge>
+                                        </>
+                                    )}
+                                    {user?.regNumber && (
+                                        <>
+                                            <span className="h-1 w-1 rounded-full bg-gray-200" />
+                                            <Badge className="bg-indigo-50 text-indigo-600 border-none text-[8px] font-black px-1.5 py-0 uppercase">
+                                                REG: {user.regNumber}
                                             </Badge>
                                         </>
                                     )}

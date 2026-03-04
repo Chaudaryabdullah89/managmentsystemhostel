@@ -121,13 +121,56 @@ const SalarySlip = ({ salary }) => {
                 <div className="grid grid-cols-2 gap-3 pt-4 print:hidden">
                     <Button
                         variant="outline"
-                        onClick={() => window.print()}
+                        onClick={() => {
+                            const win = window.open('', '_blank', 'width=500,height=800');
+                            if (win) {
+                                win.document.write(`
+                                    <html>
+                                        <head>
+                                            <title>Salary Slip - ${salary.id?.toUpperCase()}</title>
+                                            <style>
+                                                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+                                                body { font-family: 'Outfit', sans-serif; padding: 40px; background: white; }
+                                                @media print { body { padding: 0; } }
+                                                ${document.querySelector('style')?.innerHTML || ''}
+                                            </style>
+                                        </head>
+                                        <body>
+                                            ${document.querySelector('.print-slip-content')?.innerHTML || 'Content not found'}
+                                            <script>window.onload = () => { window.print(); }</script>
+                                        </body>
+                                    </html>
+                                `);
+                                win.document.close();
+                            }
+                        }}
                         className="h-11 rounded-xl border-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider hover:bg-slate-50 transition-all"
                     >
                         <Printer className="h-3.5 w-3.5 mr-2 text-slate-400" /> Print Slip
                     </Button>
                     <Button
-                        onClick={() => window.print()}
+                        onClick={() => {
+                            const win = window.open('', '_blank', 'width=500,height=800');
+                            if (win) {
+                                win.document.write(`
+                                    <html>
+                                        <head>
+                                            <title>Salary Slip - ${salary.id?.toUpperCase()}</title>
+                                            <style>
+                                                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap');
+                                                body { font-family: 'Outfit', sans-serif; padding: 40px; background: white; }
+                                                @media print { body { padding: 0; } }
+                                            </style>
+                                        </head>
+                                        <body>
+                                            ${document.querySelector('.print-slip-content')?.innerHTML || 'Content not found'}
+                                            <script>window.onload = () => { window.print(); }</script>
+                                        </body>
+                                    </html>
+                                `);
+                                win.document.close();
+                            }
+                        }}
                         className="bg-indigo-600 h-11 rounded-xl text-white text-[10px] font-bold uppercase tracking-wider shadow-lg shadow-indigo-100 transition-all active:scale-95 hover:bg-indigo-700 border-none"
                     >
                         <Download className="h-3.5 w-3.5 mr-2 text-white" /> Download
@@ -136,7 +179,7 @@ const SalarySlip = ({ salary }) => {
             </div>
 
             {/* Printable Content (Hidden on screen) */}
-            <div className="hidden print:block bg-white text-black p-10 font-sans">
+            <div className="hidden print:block bg-white text-black p-10 font-sans print-slip-content">
                 <div className="text-center border-b-2 border-black pb-8 mb-8">
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">MGH - Mubarak Group Of Hostels</p>
                     <h1 className="text-2xl font-black uppercase">Official Pay Slip</h1>
@@ -179,7 +222,7 @@ const SalarySlip = ({ salary }) => {
                     )}
                     {Number(salary.deductions) > 0 && (
                         <div className="flex justify-between">
-                            <span className="text-sm text-rose-500">Ductions</span>
+                            <span className="text-sm text-rose-500">Deductions</span>
                             <span className="text-sm font-bold text-rose-600">-{(Number(salary.deductions) || 0).toLocaleString()}</span>
                         </div>
                     )}

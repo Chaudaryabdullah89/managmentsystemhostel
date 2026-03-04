@@ -152,13 +152,28 @@ const ReceiptModal = ({ children, booking }) => {
     };
 
     const handlePrint = () => {
-        window.print();
+        const receiptWindow = window.open('', '_blank', 'width=850,height=900');
+        if (!receiptWindow) {
+            toast.error("Pop-up blocked!");
+            return;
+        }
+        receiptWindow.document.write(generateReceiptHTML());
+        receiptWindow.document.close();
+
+        receiptWindow.onload = () => {
+            receiptWindow.print();
+        };
+        setTimeout(() => {
+            if (receiptWindow) receiptWindow.print();
+        }, 500);
     };
 
     const handleViewInvoice = () => {
         const receiptWindow = window.open('', '_blank', 'width=850,height=900');
-        receiptWindow.document.write(generateReceiptHTML());
-        receiptWindow.document.close();
+        if (receiptWindow) {
+            receiptWindow.document.write(generateReceiptHTML());
+            receiptWindow.document.close();
+        }
     };
 
     return (

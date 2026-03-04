@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { randomUUID } from "crypto";
 import prisma from "@/lib/prisma";
+import { generateUID, generateRegNumber, UID_PREFIXES } from "@/lib/uid-generator";
 
 
 interface RegisterData {
@@ -70,14 +71,20 @@ export default class AuthService {
 
             const userRole = role || "GUEST";
 
+            const userId = randomUUID();
+            const uid = generateUID(UID_PREFIXES.USER, userId);
+            const regNumber = generateRegNumber();
+
             const user = await prisma.user.create({
                 data: {
-                    id: randomUUID(),
+                    id: userId,
                     name,
                     email,
                     password: hashedPassword,
                     phone,
                     role: userRole as any,
+                    uid,
+                    regNumber,
                     updatedAt: new Date(),
                 },
             });

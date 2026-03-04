@@ -76,7 +76,7 @@ const UnifiedReceipt = ({ data, type, children }) => {
                 mapped.date = data.createdAt;
                 mapped.status = data.status;
                 mapped.customerName = data.User?.name;
-                mapped.customerDetail = data.User?.email;
+                mapped.customerDetail = `${data.User?.regNumber ? `REG # ${data.User.regNumber} • ` : ''}${data.User?.email}`;
                 mapped.contextLabel = "Allocation";
                 mapped.contextValue = `${data.Room?.Hostel?.name} - Room ${data.Room?.roomNumber}`;
                 mapped.items = [
@@ -94,7 +94,8 @@ const UnifiedReceipt = ({ data, type, children }) => {
                 mapped.date = data.date || data.createdAt || new Date();
                 mapped.status = data.status || (data.payments ? 'SETTLED' : 'PENDING');
                 mapped.customerName = data.User?.name || data.Booking?.User?.name || data.user?.name || 'N/A';
-                mapped.customerDetail = data.User?.email || data.Booking?.User?.email || data.user?.email || '';
+                const paymentUser = data.User || data.Booking?.User || data.user;
+                mapped.customerDetail = `${paymentUser?.regNumber ? `REG # ${paymentUser.regNumber} • ` : ''}${paymentUser?.email || ''}`;
                 mapped.contextLabel = data.payments ? "Statement Period" : "Reference";
                 mapped.contextValue = data.payments ? "Lifetime Records" : `${data.Booking?.Room?.Hostel?.name || 'Service Payment'}`;
                 mapped.items = data.payments ? [
@@ -116,7 +117,7 @@ const UnifiedReceipt = ({ data, type, children }) => {
                 mapped.date = data.month;
                 mapped.status = data.status || 'PAID';
                 mapped.customerName = data.StaffProfile?.User?.name;
-                mapped.customerDetail = `${data.StaffProfile?.designation} - ${data.StaffProfile?.User?.email}`;
+                mapped.customerDetail = `${data.StaffProfile?.User?.regNumber ? `REG # ${data.StaffProfile.User.regNumber} • ` : ''}${data.StaffProfile?.designation} - ${data.StaffProfile?.User?.email}`;
                 mapped.contextLabel = "Organization";
                 mapped.contextValue = data.StaffProfile?.User?.Hostel_User_hostelIdToHostel?.name || "MGH Admin Office";
                 mapped.items = [
@@ -245,12 +246,25 @@ const UnifiedReceipt = ({ data, type, children }) => {
     };
 
     const handleAction = (actionType) => {
+        const win = window.open('', '_blank', 'width=500,height=800');
+        if (!win) {
+            toast.error("Pop-up blocked! Please allow pop-ups to view/print the receipt.");
+            return;
+        }
+        win.document.write(generateHTML());
+        win.document.close();
+
         if (actionType === 'print') {
-            window.print();
-        } else {
-            const win = window.open('', '_blank', 'width=500,height=800');
-            win.document.write(generateHTML());
-            win.document.close();
+            // Wait for content to load then print
+            win.onload = () => {
+                win.print();
+                // Optionally close after print
+                // win.close();
+            };
+            // Fallback for some browsers
+            setTimeout(() => {
+                win.print();
+            }, 500);
         }
     };
 

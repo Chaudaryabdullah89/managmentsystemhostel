@@ -36,17 +36,19 @@ export default function RootLayout({
   return (
     <>
       <SidebarProvider>
-        <AppSidebar />
+        <div className="print:hidden">
+          <AppSidebar />
+        </div>
         <main className="flex flex-col flex-1 min-w-0 min-h-screen">
           {isCheckedOut && (
-            <div className="bg-rose-600 text-white py-2 px-4 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top-full duration-700 z-[60] sticky top-0">
+            <div className="bg-rose-600 text-white py-2 px-4 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top-full duration-700 z-[60] sticky top-0 print:hidden">
               <AlertCircle className="h-3.5 w-3.5" />
               <p className="text-[10px] font-bold uppercase tracking-[0.2em]">
                 Portal Restricted &bull; Read-only mode active (Residency Concluded)
               </p>
             </div>
           )}
-          <header className={`flex h-16 items-center gap-2 border-b px-4 shrink-0 bg-white ${!isCheckedOut ? 'sticky top-0 z-50' : ''}`}>
+          <header className={`flex h-16 items-center gap-2 border-b px-4 shrink-0 bg-white print:hidden ${!isCheckedOut ? 'sticky top-0 z-50' : ''}`}>
             <SidebarTrigger />
             <div className="flex items-center justify-between min-w-0 w-full">
               <div></div>
@@ -87,9 +89,15 @@ export default function RootLayout({
 
             {children}
           </div>
-          <Footer />
+          <div className="print:hidden">
+            <Footer />
+          </div>
         </main>
-        {(user?.role === 'RESIDENT' || user?.role === 'GUEST') && <AiAssistant />}
+        {(user?.role === 'RESIDENT' || user?.role === 'GUEST') && (
+          <div className="print:hidden">
+            <AiAssistant />
+          </div>
+        )}
       </SidebarProvider>
     </>
   )
