@@ -44,7 +44,7 @@ model AiMessage {
     id        String   @id @default(cuid())
     sessionId String
     role      String // "USER" or "AI"
-    content   String   @db.Text
+    content   String   @aiDb.Text
     intent    String?
     score     Float?
     sentiment String? // "HAPPY", "ANGRY", "NEUTRAL"

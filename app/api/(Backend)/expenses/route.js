@@ -29,17 +29,47 @@ export async function GET(request) {
 
             // Fallback: If hostelId is missing in JWT, fetch it from DB
             if (!wardenHostelId) {
-                const wardenProfile = await prisma.user.findUnique({
-                    where: { id: auth.user.userId || auth.user.id },
-                    select: { hostelId: true }
-                });
-                wardenHostelId = wardenProfile?.hostelId;
+                const targetId = auth.user.userId || auth.user.id || auth.user.sub;
+                console.log(`[API] WARDEN fallback fetch for ID: ${targetId}`);
+                if (targetId) {
+                    const wardenProfile = await prisma.user.findUnique({
+                        where: { id: targetId },
+                        select: {
+                            hostelId: true,
+                            canManageExpenses: true,
+                            canManageMess: true,
+                            canManageGeneral: true,
+                            canManageUtilities: true,
+                            canManageMaintenance: true,
+                            canManageSalaries: true
+                        }
+                    });
+                    wardenHostelId = wardenProfile?.hostelId;
+                    // Also sync permissions if missing in JWT
+                    if (wardenProfile) {
+                        if (wardenProfile.canManageExpenses) auth.user.canManageExpenses = true;
+                        if (wardenProfile.canManageMess) auth.user.canManageMess = true;
+                        if (wardenProfile.canManageGeneral) auth.user.canManageGeneral = true;
+                        if (wardenProfile.canManageUtilities) auth.user.canManageUtilities = true;
+                        if (wardenProfile.canManageMaintenance) auth.user.canManageMaintenance = true;
+                        if (wardenProfile.canManageSalaries) auth.user.canManageSalaries = true;
+                    }
+                }
             }
 
-            if (!hostelId) {
+            console.log(`[API] Warden ID check:`, { hostelId, wardenHostelId });
+
+            if (!hostelId || hostelId === 'all') {
                 hostelId = wardenHostelId;
             } else if (hostelId !== wardenHostelId && !auth.user.canManageExpenses) {
+                console.warn(`[API] Warden ${auth.user.email} attempted access to hostel ${hostelId}. Reverting to assigned ${wardenHostelId}.`);
                 hostelId = wardenHostelId;
+            }
+
+            // If still no hostelId found, they shouldn't see anything for "all"
+            if (!hostelId) {
+                console.error(`[API] CRITICAL: Warden ${auth.user.email} has no assigned hostelId in DB!`);
+                return NextResponse.json({ success: false, error: "Your account is not assigned to any hostel facility." }, { status: 403 });
             }
         }
 
@@ -58,6 +88,9 @@ export async function GET(request) {
             if (auth.user.canManageSalaries) allowedCategories.push('SALARY');
 
             if (allowedCategories.length === 0) {
+                // If they are a warden but have NO granular flags, usually they should see general things or we keep it restricted.
+                // However, to fix "not showing", let's check if they have any at all.
+                // If the user says it's not showing, they likely need at least some view access.
                 allowedCategories.push('NONE');
             }
         }
@@ -96,16 +129,24 @@ export async function POST(request) {
         const body = await request.json();
 
         // Security: Enforce Warden's hostel if they are a warden
-        if (auth.user.role === 'WARDEN' && !auth.user.canManageExpenses) {
+        if (auth.user.role === 'WARDEN') {
             let wardenHostelId = auth.user.hostelId;
             if (!wardenHostelId) {
-                const wardenProfile = await prisma.user.findUnique({
-                    where: { id: auth.user.userId || auth.user.id },
-                    select: { hostelId: true }
-                });
-                wardenHostelId = wardenProfile?.hostelId;
+                const targetId = auth.user.userId || auth.user.id || auth.user.sub;
+                if (targetId) {
+                    const wardenProfile = await prisma.user.findUnique({
+                        where: { id: targetId },
+                        select: { hostelId: true }
+                    });
+                    wardenHostelId = wardenProfile?.hostelId;
+                }
             }
-            body.hostelId = wardenHostelId;
+
+            if (wardenHostelId) {
+                body.hostelId = wardenHostelId;
+            } else {
+                return NextResponse.json({ success: false, error: "Permission Denied: No hostel assigned to your account." }, { status: 403 });
+            }
         }
 
         console.log("Inbound Expense Ingress:", body);

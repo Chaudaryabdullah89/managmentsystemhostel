@@ -91,7 +91,7 @@ export default class AuthService {
 
             const token = jwt.sign(
                 {
-                    userId: user.id, email: user.email, name: user.name, role: user.role,
+                    userId: user.id, email: user.email, name: user.name, role: user.role, hostelId: user.hostelId,
                     canManageExpenses: user.canManageExpenses,
                     canManageMess: user.canManageMess,
                     canManageGeneral: user.canManageGeneral,
@@ -172,7 +172,7 @@ export default class AuthService {
 
             const token = jwt.sign(
                 {
-                    userId: user.id, email: user.email, name: user.name, role: user.role,
+                    userId: user.id, email: user.email, name: user.name, role: user.role, hostelId: user.hostelId,
                     canManageExpenses: user.canManageExpenses,
                     canManageMess: user.canManageMess,
                     canManageGeneral: user.canManageGeneral,
