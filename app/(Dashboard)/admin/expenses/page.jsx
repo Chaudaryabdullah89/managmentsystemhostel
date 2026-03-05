@@ -88,16 +88,19 @@ const ExpensesPage = () => {
     const expenses = allExpenses || [];
 
     const allowedCategories = React.useMemo(() => {
-        if (!isWarden || user?.canManageExpenses) return CATEGORIES;
-
-        return CATEGORIES.filter(cat => {
-            if (cat.key === 'MESS') return user?.canManageMess;
-            if (cat.key === 'GENERAL') return user?.canManageGeneral;
-            if (cat.key === 'UTILITY_BILL') return user?.canManageUtilities;
-            if (cat.key === 'MAINTENANCE') return user?.canManageMaintenance;
-            if (cat.key === 'SALARY') return user?.canManageSalaries;
-            return false;
-        });
+        let filtered = CATEGORIES;
+        if (isWarden) {
+            filtered = CATEGORIES.filter(cat => cat.key !== 'SALARY');
+            if (user?.canManageExpenses) return filtered;
+            return filtered.filter(cat => {
+                if (cat.key === 'MESS') return user?.canManageMess;
+                if (cat.key === 'GENERAL') return user?.canManageGeneral;
+                if (cat.key === 'UTILITY_BILL') return user?.canManageUtilities;
+                if (cat.key === 'MAINTENANCE') return user?.canManageMaintenance;
+                return false;
+            });
+        }
+        return filtered;
     }, [isWarden, user]);
 
     if (statsLoading || expensesLoading) return <Loader label="Loading" subLabel="Getting expense data..." icon={Receipt} fullScreen={false} />;
@@ -162,7 +165,7 @@ const ExpensesPage = () => {
                         return (
                             <Link
                                 key={cat.key}
-                                href={`/admin/expenses/${cat.slug}`}
+                                href={cat.key === 'SALARY' ? '/admin/salaries' : `/admin/expenses/${cat.slug}`}
                                 className="bg-white border border-gray-100 rounded-[2rem] p-5 flex flex-col gap-4 shadow-sm hover:shadow-md hover:border-gray-200 transition-all group relative overflow-hidden"
                             >
                                 {/* Subtle bg accent — same as dashboard stat cards */}

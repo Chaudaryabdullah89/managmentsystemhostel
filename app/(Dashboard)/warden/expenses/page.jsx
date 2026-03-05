@@ -67,17 +67,6 @@ const CATEGORIES = [
         border: 'border-amber-100',
         perm: 'canManageMaintenance'
     },
-    {
-        key: 'SALARY',
-        label: 'Salary',
-        slug: 'salary',
-        Icon: BadgeDollarSign,
-        description: 'Staff wages & disbursements',
-        color: 'text-purple-600',
-        bg: 'bg-purple-50',
-        border: 'border-purple-100',
-        perm: 'canManageSalaries'
-    },
 ];
 
 const ExpensesPage = () => {
@@ -88,8 +77,7 @@ const ExpensesPage = () => {
         user?.canManageMess ||
         user?.canManageGeneral ||
         user?.canManageUtilities ||
-        user?.canManageMaintenance ||
-        user?.canManageSalaries;
+        user?.canManageMaintenance;
 
     const { data: statsData, isLoading: statsLoading } = useExpenseStats(user?.hostelId || 'all');
     const { data: allExpenses, isLoading: expensesLoading } = useExpenses({ hostelId: user?.hostelId });

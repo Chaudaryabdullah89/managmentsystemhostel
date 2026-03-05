@@ -133,8 +133,7 @@ export function AppSidebar() {
         user?.canManageMess ||
         user?.canManageGeneral ||
         user?.canManageUtilities ||
-        user?.canManageMaintenance ||
-        user?.canManageSalaries;
+        user?.canManageMaintenance;
 
     if (userRole === "warden" && !hasAnyExpensePermission) {
         navItems = navItems.filter((item) => item.title !== "Expenses")
