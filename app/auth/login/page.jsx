@@ -104,7 +104,7 @@ export default function LoginPage() {
                             <Building2 className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-lg font-bold tracking-tight">MGH</h1>
+                            <h1 className="text-lg font-bold tracking-tight">Hostel Management System</h1>
                             <p className="text-[10px] uppercase tracking-widest text-slate-400">
                                 Mubarak Group of Hostels
                             </p>
