@@ -53,7 +53,7 @@ export async function GET(request) {
             if (granularPerms.canManageSalaries) allowedCategories.push('SALARY');
 
             if (allowedCategories.length === 0) {
-                // Return something that yields zero rather than error if they have no perms
+
                 allowedCategories = ['NONE'];
             }
         }
