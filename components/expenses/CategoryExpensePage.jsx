@@ -73,7 +73,8 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
 
     // Granular permission check
     const hasPermission = isAdmin ||
-        user?.role ===  ||
+        user?.role === 'ADMIN' ||
+        user?.role === 'WARDEN' ||
         user?.canManageExpenses ||
         (category.perm && user?.[category.perm]);
 
