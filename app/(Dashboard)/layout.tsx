@@ -1,26 +1,44 @@
 "use client"
-import type { Metadata } from "next"
-// import "../../../"
-import { useContext } from "react"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/appsidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Footer } from "@/components/Footer"
-import { useAuth } from "@/contexts/AuthContext"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import useAuthStore, { checkAuth } from "@/hooks/Authstate"
 import { useBookings } from "@/hooks/useBooking"
-import { 
-  AlertCircle, 
-  ShieldAlert, 
-  Home,
-  Lock
-} from "lucide-react"
+import { AlertCircle, ShieldAlert, Home, LayoutList, LayoutDashboard } from "lucide-react"
 import HeaderNotices from "@/components/Dashboard/HeaderNotices"
 import AiAssistant from "@/components/Dashboard/AiAssistant"
 import { usePathname } from "next/navigation"
 import { NAVIGATION_ITEMS } from "@/lib/navigation"
 import Link from "next/link"
+
+// ── Nav mode toggle (syncs with sidebar via localStorage + custom event) ────
+function NavModeToggle() {
+  const [mode, setMode] = useState<"grouped" | "classic">("grouped")
+  useEffect(() => {
+    const stored = localStorage.getItem("mgh_nav_mode") as "grouped" | "classic" | null
+    if (stored) setMode(stored)
+  }, [])
+  function toggle() {
+    const next = mode === "grouped" ? "classic" : "grouped"
+    setMode(next)
+    localStorage.setItem("mgh_nav_mode", next)
+    window.dispatchEvent(new Event("mgh_nav_mode_change"))
+  }
+  return (
+    <button
+      onClick={toggle}
+      title={mode === "grouped" ? "Switch to Classic nav" : "Switch to Grouped nav"}
+      className="h-8 w-8 rounded-lg bg-gray-100 hover:bg-blue-50 hover:text-blue-600 flex items-center justify-center text-gray-400 transition-colors border border-gray-200 cursor-pointer shrink-0"
+    >
+      {mode === "grouped"
+        ? <LayoutList className="h-4 w-4" />
+        : <LayoutDashboard className="h-4 w-4" />
+      }
+    </button>
+  )
+}
 
 
 export default function RootLayout({
@@ -29,7 +47,6 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const user = useAuthStore((state) => state.user)
-  console.log(user)
 
   useEffect(() => {
     checkAuth();
@@ -58,6 +75,8 @@ export default function RootLayout({
           )}
           <header className={`flex h-16 items-center gap-2 border-b px-4 shrink-0 bg-white print:hidden ${!isCheckedOut ? 'sticky top-0 z-50' : ''}`}>
             <SidebarTrigger />
+            <NavModeToggle />
+            <div className="h-5 w-px bg-gray-200 mx-1" />
             <div className="flex items-center justify-between min-w-0 w-full">
               <div></div>
 
