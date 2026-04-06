@@ -48,6 +48,7 @@ export const NAVIGATION_ITEMS: Record<string, NavItem[]> = {
         { title: "Expenses", url: "/admin/expenses", icon: DollarSign, role: "admin", permissionKey: "manage_expenses" },
         { title: "Mess Menu", url: "/admin/mess", icon: Utensils, role: "admin", permissionKey: "manage_mess", featureKey: "enableMess" },
         { title: "System Settings", url: "/admin/system-settings", icon: ShieldCheck, role: "admin" },
+        { title: "System Health", url: "/admin/system-health", icon: Activity, role: "admin" },
         { title: "Profile", url: "/admin/profile", icon: User, role: "admin" },
     ],
     warden: [

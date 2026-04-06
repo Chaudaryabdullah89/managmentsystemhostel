@@ -601,6 +601,7 @@ model SystemSettings {
   enableComplaintEmails     Boolean  @default(true)
   enableNoticeEmails        Boolean  @default(true)
   enableWelcomeEmails       Boolean  @default(true)
+  lastCronRun               DateTime?
 
   updatedAt                 DateTime @updatedAt
 }
