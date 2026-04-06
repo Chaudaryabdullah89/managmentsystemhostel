@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
 export async function GET(request) {
-    const auth = await checkRole(['STAFF', 'ADMIN', 'SUPER_ADMIN', 'WARDEN']);
+    const auth = await checkRole(['STAFF', 'ADMIN', 'WARDEN']);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
     try {

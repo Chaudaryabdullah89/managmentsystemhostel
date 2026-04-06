@@ -76,7 +76,7 @@ const WardenRoomDetailsPage = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight tracking-widest">Room {room.roomNumber}</h1>
+                            <h1 className="text-lg font-bold text-gray-900 tracking-tight">Room {room.roomNumber}</h1>
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                                 <span className="h-1 w-1 rounded-full bg-indigo-500 animate-pulse" />
                                 {room.Hostel?.name} • Management
@@ -182,7 +182,7 @@ const WardenRoomDetailsPage = () => {
                         {/* Specs & Configuration */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
-                                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2 text-indigo-600">
+                                <h3 className="text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2 text-indigo-600">
                                     <Info className="h-3.5 w-3.5" />
                                     Room Details
                                 </h3>
@@ -201,7 +201,7 @@ const WardenRoomDetailsPage = () => {
                             </div>
 
                             <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
-                                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2 text-blue-500">
+                                <h3 className="text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2 text-blue-500">
                                     <Sparkle className="h-3.5 w-3.5" />
                                     Amenities
                                 </h3>
@@ -227,7 +227,7 @@ const WardenRoomDetailsPage = () => {
                         {/* Recent Services */}
                         <div className="space-y-3">
                             {[
-                                { title: 'Maintenance', sub: `${room.maintanance?.length || 0} Logs`, icon: Wrench, color: 'text-amber-500', bg: 'bg-amber-50', link: `/warden/complaints` },
+                                { title: 'Maintenance', sub: `${room.maintanance?.length || 0} Logs`, icon: Wrench, color: 'text-amber-500', bg: 'bg-amber-50', link: `/warden/rooms/${roomId}/maintenance` },
                                 { title: 'Laundry', sub: `${room.LaundryLog?.length || 0} Logs`, icon: Shirt, color: 'text-purple-500', bg: 'bg-purple-50', link: `/warden/rooms/${roomId}/laundry` },
                                 { title: 'Cleaning', sub: `${room.CleaningLog?.length || 0} Logs`, icon: Sparkle, color: 'text-blue-500', bg: 'bg-blue-50', link: `/warden/rooms/${roomId}/cleaning` }
                             ].map((service, i) => (
@@ -251,7 +251,7 @@ const WardenRoomDetailsPage = () => {
                         </div>
 
                         {/* Room Info Card */}
-                        <div className="bg-indigo-900 text-white rounded-[2rem] p-8 relative overflow-hidden shadow-xl">
+                        <div className="bg-indigo-900 text-white rounded-4xl p-8 relative overflow-hidden shadow-xl">
                             <div className="absolute top-0 right-0 p-8 opacity-5">
                                 <ShieldCheck className="h-24 w-24 text-white" />
                             </div>

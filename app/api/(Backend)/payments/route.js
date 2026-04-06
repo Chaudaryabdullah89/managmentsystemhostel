@@ -1,5 +1,5 @@
-export const dynamic = 'force-dynamic';
 import { checkRole } from '@/lib/checkRole';
+import { isServiceEnabled, hasPermission } from '@/lib/permissions';
 import { NextResponse } from "next/server";
 import PaymentServices from "@/lib/services/paymentservices/paymentservices";
 import { sendEmail } from "@/lib/utils/sendmail";
@@ -9,11 +9,30 @@ import { prisma } from "@/lib/prisma";
 const paymentServices = new PaymentServices();
 
 export async function POST(request) {
+    if (!await isServiceEnabled('enablePaymentProcessing')) {
+        return NextResponse.json({ success: false, message: 'Payment processing is currently disabled.' }, { status: 503 });
+    }
+
     const auth = await checkRole([]);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
+    const currentUserId = auth.user.userId || auth.user.id;
+    const isWarden = auth.user.role === 'WARDEN';
+    const isAdmin = auth.user.role === 'ADMIN';
+
     try {
         const data = await request.json();
+
+        // ── GRANULAR PERMISSION CHECK ─────────────────────────────────────
+        // 1. If trying to create a payment for SOMEONE ELSE, require manage_payments
+        if (data.userId && data.userId !== currentUserId) {
+            if (!await hasPermission('manage_payments')) {
+                return NextResponse.json({ success: false, message: "Forbidden: You cannot submit payments for other users without permission." }, { status: 403 });
+            }
+        }
+        
+        // 2. If it's a general management action (like creating a deposit), also check
+        // (but keep it simple: if they own the record, they can POST proof)
 
         // Security: If warden, verify context
         if (auth.user.role === 'WARDEN') {
@@ -71,28 +90,30 @@ export async function POST(request) {
             const submitterName = paymentDetail?.User?.name || "A resident";
             const approvalLink = `${baseUrl}/admin/payment-approvals/${payment.id}`;
 
-            for (const manager of managersToNotify) {
-                sendEmail({
-                    to: manager.email,
-                    subject: `💳 New Payment Submitted — Approval Required`,
-                    html: buildEmailTemplate({
-                        title: "New Payment Awaiting Approval",
-                        subtitle: `Hello ${manager.name}, a new payment has been submitted and requires your review.`,
-                        bodyHtml: `
-                            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:16px;">
-                                <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;">Submitted By</td><td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;text-align:right;">${submitterName}</td></tr>
-                                <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;">Amount</td><td style="padding:6px 0;color:#111827;font-size:13px;font-weight:700;text-align:right;color:#2563eb;">PKR ${Number(data.amount).toLocaleString()}</td></tr>
-                                <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;">Type</td><td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;text-align:right;">${data.type || "RENT"}</td></tr>
-                                <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;">Method</td><td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;text-align:right;">${data.method || "CASH"}</td></tr>
-                            </table>
-                            <div style="text-align:center;margin:20px 0 4px;">
-                                <a href="${approvalLink}" style="display:inline-block;padding:11px 24px;border-radius:999px;background:#2563eb;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;">
-                                    Review &amp; Approve Payment →
-                                </a>
-                            </div>
-                        `,
-                    }),
-                }).catch(err => console.error("[Email] Admin payment notification failed:", err));
+            if (await isServiceEnabled('enablePaymentEmails')) {
+                for (const manager of managersToNotify) {
+                    sendEmail({
+                        to: manager.email,
+                        subject: `💳 New Payment Submitted — Approval Required`,
+                        html: buildEmailTemplate({
+                            title: "New Payment Awaiting Approval",
+                            subtitle: `Hello ${manager.name}, a new payment has been submitted and requires your review.`,
+                            bodyHtml: `
+                                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:16px;">
+                                    <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;">Submitted By</td><td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;text-align:right;">${submitterName}</td></tr>
+                                    <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;">Amount</td><td style="padding:6px 0;color:#111827;font-size:13px;font-weight:700;text-align:right;color:#2563eb;">PKR ${Number(data.amount).toLocaleString()}</td></tr>
+                                    <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;">Type</td><td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;text-align:right;">${data.type || "RENT"}</td></tr>
+                                    <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;">Method</td><td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;text-align:right;">${data.method || "CASH"}</td></tr>
+                                </table>
+                                <div style="text-align:center;margin:20px 0 4px;">
+                                    <a href="${approvalLink}" style="display:inline-block;padding:11px 24px;border-radius:999px;background:#2563eb;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;">
+                                        Review &amp; Approve Payment →
+                                    </a>
+                                </div>
+                            `,
+                        }),
+                    }).catch(err => console.error("[Email] Admin payment notification failed:", err));
+                }
             }
         } catch (notifyErr) {
             console.error("[Email] Error notifying admins of new payment:", notifyErr);
@@ -111,7 +132,7 @@ export async function POST(request) {
                         ? await prisma.hostel.findUnique({ where: { id: data.hostelId }, select: { name: true } })
                         : null;
 
-                    if (user?.email) {
+                    if (user?.email && await isServiceEnabled('enablePaymentEmails')) {
                         const now = new Date();
                         const monthName = now.toLocaleString("en-PK", { month: "long" });
                         const year = now.getFullYear();
@@ -146,10 +167,27 @@ export async function GET(request) {
     const auth = await checkRole([]);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
+    const currentUserId = auth.user.userId || auth.user.id;
+    const isAdmin = auth.user.role === 'ADMIN';
+
     try {
         const { searchParams } = new URL(request.url);
         const type = searchParams.get('type'); // 'stats' or 'all'
         const hostelIdInput = searchParams.get('hostelId');
+        const requestedUserId = searchParams.get('userId');
+
+        // ── GRANULAR PERMISSION CHECK ─────────────────────────────────────
+        // If viewing stats or other users' records, require permission
+        const isSelfViewingOnly = requestedUserId === currentUserId && !type;
+        
+        if (!isSelfViewingOnly && !isAdmin) {
+             const requiredPerm = type === 'stats' ? 'view_analytics' : 'view_payments';
+             if (!await hasPermission(requiredPerm)) {
+                 // Force filter to just their own records 
+                 searchParams.set('userId', currentUserId);
+                 searchParams.delete('type'); 
+             }
+        }
 
         const sanitize = (val) => (val === 'all' || val === 'null' || val === 'undefined' || !val) ? null : val;
         let hostelId = sanitize(hostelIdInput);

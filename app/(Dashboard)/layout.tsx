@@ -10,9 +10,17 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useEffect } from "react"
 import useAuthStore, { checkAuth } from "@/hooks/Authstate"
 import { useBookings } from "@/hooks/useBooking"
-import { AlertCircle } from "lucide-react"
+import { 
+  AlertCircle, 
+  ShieldAlert, 
+  Home,
+  Lock
+} from "lucide-react"
 import HeaderNotices from "@/components/Dashboard/HeaderNotices"
 import AiAssistant from "@/components/Dashboard/AiAssistant"
+import { usePathname } from "next/navigation"
+import { NAVIGATION_ITEMS } from "@/lib/navigation"
+import Link from "next/link"
 
 
 export default function RootLayout({
@@ -41,7 +49,7 @@ export default function RootLayout({
         </div>
         <main className="flex flex-col flex-1 min-w-0 min-h-screen">
           {isCheckedOut && (
-            <div className="bg-rose-600 text-white py-2 px-4 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top-full duration-700 z-[60] sticky top-0 print:hidden">
+            <div className="bg-rose-600 text-white py-2 px-4 flex items-center justify-center gap-3 animate-in fade-in slide-in-from-top-full duration-700 z-60 sticky top-0 print:hidden">
               <AlertCircle className="h-3.5 w-3.5" />
               <p className="text-[10px] font-bold uppercase tracking-[0.2em]">
                 Portal Restricted &bull; Read-only mode active (Residency Concluded)
@@ -61,8 +69,7 @@ export default function RootLayout({
                   <div className="relative shrink-0">
                     <Avatar className="h-10 w-10 rounded-xl border border-gray-200 shadow-sm">
                       <AvatarImage />
-                      <AvatarFallback className="rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 text-white font-semibold">
-                        {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                      <AvatarFallback className="rounded-xl bg-linear-to-br from-indigo-500 to-blue-500 text-white font-semibold">
                       </AvatarFallback>
                     </Avatar>
 
@@ -86,8 +93,60 @@ export default function RootLayout({
           </header>
 
           <div className="p-2 md:p-4 flex-1 h-full w-full min-w-0 overflow-y-auto overflow-x-hidden" >
+            {(() => {
+              const pathname = usePathname()
+              const userRole = user?.role?.toLowerCase() || 'guest'
+              const rolePerms = (user as any)?.rolePermissions || {}
+              const sysSettings = (user as any)?.systemSettings || {}
 
-            {children}
+              const allNavItems = Object.values(NAVIGATION_ITEMS).flat()
+              const myItems = NAVIGATION_ITEMS[userRole] || NAVIGATION_ITEMS.guest
+
+              // 1. Is this path protected by SOME role's navigation map?
+              const isProtectedPath = allNavItems.some(item => 
+                pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url + "/"))
+              )
+
+              let isAuthorized = true
+              if (isProtectedPath && user?.role !== 'ADMIN') {
+                // 2. Does this specific protected path belong to MY role's allowed map?
+                const myMatch = myItems.find(item => 
+                   pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url + "/"))
+                )
+
+                if (!myMatch) {
+                   isAuthorized = false // Trying to access another role's area
+                } else {
+                  // 3. If it belongs to me, check if the specific feature/permission is toggled off
+                  if (myMatch.featureKey && sysSettings[myMatch.featureKey] === false) isAuthorized = false
+                  if (myMatch.permissionKey && !rolePerms[myMatch.permissionKey]) isAuthorized = false
+                }
+              }
+
+              if (!isAuthorized) {
+                return (
+                  <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-white rounded-3xl border border-gray-100 shadow-sm transition-all animate-in fade-in zoom-in duration-300">
+                    <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mb-6">
+                      <ShieldAlert className="w-10 h-10 text-rose-500" />
+                    </div>
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">Access Restricted</h2>
+                    <p className="text-gray-500 mt-2 max-w-sm mx-auto text-sm leading-relaxed">
+                      You don't have the required permissions to view this page, or this feature has been temporarily disabled by the administrator.
+                    </p>
+                    <div className="mt-8 flex gap-3">
+                      <Link 
+                        href={user?.role === 'ADMIN' ? '/admin/dashboard' : user?.role === 'WARDEN' ? '/warden' : '/guest/dashboard'}
+                        className="px-6 h-11 bg-gray-900 text-white text-sm font-bold rounded-xl flex items-center gap-2 hover:bg-black transition-colors"
+                      >
+                        <Home className="w-4 h-4" /> Go Home
+                      </Link>
+                    </div>
+                  </div>
+                )
+              }
+
+              return children
+            })()}
           </div>
           <div className="print:hidden">
             <Footer />

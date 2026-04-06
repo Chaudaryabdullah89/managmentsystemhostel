@@ -97,7 +97,7 @@ const ResidentDetailContent = () => {
 
     // Security check - Warden can only view residents of their hostel
     useEffect(() => {
-        if (user && currentWarden?.role === 'WARDEN' && user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
+        if (user && currentWarden?.role === 'WARDEN' && user.role !== 'ADMIN') {
             const userHostelId = user.hostelId || user.ResidentProfile?.currentHostelId;
             if (userHostelId && userHostelId !== currentWarden.hostelId) {
                 toast.error("Security Alert: Access restricted to your hostel residents.");
@@ -268,7 +268,7 @@ const ResidentDetailContent = () => {
     if (!user) return (
         <div className="flex h-screen items-center justify-center bg-white font-sans">
             <div className="text-center space-y-6">
-                <div className="h-20 w-20 bg-gray-50 text-gray-400 rounded-[2rem] flex items-center justify-center mx-auto border border-gray-100 shadow-sm">
+                <div className="h-20 w-20 bg-gray-50 text-gray-400 rounded-4xl flex items-center justify-center mx-auto border border-gray-100 shadow-sm">
                     <UserX className="h-10 w-10" />
                 </div>
                 <div className="space-y-1">
@@ -552,7 +552,7 @@ const ResidentDetailContent = () => {
                             <TabsContent value="history" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {userDetails?.complaints?.map((c) => (
-                                        <Card key={c.id} className="rounded-[2rem] bg-white p-8 border-none shadow-sm space-y-4 hover:shadow-md transition-shadow group">
+                                        <Card key={c.id} className="rounded-4xl bg-white p-8 border-none shadow-sm space-y-4 hover:shadow-md transition-shadow group">
                                             <div className="flex justify-between items-start">
                                                 <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-inner">
                                                     <AlertCircle className="h-5 w-5" />
@@ -629,7 +629,7 @@ const ResidentDetailContent = () => {
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {user.ResidentProfile?.documents && Object.keys(user.ResidentProfile.documents).length > 0 ? (
                                                 Object.entries(user.ResidentProfile.documents).map(([key, value], idx) => (
-                                                    <div key={idx} className="p-4 rounded-[1.5rem] bg-gray-50/50 border border-gray-100 flex items-center justify-between group hover:border-indigo-600/20 transition-all">
+                                                    <div key={idx} className="p-4 rounded-3xl bg-gray-50/50 border border-gray-100 flex items-center justify-between group hover:border-indigo-600/20 transition-all">
                                                         <div className="flex items-center gap-3">
                                                             <div className="h-9 w-9 rounded-xl bg-white flex items-center justify-center text-indigo-600 border border-gray-100 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
                                                                 <FileText className="h-4 w-4" />
@@ -642,7 +642,7 @@ const ResidentDetailContent = () => {
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="col-span-full py-12 text-center bg-gray-50/30 rounded-[2rem] border-2 border-dashed border-gray-100">
+                                                <div className="col-span-full py-12 text-center bg-gray-50/30 rounded-4xl border-2 border-dashed border-gray-100">
                                                     <span className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.3em]">No Documents Uploaded</span>
                                                 </div>
                                             )}
@@ -682,7 +682,7 @@ const ResidentDetailContent = () => {
                         </div>
                         <DialogFooter className="pt-4 gap-3">
                             <Button variant="ghost" className="h-12 rounded-xl font-black text-[9px] uppercase tracking-widest flex-1" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-                            <Button className="h-12 rounded-xl bg-indigo-600 text-white font-black text-[9px] uppercase tracking-widest flex-[2] shadow-lg" onClick={handleEditIdentity} disabled={updateAnyUser.isPending}>
+                            <Button className="h-12 rounded-xl bg-indigo-600 text-white font-black text-[9px] uppercase tracking-widest flex-2 shadow-lg" onClick={handleEditIdentity} disabled={updateAnyUser.isPending}>
                                 {updateAnyUser.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
                             </Button>
                         </DialogFooter>

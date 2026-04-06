@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { jwtVerify } from "jose";
 import Cookies from "js-cookie";
-import prisma from "@/lib/prisma"; // make sure prisma client can be used in server-side only
+// import prisma from "@/lib/prisma"; // Removed: cannot use prisma client on the client-side
 
 const AuthContext = createContext();
 

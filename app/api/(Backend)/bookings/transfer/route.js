@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 export async function POST(req) {
-    const auth = await checkRole(['ADMIN', 'WARDEN', 'SUPER_ADMIN']);
+    const auth = await checkRole(['ADMIN', 'WARDEN']);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
     try {

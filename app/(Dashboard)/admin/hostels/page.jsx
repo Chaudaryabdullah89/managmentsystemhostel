@@ -68,7 +68,7 @@ const HostelsPage = () => {
     const router = useRouter()
     const { data: apiResponse, error: hosteldataerror, isLoading: hostelsloading, isFetching: isFetchingHostels } = useHostel();
     const userProfile = useAuthStore((state) => state.user);
-    const isAdmin = userProfile?.role === 'ADMIN' || userProfile?.role === 'SUPER_ADMIN';
+    const isAdmin = userProfile?.role === 'ADMIN' || userProfile?.role === ;
     const isWarden = userProfile?.role === 'WARDEN';
 
     const [searchterm, setsearchterm] = useState('');

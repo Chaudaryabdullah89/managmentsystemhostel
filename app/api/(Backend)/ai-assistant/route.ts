@@ -1,8 +1,8 @@
-export const dynamic = 'force-dynamic';
 import prisma from "@/lib/prisma";
 import aiPrisma from "@/lib/ai-prisma";
 import { NextResponse } from "next/server";
 import { stringSimilarity } from "string-similarity-js";
+import { isServiceEnabled } from "@/lib/permissions";
 
 
 /* =====================================================
@@ -237,6 +237,9 @@ function detectSentiment(msg: string): string {
 }
 
 export async function GET(req: Request) {
+    if (!await isServiceEnabled('enableAiAssistant')) {
+        return NextResponse.json({ success: false, error: "AI Assistant is currently disabled." }, { status: 503 });
+    }
     try {
         const { searchParams } = new URL(req.url);
         const userId = searchParams.get("userId");
@@ -263,6 +266,9 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+    if (!await isServiceEnabled('enableAiAssistant')) {
+        return NextResponse.json({ success: false, error: "AI Assistant is currently disabled." }, { status: 503 });
+    }
     try {
         const { message, userId } = await req.json();
         logInfo("Input Received", { userId, message });
@@ -705,6 +711,12 @@ export async function POST(req: Request) {
                         `⏳ **Status:** ${existingComplaint.status}\n\n` +
                         `I've notified the system about your follow-up. Would you like to create a *new* complaint instead?`;
                     suggestions = ["Create new complaint", "Check all complaints", "Talk to manager"];
+                    break;
+                }
+
+                if (!await isServiceEnabled('enableComplaintsSystem')) {
+                    reply = "I'm sorry, but the complaint registration system is currently disabled by the administrator. Please contact the office directly for urgent matters.";
+                    suggestions = ["Talk to manager", "Check room info", "Mess menu"];
                     break;
                 }
 

@@ -1,4 +1,5 @@
 import { checkRole } from '@/lib/checkRole';
+import { isServiceEnabled } from '@/lib/permissions';
 
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/utils/sendmail";
@@ -8,8 +9,14 @@ import { sign } from "jsonwebtoken";
 import { buildEmailTemplate } from "@/lib/utils/emailTemplates";
 
 export async function POST(req) {
-  // const auth = await checkRole([]);
-  // if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+  // Guard: Check if password reset emails are enabled globally
+  const emailsEnabled = await isServiceEnabled('enablePasswordResetEmails');
+  if (!emailsEnabled) {
+    return NextResponse.json(
+      { message: "Password reset emails are currently disabled by the administrator." },
+      { status: 503 }
+    );
+  }
 
   try {
     const { email } = await req.json();

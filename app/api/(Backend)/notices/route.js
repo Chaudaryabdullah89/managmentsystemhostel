@@ -1,12 +1,16 @@
-export const dynamic = 'force-dynamic';
 import { checkRole } from '@/lib/checkRole';
+import { isServiceEnabled, hasPermission } from '@/lib/permissions';
 import { NextResponse } from "next/server";
 import NoticeService from "@/lib/services/noticeservices/noticeservices";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 const noticeService = new NoticeService();
 
 export async function GET(request) {
+    if (!await isServiceEnabled('enableNoticeBoard')) {
+        return NextResponse.json({ success: true, data: [] }); // Gracefully return empty if disabled
+    }
+
     const auth = await checkRole([]);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
@@ -41,8 +45,16 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+    if (!await isServiceEnabled('enableNoticeBoard')) {
+        return NextResponse.json({ success: false, message: 'Notice board is currently disabled.' }, { status: 503 });
+    }
+
     const auth = await checkRole([]);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
+    if (!await hasPermission('manage_notices')) {
+        return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to post notices." }, { status: 403 });
+    }
 
     try {
         const body = await request.json();
@@ -78,6 +90,10 @@ export async function PUT(request) {
     const auth = await checkRole([]);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
+    if (!await hasPermission('manage_notices')) {
+        return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to update notices." }, { status: 403 });
+    }
+
     try {
         const body = await request.json();
         const { id, ...data } = body;
@@ -91,6 +107,10 @@ export async function PUT(request) {
 export async function DELETE(request) {
     const auth = await checkRole([]);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
+    if (!await hasPermission('manage_notices')) {
+        return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to delete notices." }, { status: 403 });
+    }
 
     try {
         const { searchParams } = new URL(request.url);

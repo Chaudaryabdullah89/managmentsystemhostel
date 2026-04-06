@@ -566,10 +566,46 @@ enum RoomType {
 }
 
 enum UserRole {
-  SUPER_ADMIN
   ADMIN
   WARDEN
   STAFF
   RESIDENT
   GUEST
+}
+
+model SystemSettings {
+  id                        String   @id @default("global") // Singleton logic
+
+  // ── Maintenance ──────────────────────────────────────
+  maintenanceMode           Boolean  @default(false)
+  maintenanceMessage        String?
+
+  // ── Core Application Services ────────────────────────
+  enableLaundry             Boolean  @default(true)
+  enableMess                Boolean  @default(true)
+  enableGuestBookings       Boolean  @default(true)
+  enableComplaintsSystem    Boolean  @default(true)
+  enableMaintenanceRequests Boolean  @default(true)
+  enableRefundRequests      Boolean  @default(true)
+  enableNoticeBoard         Boolean  @default(true)
+  enableAiAssistant         Boolean  @default(true)
+  enablePaymentProcessing   Boolean  @default(true)
+
+  // ── Email / Notification Services ────────────────────
+  enableEmailService        Boolean  @default(true)
+  enablePasswordResetEmails Boolean  @default(true)
+  enableBookingEmails       Boolean  @default(true)
+  enablePaymentEmails       Boolean  @default(true)
+  enableComplaintEmails     Boolean  @default(true)
+  enableNoticeEmails        Boolean  @default(true)
+  enableWelcomeEmails       Boolean  @default(true)
+
+  updatedAt                 DateTime @updatedAt
+}
+
+model RolePermission {
+  id          String   @id @default(cuid())
+  role        UserRole @unique
+  permissions Json     // Store mapping of specific permission keys (e.g., "manage_laundry": true)
+  updatedAt   DateTime @updatedAt
 }

@@ -236,7 +236,7 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 const ComplaintsPage = () => {
     const user = useAuthStore((state) => state.user);
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    const isAdmin = user?.role === 'ADMIN';
     const isWarden = user?.role === 'WARDEN';
 
     const [searchQuery, setSearchQuery] = useState("");
