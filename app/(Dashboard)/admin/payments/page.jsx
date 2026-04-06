@@ -166,6 +166,34 @@ const PaymentManagementPage = () => {
     const initializeRent = useInitializeRent();
     const updateRefundStatus = useUpdateRefundStatus();
 
+    const [settings, setSettings] = useState(null);
+    const [isTriggering, setIsTriggering] = useState(false);
+
+    React.useEffect(() => {
+        fetch('/api/settings').then(res => res.json()).then(data => {
+            if (data.success) setSettings(data.settings);
+        });
+    }, []);
+
+    const handleManualGeneration = async () => {
+        setIsTriggering(true);
+        try {
+            const res = await fetch('/api/cron/monthly-invoices?force=true');
+            const data = await res.json();
+            if (data.success) {
+                toast.success(`Successfully generated monthly invoices. Rent: ${data.results.rent.created}, Salaries: ${data.results.salary.created}`);
+                // Invalidate query
+                queryClient.invalidateQueries({ queryKey: ["payments"] });
+            } else {
+                toast.error(data.error || "Failed to generate invoices");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+        } finally {
+            setIsTriggering(false);
+        }
+    };
+
     const hostels = hostelsData?.data || [];
 
     // Admin Filtering: Allow filtering by selected hostel
@@ -612,6 +640,21 @@ const PaymentManagementPage = () => {
                         >
                             {initializeRent.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
                             <span className="truncate">Create Monthly Dues</span>
+                        </Button>
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-xl">
+                            <div className={`h-2 w-2 rounded-full ${settings?.autoGenerateRentInvoices ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
+                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                Auto-Gen: {settings?.autoGenerateRentInvoices ? 'ON' : 'OFF'}
+                            </span>
+                        </div>
+                        <Button
+                            variant="outline"
+                            className="h-8 md:h-9 px-3 md:px-4 cursor-pointer rounded-xl border-blue-200 bg-blue-50 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-blue-700 hover:bg-blue-100 transition-all shadow-sm flex items-center gap-2 flex-1 md:flex-none justify-center disabled:opacity-50"
+                            onClick={handleManualGeneration}
+                            disabled={isTriggering}
+                        >
+                            {isTriggering ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
+                            <span className="truncate">Generate Monthly Dues</span>
                         </Button>
                         <Button
                             variant="outline"

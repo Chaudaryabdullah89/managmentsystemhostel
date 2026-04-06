@@ -103,6 +103,34 @@ const SalariesPage = () => {
     const updateSalary = useUpdateSalary();
     const deleteSalary = useDeleteSalary();
 
+    const [settings, setSettings] = useState(null);
+    const [isTriggering, setIsTriggering] = useState(false);
+
+    React.useEffect(() => {
+        fetch('/api/settings').then(res => res.json()).then(data => {
+            if (data.success) setSettings(data.settings);
+        });
+    }, []);
+
+    const handleManualGeneration = async () => {
+        setIsTriggering(true);
+        try {
+            const res = await fetch('/api/cron/monthly-invoices?force=true');
+            const data = await res.json();
+            if (data.success) {
+                toast.success(`Successfully generated monthly payroll. Salaries: ${data.results.salary.created}, Rent Invoices: ${data.results.rent.created}`);
+                // Invalidate query
+                queryClient.invalidateQueries({ queryKey: ["salaries"] });
+            } else {
+                toast.error(data.error || "Failed to generate payroll");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+        } finally {
+            setIsTriggering(false);
+        }
+    };
+
     // Filtering Logic
     const filteredSalaries = useMemo(() => {
         const data = salaries || [];
@@ -348,6 +376,23 @@ const SalariesPage = () => {
                                 ))}
                             </SelectContent>
                         </Select>
+
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-xl">
+                            <div className={`h-2 w-2 rounded-full ${settings?.autoGenerateStaffSalaries ? 'bg-indigo-500 animate-pulse' : 'bg-gray-300'}`} />
+                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                Auto: {settings?.autoGenerateStaffSalaries ? 'ON' : 'OFF'}
+                            </span>
+                        </div>
+
+                        <Button
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border-indigo-200 bg-indigo-50 font-bold text-[10px] uppercase tracking-wider text-indigo-700 hover:bg-indigo-100 transition-all shadow-sm flex items-center gap-2 disabled:opacity-50"
+                            onClick={handleManualGeneration}
+                            disabled={isTriggering}
+                        >
+                            {isTriggering ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5" />}
+                            Generate
+                        </Button>
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
