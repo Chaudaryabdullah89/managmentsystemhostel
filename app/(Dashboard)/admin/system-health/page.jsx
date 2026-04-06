@@ -286,15 +286,15 @@ export default function SystemHealthPage() {
                                         ? <Wifi className="h-4 w-4 text-emerald-500" />
                                         : <WifiOff className="h-4 w-4 text-rose-500" />}
                                     <span className="text-[11px] font-bold text-gray-800 uppercase tracking-wide">{val.name}</span>
-                                    {val.note === "auth-protected" && (
-                                        <span className="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-full">Auth Protected</span>
-                                    )}
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    {val.httpStatus && (
-                                        <span className={`text-[9px] font-black font-mono px-2 py-0.5 rounded-full border ${val.httpStatus < 300 ? "bg-emerald-50 text-emerald-700 border-emerald-100" : val.httpStatus < 500 ? "bg-amber-50 text-amber-700 border-amber-100" : "bg-rose-50 text-rose-700 border-rose-100"}`}>
-                                            HTTP {val.httpStatus}
+                                    {val.count != null && (
+                                        <span className="text-[9px] font-black font-mono px-2 py-0.5 rounded-full border bg-gray-50 text-gray-600 border-gray-100">
+                                            {val.count.toLocaleString()} records
                                         </span>
+                                    )}
+                                    {val.error && (
+                                        <span className="text-[9px] font-mono text-rose-500 truncate max-w-[180px]">{val.error}</span>
                                     )}
                                     <LatencyChip ms={val.latency} />
                                     <StatusChip status={val.status} />

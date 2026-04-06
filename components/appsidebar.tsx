@@ -187,26 +187,7 @@ export function AppSidebar() {
             {/* ── Footer ── */}
             <SidebarFooter className="p-0">
                 <div className="h-px bg-gray-100 mx-4" />
-                <div className="px-3 py-3 space-y-0.5">
-                    {/* System Health — admin only, pinned to footer */}
-                    {isAdmin && (
-                        <Link
-                            href="/admin/system-health"
-                            className={`
-                                group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150
-                                ${pathname === "/admin/system-health"
-                                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/25"
-                                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                                }
-                            `}
-                        >
-                            <div className={`h-7 w-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-150 ${pathname === "/admin/system-health" ? "bg-white/20" : "bg-gray-100 group-hover:bg-white group-hover:shadow-sm"}`}>
-                                <Activity className={`h-3.5 w-3.5 ${pathname === "/admin/system-health" ? "text-white" : "text-gray-500 group-hover:text-blue-600"}`} />
-                            </div>
-                            <span className="flex-1 truncate">System Health</span>
-                            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_2px_rgba(16,185,129,0.3)] flex-shrink-0" />
-                        </Link>
-                    )}
+                <div className="px-3 py-3">
                     <button
                         onClick={() => logout()}
                         className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all duration-150 group cursor-pointer"
