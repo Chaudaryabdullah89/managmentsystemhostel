@@ -13,10 +13,13 @@ async function pingEndpoint(url, baseUrl) {
       headers: { "x-internal-health-check": "1" },
       signal: AbortSignal.timeout(5000),
     });
+    // 401/403 = endpoint is UP and correctly enforcing auth
+    const ok = res.status < 500;
     return {
-      status: res.status >= 200 && res.status < 500 ? "OK" : "ERROR",
+      status: ok ? "OK" : "ERROR",
       httpStatus: res.status,
       latency: Date.now() - start,
+      note: res.status === 401 || res.status === 403 ? "auth-protected" : null,
     };
   } catch (e) {
     return { status: "ERROR", httpStatus: null, latency: Date.now() - start, error: e.message };
@@ -85,7 +88,7 @@ export async function GET(req) {
       prisma.booking.count(),
       prisma.payment.count(),
       prisma.hostel.count(),
-      prisma.complaint.count({ where: { status: "OPEN" } }),
+      prisma.complaint.count({ where: { status: "PENDING" } }),
     ]);
 
     // ── 6. Server Info ───────────────────────────────────────────────────────
