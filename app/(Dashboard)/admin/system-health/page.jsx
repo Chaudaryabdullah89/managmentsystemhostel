@@ -1,325 +1,412 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { 
-    Activity, 
-    ShieldCheck, 
-    Zap, 
-    Server, 
-    Database, 
-    Mail, 
-    Cpu, 
-    HardDrive, 
-    RefreshCw, 
-    CheckCircle2, 
-    XCircle, 
-    AlertTriangle,
-    Clock,
-    Terminal,
-    Settings2,
-    ToggleLeft,
-    ToggleRight,
-    Loader2
+import React, { useState, useEffect, useCallback } from "react";
+import {
+    Activity, ShieldCheck, Zap, Server, Database, Mail, Cpu, HardDrive,
+    RefreshCw, CheckCircle2, XCircle, AlertTriangle, Clock, Loader2,
+    MessageSquare, Wrench, Sparkles, Megaphone, CreditCard, Users,
+    Calendar, Building2, Globe, Wifi, WifiOff
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 
-const SystemHealthPage = () => {
-    const [healthData, setHealthData] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isRefreshing, setIsRefreshing] = useState(false);
+// ── Helpers ────────────────────────────────────────────────────────────────
+const StatusDot = ({ status }) => {
+    const map = {
+        HEALTHY: "bg-emerald-500",
+        DEGRADED: "bg-amber-500",
+        UNHEALTHY: "bg-rose-500",
+        OK: "bg-emerald-500",
+        ERROR: "bg-rose-500",
+    };
+    return (
+        <span className={`inline-block h-2 w-2 rounded-full ${map[status?.toUpperCase()] ?? "bg-gray-300"} ${status === "HEALTHY" || status === "OK" ? "shadow-[0_0_6px_2px_rgba(16,185,129,0.4)]" : ""}`} />
+    );
+};
 
-    const fetchHealth = async (showToast = false) => {
-        setIsRefreshing(true);
+const StatusChip = ({ status }) => {
+    const map = {
+        HEALTHY: "bg-emerald-50 text-emerald-700 border-emerald-100",
+        DEGRADED: "bg-amber-50 text-amber-700 border-amber-100",
+        UNHEALTHY: "bg-rose-50 text-rose-700 border-rose-100",
+        OK: "bg-emerald-50 text-emerald-700 border-emerald-100",
+        ERROR: "bg-rose-50 text-rose-700 border-rose-100",
+    };
+    const label = { HEALTHY: "OK", OK: "OK", ERROR: "ERROR", UNHEALTHY: "DOWN", DEGRADED: "DEGRADED" };
+    return (
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest ${map[status?.toUpperCase()] ?? "bg-gray-50 text-gray-500 border-gray-100"}`}>
+            <StatusDot status={status} />
+            {label[status?.toUpperCase()] ?? status}
+        </span>
+    );
+};
+
+const LatencyChip = ({ ms }) => {
+    if (ms == null) return null;
+    const color = ms < 100 ? "text-emerald-600" : ms < 300 ? "text-amber-600" : "text-rose-600";
+    return <span className={`text-[9px] font-black font-mono ${color}`}>{ms}ms</span>;
+};
+
+export default function SystemHealthPage() {
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [lastChecked, setLastChecked] = useState(null);
+
+    const fetchHealth = useCallback(async (toast_on_done = false) => {
+        setRefreshing(true);
         try {
             const res = await fetch("/api/health");
-            const data = await res.json();
-            if (data.success) {
-                setHealthData(data);
-                if (showToast) toast.success("System status updated");
+            const json = await res.json();
+            if (json.success) {
+                setData(json);
+                setLastChecked(new Date());
+                if (toast_on_done) toast.success("System status refreshed.");
             } else {
-                toast.error("Failed to fetch system status");
+                toast.error(json.message ?? "Failed to load health data.");
             }
-        } catch (error) {
-            toast.error("An error occurred while fetching health data");
+        } catch {
+            toast.error("Could not reach health endpoint.");
         } finally {
-            setIsLoading(false);
-            setIsRefreshing(false);
+            setLoading(false);
+            setRefreshing(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchHealth();
-        const interval = setInterval(() => fetchHealth(false), 30000); // Auto refresh every 30s
-        return () => clearInterval(interval);
-    }, []);
+        const id = setInterval(() => fetchHealth(), 30_000);
+        return () => clearInterval(id);
+    }, [fetchHealth]);
 
-    if (isLoading) {
+    if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center animate-bounce">
+                    <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center animate-pulse">
                         <Activity className="h-6 w-6 text-blue-600" />
                     </div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest animate-pulse">Analyzing System Health...</p>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Running diagnostics…</p>
                 </div>
             </div>
         );
     }
 
-    const { health, settings, system, nodeVersion } = healthData || {};
+    const { health, stats, server } = data ?? {};
+    const isHealthy = health?.overall === "HEALTHY";
 
-    const StatusBadge = ({ status }) => {
-        switch (status?.toUpperCase()) {
-            case "HEALTHY":
-                return <Badge className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold uppercase text-[9px] tracking-widest px-3">OK</Badge>;
-            case "DEGRADED":
-                return <Badge className="bg-amber-50 text-amber-600 border border-amber-100 font-bold uppercase text-[9px] tracking-widest px-3">ISSUES</Badge>;
-            case "UNHEALTHY":
-                return <Badge className="bg-rose-50 text-rose-600 border border-rose-100 font-bold uppercase text-[9px] tracking-widest px-3">CRITICAL</Badge>;
-            default:
-                return <Badge className="bg-gray-50 text-gray-600 border border-gray-100 font-bold uppercase text-[9px] tracking-widest px-3">UNKNOWN</Badge>;
-        }
-    };
+    const endpoints = Object.entries(health?.endpoints ?? {});
+    const allEndpointsOk = endpoints.every(([, v]) => v.status === "OK");
+
+    const services = [
+        { label: "Laundry", key: "laundry", icon: Zap },
+        { label: "Mess", key: "mess", icon: Megaphone },
+        { label: "Guest Bookings", key: "bookings", icon: Calendar },
+        { label: "Complaints", key: "complaints", icon: MessageSquare },
+        { label: "Maintenance", key: "maintenance", icon: Wrench },
+        { label: "Refunds", key: "refunds", icon: CreditCard },
+        { label: "Notice Board", key: "notices", icon: Megaphone },
+        { label: "AI Assistant", key: "ai", icon: Sparkles },
+        { label: "Payments", key: "payments", icon: CreditCard },
+        { label: "Email Service", key: "emailService", icon: Mail },
+    ];
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
-            {/* Header */}
+        <div className="min-h-screen bg-[#f8f9fa] pb-20 font-sans tracking-tight">
+            {/* ── Header ─────────────────────────────────────────────────────── */}
             <div className="bg-white border-b sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-blue-600 rounded-full" />
                         <div>
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">System Health</h1>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Environment: {system?.platform}</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Secure</span>
+                            <h1 className="text-base font-bold text-gray-900 tracking-tight uppercase">System Health</h1>
+                            <div className="flex items-center gap-2 mt-0.5">
+                                <StatusDot status={health?.overall} />
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                    {lastChecked ? `Last checked ${formatDistanceToNow(lastChecked, { addSuffix: true })}` : "Checking…"}
+                                </span>
                             </div>
                         </div>
                     </div>
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => fetchHealth(true)} 
-                        disabled={isRefreshing}
-                        className="rounded-xl border-gray-200 font-bold text-[10px] uppercase tracking-wider h-9 px-4 flex items-center gap-2 bg-white hover:bg-gray-50 active:scale-95 transition-all"
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fetchHealth(true)}
+                        disabled={refreshing}
+                        className="rounded-xl border-gray-200 font-bold text-[10px] uppercase tracking-wider h-9 px-4 gap-2"
                     >
-                        {isRefreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                        {refreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
                         Refresh
                     </Button>
                 </div>
             </div>
 
-            <main className="max-w-7xl mx-auto px-6 py-10 space-y-8">
-                {/* Overall Health Card */}
-                <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden group">
-                    <div className={`absolute top-0 left-0 w-2 h-full ${health?.overall === 'HEALTHY' ? 'bg-emerald-500' : 'bg-amber-500'} opacity-70`} />
-                    
-                    <div className="flex items-center gap-8">
-                        <div className={`h-24 w-24 rounded-[2rem] ${health?.overall === 'HEALTHY' ? 'bg-emerald-50' : 'bg-amber-50'} flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-500`}>
-                            {health?.overall === 'HEALTHY' ? (
-                                <ShieldCheck className="h-12 w-12 text-emerald-600" />
-                            ) : (
-                                <AlertTriangle className="h-12 w-12 text-amber-600 animate-pulse" />
-                            )}
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-2">Overall Status</p>
-                            <h2 className={`text-4xl font-black ${health?.overall === 'HEALTHY' ? 'text-gray-900' : 'text-amber-600'} tracking-tighter uppercase`}>
-                                {health?.overall === 'HEALTHY' ? 'All Systems Healthy' : 'Action Required'}
-                            </h2>
-                            <p className="text-xs text-gray-500 mt-2 font-medium tracking-tight">System analysis completed at {format(new Date(), 'HH:mm:ss')}. Monitoring {Object.keys(settings || {}).length} variables.</p>
-                        </div>
-                    </div>
+            <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
 
-                    <div className="flex items-center gap-4 bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                        <div className="text-right">
-                            <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Uptime</p>
-                            <p className="text-sm font-black text-gray-900 uppercase">{(system?.uptime / 3600).toFixed(1)} Hours</p>
+                {/* ── Overall Banner ──────────────────────────────────────── */}
+                <div className={`rounded-2xl p-6 flex items-center gap-6 border ${isHealthy ? "bg-emerald-50 border-emerald-100" : "bg-amber-50 border-amber-100"}`}>
+                    <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 ${isHealthy ? "bg-emerald-100" : "bg-amber-100"}`}>
+                        {isHealthy
+                            ? <ShieldCheck className="h-7 w-7 text-emerald-600" />
+                            : <AlertTriangle className="h-7 w-7 text-amber-600 animate-pulse" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className={`text-xs font-bold uppercase tracking-widest ${isHealthy ? "text-emerald-600" : "text-amber-600"}`}>
+                            {isHealthy ? "All Systems Operational" : "Some Systems Need Attention"}
+                        </p>
+                        <p className="text-[10px] text-gray-500 font-medium mt-0.5">
+                            {health?.maintenance
+                                ? "⚠️ Maintenance Mode is currently ACTIVE — app is in read-only"
+                                : `Monitoring ${endpoints.length} API endpoints · ${services.length} features · DB + SMTP verified`}
+                        </p>
+                    </div>
+                    <div className="hidden md:flex items-center gap-6 text-right shrink-0">
+                        <div>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Node</p>
+                            <p className="text-sm font-black text-gray-900">{server?.nodeVersion}</p>
                         </div>
                         <div className="h-8 w-px bg-gray-200" />
-                        <div className="text-right">
-                            <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Node Version</p>
-                            <p className="text-sm font-black text-gray-900 uppercase">{nodeVersion?.replace('v', '')}</p>
+                        <div>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Process Uptime</p>
+                            <p className="text-sm font-black text-gray-900">{Math.round((server?.uptime ?? 0) / 60)}m</p>
+                        </div>
+                        <div className="h-8 w-px bg-gray-200" />
+                        <div>
+                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Platform</p>
+                            <p className="text-sm font-black text-gray-900 uppercase">{server?.platform}/{server?.arch}</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Service Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Database Health */}
-                    <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="h-12 w-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                                <Database className="h-6 w-6" />
+                {/* ── Core Infrastructure (DB + Email + Automation) ────────── */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                    {/* Database */}
+                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-5">
+                            <div className="h-11 w-11 rounded-xl bg-indigo-50 flex items-center justify-center">
+                                <Database className="h-5 w-5 text-indigo-600" />
                             </div>
-                            <StatusBadge status={health?.database?.status} />
+                            <StatusChip status={health?.database?.status} />
                         </div>
-                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-1">Database Layer</h3>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">PostgreSQL (Neon)</p>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-gray-500 uppercase">Response Time</span>
-                                <span className={`text-[10px] font-black ${parseInt(health?.database?.responseTime) < 200 ? 'text-emerald-600' : 'text-amber-600'}`}>{health?.database?.responseTime}</span>
+                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">PostgreSQL</h3>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-4">Neon Serverless</p>
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center">
+                                <span className="text-[10px] font-bold text-gray-500 uppercase">Query latency</span>
+                                <LatencyChip ms={health?.database?.latency} />
                             </div>
-                            <Progress value={98} className="h-1 bg-gray-50" indicatorClassName="bg-indigo-600" />
+                            <Progress
+                                value={health?.database?.latency ? Math.min((health.database.latency / 500) * 100, 100) : 0}
+                                className="h-1.5 bg-gray-100"
+                            />
+                            {health?.database?.error && (
+                                <p className="text-[9px] text-rose-600 font-mono break-all">{health.database.error}</p>
+                            )}
                         </div>
                     </div>
 
-                    {/* Email Service */}
-                    <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow group">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="h-12 w-12 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-600 group-hover:bg-rose-600 group-hover:text-white transition-colors">
-                                <Mail className="h-6 w-6" />
+                    {/* Email / SMTP */}
+                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-5">
+                            <div className="h-11 w-11 rounded-xl bg-sky-50 flex items-center justify-center">
+                                <Mail className="h-5 w-5 text-sky-600" />
                             </div>
-                            <StatusBadge status={health?.email?.status} />
+                            <StatusChip status={health?.email?.status} />
                         </div>
-                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-1">Email Service</h3>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">{health?.email?.provider}</p>
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between text-[10px] font-bold">
-                                <span className="text-gray-500 uppercase tracking-wider">SMTP Auth</span>
-                                <span className="text-emerald-600 uppercase tracking-wider">Verified</span>
+                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Email / SMTP</h3>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-4">Gmail (nodemailer)</p>
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                                <span className="text-[10px] font-bold text-gray-500 uppercase">Account</span>
+                                <span className="text-[9px] font-bold text-gray-700 font-mono truncate max-w-[140px]">{health?.email?.account}</span>
                             </div>
-                            <div className="flex items-center justify-between text-[10px] font-bold">
-                                <span className="text-gray-500 uppercase tracking-wider">Encryption</span>
-                                <span className="text-gray-900 uppercase tracking-wider">SSL/TLS</span>
-                            </div>
+                            {health?.email?.error && (
+                                <p className="text-[9px] text-rose-600 font-mono break-all mt-2">{health.email.error}</p>
+                            )}
                         </div>
                     </div>
 
-                    {/* Automation & Cron */}
-                    <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow group">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="h-12 w-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-colors">
-                                <Zap className="h-6 w-6" />
+                    {/* Automation */}
+                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-5">
+                            <div className="h-11 w-11 rounded-xl bg-amber-50 flex items-center justify-center">
+                                <Zap className="h-5 w-5 text-amber-600" />
                             </div>
-                            <Badge className="bg-blue-50 text-blue-600 border border-blue-100 font-bold uppercase text-[9px] tracking-widest px-3">{health?.automation?.status}</Badge>
+                            <StatusChip status={health?.automation?.autoRent || health?.automation?.autoSalary ? "HEALTHY" : "UNHEALTHY"} />
                         </div>
-                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-1">Automation Engine</h3>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Cron Scheduling</p>
-                        <div className="space-y-4">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Last Run (Rent/Staff)</span>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="h-3 w-3 text-amber-500" />
-                                    <span className="text-[10px] font-black text-gray-900 uppercase">
-                                        {health?.automation?.lastRun ? format(new Date(health?.automation?.lastRun), 'MMM dd, HH:mm') : 'Never'}
-                                    </span>
-                                </div>
+                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Automation</h3>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-4">Monthly Cron Jobs</p>
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-[10px] font-bold">
+                                <span className="text-gray-500 uppercase">Auto Rent</span>
+                                <span className={health?.automation?.autoRent ? "text-emerald-600" : "text-gray-400"}>
+                                    {health?.automation?.autoRent ? "ENABLED" : "DISABLED"}
+                                </span>
+                            </div>
+                            <div className="flex justify-between text-[10px] font-bold">
+                                <span className="text-gray-500 uppercase">Auto Salary</span>
+                                <span className={health?.automation?.autoSalary ? "text-emerald-600" : "text-gray-400"}>
+                                    {health?.automation?.autoSalary ? "ENABLED" : "DISABLED"}
+                                </span>
+                            </div>
+                            <div className="flex justify-between text-[10px] font-bold">
+                                <span className="text-gray-500 uppercase">Last Run</span>
+                                <span className="text-gray-700 font-mono">
+                                    {health?.automation?.lastRun
+                                        ? format(new Date(health.automation.lastRun), "MMM dd, HH:mm")
+                                        : "Never"}
+                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Infrastructure & Toggles Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* Infrastructure Details */}
-                    <div className="bg-white border border-gray-100 rounded-[2rem] p-8 shadow-sm">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100">
-                                <Server className="h-5 w-5 text-gray-400" />
+                {/* ── API Endpoint Health ──────────────────────────────────── */}
+                <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
+                        <div className="flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center">
+                                <Globe className="h-4 w-4 text-gray-500" />
                             </div>
-                            <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight">Infrastructure Monitor</h3>
+                            <div>
+                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">API Endpoints</h3>
+                                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Live latency probe</p>
+                            </div>
                         </div>
+                        <StatusChip status={allEndpointsOk ? "OK" : "ERROR"} />
+                    </div>
+                    <div className="divide-y divide-gray-50">
+                        {endpoints.map(([key, val]) => (
+                            <div key={key} className="flex items-center justify-between px-6 py-3 hover:bg-gray-50/50 transition-colors">
+                                <div className="flex items-center gap-3">
+                                    {val.status === "OK"
+                                        ? <Wifi className="h-4 w-4 text-emerald-500" />
+                                        : <WifiOff className="h-4 w-4 text-rose-500" />}
+                                    <span className="text-[11px] font-bold text-gray-800 uppercase tracking-wide">{val.name}</span>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    {val.httpStatus && (
+                                        <span className={`text-[9px] font-black font-mono px-2 py-0.5 rounded-full border ${val.httpStatus < 300 ? "bg-emerald-50 text-emerald-700 border-emerald-100" : val.httpStatus < 400 ? "bg-amber-50 text-amber-700 border-amber-100" : "bg-rose-50 text-rose-700 border-rose-100"}`}>
+                                            HTTP {val.httpStatus}
+                                        </span>
+                                    )}
+                                    <LatencyChip ms={val.latency} />
+                                    <StatusChip status={val.status} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
-                        <div className="space-y-8">
-                            {/* Memory Usage */}
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
+                {/* ── Server Resources + Live Stats ───────────────────────── */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    {/* Server Resources */}
+                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="h-9 w-9 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center">
+                                <Server className="h-4 w-4 text-gray-500" />
+                            </div>
+                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Server Resources</h3>
+                        </div>
+                        <div className="space-y-5">
+                            <div>
+                                <div className="flex justify-between items-center mb-2">
                                     <div className="flex items-center gap-2">
-                                        <HardDrive className="h-4 w-4 text-gray-400" />
-                                        <span className="text-xs font-bold text-gray-900 uppercase tracking-tight">Memory Utilization</span>
+                                        <HardDrive className="h-3.5 w-3.5 text-gray-400" />
+                                        <span className="text-[10px] font-bold text-gray-700 uppercase">Memory</span>
                                     </div>
-                                    <span className="text-xs font-black text-blue-600 uppercase tracking-widest">
-                                        {system?.memory?.free} / {system?.memory?.total}
+                                    <span className="text-[10px] font-black text-blue-600">
+                                        {server?.memory?.usedPercent}% used · {server?.memory?.free}MB free / {server?.memory?.total}MB
                                     </span>
                                 </div>
-                                <Progress 
-                                    value={(1 - (parseInt(system?.memory?.free) / parseInt(system?.memory?.total))) * 100} 
-                                    className="h-2 bg-gray-50" 
-                                    indicatorClassName="bg-blue-600" 
-                                />
+                                <Progress value={server?.memory?.usedPercent ?? 0} className="h-2 bg-gray-100" />
                             </div>
-
-                            {/* Load Average */}
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
+                            <div>
+                                <div className="flex justify-between items-center mb-2">
                                     <div className="flex items-center gap-2">
-                                        <Cpu className="h-4 w-4 text-gray-400" />
-                                        <span className="text-xs font-bold text-gray-900 uppercase tracking-tight">Load Average (1m/5m/15m)</span>
+                                        <Cpu className="h-3.5 w-3.5 text-gray-400" />
+                                        <span className="text-[10px] font-bold text-gray-700 uppercase">CPU Load Avg (1m · 5m · 15m)</span>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-3 gap-4">
-                                    {system?.loadAvg?.map((load, i) => (
-                                        <div key={i} className="bg-gray-50 rounded-xl p-3 border border-gray-100 text-center">
-                                            <p className="text-[10px] font-black text-gray-900">{load.toFixed(2)}</p>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {(server?.loadAvg ?? []).map((v, i) => (
+                                        <div key={i} className="bg-gray-50 border border-gray-100 rounded-xl p-3 text-center">
+                                            <p className="text-xs font-black text-gray-900 font-mono">{v}</p>
+                                            <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">{["1 min", "5 min", "15 min"][i]}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
+                            <div className="grid grid-cols-2 gap-3 pt-1">
+                                <div className="flex justify-between text-[10px] font-bold text-gray-500 bg-gray-50 rounded-xl p-3">
+                                    <span className="uppercase">OS Uptime</span>
+                                    <span className="text-gray-900 font-mono">{Math.round((server?.serverUptime ?? 0) / 3600)}h</span>
+                                </div>
+                                <div className="flex justify-between text-[10px] font-bold text-gray-500 bg-gray-50 rounded-xl p-3">
+                                    <span className="uppercase">Process</span>
+                                    <span className="text-gray-900 font-mono">{Math.round((server?.uptime ?? 0) / 60)}m</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Core Feature Toggles */}
-                    <div className="bg-white border border-gray-100 rounded-[2rem] p-8 shadow-sm">
-                        <div className="flex items-center gap-4 mb-8">
-                            <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100">
-                                <Settings2 className="h-5 w-5 text-gray-400" />
+                    {/* Live DB Stats */}
+                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="h-9 w-9 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center">
+                                <Activity className="h-4 w-4 text-gray-500" />
                             </div>
-                            <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight">Active Services</h3>
+                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Live Database Stats</h3>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+                        <div className="grid grid-cols-2 gap-4">
                             {[
-                                { label: "Security System", enabled: settings?.maintenanceMode === false, icon: ShieldCheck },
-                                { label: "Laundry Service", enabled: settings?.enableLaundry, icon: Zap },
-                                { label: "Mess & Catering", enabled: settings?.enableMess, icon: Zap },
-                                { label: "Guest Bookings", enabled: settings?.enableGuestBookings, icon: Zap },
-                                { label: "AI Assistant", enabled: settings?.enableAiAssistant, icon: Zap },
-                                { label: "Payment Gateway", enabled: settings?.enablePaymentProcessing, icon: Zap },
-                                { label: "Analytics Engine", enabled: true, icon: Activity },
-                                { label: "Auth Middleware", enabled: true, icon: ShieldCheck },
-                            ].map((service, i) => (
-                                <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0 group">
-                                    <div className="flex items-center gap-3">
-                                        <service.icon className={`h-3.5 w-3.5 ${service.enabled ? 'text-emerald-500' : 'text-gray-300'}`} />
-                                        <span className={`text-[10px] font-bold uppercase tracking-wider ${service.enabled ? 'text-gray-900' : 'text-gray-400'}`}>
-                                            {service.label}
-                                        </span>
+                                { label: "Total Users", value: stats?.totalUsers ?? "—", icon: Users, color: "bg-blue-50 text-blue-600" },
+                                { label: "Total Hostels", value: stats?.totalHostels ?? "—", icon: Building2, color: "bg-indigo-50 text-indigo-600" },
+                                { label: "Total Bookings", value: stats?.totalBookings ?? "—", icon: Calendar, color: "bg-emerald-50 text-emerald-600" },
+                                { label: "Total Payments", value: stats?.totalPayments ?? "—", icon: CreditCard, color: "bg-amber-50 text-amber-600" },
+                                { label: "Open Complaints", value: stats?.pendingComplaints ?? "—", icon: MessageSquare, color: "bg-rose-50 text-rose-600" },
+                            ].map((s, i) => (
+                                <div key={i} className="flex items-center gap-3 bg-gray-50/80 border border-gray-100 rounded-xl p-4">
+                                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${s.color}`}>
+                                        <s.icon className="h-4 w-4" />
                                     </div>
-                                    {service.enabled ? (
-                                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                                    ) : (
-                                        <XCircle className="h-3.5 w-3.5 text-gray-200" />
-                                    )}
+                                    <div>
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{s.label}</p>
+                                        <p className="text-lg font-black text-gray-900 leading-none mt-0.5">{s.value.toLocaleString()}</p>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </div>
                 </div>
 
-                {/* System Logs Hint */}
-                <div className="bg-gray-900 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-xl bg-gray-800 flex items-center justify-center">
-                            <Terminal className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Real-time Debugger</p>
-                            <p className="text-white text-xs font-medium tracking-tight">System logs are being streamed to the primary cloud server.</p>
-                        </div>
+                {/* ── Feature Service Toggles ──────────────────────────────── */}
+                <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-50">
+                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Application Services</h3>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Pulled from SystemSettings in database</p>
                     </div>
-                    <Button variant="ghost" className="text-gray-400 hover:text-white font-bold text-[10px] uppercase tracking-wider hover:bg-gray-800 rounded-xl px-6 h-10 border border-gray-800">
-                        View Detailed Logs
-                    </Button>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 divide-x divide-y divide-gray-50">
+                        {services.map((svc, i) => {
+                            const enabled = health?.services?.[svc.key];
+                            return (
+                                <div key={i} className={`p-5 flex flex-col items-center gap-2 text-center transition-colors ${enabled ? "hover:bg-emerald-50/30" : "hover:bg-rose-50/20"}`}>
+                                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${enabled ? "bg-emerald-50" : "bg-gray-100"}`}>
+                                        <svc.icon className={`h-4.5 w-4.5 ${enabled ? "text-emerald-600" : "text-gray-300"}`} style={{ height: 18, width: 18 }} />
+                                    </div>
+                                    <p className={`text-[9px] font-bold uppercase tracking-wider leading-tight ${enabled ? "text-gray-800" : "text-gray-400"}`}>{svc.label}</p>
+                                    <StatusChip status={enabled ? "OK" : "ERROR"} />
+                                </div>
+                            );
+                        })}
+                    </div>
                 </div>
+
             </main>
         </div>
     );
-};
-
-export default SystemHealthPage;
+}
