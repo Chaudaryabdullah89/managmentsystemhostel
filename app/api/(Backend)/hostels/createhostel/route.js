@@ -8,7 +8,7 @@ export async function POST(req) {
     console.log("[API] POST /api/hostels/createhostel - Request received");
 
     // 1. RBAC Check
-    const auth = await checkRole(['ADMIN', 'SUPER_ADMIN']);
+    const auth = await checkRole(['ADMIN']);
     if (!auth.success) {
         return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
     }

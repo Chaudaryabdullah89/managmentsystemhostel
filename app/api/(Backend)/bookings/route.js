@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { checkRole } from '@/lib/checkRole';
+import { isServiceEnabled } from '@/lib/permissions';
 import { NextResponse } from "next/server";
 import BookingServices from "@/lib/services/bookingservices/bookingservices";
 import { sendEmail } from "@/lib/utils/sendmail";
@@ -52,6 +53,11 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+    // Guard: guest bookings can be disabled globally by admin
+    if (!await isServiceEnabled('enableGuestBookings')) {
+        return NextResponse.json({ success: false, message: 'Guest booking requests are currently closed.' }, { status: 503 });
+    }
+
     const auth = await checkRole([]);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 

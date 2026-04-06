@@ -62,7 +62,7 @@ const PIE_COLORS = [COLORS.indigo, COLORS.emerald, COLORS.blue, COLORS.purple];
 
 export default function PaymentAnalyticsPage() {
     const user = useAuthStore((state) => state.user);
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    const isAdmin = user?.role === 'ADMIN';
     const isWarden = user?.role === 'WARDEN';
 
     const [selectedHostel, setSelectedHostel] = useState(() => {

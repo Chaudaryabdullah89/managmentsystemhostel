@@ -53,7 +53,7 @@ import useAuthStore from "@/hooks/Authstate";
 
 const PaymentApprovalPage = () => {
     const user = useAuthStore((state) => state.user);
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    const isAdmin = user?.role === 'ADMIN';
     const isWarden = user?.role === 'WARDEN';
 
     const [searchQuery, setSearchQuery] = useState("");

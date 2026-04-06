@@ -3,6 +3,7 @@ import { checkRole } from '@/lib/checkRole';
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSystemSettings } from "@/lib/permissions";
 
 export async function GET(req, { params }) {
     const auth = await checkRole([]);
@@ -51,8 +52,21 @@ export async function GET(req, { params }) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
+        // Fetch dynamic permissions and global settings for the client
+        const [rolePerm, settings] = await Promise.all([
+          prisma.rolePermission.findUnique({ where: { role: user.role } }),
+          getSystemSettings(),
+        ]);
+
+        const { DEFAULT_ROLE_PERMISSIONS } = require('@/lib/permissions');
+        const rolePermissions = rolePerm?.permissions || DEFAULT_ROLE_PERMISSIONS[user.role] || {};
+
         console.log(`[API] GET /api/users/profile/${id} - Success`);
-        return NextResponse.json(user);
+        return NextResponse.json({
+            ...user,
+            rolePermissions,
+            systemSettings: settings
+        });
     } catch (error) {
         console.error(`[API] GET /api/users/profile/${id} - Error:`, error);
         return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 });

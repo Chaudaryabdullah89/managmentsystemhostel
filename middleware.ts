@@ -6,10 +6,10 @@ import { jwtVerify } from 'jose';
 // Route Permissions (RBAC)
 // ===============================
 const routePermissions: Record<string, string[]> = {
-    '/admin': ['ADMIN', 'SUPER_ADMIN'],
-    '/staff': ['STAFF', 'WARDEN', 'ADMIN', 'SUPER_ADMIN'],
-    '/warden': ['WARDEN', 'ADMIN', 'SUPER_ADMIN'],
-    '/guest': ['GUEST', 'RESIDENT', 'ADMIN', 'SUPER_ADMIN', 'WARDEN', 'STAFF'],
+    '/admin': ['ADMIN'],
+    '/staff': ['STAFF', 'WARDEN', 'ADMIN'],
+    '/warden': ['WARDEN', 'ADMIN'],
+    '/guest': ['GUEST', 'RESIDENT', 'ADMIN', 'WARDEN', 'STAFF'],
 };
 
 // ===============================

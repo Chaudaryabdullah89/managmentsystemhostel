@@ -101,7 +101,7 @@ export async function POST(req) {
 
 // PUT - update leave request status (admin/warden)
 export async function PUT(req) {
-    const auth = await checkRole(['ADMIN', 'WARDEN', 'SUPER_ADMIN']);
+    const auth = await checkRole(['ADMIN', 'WARDEN']);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
     try {

@@ -18,52 +18,71 @@ export async function GET(request) {
         const query = searchParams.get("query");
         const hostelIdInput = searchParams.get("hostelId");
 
-        const sanitize = (val) => (val === 'all' || val === 'null' || val === 'undefined' || !val) ? null : val;
-        let hostelId = sanitize(hostelIdInput);
-        const where = {};
+        // 1. Determine Identity & Mandatory Isolation
+        const userRole = auth.user.role;
+        let isolationHostelId = auth.user.hostelId;
 
-        // Define if this is a global "Find Account" search (e.g. for bookings)
-        const isGlobalSearch = query && (role === 'all' || role === 'GUEST');
+        // If Warden/Staff must be isolated to a hostel, ensure it's fetched reliably
+        if (userRole === 'WARDEN' || userRole === 'STAFF') {
+            if (!isolationHostelId) {
+                // Check direct link on user first
+                const profile = await prisma.user.findUnique({
+                    where: { id: auth.user.userId || auth.user.id },
+                    select: { hostelId: true }
+                });
+                isolationHostelId = profile?.hostelId;
 
-        if (isGlobalSearch) {
-            // GLOBAL SEARCH: Used mainly for booking lookups
-            // Wardens can only lookup RESIDENT or GUEST to prevent probing of STAFF/ADMIN accounts
-            if (auth.user.role === 'WARDEN') {
-                where.role = { in: ['RESIDENT', 'GUEST'] };
-            }
-        } else {
-            // LIST/FILTERED SEARCH: Apply role and security isolation
-            if (role && role !== "all") {
-                where.role = role;
-            } else if (auth.user.role === 'WARDEN') {
-                // If role = 'all', Warden is limited to Residents/Guests only
-                where.role = { in: ['RESIDENT', 'GUEST'] };
-            }
-
-            if (auth.user.role === 'WARDEN') {
-                let wardenHostelId = auth.user.hostelId;
-
-                if (!wardenHostelId) {
-                    const wardenProfile = await prisma.user.findUnique({
-                        where: { id: auth.user.userId || auth.user.id },
-                        select: { hostelId: true }
+                // If still null and user is a warden, check the Hostel table (wardenId mapping)
+                if (!isolationHostelId && userRole === 'WARDEN') {
+                    const managedHostel = await prisma.hostel.findUnique({
+                        where: { wardenId: auth.user.userId || auth.user.id },
+                        select: { id: true }
                     });
-                    wardenHostelId = wardenProfile?.hostelId;
+                    isolationHostelId = managedHostel?.id;
                 }
-
-                // Apply strict isolation: ONLY my hostel residents/guests
-                where.OR = [
-                    { hostelId: wardenHostelId },
-                    { ResidentProfile: { currentHostelId: wardenHostelId } }
-                ];
-            } else if (hostelId) {
-                // Admin/Global logic
-                where.OR = [
-                    { hostelId: hostelId },
-                    { ResidentProfile: { currentHostelId: hostelId } }
-                ];
             }
         }
+        console.log(`[API] GET /api/users - Role: ${userRole}, Isolation: ${isolationHostelId}`);
+
+        const sanitize = (val) => (val === "all" || val === "null" || val === "undefined" || !val) ? null : val;
+        const hostelId = sanitize(hostelIdInput);
+
+        const where = {};
+
+        // 2. Role Filtering
+        if (role && role !== "all") {
+            where.role = role;
+        } else if (userRole === 'WARDEN') {
+            where.role = { in: ['RESIDENT', 'GUEST'] };
+        }
+
+        // 3. Security Isolation Enforcement
+        if (userRole === 'WARDEN' || (userRole === 'STAFF' && isolationHostelId)) {
+            if (!isolationHostelId) {
+                console.warn("[API] GET /api/users - Warden/Staff has no isolationHostelId");
+                return NextResponse.json({ success: true, data: [] });
+            }
+            
+            where.AND = [
+                ...(where.role ? [{ role: where.role }] : []),
+                {
+                    OR: [
+                        { hostelId: isolationHostelId },
+                        { ResidentProfile: { currentHostelId: isolationHostelId } }
+                    ]
+                }
+            ];
+            // Clear out high-level role if we moved it into AND
+            if (where.role) delete where.role;
+        } else if (hostelId) {
+            // ADMIN or un-isolated STAFF filtering
+            where.OR = [
+                { hostelId: hostelId },
+                { ResidentProfile: { currentHostelId: hostelId } }
+            ];
+        }
+
+        console.log("[API] GET /api/users - Final Where:", JSON.stringify(where, null, 2));
 
         if (query) {
             const searchQuery = {

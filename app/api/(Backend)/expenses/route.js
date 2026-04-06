@@ -81,10 +81,7 @@ export async function GET(request) {
             if (auth.user.canManageSalaries) allowedCategories.push('SALARY');
 
             if (allowedCategories.length === 0) {
-                // If they are a warden but have NO granular flags, usually they should see general things or we keep it restricted.
-                // However, to fix "not showing", let's check if they have any at all.
-                // If the user says it's not showing, they likely need at least some view access.
-                allowedCategories.push('NONE');
+                // Return empty array instead of 'NONE' to avoid enum validation errors
             }
         }
 
@@ -173,7 +170,7 @@ export async function POST(request) {
 }
 
 export async function PATCH(request) {
-    const auth = await checkRole(['ADMIN', 'SUPER_ADMIN']);
+    const auth = await checkRole(['ADMIN']);
     if (!auth.success) {
         console.warn(`Unauthorized Status Update Attempt by role: ${auth.user?.role || 'Unknown'}`);
         return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to change expense record status." }, { status: 403 });
@@ -201,7 +198,7 @@ export async function PATCH(request) {
     }
 }
 export async function DELETE(request) {
-    const auth = await checkRole(['ADMIN', 'SUPER_ADMIN']);
+    const auth = await checkRole(['ADMIN']);
     if (!auth.success) return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to delete expense records." }, { status: 403 });
 
     try {

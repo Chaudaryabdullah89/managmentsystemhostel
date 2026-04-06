@@ -123,6 +123,21 @@ const GuestSupportPage = () => {
     const isCheckedOut = bookings.length > 0 && !activeBooking;
     const room = activeBooking?.room || bookings[0]?.Room;
 
+    // RBAC & System Settings
+    const sysSettings = user?.systemSettings || {};
+    const isComplaintsEnabled = sysSettings.enableComplaintsSystem !== false;
+    const isLaundryEnabled = sysSettings.enableLaundry !== false;
+    const isCleaningEnabled = sysSettings.enableCleaningLogs !== false;
+    const isRoomServicesEnabled = isLaundryEnabled || isCleaningEnabled;
+    const isAdmin = user?.role === 'ADMIN';
+
+    // Auto-switch tab if one is disabled
+    useEffect(() => {
+        if (!isComplaintsEnabled && activeTab === "issues") {
+            setActiveTab("services");
+        }
+    }, [isComplaintsEnabled, activeTab]);
+
     // Combine complaints and maintenance tasks
     const issues = [
         ...(userData?.complaints || []).map(c => ({ ...c, type: 'COMPLAINT' })),
@@ -208,89 +223,95 @@ const GuestSupportPage = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                            <DialogTrigger asChild>
-                                <Button
-                                    className={`h-10 px-6 rounded-2xl font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 shadow-lg ${isCheckedOut ? 'bg-gray-100 text-gray-400 cursor-not-allowed border' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'}`}
-                                    onClick={(e) => {
-                                        if (isCheckedOut) {
-                                            e.preventDefault();
-                                            toast.error("Action Restricted", { description: "You cannot submit requests after checkout." });
-                                        }
-                                    }}
-                                >
-                                    <Plus className="h-4 w-4 mr-2" /> New Request
-                                </Button>
-                            </DialogTrigger>
-
-                            <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none p-0 overflow-hidden shadow-2xl bg-white">
-                                <DialogHeader className="p-8 bg-slate-50 border-b border-slate-100 flex flex-row items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100">
-                                        <LifeBuoy className="h-6 w-6 text-white" />
-                                    </div>
-                                    <div className="text-left">
-                                        <DialogTitle className="text-lg font-bold text-slate-900 leading-none uppercase">Submit Request</DialogTitle>
-                                        <DialogDescription className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">How can we help you today?</DialogDescription>
-                                    </div>
-                                </DialogHeader>
-                                <div className="p-8 space-y-6">
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Category</Label>
-                                        <Select value={formData.category} onValueChange={(val) => handleInputChange("category", val)}>
-                                            <SelectTrigger className="h-12 rounded-xl border-slate-100 bg-slate-50/50 font-bold uppercase text-[10px] tracking-widest">
-                                                <SelectValue placeholder="Select Category" />
-                                            </SelectTrigger>
-                                            <SelectContent className="rounded-2xl p-1 shadow-2xl border-slate-100">
-                                                <SelectItem value="MAINTENANCE" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3 hover:bg-indigo-50">Room Maintenance</SelectItem>
-                                                <SelectItem value="INTERNET" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3 hover:bg-indigo-50">WiFi & Internet</SelectItem>
-                                                <SelectItem value="CLEANLINESS" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3 hover:bg-indigo-50">Housekeeping</SelectItem>
-                                                <SelectItem value="SECURITY" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3 hover:bg-indigo-50">Security & Keys</SelectItem>
-                                                <SelectItem value="OTHER" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3 hover:bg-indigo-50">Other Support</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Priority</Label>
-                                        <Select value={formData.priority} onValueChange={(val) => handleInputChange("priority", val)}>
-                                            <SelectTrigger className="h-12 rounded-xl border-slate-100 bg-slate-50/50 font-bold uppercase text-[10px] tracking-widest">
-                                                <SelectValue placeholder="Select Urgency" />
-                                            </SelectTrigger>
-                                            <SelectContent className="rounded-2xl p-1 shadow-2xl border-slate-100">
-                                                <SelectItem value="LOW" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3">Low - Routine</SelectItem>
-                                                <SelectItem value="MEDIUM" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3">Medium - Soon</SelectItem>
-                                                <SelectItem value="HIGH" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3">High - Priority</SelectItem>
-                                                <SelectItem value="URGENT" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3">Emergency - Urgent</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Summary</Label>
-                                        <Input
-                                            className="h-12 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-xs"
-                                            placeholder="What is the issue?"
-                                            value={formData.title}
-                                            onChange={(e) => handleInputChange("title", e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Detailed Description</Label>
-                                        <Textarea
-                                            className="rounded-xl border-slate-100 bg-slate-50/50 font-semibold text-xs min-h-[100px]"
-                                            placeholder="Describe the problem in detail..."
-                                            value={formData.description}
-                                            onChange={(e) => handleInputChange("description", e.target.value)}
-                                        />
-                                    </div>
+                        {isComplaintsEnabled || isAdmin ? (
+                            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                                <DialogTrigger asChild>
                                     <Button
-                                        onClick={handleSubmit}
-                                        disabled={createComplaintMutation.isPending}
-                                        className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all hover:scale-[1.02] active:scale-95"
+                                        className={`h-10 px-6 rounded-2xl font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 shadow-lg ${isCheckedOut ? 'bg-gray-100 text-gray-400 cursor-not-allowed border' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'}`}
+                                        onClick={(e) => {
+                                            if (isCheckedOut) {
+                                                e.preventDefault();
+                                                toast.error("Action Restricted", { description: "You cannot submit requests after checkout." });
+                                            }
+                                        }}
                                     >
-                                        {createComplaintMutation.isPending ? "Sending..." : "Submit Support Ticket"}
+                                        <Plus className="h-4 w-4 mr-2" /> New Request
                                     </Button>
-                                </div>
-                            </DialogContent>
-                        </Dialog>
+                                </DialogTrigger>
+
+                                <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none p-0 overflow-hidden shadow-2xl bg-white">
+                                    <DialogHeader className="p-8 bg-slate-50 border-b border-slate-100 flex flex-row items-center gap-4">
+                                        <div className="h-12 w-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100">
+                                            <LifeBuoy className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div className="text-left">
+                                            <DialogTitle className="text-lg font-bold text-slate-900 leading-none uppercase">Submit Request</DialogTitle>
+                                            <DialogDescription className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1.5">How can we help you today?</DialogDescription>
+                                        </div>
+                                    </DialogHeader>
+                                    <div className="p-8 space-y-6">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Category</Label>
+                                            <Select value={formData.category} onValueChange={(val) => handleInputChange("category", val)}>
+                                                <SelectTrigger className="h-12 rounded-xl border-slate-100 bg-slate-50/50 font-bold uppercase text-[10px] tracking-widest">
+                                                    <SelectValue placeholder="Select Category" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-2xl p-1 shadow-2xl border-slate-100">
+                                                    <SelectItem value="MAINTENANCE" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3 hover:bg-indigo-50">Room Maintenance</SelectItem>
+                                                    <SelectItem value="INTERNET" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3 hover:bg-indigo-50">WiFi & Internet</SelectItem>
+                                                    <SelectItem value="CLEANLINESS" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3 hover:bg-indigo-50">Housekeeping</SelectItem>
+                                                    <SelectItem value="SECURITY" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3 hover:bg-indigo-50">Security & Keys</SelectItem>
+                                                    <SelectItem value="OTHER" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3 hover:bg-indigo-50">Other Support</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Priority</Label>
+                                            <Select value={formData.priority} onValueChange={(val) => handleInputChange("priority", val)}>
+                                                <SelectTrigger className="h-12 rounded-xl border-slate-100 bg-slate-50/50 font-bold uppercase text-[10px] tracking-widest">
+                                                    <SelectValue placeholder="Select Urgency" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-2xl p-1 shadow-2xl border-slate-100">
+                                                    <SelectItem value="LOW" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3">Low - Routine</SelectItem>
+                                                    <SelectItem value="MEDIUM" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3">Medium - Soon</SelectItem>
+                                                    <SelectItem value="HIGH" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3">High - Priority</SelectItem>
+                                                    <SelectItem value="URGENT" className="rounded-xl text-[10px] uppercase font-bold tracking-widest py-3">Emergency - Urgent</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Summary</Label>
+                                            <Input
+                                                className="h-12 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-xs"
+                                                placeholder="What is the issue?"
+                                                value={formData.title}
+                                                onChange={(e) => handleInputChange("title", e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-1">Detailed Description</Label>
+                                            <Textarea
+                                                className="rounded-xl border-slate-100 bg-slate-50/50 font-semibold text-xs min-h-[100px]"
+                                                placeholder="Describe the problem in detail..."
+                                                value={formData.description}
+                                                onChange={(e) => handleInputChange("description", e.target.value)}
+                                            />
+                                        </div>
+                                        <Button
+                                            onClick={handleSubmit}
+                                            disabled={createComplaintMutation.isPending}
+                                            className="w-full h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-100 transition-all hover:scale-[1.02] active:scale-95"
+                                        >
+                                            {createComplaintMutation.isPending ? "Sending..." : "Submit Support Ticket"}
+                                        </Button>
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        ) : (
+                            <Badge className="bg-amber-50 text-amber-600 border-none px-4 py-2 rounded-xl text-[10px] uppercase font-bold tracking-wider italic">
+                                Complaints System Offline
+                            </Badge>
+                        )}
                     </div>
                 </div>
             </header>
@@ -299,8 +320,8 @@ const GuestSupportPage = () => {
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <div className="flex items-center justify-between mb-8 overflow-x-auto pb-2">
                         <TabsList className="bg-white border border-gray-100 p-1.5 rounded-2xl shadow-sm h-14 w-fit">
-                            <TabsTrigger value="issues" className="rounded-xl px-8 data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-bold text-[10px] uppercase tracking-widest h-full transition-all">Support & Issues</TabsTrigger>
-                            <TabsTrigger value="services" className="rounded-xl px-8 data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-bold text-[10px] uppercase tracking-widest h-full transition-all">Room Services</TabsTrigger>
+                            {(isComplaintsEnabled || isAdmin) && <TabsTrigger value="issues" className="rounded-xl px-8 data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-bold text-[10px] uppercase tracking-widest h-full transition-all">Support & Issues</TabsTrigger>}
+                            {(isRoomServicesEnabled || isAdmin) && <TabsTrigger value="services" className="rounded-xl px-8 data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-bold text-[10px] uppercase tracking-widest h-full transition-all">Room Services</TabsTrigger>}
                         </TabsList>
 
                         <div className="flex items-center gap-4 min-w-[300px]">

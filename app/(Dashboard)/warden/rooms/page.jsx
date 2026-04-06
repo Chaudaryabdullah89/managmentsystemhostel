@@ -324,7 +324,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                                 <DropdownMenuItem className="p-2.5 gap-2.5 rounded-lg font-black text-[10px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/warden/rooms/${room.id}?tab=edit`)}>
                                                     <Edit className="h-3.5 w-3.5" /> Edit
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem className="p-2.5 gap-2.5 rounded-lg font-black text-[10px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/warden/rooms/${room.id}?tab=maintenance`)}>
+                                                <DropdownMenuItem className="p-2.5 gap-2.5 rounded-lg font-black text-[10px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/warden/rooms/${room.id}/maintenance`)}>
                                                     <Wrench className="h-3.5 w-3.5" /> Maintenance
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />

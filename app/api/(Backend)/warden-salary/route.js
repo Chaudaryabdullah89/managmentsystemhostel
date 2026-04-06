@@ -9,7 +9,7 @@ import crypto from 'crypto';
 
 // GET /api/warden-salary
 export async function GET(request) {
-    const auth = await checkRole(['WARDEN', 'ADMIN', 'SUPER_ADMIN']);
+    const auth = await checkRole(['WARDEN', 'ADMIN']);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
     try {
@@ -58,7 +58,7 @@ export async function GET(request) {
 
 // POST /api/warden-salary
 export async function POST(request) {
-    const auth = await checkRole(['WARDEN', 'ADMIN', 'SUPER_ADMIN']);
+    const auth = await checkRole(['WARDEN', 'ADMIN']);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
     try {
@@ -238,7 +238,7 @@ export async function POST(request) {
 
 // DELETE /api/warden-salary
 export async function DELETE(request) {
-    const auth = await checkRole(['WARDEN', 'ADMIN', 'SUPER_ADMIN']);
+    const auth = await checkRole(['WARDEN', 'ADMIN']);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
     try {

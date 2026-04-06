@@ -106,7 +106,7 @@ import useAuthStore from "@/hooks/Authstate";
 const PaymentManagementPage = () => {
     const router = useRouter();
     const user = useAuthStore((state) => state.user);
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    const isAdmin = user?.role === 'ADMIN';
     const isWarden = user?.role === 'WARDEN';
 
     const [activeTab, setActiveTab] = useState("ledger");
@@ -934,7 +934,7 @@ const PaymentManagementPage = () => {
                                                             <Button size="icon" variant="ghost" className="h-full w-full relative z-10 hover:bg-black/20"><Scan className="h-6 w-6 text-white drop-shadow-md" /></Button>
                                                         </DialogTrigger>
                                                         <DialogContent className="max-w-4xl bg-white p-0 border-gray-200 overflow-hidden rounded-3xl shadow-2xl">
-                                                            <div className="relative aspect-[16/10] bg-gray-50">
+                                                            <div className="relative aspect-16/10 bg-gray-50">
                                                                 <img src={payment.receiptUrl} alt="Proof of Payment" className="w-full h-full object-contain p-8" />
                                                                 <div className="absolute top-6 left-6 flex flex-col gap-2">
                                                                     <Badge className="bg-blue-600 text-white font-bold uppercase text-[9px] tracking-widest px-3">CHECK</Badge>

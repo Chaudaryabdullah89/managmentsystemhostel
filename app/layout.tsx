@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import "./globals.css"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { Toaster } from "sonner"
+import MaintenanceWrapper from "@/components/MaintenanceWrapper"
 
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/appsidebar"
@@ -30,7 +31,9 @@ export default function RootLayout({
 
             <Toaster position="top-right" richColors />
             <Analytics />
-            {children}
+            <MaintenanceWrapper>
+              {children}
+            </MaintenanceWrapper>
           </AuthProvider>
         </ReactQueryProvider>
 

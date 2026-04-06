@@ -24,7 +24,7 @@ import {
     Wallet,
     Plane,
     BarChart3,
-
+    ShieldCheck,
     type LucideIcon,
 } from "lucide-react"
 import useAuthStore from "@/hooks/Authstate"
@@ -37,75 +37,15 @@ import {
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 
-type NavItem = {
-    title: string
-    url: string
-    icon: LucideIcon
-    badge?: string
-    role: string
-}
+import { NAVIGATION_ITEMS, type NavItem } from "@/lib/navigation"
 
-const items: Record<string, NavItem[]> = {
-    admin: [
-        { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard, role: "admin" },
-        { title: "All Hostels", url: "/admin/hostels", icon: Building2, role: "admin" },
-        { title: "All Rooms", url: "/admin/hostels/rooms", icon: Bed, role: "admin" },
-        { title: "All Bookings", url: "/admin/bookings", icon: Calendar, role: "admin" },
-        { title: "All Payments", url: "/admin/payments", icon: CreditCard, role: "admin" },
-        { title: "Salaries (Staff)", url: "/admin/salaries", icon: DollarSign, role: "admin" },
-        { title: "Salaries (Warden)", url: "/admin/warden-salaries", icon: Users, role: "admin" },
-        { title: "Users Records", url: "/admin/users-records", icon: Users, role: "admin" },
-        // { title: "Payments Reports", url: "/admin/payment-analytics", icon: BarChart3, role: "admin" },
-        { title: "Hostels Reports", url: "/admin/reports", icon: FileText, role: "admin" },
-        // { title: "Leave Requests", url: "/admin/leaves", icon: Plane, role: "admin" },
-        { title: "Audit & Search", url: "/admin/audit", icon: Search, role: "admin" },
-        { title: "Complaints", url: "/admin/complaints", icon: MessageSquare, role: "admin" },
-        // { title: "Service Status", url: "/admin/services", icon: Activity, role: "admin" },
-        { title: "Notice Board", url: "/admin/notices", icon: Megaphone, role: "admin" },
-        { title: "Expenses", url: "/admin/expenses", icon: DollarSign, role: "admin" },
-        { title: "Mess Menu", url: "/admin/mess", icon: Utensils, role: "admin" },
-        { title: "Profile", url: "/admin/profile", icon: User, role: "admin" },
-    ],
-    warden: [
-        { title: "Dashboard", url: "/warden", icon: LayoutDashboard, role: "warden" },
-        { title: "My Hostel", url: "/warden/hostels", icon: Building2, role: "warden" },
-        { title: "Rooms", url: "/warden/rooms", icon: Bed, role: "warden" },
-        { title: "Bookings", url: "/warden/bookings", icon: Calendar, role: "warden" },
-
-        { title: "Payments", url: "/warden/payments", icon: CreditCard, role: "warden" },
-        // { title: "Staff Salaries", url: "/warden/salaries", icon: DollarSign, role: "warden" },
-        { title: "My Salary", url: "/warden/my-salary", icon: Wallet, role: "warden" },
-        { title: "Residents", url: "/warden/residents", icon: Users, role: "warden" },
-        { title: "Complaints", url: "/warden/complaints", icon: MessageSquare, role: "warden" },
-        { title: "Audit & Search", url: "/warden/audit", icon: Search, role: "warden" },
-        // { title: "Cleaning Log", url: "/warden/cleaning", icon: Activity, role: "warden" },
-        // { title: "Laundry Log", url: "/warden/laundry", icon: ClipboardList, role: "warden" },
-        { title: "Notice Board", url: "/warden/notices", icon: Megaphone, role: "warden" },
-        { title: "Expenses", url: "/warden/expenses", icon: DollarSign, role: "warden" },
-        { title: "Mess Menu", url: "/warden/mess", icon: Utensils, role: "warden" },
-        { title: "My Profile", url: "/warden/profile", icon: User, role: "warden" },
-    ],
-    guest: [
-        { title: "Dashboard", url: "/guest/dashboard", icon: LayoutDashboard, role: "guest" },
-        { title: "My Room", url: "/guest/my-room", icon: Bed, role: "guest" },
-        { title: "My Bookings", url: "/guest/bookings", icon: Calendar, role: "guest" },
-        { title: "Payments", url: "/guest/payments", icon: CreditCard, role: "guest" },
-        // { title: "Leave Requests", url: "/guest/leave", icon: Plane, role: "guest" },
-        { title: "Mess Schedule", url: "/guest/mess", icon: Utensils, role: "guest" },
-        { title: "Services & Support", url: "/guest/support", icon: LifeBuoy, role: "guest" },
-        { title: "Profile", url: "/guest/profile", icon: User, role: "guest" },
-    ],
-    staff: [
-        { title: "Dashboard", url: "/staff/dashboard", icon: LayoutDashboard, role: "staff" },
-        { title: "My Salary", url: "/staff/salary", icon: DollarSign, role: "staff" },
-        { title: "My Profile", url: "/staff/profile", icon: User, role: "staff" },
-    ],
-}
+const items = NAVIGATION_ITEMS
 
 const roleConfig: Record<string, { label: string; color: string; bg: string; dot: string }> = {
     admin: { label: "Admin", color: "text-blue-600", bg: "bg-blue-50", dot: "bg-blue-600" },
     warden: { label: "Warden", color: "text-violet-600", bg: "bg-violet-50", dot: "bg-violet-500" },
-    guest: { label: "Guest", color: "text-emerald-600", bg: "bg-emerald-50", dot: "bg-emerald-500" },
+    guest: { label: "Guest", color: "text-sky-600", bg: "bg-sky-50", dot: "bg-sky-500" },
+    resident: { label: "Resident", color: "text-emerald-600", bg: "bg-emerald-50", dot: "bg-emerald-500" },
     staff: { label: "Staff", color: "text-amber-600", bg: "bg-amber-50", dot: "bg-amber-500" },
 }
 
@@ -124,20 +64,29 @@ export function AppSidebar() {
 
     // DECIDE NAV BASED ON REAL USER ROLE, NOT URL
     const userRole = user?.role?.toLowerCase() || 'guest'
+    const isAdmin = user?.role === 'ADMIN'
     const rc = roleConfig[userRole] || roleConfig.guest
-    let navItems = items[userRole] || items.guest
 
-    // Extra safety: If they are on an admin page but are a warden, still show warden sidebar
-    // Enforce granular expense permissions for warden
-    const hasAnyExpensePermission = user?.canManageExpenses ||
-        user?.canManageMess ||
-        user?.canManageGeneral ||
-        user?.canManageUtilities ||
-        user?.canManageMaintenance;
+    // Dynamic Filtering Logic
+    let navItems = (items[userRole] || items.guest).filter(item => {
+        // Admins bypass all service/permission toggles for management
+        if (isAdmin) return true;
 
-    if (userRole === "warden" && !hasAnyExpensePermission) {
-        navItems = navItems.filter((item) => item.title !== "Expenses")
-    }
+        const rolePerms = (user as any)?.rolePermissions || {};
+        const sysSettings = (user as any)?.systemSettings || {};
+
+        // 1. Check Global Feature Flag (SystemSettings)
+        if (item.featureKey && sysSettings[item.featureKey] === false) {
+            return false;
+        }
+
+        // 2. Check Role-specific Permission (RolePermission)
+        if (item.permissionKey && !rolePerms[item.permissionKey]) {
+            return false;
+        }
+
+        return true;
+    });
 
     return (
         <Sidebar>
@@ -157,7 +106,7 @@ export function AppSidebar() {
 
                     {/* Role badge */}
                     <div className={`flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50`}>
-                        <div className={`h-1.5 w-1.5 rounded-full ${user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN' ? 'bg-blue-600' : user?.role === 'WARDEN' ? 'bg-violet-600' : 'bg-emerald-600'} flex-shrink-0 animate-pulse`} />
+                        <div className={`h-1.5 w-1.5 rounded-full ${user?.role === 'ADMIN' ? 'bg-blue-600' : user?.role === 'WARDEN' ? 'bg-violet-600' : 'bg-emerald-600'} shrink-0 animate-pulse`} />
                         <span className={`text-[11px] font-bold uppercase tracking-wider text-gray-500`}>
                             {user?.role?.replace('_', ' ') || 'Authorized'} Access
                         </span>

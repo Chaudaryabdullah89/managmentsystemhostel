@@ -52,10 +52,8 @@ export async function GET(request) {
             if (granularPerms.canManageMaintenance) allowedCategories.push('MAINTENANCE');
             if (granularPerms.canManageSalaries) allowedCategories.push('SALARY');
 
-            if (allowedCategories.length === 0) {
-
-                allowedCategories = ['NONE'];
-            }
+            // Explicitly empty array means "no categories allowed"
+            // The service now handles this gracefully.
         }
 
         let stats;

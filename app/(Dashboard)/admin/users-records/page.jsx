@@ -60,7 +60,7 @@ const UserRecordPage = () => {
     const [newPassword, setNewPassword] = useState("hostel123");
 
     const user = useAuthStore((state) => state.user);
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN';
+    const isAdmin = user?.role === 'ADMIN';
     const isWarden = user?.role === 'WARDEN';
 
     const { data: users, isLoading } = useAllUsers({
@@ -338,7 +338,7 @@ const UserRecordPage = () => {
                             </button>
                         ))}
                     </div>
-                    <div className="flex items-center gap-1 border-l border-gray-100 pl-2 hidden md:flex">
+                    <div className="items-center gap-1 border-l border-gray-100 pl-2 hidden md:flex">
                         <Button variant="ghost" size="icon" onClick={() => setViewMode('table')} className={`h-9 w-9 rounded-xl ${viewMode === 'table' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400'}`}>
                             <LayoutList className="h-4 w-4" />
                         </Button>
@@ -459,7 +459,7 @@ const UserRecordPage = () => {
                         {filteredUsers.map(user => {
                             const rc = getRoleConfig(user.role);
                             return (
-                                <div key={user.id} className="bg-white border border-gray-100 rounded-[2rem] p-6 hover:shadow-xl hover:shadow-indigo-100/50 transition-all group relative overflow-hidden flex flex-col">
+                                <div key={user.id} className="bg-white border border-gray-100 rounded-4xl p-6 hover:shadow-xl hover:shadow-indigo-100/50 transition-all group relative overflow-hidden flex flex-col">
                                     <div className={`absolute top-0 right-0 w-32 h-32 ${rc.bg} rounded-bl-full opacity-10 -mr-12 -mt-12`} />
                                     <div className="flex items-start justify-between mb-5 relative">
                                         <div className={`h-12 w-12 rounded-2xl ${rc.bg} ${rc.color} flex items-center justify-center border ${rc.border} text-xl font-black`}>
@@ -505,7 +505,7 @@ const UserRecordPage = () => {
 
             {/* Edit Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="max-w-xl p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white flex flex-col max-h-[90vh]">
+                <DialogContent className="max-w-xl p-0 overflow-hidden rounded-4xl border-none shadow-2xl bg-white flex flex-col max-h-[90vh]">
                     <div className="bg-blue-600 px-8 py-6 flex items-center gap-4 shrink-0">
                         <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center"><Settings2 className="h-6 w-6 text-white" /></div>
                         <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Edit</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">Details</p></div>
@@ -561,7 +561,7 @@ const UserRecordPage = () => {
                         )}
                         <div className="flex gap-3">
                             <Button variant="ghost" className="flex-1 h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-                            <Button className="flex-[2] h-12 bg-blue-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg" onClick={handleEditUser} disabled={updateAnyUser.isPending}>
+                            <Button className="flex-2 h-12 bg-blue-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg" onClick={handleEditUser} disabled={updateAnyUser.isPending}>
                                 {updateAnyUser.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
                             </Button>
                         </div>
@@ -745,7 +745,7 @@ const UserRecordPage = () => {
                         )}
                         <div className="flex gap-3 pt-2">
                             <Button variant="ghost" className="flex-1 h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest" onClick={() => setIsCreateDialogOpen(false)}>Cancel</Button>
-                            <Button className="flex-[2] h-12 bg-indigo-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg flex items-center justify-center gap-2"
+                            <Button className="flex-2 h-12 bg-indigo-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg flex items-center justify-center gap-2"
                                 onClick={handleCreateUser} disabled={createUser.isPending || !formData.name || !formData.email}>
                                 {createUser.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <><ShieldCheck className="h-4 w-4" /> Save</>}
                             </Button>
