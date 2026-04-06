@@ -100,6 +100,8 @@ const DEFAULT_SETTINGS = {
   enableComplaintEmails: true,
   enableNoticeEmails: true,
   enableWelcomeEmails: true,
+  autoGenerateRentInvoices: true,
+  autoGenerateStaffSalaries: true,
 };
 
 const PERMISSION_KEYS = [
@@ -478,6 +480,27 @@ export default function SystemSettingsPage() {
               desc="Allow users to submit payment refund requests."
               value={settings.enableRefundRequests}
               onChange={(v) => set("enableRefundRequests", v)}
+            />
+          </SectionCard>
+
+          {/* Finance Automation */}
+          <SectionCard
+            title="Finance Automation"
+            subtitle="Control automated monthly billing cycles"
+            icon={Settings}
+            iconColor="text-emerald-500"
+          >
+            <ToggleRow
+              label="Auto-Generate Rent Invoices"
+              desc="Automatically generate monthly rent invoices for all residents on the 1st of each month."
+              value={settings.autoGenerateRentInvoices}
+              onChange={(v) => set("autoGenerateRentInvoices", v)}
+            />
+            <ToggleRow
+              label="Auto-Generate Staff Salaries"
+              desc="Automatically generate monthly salary slips for all staff members on the 1st of each month."
+              value={settings.autoGenerateStaffSalaries}
+              onChange={(v) => set("autoGenerateStaffSalaries", v)}
             />
           </SectionCard>
 

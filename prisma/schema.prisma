@@ -590,6 +590,8 @@ model SystemSettings {
   enableNoticeBoard         Boolean  @default(true)
   enableAiAssistant         Boolean  @default(true)
   enablePaymentProcessing   Boolean  @default(true)
+  autoGenerateRentInvoices  Boolean  @default(true)
+  autoGenerateStaffSalaries Boolean  @default(true)
 
   // ── Email / Notification Services ────────────────────
   enableEmailService        Boolean  @default(true)

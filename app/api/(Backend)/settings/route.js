@@ -26,6 +26,8 @@ const DEFAULT_SETTINGS = {
   enableComplaintEmails: true,
   enableNoticeEmails: true,
   enableWelcomeEmails: true,
+  autoGenerateRentInvoices: true,
+  autoGenerateStaffSalaries: true,
 };
 
 export async function GET() {
