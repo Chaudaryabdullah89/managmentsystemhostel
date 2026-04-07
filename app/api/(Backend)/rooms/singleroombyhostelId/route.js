@@ -3,11 +3,10 @@ import { requireAuth } from '@/lib/apiAuth';
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import RoomServices from "../../../../../lib/services/roomservices/roomservices";
-import { errorResponse } from '@/lib/apiResponse';
 
 export async function GET(request) {
     const auth = await requireAuth();
-    if (!auth.success) return errorResponse(auth.error, auth.status);
+    if (!auth.ok) return auth.response;
 
     try {
         const { searchParams } = new URL(request.url);
