@@ -31,6 +31,19 @@ export async function GET(req, { params }) {
                 updatedAt: true,
                 hostelId: true,
                 canManageExpenses: true,
+                ResidentProfile: {
+                    select: {
+                        id: true,
+                        guardianName: true,
+                        guardianPhone: true,
+                        emergencyContact: true,
+                        address: true,
+                        city: true,
+                        currentHostelId: true,
+                        currentRoomId: true,
+                        documents: true,
+                    }
+                },
                 Hostel_User_hostelIdToHostel: {
                     select: {
                         id: true,

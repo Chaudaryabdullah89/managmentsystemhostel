@@ -11,12 +11,12 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const hostelId = searchParams.get("hostelId");
 
-        const where = {};
-        if (hostelId) {
-            where.User = {
-                hostelId: hostelId
-            };
-        }
+        const where = {
+            User: {
+                role: "STAFF",
+                ...(hostelId ? { hostelId } : {}),
+            },
+        };
 
         const staff = await prisma.staffProfile.findMany({
             where,

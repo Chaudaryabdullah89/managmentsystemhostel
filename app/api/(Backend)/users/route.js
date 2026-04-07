@@ -149,6 +149,7 @@ export async function POST(request) {
         const body = await request.json();
         const {
             name, email, password, phone, role, hostelId, cnic, designation, basicSalary,
+            city, address, guardianName, guardianPhone, emergencyContact, currentResidence, otherImages,
             canManageExpenses, canManageMess, canManageGeneral, canManageUtilities, canManageMaintenance, canManageSalaries
         } = body;
 
@@ -171,6 +172,8 @@ export async function POST(request) {
                 phone,
                 role: role,
                 cnic,
+                city: city || null,
+                address: address || null,
                 uid,
                 regNumber,
                 hostelId: hostelId || null,
@@ -191,10 +194,19 @@ export async function POST(request) {
                         }
                     }
                 } : {}),
-                ...(role === 'RESIDENT' ? {
+                ...((role === 'RESIDENT' || role === 'GUEST') ? {
                     ResidentProfile: {
                         create: {
-                            currentHostelId: hostelId
+                            currentHostelId: hostelId,
+                            guardianName: guardianName || null,
+                            guardianPhone: guardianPhone || null,
+                            emergencyContact: emergencyContact || null,
+                            city: city || null,
+                            address: address || null,
+                            documents: {
+                                currentResidence: currentResidence || "",
+                                galleryImages: Array.isArray(otherImages) ? otherImages.slice(0, 8) : [],
+                            },
                         }
                     }
                 } : {})

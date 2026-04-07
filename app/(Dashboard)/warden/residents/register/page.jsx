@@ -25,7 +25,9 @@ import {
     Home,
     DollarSign,
     Contact2,
-    Zap
+    Zap,
+    Upload,
+    X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,6 +77,8 @@ const defaultForm = {
     guardianName: "",
     guardianPhone: "",
     emergencyContact: "",
+    currentResidence: "",
+    otherImages: [],
     password: "hostel@123",
 };
 
@@ -89,6 +93,7 @@ export default function RegisterUserPage() {
     const [formData, setFormData] = useState(defaultForm);
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({});
+    const [uploadingImages, setUploadingImages] = useState(false);
 
     const isAdmin = currentUser?.role === "ADMIN";
     const isWarden = currentUser?.role === "WARDEN";
@@ -138,6 +143,57 @@ export default function RegisterUserPage() {
 
     const handleBack = () => setStep(s => s - 1);
 
+    const handleImageUpload = async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+        if (!cloudName || !uploadPreset) {
+            toast.error("Cloudinary is not configured (cloud name/preset missing).");
+            return;
+        }
+
+        setUploadingImages(true);
+        try {
+            const uploadToCloudinary = async (file) => {
+                const body = new FormData();
+                body.append("file", file);
+                body.append("upload_preset", uploadPreset.trim());
+                body.append("folder", "hostel-app/resident-documents");
+
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                    method: "POST",
+                    body,
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data?.error?.message || "Image upload failed");
+                }
+                return data.secure_url;
+            };
+
+            const uploadedUrls = await Promise.all(files.map(uploadToCloudinary));
+            setFormData((prev) => ({
+                ...prev,
+                otherImages: [...(prev.otherImages || []), ...uploadedUrls].slice(0, 8),
+            }));
+            toast.success("Images uploaded.");
+        } catch (error) {
+            toast.error(error?.message || "Failed to upload images.");
+        } finally {
+            setUploadingImages(false);
+            e.target.value = "";
+        }
+    };
+
+    const removeUploadedImage = (index) => {
+        setFormData((prev) => ({
+            ...prev,
+            otherImages: (prev.otherImages || []).filter((_, i) => i !== index),
+        }));
+    };
+
     const handleSubmit = async () => {
         try {
             await createUser.mutateAsync({
@@ -146,6 +202,12 @@ export default function RegisterUserPage() {
                 phone: formData.phone,
                 cnic: formData.cnic,
                 address: formData.address,
+                city: formData.city || null,
+                guardianName: formData.guardianName || null,
+                guardianPhone: formData.guardianPhone || null,
+                emergencyContact: formData.emergencyContact || null,
+                currentResidence: formData.currentResidence || null,
+                otherImages: formData.otherImages || [],
                 role: formData.role,
                 hostelId: formData.hostelId || null,
                 designation: formData.designation || null,
@@ -393,6 +455,51 @@ export default function RegisterUserPage() {
                                                         className="h-14 pl-11 rounded-xl border-gray-100 font-bold text-sm"
                                                     />
                                                 </div>
+                                            </div>
+                                            <div className="space-y-2 md:col-span-2">
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Current Residence</Label>
+                                                <Input
+                                                    value={formData.currentResidence}
+                                                    onChange={e => handleChange("currentResidence", e.target.value)}
+                                                    placeholder="Current residence / where currently staying"
+                                                    className="h-14 rounded-xl border-gray-100 font-bold text-sm"
+                                                />
+                                            </div>
+                                            <div className="space-y-2 md:col-span-2">
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Additional Documents (Images)</Label>
+                                                <div className="rounded-2xl border border-dashed border-gray-200 p-4 bg-gray-50/50">
+                                                    <label className="h-11 px-4 rounded-xl bg-white border border-gray-200 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 cursor-pointer hover:bg-gray-50">
+                                                        <Upload className="h-3.5 w-3.5" />
+                                                        {uploadingImages ? "Uploading..." : "Upload Images"}
+                                                        <input
+                                                            type="file"
+                                                            multiple
+                                                            accept="image/*"
+                                                            className="hidden"
+                                                            onChange={handleImageUpload}
+                                                            disabled={uploadingImages}
+                                                        />
+                                                    </label>
+                                                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-2">
+                                                        Max 8 images. JPG/PNG recommended.
+                                                    </p>
+                                                </div>
+                                                {(formData.otherImages || []).length > 0 && (
+                                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                                        {formData.otherImages.map((src, idx) => (
+                                                            <div key={`${src}-${idx}`} className="relative rounded-xl overflow-hidden border border-gray-100 bg-white">
+                                                                <img src={src} alt={`doc-${idx}`} className="h-24 w-full object-cover" />
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeUploadedImage(idx)}
+                                                                    className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center"
+                                                                >
+                                                                    <X className="h-3.5 w-3.5" />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         </>
                                     )}

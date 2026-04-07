@@ -89,15 +89,45 @@ import SalarySlip from "@/components/SalarySlip";
 
 const DetailItem = ({ icon: Icon, label, value, color = "text-indigo-600" }) => (
     <div className="flex items-start gap-4">
-        <div className={`h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 ${color}`}>
+        <div className={`h-10 w-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 ${color}`}>
             <Icon className="h-4 w-4" />
         </div>
         <div className="flex flex-col min-w-0">
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">{label}</span>
-            <span className="text-sm font-bold text-gray-900 truncate tracking-tight">{value || "Not Provided"}</span>
+            <span className="text-sm font-bold text-gray-900 wrap-break-word tracking-tight">{value || "Not Provided"}</span>
         </div>
     </div>
 );
+
+const formatFieldLabel = (key = "") =>
+    key
+        .replace(/([A-Z])/g, " $1")
+        .replace(/_/g, " ")
+        .trim()
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+
+const KeyValueGrid = ({ title, data = {} }) => {
+    const rows = Object.entries(data).filter(([, value]) => value !== undefined);
+    if (!rows.length) return null;
+    return (
+        <Card className="rounded-[2.5rem] bg-white p-8 border border-gray-100 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-6 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                {title}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {rows.map(([key, value]) => (
+                    <div key={key} className="p-4 rounded-2xl border border-gray-100 bg-gray-50/40 hover:bg-white transition-colors">
+                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">{formatFieldLabel(key)}</p>
+                        <p className="text-sm font-bold text-gray-900 wrap-break-word">
+                            {typeof value === "object" ? JSON.stringify(value) : String(value || "—")}
+                        </p>
+                    </div>
+                ))}
+            </div>
+        </Card>
+    );
+};
 
 const UserDetailsPage = () => {
     const { userId } = useParams();
@@ -213,6 +243,15 @@ const UserDetailsPage = () => {
         };
     }, [userDetails]);
 
+    const permissionsMap = {
+        canManageExpenses: user?.canManageExpenses,
+        canManageMess: user?.canManageMess,
+        canManageGeneral: user?.canManageGeneral,
+        canManageUtilities: user?.canManageUtilities,
+        canManageMaintenance: user?.canManageMaintenance,
+        canManageSalaries: user?.canManageSalaries,
+    };
+
     const activityFeed = useMemo(() => {
         const events = [];
         if (userDetails?.payments) {
@@ -261,7 +300,7 @@ const UserDetailsPage = () => {
     if (!user) return (
         <div className="flex h-screen items-center justify-center">
             <div className="text-center space-y-6">
-                <div className="h-20 w-20 bg-rose-50 text-rose-600 rounded-[2rem] flex items-center justify-center mx-auto border border-rose-100 shadow-sm">
+                <div className="h-20 w-20 bg-rose-50 text-rose-600 rounded-4xl flex items-center justify-center mx-auto border border-rose-100 shadow-sm">
                     <User className="h-10 w-10" />
                 </div>
                 <div className="space-y-1">
@@ -494,18 +533,21 @@ const UserDetailsPage = () => {
                     {/* Right Panel: Data Tabs */}
                     <div className="lg:col-span-8 space-y-8">
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-                            <TabsList className="bg-white border border-gray-100 p-1.5 rounded-2xl h-14 shadow-sm inline-flex">
-                                <TabsTrigger value="overview" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Overview</TabsTrigger>
-                                {(user.role === 'RESIDENT' || user.role === 'GUEST') ? (
-                                    <>
-                                        <TabsTrigger value="bookings" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Bookings</TabsTrigger>
-                                        <TabsTrigger value="payments" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Payments</TabsTrigger>
-                                    </>
-                                ) : (
-                                    <TabsTrigger value="salaries" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Salaries</TabsTrigger>
-                                )}
-                                <TabsTrigger value="complaints" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Reports</TabsTrigger>
-                            </TabsList>
+                            <div className="overflow-x-auto pb-1">
+                                <TabsList className="bg-white border border-gray-100 p-1.5 rounded-2xl h-14 shadow-sm inline-flex min-w-max">
+                                    <TabsTrigger value="overview" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Overview</TabsTrigger>
+                                    <TabsTrigger value="database" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">All Details</TabsTrigger>
+                                    {(user.role === 'RESIDENT' || user.role === 'GUEST') ? (
+                                        <>
+                                            <TabsTrigger value="bookings" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Bookings</TabsTrigger>
+                                            <TabsTrigger value="payments" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Payments</TabsTrigger>
+                                        </>
+                                    ) : (
+                                        <TabsTrigger value="salaries" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Salaries</TabsTrigger>
+                                    )}
+                                    <TabsTrigger value="complaints" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Reports</TabsTrigger>
+                                </TabsList>
+                            </div>
 
                             <TabsContent value="overview" className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -601,6 +643,81 @@ const UserDetailsPage = () => {
                                         </div>
                                     </Card>
                                 </div>
+                            </TabsContent>
+
+                            <TabsContent value="database" className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <KeyValueGrid
+                                    title="Core User Fields"
+                                    data={{
+                                        id: user?.id,
+                                        uid: user?.uid,
+                                        regNumber: user?.regNumber,
+                                        name: user?.name,
+                                        email: user?.email,
+                                        phone: user?.phone,
+                                        role: user?.role,
+                                        cnic: user?.cnic,
+                                        city: user?.city,
+                                        address: user?.address,
+                                        hostelId: user?.hostelId,
+                                        isActive: user?.isActive,
+                                        createdAt: user?.createdAt ? format(new Date(user.createdAt), "yyyy-MM-dd HH:mm:ss") : "—",
+                                        updatedAt: user?.updatedAt ? format(new Date(user.updatedAt), "yyyy-MM-dd HH:mm:ss") : "—",
+                                    }}
+                                />
+
+                                {(user?.ResidentProfile?.documents?.currentResidence || additionalImages.length > 0) && (
+                                    <Card className="rounded-[2.5rem] bg-white p-8 border border-gray-100 shadow-sm">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-6">Documents</h3>
+                                        <div className="space-y-6">
+                                            <div className="rounded-2xl border border-gray-100 bg-gray-50/50 p-4">
+                                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Current Residence</p>
+                                                <p className="text-sm font-bold text-gray-900 wrap-break-word">
+                                                    {user?.ResidentProfile?.documents?.currentResidence || "—"}
+                                                </p>
+                                            </div>
+                                            {additionalImages.length > 0 && (
+                                                <div>
+                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3">Additional Document Images</p>
+                                                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                                        {additionalImages.map((src, idx) => (
+                                                            <a
+                                                                key={`${src}-${idx}`}
+                                                                href={src}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="block rounded-xl overflow-hidden border border-gray-100 bg-white"
+                                                            >
+                                                                <img src={src} alt={`database-document-${idx}`} className="h-24 w-full object-cover" />
+                                                            </a>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </Card>
+                                )}
+
+                                <Card className="rounded-[2.5rem] bg-white p-8 border border-gray-100 shadow-sm">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-6">Related Records Summary</h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        {[
+                                            { label: "Bookings", value: userDetails?.bookings?.length || 0 },
+                                            { label: "Payments", value: userDetails?.payments?.length || 0 },
+                                            { label: "Complaints", value: userDetails?.complaints?.length || 0 },
+                                            { label: "Maintenance", value: userDetails?.maintenanceTasks?.length || 0 },
+                                            { label: "Salaries", value: userDetails?.salaries?.length || 0 },
+                                            { label: "Created Expenses", value: userDetails?.createdExpenses?.length || 0 },
+                                            { label: "Approved Expenses", value: userDetails?.approvedExpenses?.length || 0 },
+                                            { label: "Rejected Expenses", value: userDetails?.rejectedExpenses?.length || 0 },
+                                        ].map((item) => (
+                                            <div key={item.label} className="rounded-2xl border border-gray-100 bg-gray-50/50 p-4">
+                                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{item.label}</p>
+                                                <p className="text-2xl font-black text-gray-900 mt-1">{item.value}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </Card>
                             </TabsContent>
 
                             <TabsContent value="salaries" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">

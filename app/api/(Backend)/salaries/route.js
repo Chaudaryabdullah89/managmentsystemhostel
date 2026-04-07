@@ -18,12 +18,20 @@ export async function GET(request) {
         const hostelId = searchParams.get("hostelId");
         const userId = searchParams.get("userId");
 
-        const where = {};
+        const where = {
+            StaffProfile: {
+                User: {
+                    role: "STAFF",
+                },
+            },
+        };
         if (status && status !== "all") where.status = status;
         if (month) where.month = month;
         if (hostelId && hostelId !== "all") {
             where.StaffProfile = {
+                ...where.StaffProfile,
                 User: {
+                    ...where.StaffProfile.User,
                     hostelId: hostelId
                 }
             };
@@ -89,6 +97,9 @@ export async function POST(request) {
             });
 
             if (!staff) return NextResponse.json({ success: false, error: "Staff not found" }, { status: 404 });
+            if (staff.User?.role !== "STAFF") {
+                return NextResponse.json({ success: false, error: "Selected profile is not a staff member" }, { status: 400 });
+            }
 
             const existing = await prisma.salary.findFirst({
                 where: { staffProfileId: staffId, month }
@@ -152,12 +163,12 @@ export async function POST(request) {
         }
 
         // Bulk Generation Logic
-        const staffWhere = {};
-        if (body.hostelId) {
-            staffWhere.User = {
-                hostelId: body.hostelId
-            };
-        }
+        const staffWhere = {
+            User: {
+                role: "STAFF",
+                ...(body.hostelId ? { hostelId: body.hostelId } : {}),
+            },
+        };
 
         const staffList = await prisma.staffProfile.findMany({
             where: staffWhere,
