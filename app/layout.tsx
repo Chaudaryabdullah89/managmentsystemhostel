@@ -1,6 +1,7 @@
 
 import type { Metadata } from "next"
 import "./globals.css"
+import "@/bones/registry"
 import { AuthProvider } from "@/contexts/AuthContext"
 import { Toaster } from "sonner"
 import MaintenanceWrapper from "@/components/MaintenanceWrapper"

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "prisma generate && prisma generate --schema=prisma/ai-schema.prisma && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "skeleton:build": "boneyard-js build"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -30,6 +31,7 @@
     "@vercel/analytics": "^1.6.1",
     "axios": "^1.13.5",
     "bcrypt": "^6.0.0",
+    "boneyard-js": "^1.6.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "crypto": "^1.0.1",
