@@ -22,6 +22,9 @@ import {
     User,
     FileText,
     Trash2,
+    Sparkles,
+    Pencil,
+    Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +48,7 @@ import {
     TabsTrigger,
 } from "@/components/ui/tabs";
 import useAuthStore from "@/hooks/Authstate";
-import { useExpenses, useExpenseStats, useCreateExpense, useUpdateExpenseStatus, useDeleteExpense } from "@/hooks/useExpenses";
+import { useExpenses, useExpenseStats, useCreateExpense, useUpdateExpenseStatus, useDeleteExpense, useUpdateExpenseFields } from "@/hooks/useExpenses";
 import { useHostel } from "@/hooks/usehostel";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 import { toast } from "sonner";
@@ -68,6 +71,9 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isExportingExpenses, setIsExportingExpenses] = useState(false);
+    const [quickTitle, setQuickTitle] = useState("");
+    const [editingId, setEditingId] = useState(null);
+    const [editDraft, setEditDraft] = useState({ title: "", amount: "" });
 
     const currentMonthLabel = format(new Date(), 'MMMM yyyy');
 
@@ -113,6 +119,7 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
     const createExpense = useCreateExpense();
     const updateStatus = useUpdateExpenseStatus();
     const deleteExpense = useDeleteExpense();
+    const updateExpenseFields = useUpdateExpenseFields();
 
     const [newExpenseForm, setNewExpenseForm] = useState({
         title: "",
@@ -123,6 +130,14 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
         description: "",
         submittedById: user?.id || ""
     });
+    const QUICK_AMOUNTS = [1000, 2500, 5000, 10000, 25000];
+    const quickTitles = {
+        MESS: ["Milk & Groceries", "Kitchen Supplies", "Daily Food Purchase"],
+        GENERAL: ["Office Stationery", "Cleaning Material", "Operational Expense"],
+        UTILITY_BILL: ["Electricity Bill", "Internet Bill", "Water Bill"],
+        MAINTENANCE: ["Plumbing Repair", "Electric Repair", "Room Maintenance"],
+        SALARY: ["Staff Salary Adjustment", "Advance Salary", "Payroll Correction"],
+    };
 
     // Sync form hostelId when user loads
     React.useEffect(() => {
@@ -179,6 +194,10 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                 toast.error("Please fill in all required fields");
                 return;
             }
+            if (Number(newExpenseForm.amount) <= 0) {
+                toast.error("Amount must be greater than zero");
+                return;
+            }
             if (!user?.id) { toast.error("User identity verification failed"); return; }
             await createExpense.mutateAsync({
                 ...newExpenseForm,
@@ -226,6 +245,33 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
             setSelectedExpense(null);
         } catch (error) {
             toast.error(error.message || "Failed to delete record");
+        }
+    };
+
+    const startInlineEdit = (expense, e) => {
+        e.stopPropagation();
+        setEditingId(expense.id);
+        setEditDraft({ title: expense.title || "", amount: String(expense.amount || "") });
+    };
+
+    const cancelInlineEdit = (e) => {
+        e.stopPropagation();
+        setEditingId(null);
+        setEditDraft({ title: "", amount: "" });
+    };
+
+    const saveInlineEdit = async (expenseId, e) => {
+        e.stopPropagation();
+        try {
+            await updateExpenseFields.mutateAsync({
+                id: expenseId,
+                title: editDraft.title,
+                amount: Number(editDraft.amount),
+            });
+            setEditingId(null);
+            setEditDraft({ title: "", amount: "" });
+        } catch (error) {
+            toast.error(error.message || "Failed to update expense");
         }
     };
 
@@ -317,6 +363,19 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                 {isExportingExpenses ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" /> : <Download className="h-3.5 w-3.5 mr-2" />} PDF
                             </Button>
                         </div>
+                        {(searchQuery || filterStatus !== "all" || filterHostel !== "all") && (
+                            <Button
+                                variant="ghost"
+                                className="h-9 px-3 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-rose-600"
+                                onClick={() => {
+                                    setSearchQuery("");
+                                    setFilterStatus("all");
+                                    setFilterHostel(!isAdmin && user?.role === "WARDEN" ? user.hostelId : "all");
+                                }}
+                            >
+                                Clear
+                            </Button>
+                        )}
                         <Button className="h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] uppercase tracking-wider gap-2 shadow-lg shadow-blue-100" onClick={() => setIsAddOpen(true)}>
                             <Plus className="h-4 w-4" /> Add Record
                         </Button>
@@ -440,7 +499,11 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                 <div
                                     key={expense.id}
                                     className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:shadow-md transition-all group relative overflow-hidden cursor-pointer active:scale-[0.99]"
-                                    onClick={() => { setSelectedExpense(expense); setIsDetailOpen(true); }}
+                                    onClick={() => {
+                                        if (editingId) return;
+                                        setSelectedExpense(expense);
+                                        setIsDetailOpen(true);
+                                    }}
                                 >
                                     {/* Vertical Ribbon — Visual categorization */}
                                     <div className={`absolute left-0 top-0 bottom-0 w-1 ${expense.status === 'PAID' ? 'bg-emerald-500' : expense.status === 'REJECTED' ? 'bg-rose-500' : expense.status === 'APPROVED' ? 'bg-blue-500' : 'bg-amber-400'} opacity-80 rounded-l-2xl`} />
@@ -449,9 +512,19 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                         <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-blue-50 transition-colors">
                                             <span className="text-xl">{category.Icon ? <category.Icon className={`h-5 w-5 ${expense.status === 'PAID' ? 'text-emerald-500' : 'text-gray-400'}`} /> : '🧾'}</span>
                                         </div>
-                                        <div className="flex flex-col min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <h4 className="text-[13px] font-bold text-gray-900 uppercase tracking-tight truncate">{expense.title}</h4>
+                                        <div className="flex flex-col min-w-0 w-full">
+                                            <div className="flex items-center gap-2 w-full">
+                                                {editingId === expense.id ? (
+                                                    <Input
+                                                        value={editDraft.title}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onChange={(e) => setEditDraft((prev) => ({ ...prev, title: e.target.value }))}
+                                                        className="h-8 rounded-lg border-gray-200 bg-white text-[12px] font-bold"
+                                                        placeholder="Expense title"
+                                                    />
+                                                ) : (
+                                                    <h4 className="text-[13px] font-bold text-gray-900 uppercase tracking-tight truncate">{expense.title}</h4>
+                                                )}
                                                 <Badge variant="outline" className="text-[8px] font-mono border-gray-100 text-gray-400 px-1.5 py-0 h-4">EXP-{expense.id.slice(-5).toUpperCase()}</Badge>
                                             </div>
                                             <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5">
@@ -477,15 +550,56 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-6 self-end md:self-auto pl-14 md:pl-0">
+                                    <div className="flex items-center gap-3 self-end md:self-auto pl-14 md:pl-0">
                                         <div className="flex flex-col items-end shrink-0">
-                                            <span className="text-base md:text-lg font-bold text-gray-900 tracking-tight">PKR {expense.amount.toLocaleString()}</span>
+                                            {editingId === expense.id ? (
+                                                <Input
+                                                    type="number"
+                                                    value={editDraft.amount}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    onChange={(e) => setEditDraft((prev) => ({ ...prev, amount: e.target.value }))}
+                                                    className="h-8 w-28 rounded-lg border-gray-200 bg-white text-[12px] font-bold text-right"
+                                                />
+                                            ) : (
+                                                <span className="text-base md:text-lg font-bold text-gray-900 tracking-tight">PKR {expense.amount.toLocaleString()}</span>
+                                            )}
                                             <Badge className={`mt-1 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border-none shadow-sm ${expense.status === 'PAID' ? 'bg-emerald-50 text-emerald-700' :
                                                 expense.status === 'APPROVED' ? 'bg-blue-50 text-blue-700' :
                                                     expense.status === 'REJECTED' ? 'bg-rose-50 text-rose-700' :
                                                         'bg-amber-50 text-amber-700'
                                                 }`}>{expense.status}</Badge>
                                         </div>
+                                        {hasPermission && (
+                                            editingId === expense.id ? (
+                                                <div className="flex items-center gap-1">
+                                                    <Button
+                                                        size="icon"
+                                                        className="h-8 w-8 rounded-lg bg-emerald-600 hover:bg-emerald-700"
+                                                        onClick={(e) => saveInlineEdit(expense.id, e)}
+                                                        disabled={updateExpenseFields.isPending}
+                                                    >
+                                                        {updateExpenseFields.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="icon"
+                                                        className="h-8 w-8 rounded-lg border-gray-200"
+                                                        onClick={cancelInlineEdit}
+                                                    >
+                                                        <X className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </div>
+                                            ) : (
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="h-8 w-8 rounded-lg border-gray-200"
+                                                    onClick={(e) => startInlineEdit(expense, e)}
+                                                >
+                                                    <Pencil className="h-3.5 w-3.5" />
+                                                </Button>
+                                            )
+                                        )}
                                         <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-blue-50 group-hover:translate-x-1 transition-all">
                                             <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-blue-600" />
                                         </div>
@@ -499,7 +613,7 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
 
             {/* Add Expense — Consistent Dialog Style */}
             <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-                <DialogContent className="max-w-xl p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white animate-in zoom-in-95 duration-200">
+                <DialogContent className="max-w-xl max-h-[90vh] p-0 overflow-y-auto rounded-[2rem] border-none shadow-2xl bg-white animate-in zoom-in-95 duration-200">
                     <div className="bg-blue-600 p-8 text-white relative flex items-center gap-6 overflow-hidden">
                         <div className="absolute top-0 right-0 w-48 h-full bg-white/10 skew-x-12 translate-x-12" />
                         <div className="h-14 w-14 rounded-2xl bg-white/20 flex items-center justify-center shrink-0 border border-white/10 backdrop-blur-sm text-2xl">
@@ -511,6 +625,40 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                         </div>
                     </div>
                     <div className="p-8 space-y-6">
+                        <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-blue-600 mb-2 flex items-center gap-1.5">
+                                <Sparkles className="h-3 w-3" /> Quick Fill
+                            </p>
+                            <div className="flex flex-wrap gap-2 mb-3">
+                                {(quickTitles[category.key] || []).map((title) => (
+                                    <button
+                                        key={title}
+                                        type="button"
+                                        onClick={() => {
+                                            setQuickTitle(title);
+                                            setNewExpenseForm((prev) => ({ ...prev, title }));
+                                        }}
+                                        className={`h-8 px-3 rounded-lg border text-[9px] font-bold uppercase tracking-wider ${
+                                            quickTitle === title ? "border-blue-200 bg-blue-100 text-blue-700" : "border-blue-100 bg-white text-blue-600"
+                                        }`}
+                                    >
+                                        {title}
+                                    </button>
+                                ))}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {QUICK_AMOUNTS.map((amount) => (
+                                    <button
+                                        key={amount}
+                                        type="button"
+                                        onClick={() => setNewExpenseForm((prev) => ({ ...prev, amount: String(amount) }))}
+                                        className="h-8 px-3 rounded-lg border border-blue-100 bg-white text-[9px] font-bold uppercase tracking-wider text-blue-600"
+                                    >
+                                        PKR {amount.toLocaleString()}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                         <div className="grid grid-cols-2 gap-5">
                             <div className="space-y-2 col-span-2">
                                 <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Objective / Title*</Label>

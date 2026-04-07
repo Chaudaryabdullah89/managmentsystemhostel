@@ -170,27 +170,83 @@ export async function POST(request) {
 }
 
 export async function PATCH(request) {
-    const auth = await checkRole(['ADMIN']);
+    const auth = await checkRole(['ADMIN', 'WARDEN']);
     if (!auth.success) {
-        console.warn(`Unauthorized Status Update Attempt by role: ${auth.user?.role || 'Unknown'}`);
-        return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to change expense record status." }, { status: 403 });
+        console.warn(`Unauthorized Expense Update Attempt by role: ${auth.user?.role || 'Unknown'}`);
+        return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to update expense records." }, { status: 403 });
     }
 
     try {
         const body = await request.json();
-        console.log("Authorized Expense Status Mutation:", body);
         const { id, ...data } = body;
+        if (!id) return NextResponse.json({ success: false, error: "Expense ID is required." }, { status: 400 });
 
-        if (data.approvedById) {
-            const user = await prisma.user.findUnique({ where: { id: data.approvedById }, select: { id: true } });
-            if (!user) return NextResponse.json({ success: false, error: "Approving administrator identity not found." }, { status: 400 });
-        }
-        if (data.rejectedById) {
-            const user = await prisma.user.findUnique({ where: { id: data.rejectedById }, select: { id: true } });
-            if (!user) return NextResponse.json({ success: false, error: "Rejecting administrator identity not found." }, { status: 400 });
+        const isStatusMutation = Object.prototype.hasOwnProperty.call(data, "status");
+        if (isStatusMutation) {
+            if (auth.user.role !== 'ADMIN') {
+                return NextResponse.json({ success: false, message: "Only admin can change expense status." }, { status: 403 });
+            }
+
+            if (data.approvedById) {
+                const user = await prisma.user.findUnique({ where: { id: data.approvedById }, select: { id: true } });
+                if (!user) return NextResponse.json({ success: false, error: "Approving administrator identity not found." }, { status: 400 });
+            }
+            if (data.rejectedById) {
+                const user = await prisma.user.findUnique({ where: { id: data.rejectedById }, select: { id: true } });
+                if (!user) return NextResponse.json({ success: false, error: "Rejecting administrator identity not found." }, { status: 400 });
+            }
+
+            const updated = await ExpenseServices.updateExpenseStatus(id, data);
+            return NextResponse.json({ success: true, data: updated });
         }
 
-        const updated = await ExpenseServices.updateExpenseStatus(id, data);
+        // Inline title/amount edit mutation
+        const nextTitle = String(data.title || "").trim();
+        const nextAmount = Number(data.amount);
+        if (!nextTitle || !Number.isFinite(nextAmount) || nextAmount <= 0) {
+            return NextResponse.json({ success: false, error: "Valid title and amount are required." }, { status: 400 });
+        }
+
+        const existing = await prisma.expense.findUnique({
+            where: { id },
+            select: { id: true, hostelId: true, category: true }
+        });
+        if (!existing) {
+            return NextResponse.json({ success: false, error: "Expense record not found." }, { status: 404 });
+        }
+
+        if (auth.user.role === 'WARDEN') {
+            const targetId = auth.user.id || auth.user.userId || auth.user.sub;
+            const warden = await prisma.user.findUnique({
+                where: { id: targetId },
+                select: {
+                    hostelId: true,
+                    canManageExpenses: true,
+                    canManageMess: true,
+                    canManageGeneral: true,
+                    canManageUtilities: true,
+                    canManageMaintenance: true,
+                    canManageSalaries: true
+                }
+            });
+
+            if (!warden?.hostelId || warden.hostelId !== existing.hostelId) {
+                return NextResponse.json({ success: false, error: "You can only edit expenses for your hostel." }, { status: 403 });
+            }
+
+            const categoryPermissions = {
+                MESS: warden.canManageMess,
+                GENERAL: warden.canManageGeneral,
+                UTILITY_BILL: warden.canManageUtilities,
+                MAINTENANCE: warden.canManageMaintenance,
+                SALARY: warden.canManageSalaries,
+            };
+            if (!warden.canManageExpenses && !categoryPermissions[existing.category]) {
+                return NextResponse.json({ success: false, error: "You do not have permission to edit this category." }, { status: 403 });
+            }
+        }
+
+        const updated = await ExpenseServices.updateExpenseFields(id, { title: nextTitle, amount: nextAmount });
         return NextResponse.json({ success: true, data: updated });
     } catch (error) {
         console.error("CRITICAL: Authorization State Update Failure:", error);

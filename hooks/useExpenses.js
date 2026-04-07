@@ -112,3 +112,23 @@ export function useDeleteExpense() {
         },
     });
 }
+
+export function useUpdateExpenseFields() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async ({ id, title, amount }) => {
+            const response = await fetch("/api/expenses", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, title, amount }),
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error);
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["expenses"] });
+            toast.success("Expense updated");
+        },
+    });
+}
