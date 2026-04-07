@@ -127,6 +127,9 @@ const UserDetailsPage = () => {
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [paymentAmount, setPaymentAmount] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("CASH");
+    const additionalImages = Array.isArray(user?.ResidentProfile?.documents?.galleryImages)
+        ? user.ResidentProfile.documents.galleryImages
+        : [];
 
     const createPayment = useCreatePayment();
 
@@ -414,6 +417,25 @@ const UserDetailsPage = () => {
                                     <DetailItem icon={Calendar} label="Member Since" value={user.createdAt ? format(new Date(user.createdAt), 'MMMM dd, yyyy') : '—'} />
                                 </div>
 
+                                {additionalImages.length > 0 && (
+                                    <div className="pt-6 border-t border-gray-50 space-y-3">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Additional Documents</span>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {additionalImages.map((src, idx) => (
+                                                <a
+                                                    key={`${src}-${idx}`}
+                                                    href={src}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="block rounded-xl overflow-hidden border border-gray-100 bg-white"
+                                                >
+                                                    <img src={src} alt={`document-${idx}`} className="h-24 w-full object-cover" />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {user.ResidentProfile && (
                                     <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100 space-y-4">
                                         <div className="flex items-center gap-3 mb-2">
@@ -431,6 +453,12 @@ const UserDetailsPage = () => {
                                                 <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Contact No</span>
                                                 <span className="text-xs font-bold text-gray-700">{user.ResidentProfile.emergencyContact}</span>
                                             </div>
+                                            {user?.ResidentProfile?.documents?.currentResidence && (
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Current Residence</span>
+                                                    <span className="text-xs font-bold text-gray-700">{user.ResidentProfile.documents.currentResidence}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}

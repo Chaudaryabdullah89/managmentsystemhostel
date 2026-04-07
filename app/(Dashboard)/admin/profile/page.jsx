@@ -57,7 +57,7 @@ import { useUserById, useUserUpdate, useSessions, useTerminateSessions, useTermi
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import SkeletonWrapper from "@/components/ui/SkeletonWrapper";
+import Loader from "@/components/ui/Loader";
 
 const ProfilePage = () => {
     const authUser = useAuthStore((state) => state.user)
@@ -84,6 +84,9 @@ const ProfilePage = () => {
     const [editedData, setEditedData] = useState({});
 
     const user = useMemo(() => fetchedUser || {}, [fetchedUser]);
+    const additionalImages = Array.isArray(user?.ResidentProfile?.documents?.galleryImages)
+        ? user.ResidentProfile.documents.galleryImages
+        : [];
 
     const handleEdit = () => {
         setEditedData({ ...user });
@@ -193,15 +196,10 @@ const ProfilePage = () => {
         return <Monitor className="w-5 h-5 text-gray-400" />;
     };
 
+    if (isLoading) return <Loader label="Loading" subLabel="Updates..." icon={User} fullScreen={false} />;
+
     return (
-        <SkeletonWrapper
-            name="admin-profile"
-            isLoading={isLoading}
-            delayMs={180}
-            fadeMs={220}
-            snapshotConfig={{ excludeSelectors: ["[data-no-skeleton]", "svg"] }}
-        >
-            <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
             {/* Header: Payment Page Design */}
             <div className="bg-white border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
@@ -391,6 +389,30 @@ const ProfilePage = () => {
                                         </CardContent>
                                     </Card>
                                 </div>
+                                {additionalImages.length > 0 && (
+                                    <Card className="bg-white border border-gray-100 rounded-[2rem] shadow-sm">
+                                        <CardHeader className="p-8 pb-4">
+                                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-900 flex items-center gap-3">
+                                                <FileText className="h-4 w-4 text-gray-400" /> Additional Documents
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="p-8 pt-0">
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                {additionalImages.map((src, idx) => (
+                                                    <a
+                                                        key={`${src}-${idx}`}
+                                                        href={src}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="block rounded-xl overflow-hidden border border-gray-100 bg-white"
+                                                    >
+                                                        <img src={src} alt={`profile-doc-${idx}`} className="h-24 w-full object-cover" />
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
                             </TabsContent>
 
                             <TabsContent value="security" className="m-0 space-y-4 animate-in fade-in duration-500">
@@ -607,8 +629,7 @@ const ProfilePage = () => {
                 </div>
             </main>
 
-            </div>
-        </SkeletonWrapper>
+        </div>
     );
 };
 

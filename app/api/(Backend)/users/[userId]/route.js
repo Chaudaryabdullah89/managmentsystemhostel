@@ -163,9 +163,69 @@ export async function DELETE(request, { params }) {
 
     try {
         const { userId } = await params;
-        await prisma.user.delete({ where: { id: userId } });
+        if (!userId) {
+            return NextResponse.json({ success: false, error: "User ID is required" }, { status: 400 });
+        }
+
+        const targetUser = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                StaffProfile: { select: { id: true } },
+                Booking: { select: { id: true } },
+            },
+        });
+
+        if (!targetUser) {
+            return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
+        }
+
+        const bookingIds = targetUser.Booking.map((b) => b.id);
+        const staffProfileId = targetUser.StaffProfile?.id;
+        const paymentWhere = bookingIds.length
+            ? { OR: [{ userId }, { bookingId: { in: bookingIds } }] }
+            : { userId };
+
+        const operations = [
+            // Remove references where this user may be an optional assignee/manager.
+            prisma.complaint.updateMany({ where: { assignedToId: userId }, data: { assignedToId: null } }),
+            prisma.maintanance.updateMany({ where: { assignedToId: userId }, data: { assignedToId: null } }),
+            prisma.expense.updateMany({ where: { approvedById: userId }, data: { approvedById: null } }),
+            prisma.expense.updateMany({ where: { rejectedById: userId }, data: { rejectedById: null } }),
+            prisma.hostel.updateMany({ where: { managerId: userId }, data: { managerId: null } }),
+            prisma.staffTask.updateMany({ where: { assignedToId: userId }, data: { assignedToId: null } }),
+
+            // Delete dependent records that require this user.
+            prisma.taskComment.deleteMany({ where: { userId } }),
+            prisma.chatMessage.deleteMany({ where: { userId } }),
+            prisma.notice.deleteMany({ where: { authorId: userId } }),
+            prisma.wardenPayment.deleteMany({ where: { wardenId: userId } }),
+            prisma.refundRequest.deleteMany({ where: { userId } }),
+            prisma.expense.deleteMany({ where: { OR: [{ submittedById: userId }, { userId }] } }),
+            prisma.complaint.deleteMany({ where: { userId } }),
+            prisma.maintanance.deleteMany({ where: { userId } }),
+            prisma.staffTask.deleteMany({ where: { createdById: userId } }),
+            prisma.session.deleteMany({ where: { userId } }),
+
+            // Payments must be removed before bookings.
+            prisma.payment.deleteMany({ where: paymentWhere }),
+            prisma.booking.deleteMany({ where: { userId } }),
+            ...(staffProfileId ? [prisma.salary.deleteMany({ where: { staffProfileId } })] : []),
+
+            prisma.user.deleteMany({ where: { id: userId } }),
+        ];
+
+        const txResults = await prisma.$transaction(operations);
+        const deleteUserResult = txResults[txResults.length - 1];
+
+        // Idempotent behavior: if already deleted by a concurrent request, return success.
+        if (!deleteUserResult || deleteUserResult.count === 0) {
+            return NextResponse.json({ success: true, message: "User already removed" });
+        }
+
         return NextResponse.json({ success: true, message: "User node purged" });
     } catch (error) {
+        console.error("User DELETE Error:", error);
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }

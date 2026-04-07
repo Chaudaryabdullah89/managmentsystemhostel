@@ -74,6 +74,8 @@ const CreateBookingPage = () => {
         emergencyContact: "",
         address: "",
         city: "",
+        currentResidence: "",
+        otherImages: [],
 
         // Property Info
         hostelId: "",
@@ -90,6 +92,7 @@ const CreateBookingPage = () => {
         monthlyRent: 0,
         advanceMonths: 1
     });
+    const [uploadingImages, setUploadingImages] = useState(false);
 
     useEffect(() => {
         if (isWarden && user?.hostelId) {
@@ -128,6 +131,8 @@ const CreateBookingPage = () => {
     }, [existingGuestQuery]);
 
     const handleSelectGuest = (user) => {
+        const residentDocs = user?.ResidentProfile?.documents || {};
+        const residentImages = Array.isArray(residentDocs?.galleryImages) ? residentDocs.galleryImages : [];
         setSelectedGuest(user);
         setFormData(prev => ({
             ...prev,
@@ -136,10 +141,13 @@ const CreateBookingPage = () => {
             guestEmail: user.email,
             guestPhone: user.phone || "",
             cnic: user.cnic || "",
-            address: user.address || "",
+            address: user.address || user.ResidentProfile?.address || "",
             guardianName: user.ResidentProfile?.guardianName || "",
             guardianPhone: user.ResidentProfile?.guardianPhone || "",
             emergencyContact: user.ResidentProfile?.emergencyContact || "",
+            city: user.city || user.ResidentProfile?.city || "",
+            currentResidence: residentDocs?.currentResidence || "",
+            otherImages: residentImages,
         }));
         setExistingGuestQuery("");
         setSearchResults([]);
@@ -159,7 +167,57 @@ const CreateBookingPage = () => {
             guardianName: "",
             guardianPhone: "",
             emergencyContact: "",
-            city: ""
+            city: "",
+            currentResidence: "",
+            otherImages: []
+        }));
+    };
+
+    const handleImageUpload = async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+        if (!cloudName || !uploadPreset) {
+            toast.error("Cloudinary is not configured (cloud name/preset missing).");
+            return;
+        }
+        setUploadingImages(true);
+        try {
+            const uploadToCloudinary = async (file) => {
+                const body = new FormData();
+                body.append("file", file);
+                body.append("upload_preset", uploadPreset.trim());
+                body.append("folder", "hostel-app/resident-documents");
+                const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+                    method: "POST",
+                    body,
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    const reason = data?.error?.message || "Image upload failed";
+                    throw new Error(reason);
+                }
+                return data.secure_url;
+            };
+            const uploadedUrls = await Promise.all(files.map(uploadToCloudinary));
+            setFormData((prev) => ({
+                ...prev,
+                otherImages: [...(prev.otherImages || []), ...uploadedUrls].slice(0, 8),
+            }));
+            toast.success("Images uploaded.");
+        } catch (error) {
+            toast.error(error?.message || "Failed to upload images.");
+        } finally {
+            setUploadingImages(false);
+            e.target.value = "";
+        }
+    };
+
+    const removeUploadedImage = (index) => {
+        setFormData((prev) => ({
+            ...prev,
+            otherImages: (prev.otherImages || []).filter((_, i) => i !== index),
         }));
     };
 
@@ -344,11 +402,53 @@ const CreateBookingPage = () => {
                                                 <Input name="city" value={formData.city} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="City of Residence" />
                                             </div>
                                             <div className="space-y-2.5 md:col-span-2">
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Current Residence</Label>
+                                                <Input name="currentResidence" value={formData.currentResidence} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="Current residence / where currently staying" />
+                                            </div>
+                                            <div className="space-y-2.5 md:col-span-2">
                                                 <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Residential Address</Label>
                                                 <Textarea name="address" value={formData.address} onChange={handleInputChange} className="min-h-[100px] rounded-xl border-gray-100 font-bold resize-none pt-4" placeholder="Full permanent address..." />
                                             </div>
                                         </div>
                                     )}
+                                    {selectedGuest && (
+                                        <div className="space-y-2.5">
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Current Residence</Label>
+                                            <Input name="currentResidence" value={formData.currentResidence} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="Current residence / where currently staying" />
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-3 pt-2">
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">
+                                            Additional Images (CNIC, profile, docs)
+                                        </Label>
+                                        <div className="flex items-center gap-3">
+                                            <label className="h-11 px-4 rounded-xl border border-gray-100 bg-gray-50 font-bold text-xs uppercase tracking-widest text-gray-600 hover:bg-white cursor-pointer inline-flex items-center gap-2">
+                                                <Upload className="h-4 w-4" />
+                                                {uploadingImages ? "Uploading..." : "Upload Images"}
+                                                <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
+                                            </label>
+                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                                Max 8
+                                            </span>
+                                        </div>
+                                        {(formData.otherImages || []).length > 0 && (
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                {formData.otherImages.map((src, i) => (
+                                                    <div key={`${src}-${i}`} className="relative border border-gray-100 rounded-xl overflow-hidden bg-white">
+                                                        <img src={src} alt={`uploaded-${i}`} className="h-24 w-full object-cover" />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeUploadedImage(i)}
+                                                            className="absolute top-1 right-1 h-6 w-6 rounded-full bg-black/70 text-white flex items-center justify-center"
+                                                        >
+                                                            <X className="h-3 w-3" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}

@@ -98,7 +98,20 @@ export async function GET(req) {
                     ]
                 },
                 include: {
-                    User: { select: { id: true, uid: true, name: true, email: true } },
+                    User: {
+                        select: {
+                            id: true,
+                            uid: true,
+                            name: true,
+                            email: true,
+                            cnic: true,
+                            ResidentProfile: {
+                                select: {
+                                    documents: true
+                                }
+                            }
+                        }
+                    },
                     Room: { include: { Hostel: { select: { id: true, name: true } } } }
                 },
                 take: 10

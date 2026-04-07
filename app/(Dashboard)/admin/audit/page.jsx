@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     Search, User, Calendar, CreditCard, AlertTriangle,
-    Mail, Phone, Building2, FileText, Wrench, ExternalLink,
+    Mail, Phone, Building2, FileText, Wrench, ExternalLink, CalendarCheck,
     RefreshCw, Activity, Blocks, Fingerprint, CheckCircle,
     Loader2, Download, ChevronRight, Clock, Hash, X,
     ArrowRight, Command, Filter, SlidersHorizontal, Trash2, Power, Shield, Printer, History, AlertCircle, TrendingUp,
@@ -197,6 +197,8 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
         { id: 'complaints', label: 'Issues', icon: AlertTriangle },
         { id: 'activity', label: 'Activity', icon: Activity },
     ];
+    const profileDocuments = details?.ResidentProfile?.documents || {};
+    const profileGalleryImages = Array.isArray(profileDocuments?.galleryImages) ? profileDocuments.galleryImages : [];
 
     return (
         <div className="relative w-full h-full bg-white flex overflow-hidden font-sans rounded-[2.5rem]">
@@ -306,6 +308,8 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                                 { label: 'Reg Number', value: user.regNumber || '—' },
                                                 { label: 'Emergency', value: details?.ResidentProfile?.emergencyContact || '—' },
                                                 { label: 'Address', value: user.address || '—' },
+                                                { label: 'Current Residence', value: details?.ResidentProfile?.documents?.currentResidence || '—' },
+                                                { label: 'Additional Docs', value: Array.isArray(details?.ResidentProfile?.documents?.galleryImages) ? details.ResidentProfile.documents.galleryImages.length : 0 },
                                                 { label: 'Join Date', value: format(new Date(user.createdAt), 'MMMM dd, yyyy') },
                                             ].map((f, i) => (
                                                 <div key={i}>
@@ -340,6 +344,24 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                         </div>
                                     </div>
                                 </div>
+                                {profileGalleryImages.length > 0 && (
+                                    <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
+                                        <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-5">Additional Documents</h3>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            {profileGalleryImages.map((src, idx) => (
+                                                <a
+                                                    key={`${src}-${idx}`}
+                                                    href={src}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="block rounded-xl overflow-hidden border border-gray-100 bg-white"
+                                                >
+                                                    <img src={src} alt={`profile-doc-${idx}`} className="h-28 w-full object-cover" />
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
 
@@ -930,6 +952,9 @@ const SearchPage = () => {
             {/* Unified Detail Modal */}
             <Dialog open={!!selectedItem} onOpenChange={(o) => !o && setSelectedItem(null)}>
                 <DialogContent className={`!max-w-none border-none p-0 shadow-2xl bg-white overflow-hidden flex flex-col [&>button]:hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[2.5rem] ${selectedItem && itemType === 'users' ? 'w-[94vw] h-[92vh]' : 'w-[90vw] max-w-2xl h-auto md:h-auto max-h-[90vh]'}`}>
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Audit Record Details</DialogTitle>
+                    </DialogHeader>
                     {selectedItem && itemType === 'users' ? (
                         <FullScreenUserTerminal user={selectedItem} onClose={() => setSelectedItem(null)} />
                     ) : selectedItem && (() => {
@@ -948,10 +973,13 @@ const SearchPage = () => {
                                 { label: 'Hostel Name', value: selectedItem.Room?.Hostel?.name },
                                 { label: 'Room No', value: selectedItem.Room?.roomNumber ? `Room ${selectedItem.Room.roomNumber}` : 'N/A' },
                                 { label: 'Resident Name', value: selectedItem.User?.name },
+                                { label: 'Resident CNIC', value: selectedItem.User?.cnic || 'N/A' },
+                                { label: 'Current Residence', value: selectedItem.User?.ResidentProfile?.documents?.currentResidence || 'N/A' },
                                 { label: 'Current Status', value: selectedItem.status },
                                 { label: 'Check In Date', value: selectedItem.checkIn ? format(new Date(selectedItem.checkIn), 'MMM dd, yyyy') : 'N/A' },
                                 { label: 'Total Amount', value: `PKR ${selectedItem.totalAmount?.toLocaleString() || 0}` },
                                 { label: 'Security Fee', value: `PKR ${selectedItem.securityDeposit?.toLocaleString() || 0}` },
+                                { label: 'Additional Documents', value: Array.isArray(selectedItem.User?.ResidentProfile?.documents?.galleryImages) ? selectedItem.User.ResidentProfile.documents.galleryImages.length : 0 },
                                 { label: 'Record UID', value: selectedItem.uid || 'N/A' },
                             ],
                             payments: [

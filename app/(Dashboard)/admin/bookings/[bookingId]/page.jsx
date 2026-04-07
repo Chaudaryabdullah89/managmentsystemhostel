@@ -135,6 +135,9 @@ const BookingDetailsPage = () => {
     // Monthly rent: prefer stored booking value, then room's montlyrent field, then derive from totalAmount
     const monthlyRentDisplay = booking.monthlyRent || booking.Room?.montlyrent || booking.Room?.price || Math.max(0, (booking.totalAmount || 0) - (booking.securityDeposit || 0));
     const securityDepositDisplay = booking.securityDeposit || 0;
+    const residentDocs = booking?.User?.ResidentProfile?.documents || {};
+    const additionalImages = Array.isArray(residentDocs?.galleryImages) ? residentDocs.galleryImages : [];
+    const currentResidence = residentDocs?.currentResidence || "";
 
     const getStatusStyle = (status) => {
         switch (status?.toUpperCase()) {
@@ -305,6 +308,15 @@ const BookingDetailsPage = () => {
                                         </div>
                                         <span className="text-sm font-bold text-gray-900 font-mono">{booking.User?.cnic || 'PENDING'}</span>
                                     </div>
+                                    {currentResidence && (
+                                        <div className="flex items-center justify-between p-3.5 bg-gray-50/50 rounded-xl border border-gray-100/50 hover:bg-white transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <MapPin className="h-3.5 w-3.5 text-indigo-500" />
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">Current Residence</span>
+                                            </div>
+                                            <span className="text-sm font-bold text-gray-900 truncate max-w-[180px]">{currentResidence}</span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -382,6 +394,27 @@ const BookingDetailsPage = () => {
                             ))}
                         </div>
                     </div>
+
+                    {additionalImages.length > 0 && (
+                        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+                            <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
+                                <div className="h-1 w-3 bg-indigo-600 rounded-full" /> Additional Documents
+                            </h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {additionalImages.map((src, idx) => (
+                                    <a
+                                        key={`${src}-${idx}`}
+                                        href={src}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="block border border-gray-100 rounded-xl overflow-hidden bg-white"
+                                    >
+                                        <img src={src} alt={`document-${idx}`} className="h-28 w-full object-cover" />
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Sidebar */}

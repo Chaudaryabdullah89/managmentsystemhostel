@@ -63,6 +63,7 @@ const GuestProfile = () => {
     const hostel = profile?.hostel || {};
     const residency = profile?.residency || {};
     const history = profile?.history || [];
+    const additionalImages = userData?.additionalImages || [];
 
     // Logic: Only show "Checked Out" styling if they have NO active stay but DO have history
     const isCheckedOut = !residency.roomNumber && history.length > 0;
@@ -247,6 +248,11 @@ const GuestProfile = () => {
                                         {resident.city || userData.city || "Not Specified"}
                                     </Badge>
                                 </div>
+                                {resident.currentResidence && (
+                                    <p className="mt-3 text-xs font-bold text-gray-600">
+                                        Current Residence: {resident.currentResidence}
+                                    </p>
+                                )}
                             </CardContent>
                         </Card>
                     </div>
@@ -297,6 +303,25 @@ const GuestProfile = () => {
                                             </div>
                                         </div>
                                     </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {additionalImages.length > 0 && (
+                    <Card className="rounded-[2rem] border-gray-100 shadow-sm overflow-hidden">
+                        <CardHeader className="bg-gray-50/50 border-b border-gray-50 py-4 px-6">
+                            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest">
+                                Additional Documents
+                            </h3>
+                        </CardHeader>
+                        <CardContent className="p-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {additionalImages.map((src, idx) => (
+                                    <a key={`${src}-${idx}`} href={src} target="_blank" rel="noreferrer" className="block border border-gray-100 rounded-xl overflow-hidden bg-white">
+                                        <img src={src} alt={`additional-${idx}`} className="h-28 w-full object-cover" />
+                                    </a>
                                 ))}
                             </div>
                         </CardContent>

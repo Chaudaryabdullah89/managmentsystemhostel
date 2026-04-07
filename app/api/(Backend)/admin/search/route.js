@@ -73,7 +73,13 @@ export async function GET(req) {
                             id: true,
                             uid: true,
                             name: true,
-                            email: true
+                            email: true,
+                            cnic: true,
+                            ResidentProfile: {
+                                select: {
+                                    documents: true
+                                }
+                            }
                         }
                     },
                     Room: {

@@ -70,6 +70,9 @@ const useAuthStore = create<AuthState>((set) => ({
 
   setToken: (token) => {
     Cookies.set("token", token, { sameSite: "strict" });
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("auth_token", token);
+    }
     set({ token });
   },
 
@@ -82,6 +85,9 @@ const useAuthStore = create<AuthState>((set) => ({
       console.error("[AuthStore] Logout API call failed:", error);
     }
     Cookies.remove("token");
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("auth_token");
+    }
     set({ user: null, token: null, isLoggedIn: false, isLoading: false });
     window.location.href = "/auth/login";
   },
@@ -99,7 +105,10 @@ const useAuthStore = create<AuthState>((set) => ({
  * redirects for protected routes.
  */
 export const checkAuth = async () => {
-  const token = Cookies.get("token");
+  let token = Cookies.get("token");
+  if (!token && typeof window !== "undefined") {
+    token = window.localStorage.getItem("auth_token") || undefined;
+  }
 
   if (!token) {
     // No cookie → mark loading done, stay unauthenticated

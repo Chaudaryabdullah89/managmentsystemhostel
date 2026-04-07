@@ -84,6 +84,9 @@ const ProfilePage = () => {
     const [editedData, setEditedData] = useState({});
 
     const user = useMemo(() => fetchedUser || {}, [fetchedUser]);
+    const additionalImages = Array.isArray(user?.ResidentProfile?.documents?.galleryImages)
+        ? user.ResidentProfile.documents.galleryImages
+        : [];
 
     const handleEdit = () => {
         setEditedData({ ...user });
@@ -386,6 +389,30 @@ const ProfilePage = () => {
                                         </CardContent>
                                     </Card>
                                 </div>
+                                {additionalImages.length > 0 && (
+                                    <Card className="bg-white border border-gray-100 rounded-[2rem] shadow-sm">
+                                        <CardHeader className="p-8 pb-4">
+                                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-900 flex items-center gap-3">
+                                                <FileText className="h-4 w-4 text-gray-400" /> Additional Documents
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="p-8 pt-0">
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                {additionalImages.map((src, idx) => (
+                                                    <a
+                                                        key={`${src}-${idx}`}
+                                                        href={src}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="block rounded-xl overflow-hidden border border-gray-100 bg-white"
+                                                    >
+                                                        <img src={src} alt={`profile-doc-${idx}`} className="h-24 w-full object-cover" />
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
                             </TabsContent>
 
                             <TabsContent value="security" className="m-0 space-y-4 animate-in fade-in duration-500">

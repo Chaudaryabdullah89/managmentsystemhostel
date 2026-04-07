@@ -46,12 +46,15 @@ function NavModeToggle() {
 function PageContent({
   children,
   user,
+  isAuthLoading,
 }: {
   children: React.ReactNode
   user: any
+  isAuthLoading: boolean
 }) {
   const pathname = usePathname()
-  const userRole = user?.role?.toLowerCase() || "guest"
+  const normalizedRole = (user?.role || "").toString().toUpperCase()
+  const userRole = normalizedRole.toLowerCase() || "guest"
   const rolePerms = (user as any)?.rolePermissions || {}
   const sysSettings = (user as any)?.systemSettings || {}
 
@@ -65,8 +68,18 @@ function PageContent({
       (item.url !== "/" && pathname.startsWith(item.url + "/"))
   )
 
+  if (isAuthLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[40vh]">
+        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
+          Loading session...
+        </p>
+      </div>
+    )
+  }
+
   let isAuthorized = true
-  if (isProtectedPath && user?.role !== "ADMIN") {
+  if (isProtectedPath && normalizedRole !== "ADMIN") {
     // 2. Does this specific protected path belong to MY role's allowed map?
     const myMatch = myItems.find(
       (item) =>
@@ -87,11 +100,11 @@ function PageContent({
 
   if (!isAuthorized) {
     const homeUrl =
-      user?.role === "ADMIN"
+      normalizedRole === "ADMIN"
         ? "/admin/dashboard"
-        : user?.role === "WARDEN"
+        : normalizedRole === "WARDEN"
         ? "/warden"
-        : user?.role === "STAFF"
+        : normalizedRole === "STAFF"
         ? "/staff/dashboard"
         : "/guest/dashboard"
 
@@ -129,13 +142,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const user = useAuthStore((state) => state.user)
+  const isAuthLoading = useAuthStore((state) => state.isLoading)
 
   useEffect(() => {
     checkAuth()
   }, [])
 
   const { data: bookings = [] } = useBookings({ userId: user?.id })
-  const isGuest = user?.role === "GUEST"
+  const isGuest = (user?.role || "").toString().toUpperCase() === "GUEST"
   const isCheckedOut =
     isGuest &&
     bookings.length > 0 &&
@@ -201,7 +215,7 @@ export default function RootLayout({
           </header>
 
           <div className="p-2 md:p-4 flex-1 h-full w-full min-w-0 overflow-y-auto overflow-x-hidden">
-            <PageContent user={user}>
+            <PageContent user={user} isAuthLoading={isAuthLoading}>
               {children}
             </PageContent>
           </div>
@@ -209,7 +223,7 @@ export default function RootLayout({
             <Footer />
           </div>
         </main>
-        {(user?.role === "RESIDENT" || user?.role === "GUEST") && (
+        {(["RESIDENT", "GUEST"].includes((user?.role || "").toString().toUpperCase())) && (
           <div className="print:hidden">
             <AiAssistant />
           </div>

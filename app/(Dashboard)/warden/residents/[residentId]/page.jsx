@@ -626,27 +626,35 @@ const ResidentDetailContent = () => {
                                         <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-8 flex items-center gap-3">
                                             <FileText className="h-4 w-4 text-indigo-600" /> Documents
                                         </h3>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            {user.ResidentProfile?.documents && Object.keys(user.ResidentProfile.documents).length > 0 ? (
-                                                Object.entries(user.ResidentProfile.documents).map(([key, value], idx) => (
-                                                    <div key={idx} className="p-4 rounded-3xl bg-gray-50/50 border border-gray-100 flex items-center justify-between group hover:border-indigo-600/20 transition-all">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="h-9 w-9 rounded-xl bg-white flex items-center justify-center text-indigo-600 border border-gray-100 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                                                                <FileText className="h-4 w-4" />
-                                                            </div>
-                                                            <span className="text-[10px] font-black uppercase tracking-wider text-gray-700">{key}</span>
-                                                        </div>
-                                                        <Button variant="ghost" size="icon" className="h-9 w-9 text-gray-400 hover:text-indigo-600" onClick={() => window.open(value, '_blank')}>
-                                                            <ExternalLink className="h-4 w-4" />
-                                                        </Button>
+                                        {user.ResidentProfile?.documents && Object.keys(user.ResidentProfile.documents).length > 0 ? (
+                                            <div className="space-y-6">
+                                                {user?.ResidentProfile?.documents?.currentResidence && (
+                                                    <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100">
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Current Residence</p>
+                                                        <p className="text-sm font-bold text-gray-800">{user.ResidentProfile.documents.currentResidence}</p>
                                                     </div>
-                                                ))
-                                            ) : (
-                                                <div className="col-span-full py-12 text-center bg-gray-50/30 rounded-4xl border-2 border-dashed border-gray-100">
-                                                    <span className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.3em]">No Documents Uploaded</span>
-                                                </div>
-                                            )}
-                                        </div>
+                                                )}
+                                                {Array.isArray(user?.ResidentProfile?.documents?.galleryImages) && user.ResidentProfile.documents.galleryImages.length > 0 && (
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                        {user.ResidentProfile.documents.galleryImages.map((src, idx) => (
+                                                            <a
+                                                                key={`${src}-${idx}`}
+                                                                href={src}
+                                                                target="_blank"
+                                                                rel="noreferrer"
+                                                                className="block rounded-xl overflow-hidden border border-gray-100 bg-white"
+                                                            >
+                                                                <img src={src} alt={`document-${idx}`} className="h-28 w-full object-cover" />
+                                                            </a>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="col-span-full py-12 text-center bg-gray-50/30 rounded-4xl border-2 border-dashed border-gray-100">
+                                                <span className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.3em]">No Documents Uploaded</span>
+                                            </div>
+                                        )}
                                     </Card>
                                 </div>
                             </TabsContent>

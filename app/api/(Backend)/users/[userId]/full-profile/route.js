@@ -73,9 +73,15 @@ export async function GET(request, { params }) {
                 role: user.role,
                 joinedAt: user.createdAt,
                 uid: user.uid,
-                regNumber: user.regNumber
+                regNumber: user.regNumber,
+                additionalImages: Array.isArray(user?.ResidentProfile?.documents?.galleryImages)
+                    ? user.ResidentProfile.documents.galleryImages
+                    : []
             },
-            resident: user.ResidentProfile,
+            resident: {
+                ...(user.ResidentProfile || {}),
+                currentResidence: user?.ResidentProfile?.documents?.currentResidence || "",
+            },
             hostel: user.Hostel_User_hostelIdToHostel,
             residency: activeBooking ? {
                 roomNumber: activeBooking.Room?.roomNumber,

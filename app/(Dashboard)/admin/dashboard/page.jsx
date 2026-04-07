@@ -47,7 +47,7 @@ import { useAllPayments, useFinancialStats } from "@/hooks/usePayment";
 import { useSyncAutomation } from "@/hooks/useRoom";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import SkeletonWrapper from "@/components/ui/SkeletonWrapper";
+import Loader from "@/components/ui/Loader";
 import { RevenueExpenseChart, HostelPerformanceChart, OccupancyDonutChart, ComplaintStatusChart } from "@/components/ui/Charts";
 
 const AdminDashboard = () => {
@@ -85,7 +85,9 @@ const AdminDashboard = () => {
         });
     };
 
-    const isDashboardLoading = reportsLoading || complaintsLoading || financialsLoading;
+    if (reportsLoading || complaintsLoading || financialsLoading) return (
+        <Loader label="Loading" subLabel="Getting updates..." icon={ClipboardList} fullScreen={false} />
+    );
 
     const stats = reportData?.overall || {
         totalRevenue: 0,
@@ -103,14 +105,7 @@ const AdminDashboard = () => {
     const complaintStats = complaintsData || { total: 0, pending: 0, inProgress: 0, resolved: 0, urgent: 0 };
 
     return (
-        <SkeletonWrapper
-            name="admin-dashboard"
-            isLoading={isDashboardLoading}
-            delayMs={180}
-            fadeMs={220}
-            snapshotConfig={{ excludeSelectors: ["[data-no-skeleton]", "svg"] }}
-        >
-            <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
             {/* Dashboard Header */}
             <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
                 <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
@@ -534,8 +529,7 @@ const AdminDashboard = () => {
                     </div>
                 </div>
             </main>
-            </div>
-        </SkeletonWrapper>
+        </div>
     );
 };
 

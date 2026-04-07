@@ -17,6 +17,7 @@ const SkeletonWrapper = ({
     fadeMs = 220,
     className = "",
     snapshotConfig,
+    fallback,
     onReady,
     children,
 }) => {
@@ -37,6 +38,18 @@ const SkeletonWrapper = ({
         : "opacity-100";
 
     const transitionClass = "transition-opacity duration-200 ease-out";
+    const defaultFallback = (
+        <div className="space-y-4 animate-pulse">
+            <div className="h-10 w-1/3 rounded-xl bg-slate-200/70" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="h-28 rounded-2xl bg-slate-200/70" />
+                ))}
+            </div>
+            <div className="h-72 rounded-3xl bg-slate-200/60" />
+            <div className="h-56 rounded-3xl bg-slate-200/60" />
+        </div>
+    );
 
     if (!isClient) {
         return (
@@ -55,6 +68,7 @@ const SkeletonWrapper = ({
                     animate: "shimmer",
                     snapshotConfig,
                 })}
+                fallback={fallback || defaultFallback}
             >
                 <div className={`${transitionClass} ${visibilityClass}`}>{children}</div>
             </BoneyardSkeleton>
