@@ -28,6 +28,7 @@ import { Card, CardHeader, CardAction, CardTitle, CardContent, CardDescription }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import FilterToolbar from "@/components/Dashboard/FilterToolbar";
 import {
     Select,
     SelectContent,
@@ -256,28 +257,34 @@ const RoomGuestsContent = () => {
             <div className="px-4">
                 <Card>
                     <CardContent className="pt-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-                            <div className="md:col-span-2 relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <Input
-                                    placeholder="Search by name, email, phone, or CNIC..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10"
-                                />
-                            </div>
-                            <Select value={filterStatus} onValueChange={setFilterStatus}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Filter by status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="Active">Active</SelectItem>
-                                    <SelectItem value="Inactive">Inactive</SelectItem>
-                                    <SelectItem value="Left">Left</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        <FilterToolbar
+                            showDivider={false}
+                            containerClassName="grid grid-cols-1 md:grid-cols-3 gap-4 items-center"
+                            searchSlot={(
+                                <div className="md:col-span-2 relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Input
+                                        placeholder="Search by name, email, phone, or CNIC..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            )}
+                            filtersSlot={(
+                                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Filter by status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Status</SelectItem>
+                                        <SelectItem value="Active">Active</SelectItem>
+                                        <SelectItem value="Inactive">Inactive</SelectItem>
+                                        <SelectItem value="Left">Left</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            )}
+                        />
                     </CardContent>
                 </Card>
             </div>

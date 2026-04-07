@@ -49,6 +49,7 @@ import { useBookings } from "@/hooks/useBooking";
 import PaymentNotificationModal from './PaymentNotificationModal';
 import UnifiedReceipt from '@/components/receipt/UnifiedReceipt';
 import { format } from "date-fns";
+import ErrorState from "@/components/ui/states/ErrorState";
 
 const BookingStatusBadge = ({ status }) => {
     const getStatusStyle = (status) => {
@@ -325,7 +326,12 @@ const BookingDetailCard = ({ booking }) => {
 
 const GuestBookings = () => {
     const user = useAuthStore((state) => state.user);
-    const { data: bookings, isLoading } = useBookings({ userId: user?.id });
+    const {
+        data: bookings,
+        isLoading,
+        isError,
+        refetch,
+    } = useBookings({ userId: user?.id });
 
     if (isLoading) return (
         <div className="flex h-screen items-center justify-center bg-white font-sans">
@@ -341,6 +347,18 @@ const GuestBookings = () => {
             </div>
         </div>
     );
+    if (isError) {
+        return (
+            <div className="max-w-[1400px] mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load bookings"
+                    description="Your booking records could not be fetched right now."
+                    onRetry={() => refetch?.()}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     const activeCount = bookings?.filter(b => b.status === 'Active' || b.status === 'CHECKED_IN').length || 0;
     const totalPayments = bookings?.reduce((acc, b) => acc + (b.Payment?.filter(p => p.status === 'PAID').reduce((s, p) => s + p.amount, 0) || 0), 0) || 0;

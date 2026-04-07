@@ -83,6 +83,9 @@ import { format } from "date-fns";
 import useAuthStore from "@/hooks/Authstate";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import PageHeader from "@/components/Dashboard/PageHeader";
+import FilterToolbar from "@/components/Dashboard/FilterToolbar";
+import EmptyState from "@/components/ui/states/EmptyState";
 
 const ROLES = ["all", "RESIDENT"];
 const GET_ROLES_FOR_USER = (role) => {
@@ -454,20 +457,15 @@ const WardenUserRecordPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/30 pb-20 font-sans">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50 h-16">
-        <div className="max-w-[1600px] mx-auto px-4 md:px-8 h-full flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-1.5 bg-indigo-600 rounded-full shrink-0" />
-            <div>
-              <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight">
-                Records
-              </h1>
-              <p className="text-[9px] font-bold text-indigo-600 uppercase tracking-widest">
-                {stats.total || 0} Total People
-              </p>
-            </div>
-          </div>
+      <PageHeader
+        title="Records"
+        subtitleStart={`${stats.total || 0} Total People`}
+        subtitleEnd=""
+        maxWidthClass="max-w-[1600px]"
+        accentColorClass="bg-indigo-600"
+        dotColorClass="bg-gray-200"
+        subtitleEndClass="text-gray-400"
+        rightSlot={(
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -510,8 +508,8 @@ const WardenUserRecordPage = () => {
               <UserPlus className="h-3.5 w-3.5" /> Enroll
             </Button>
           </div>
-        </div>
-      </header>
+        )}
+      />
 
       <main className="max-w-[1600px] mx-auto px-4 md:px-8 py-8 space-y-6">
         {/* Stats Row */}
@@ -553,8 +551,9 @@ const WardenUserRecordPage = () => {
           ))}
         </div>
 
-        {/* Search & Filter Bar */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 shadow-sm">
+        <FilterToolbar
+          containerClassName="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 shadow-sm"
+          searchSlot={(
           <div className="flex-1 relative w-full">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
             <Input
@@ -564,7 +563,9 @@ const WardenUserRecordPage = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="h-8 w-px bg-gray-100 hidden md:block" />
+          )}
+          dividerClassName="h-8 w-px bg-gray-100 hidden md:block"
+          filtersSlot={(
           <div className="flex items-center gap-1 p-1 bg-gray-50 rounded-xl overflow-x-auto w-full md:w-auto scrollbar-hide">
             {GET_ROLES_FOR_USER(user?.role).map((r) => (
               <button
@@ -576,6 +577,8 @@ const WardenUserRecordPage = () => {
               </button>
             ))}
           </div>
+          )}
+          rightSlot={(
           <div className="flex items-center gap-1 border-l border-gray-100 pl-2 hidden md:flex">
             <Button
               variant="ghost"
@@ -594,7 +597,8 @@ const WardenUserRecordPage = () => {
               <LayoutGrid className="h-4 w-4" />
             </Button>
           </div>
-        </div>
+          )}
+        />
 
         {isLoading ? (
           <Loader
@@ -604,15 +608,14 @@ const WardenUserRecordPage = () => {
             fullScreen={false}
           />
         ) : filteredUsers.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-dashed border-gray-200">
-            <Fingerprint className="h-12 w-12 text-gray-200 mb-4" />
-            <h3 className="text-base font-bold text-gray-900 uppercase">
-              Clear
-            </h3>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">
-              No users found in this hostel.
-            </p>
-          </div>
+          <EmptyState
+            icon={Fingerprint}
+            title="Clear"
+            description="No users found in this hostel."
+            containerClassName="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-dashed border-gray-200"
+            iconWrapperClassName="bg-transparent border-transparent mb-0"
+            iconClassName="text-gray-200"
+          />
         ) : viewMode === "table" ? (
           /* ─── TABLE VIEW ─── */
           <div className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">

@@ -43,6 +43,7 @@ import { format } from "date-fns";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import ErrorState from "@/components/ui/states/ErrorState";
 import {
     Dialog,
     DialogContent,
@@ -57,7 +58,12 @@ const PaymentApprovalDetailPage = () => {
     const router = useRouter();
     const { paymentId } = params;
 
-    const { data: payment, isLoading } = usePaymentById(paymentId);
+    const {
+        data: payment,
+        isLoading,
+        isError,
+        refetch,
+    } = usePaymentById(paymentId);
     const updatePayment = useUpdatePayment();
     const [rejectionReason, setRejectionReason] = useState("");
     const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
@@ -93,6 +99,18 @@ const PaymentApprovalDetailPage = () => {
             </div>
         </div>
     );
+    if (isError) {
+        return (
+            <div className="max-w-[1200px] mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load payment"
+                    description="Payment details could not be fetched right now."
+                    onRetry={() => refetch?.()}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     if (!payment) return (
         <div className="flex flex-col items-center justify-center min-h-screen p-20 text-center">

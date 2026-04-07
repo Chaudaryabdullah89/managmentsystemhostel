@@ -23,6 +23,8 @@ import { format } from "date-fns";
 import PaymentNotificationModal from "../bookings/PaymentNotificationModal";
 import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
 import RefundRequestModal from "./RefundRequestModal";
+import EmptyState from "@/components/ui/states/EmptyState";
+import ErrorState from "@/components/ui/states/ErrorState";
 
 
 const PaymentStatusBadge = ({ status, hasReceipt }) => {
@@ -55,8 +57,18 @@ const GuestPayments = () => {
     const user = useAuthStore((state) => state.user);
     const [filter, setFilter] = useState("all");
 
-    const { data: bookings = [], isLoading: isBookingsLoading } = useBookings({ userId: user?.id });
-    const { data: paymentsData, isLoading: isPaymentsLoading } = useAllPayments({ userId: user?.id, limit: 100 });
+    const {
+        data: bookings = [],
+        isLoading: isBookingsLoading,
+        isError: isBookingsError,
+        refetch: refetchBookings,
+    } = useBookings({ userId: user?.id });
+    const {
+        data: paymentsData,
+        isLoading: isPaymentsLoading,
+        isError: isPaymentsError,
+        refetch: refetchPayments,
+    } = useAllPayments({ userId: user?.id, limit: 100 });
 
     const isCheckedOut = bookings.length > 0 &&
         bookings.some(b => b.status === 'CHECKED_OUT') &&
@@ -96,6 +108,21 @@ const GuestPayments = () => {
             </div>
         </div>
     );
+    if (isPaymentsError || isBookingsError) {
+        return (
+            <div className="max-w-6xl mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load payment ledger"
+                    description="Your booking or payment records could not be fetched right now."
+                    onRetry={() => {
+                        refetchPayments?.();
+                        refetchBookings?.();
+                    }}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     const canNotify = !!bookingWithPayments && !isCheckedOut;
 
@@ -285,11 +312,14 @@ const GuestPayments = () => {
                                 </div>
                             );
                         }) : (
-                            <div className="bg-white border-2 border-dashed border-slate-200 rounded-[3rem] p-24 text-center">
-                                <FileText className="h-12 w-12 text-slate-200 mx-auto mb-4" />
-                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-widest">No matching logs</h3>
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">Try adjusting your filters</p>
-                            </div>
+                            <EmptyState
+                                icon={FileText}
+                                title="No matching logs"
+                                description="Try adjusting your filters"
+                                containerClassName="bg-white border-2 border-dashed border-slate-200 rounded-[3rem] p-24 text-center"
+                                iconWrapperClassName="bg-slate-50 border-slate-100"
+                                iconClassName="text-slate-300"
+                            />
                         )}
                     </div>
                 </div>

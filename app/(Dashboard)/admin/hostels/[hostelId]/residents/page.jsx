@@ -37,6 +37,9 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Trash } from "lucide-react"
 import Loader from '../../../../../../components/ui/Loader'
+import PageHeader from "@/components/Dashboard/PageHeader"
+import FilterToolbar from "@/components/Dashboard/FilterToolbar"
+import EmptyState from "@/components/ui/states/EmptyState"
 
 const ResidentActions = ({ resident, params, hostelId, router, updateStatus }) => (
     <DropdownMenu>
@@ -140,22 +143,20 @@ const ResidentsContent = () => {
 
     return (
         <div className="min-h-screen bg-gray-50/50">
-            {/* Slim Header */}
-            <div className="bg-white border-b sticky top-0 z-40 py-2 md:h-16">
-                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl hover:bg-gray-100 shrink-0">
-                            <ArrowLeft className="h-4 w-4" />
-                        </Button>
-                        <div className="h-6 w-px bg-gray-200 shrink-0" />
-                        <div className="flex flex-col min-w-0">
-                            <h1 className="text-sm md:text-lg font-black text-gray-900 tracking-tight flex items-center gap-2 truncate">
-                                <User className="h-4 w-4 md:h-5 md:w-5 text-indigo-600" />
-                                <span className="truncate">Resident Registry</span>
-                            </h1>
-                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest truncate mt-0.5">{decodeURIComponent(params?.hostelId || hostelId)}</p>
-                        </div>
-                    </div>
+            <PageHeader
+                title="Resident Registry"
+                subtitleStart={decodeURIComponent(params?.hostelId || hostelId)}
+                subtitleEnd=""
+                maxWidthClass="max-w-[1600px]"
+                accentColorClass="bg-gray-200"
+                dotColorClass="bg-gray-200"
+                subtitleEndClass="text-gray-400"
+                leftSlot={(
+                    <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl hover:bg-gray-100 shrink-0">
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                )}
+                rightSlot={(
                     <div className="flex items-center gap-3">
                         <div className="hidden sm:flex flex-col items-end mr-2 md:mr-4">
                             <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Active nodes</span>
@@ -170,12 +171,13 @@ const ResidentsContent = () => {
                             <span className="hidden sm:inline">Sync Data</span>
                         </Button>
                     </div>
-                </div>
-            </div>
+                )}
+            />
 
             <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-6">
-                {/* Search & Action Bar */}
-                <div className="flex flex-col sm:flex-row items-center gap-4">
+                <FilterToolbar
+                    containerClassName="flex flex-col sm:flex-row items-center gap-4"
+                    searchSlot={(
                     <div className="relative flex-1 group w-full">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                         <Input
@@ -185,6 +187,8 @@ const ResidentsContent = () => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
+                    )}
+                    filtersSlot={(
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                         <Button variant="outline" className="h-12 flex-1 sm:flex-none px-6 rounded-2xl border-gray-100 bg-white font-black gap-2 text-[10px] uppercase tracking-widest shadow-sm">
                             <Filter className="h-4 w-4 text-gray-400" />
@@ -195,7 +199,8 @@ const ResidentsContent = () => {
                             PROVISION
                         </Button>
                     </div>
-                </div>
+                    )}
+                />
 
                 {/* Registry Table */}
                 <Card className="border border-gray-100 shadow-sm bg-white md:overflow-hidden rounded-[24px]">
@@ -329,11 +334,14 @@ const ResidentsContent = () => {
                     </div>
 
                     {filteredResidents.length === 0 && (
-                        <div className="py-20 flex flex-col items-center border-t border-gray-50 border-dashed mx-6">
-                            <User className="h-10 w-10 text-gray-200 mb-4 animate-pulse" />
-                            <h3 className="text-base font-black text-gray-900 uppercase">No Matches</h3>
-                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-1 text-center">No resident nodes detected for the current query</p>
-                        </div>
+                        <EmptyState
+                            icon={User}
+                            title="No Matches"
+                            description="No resident nodes detected for the current query"
+                            containerClassName="py-20 flex flex-col items-center border-t border-gray-50 border-dashed mx-6"
+                            iconWrapperClassName="bg-transparent border-transparent mb-0"
+                            iconClassName="text-gray-200"
+                        />
                     )}
                 </Card>
 

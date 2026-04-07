@@ -19,6 +19,8 @@ import { Badge } from "@/components/ui/badge";
 import { useExpenseStats, useExpenses } from "@/hooks/useExpenses";
 import Loader from "@/components/ui/Loader";
 import useAuthStore from "@/hooks/Authstate";
+import PageHeader from "@/components/Dashboard/PageHeader";
+import SectionTitle from "@/components/Dashboard/SectionTitle";
 
 const CATEGORIES = [
     {
@@ -109,22 +111,16 @@ const ExpensesPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
-            {/* Header — matches dashboard/payments/bookings pattern exactly */}
-            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
-                <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
-                        <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Expenses</h1>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Overview</span>
-                                <div className="h-1 w-1 rounded-full bg-blue-500 animate-pulse" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-blue-600">Live</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <PageHeader
+                title="Expenses"
+                subtitleStart="Overview"
+                subtitleEnd="Live"
+                subtitleDotClassName="animate-pulse"
+                maxWidthClass="max-w-[1400px]"
+                accentColorClass="bg-blue-600"
+                dotColorClass="bg-blue-500"
+                subtitleEndClass="text-blue-600"
+            />
 
             <main className="max-w-[1400px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8">
                 {/* Stats — same card style as all other pages */}
@@ -148,11 +144,14 @@ const ExpensesPage = () => {
                 </div>
 
                 {/* Section header — matches dashboard "Hostels", "Actions" pattern */}
-                <div className="flex items-center gap-3 px-1">
-                    <div className="h-5 w-1 bg-blue-600 rounded-full" />
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Categories</h3>
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-auto">Select to manage</span>
-                </div>
+                <SectionTitle
+                    title="Categories"
+                    rightText="Select to manage"
+                    accentColorClass="bg-blue-600"
+                    containerClassName="flex items-center gap-3 px-1"
+                    titleClassName="text-sm font-bold uppercase tracking-widest text-gray-900"
+                    rightTextClassName="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-auto"
+                />
 
                 {/* Category cards — same grid density/pattern as Quick Actions but with more substance */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-4">

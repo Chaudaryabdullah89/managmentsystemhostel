@@ -58,10 +58,17 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import Loader from "@/components/ui/Loader";
+import ErrorState from "@/components/ui/states/ErrorState";
 
 const ProfilePage = () => {
     const authUser = useAuthStore((state) => state.user)
-    const { data: fetchedUser, isLoading, error } = useUserById(authUser?.id)
+    const {
+        data: fetchedUser,
+        isLoading,
+        error,
+        isError,
+        refetch,
+    } = useUserById(authUser?.id)
     const { mutateAsync: updateUserData, isLoading: updateLoading } = useUserUpdate()
     const { data: sessionsData, isLoading: sessionsLoading } = useSessions();
     const terminateSession = useTerminateSessions();
@@ -197,6 +204,18 @@ const ProfilePage = () => {
     };
 
     if (isLoading) return <Loader label="Loading" subLabel="Updates..." icon={User} fullScreen={false} />;
+    if (isError) {
+        return (
+            <div className="max-w-[1600px] mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load profile"
+                    description="Profile details could not be fetched right now."
+                    onRetry={() => refetch?.()}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">

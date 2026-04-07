@@ -34,6 +34,7 @@ import { useComplaintById, useUpdateComplaint, useAddComplaintComment } from "@/
 import useAuthStore from "@/hooks/Authstate";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import ErrorState from "@/components/ui/states/ErrorState";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -59,7 +60,13 @@ const ComplaintDetailPage = ({ params }) => {
     const { complaintId } = resolvedParams;
 
     const user = useAuthStore((state) => state.user);
-    const { data: complaint, isLoading, error } = useComplaintById(complaintId);
+    const {
+        data: complaint,
+        isLoading,
+        error,
+        isError,
+        refetch,
+    } = useComplaintById(complaintId);
     const updateMutation = useUpdateComplaint();
     const addCommentMutation = useAddComplaintComment();
 
@@ -118,6 +125,18 @@ const ComplaintDetailPage = ({ params }) => {
             </div>
         </div>
     );
+    if (isError) {
+        return (
+            <div className="max-w-7xl mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load complaint"
+                    description="Complaint record could not be fetched right now."
+                    onRetry={() => refetch?.()}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     if (error || !complaint) return (
         <div className="flex h-screen items-center justify-center bg-gray-50">

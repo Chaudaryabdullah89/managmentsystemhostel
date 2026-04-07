@@ -29,6 +29,10 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
 import Loader from "@/components/ui/Loader";
+import PageHeader from "@/components/Dashboard/PageHeader";
+import FilterToolbar from "@/components/Dashboard/FilterToolbar";
+import EmptyState from "@/components/ui/states/EmptyState";
+import ErrorState from "@/components/ui/states/ErrorState";
 
 // ─── Status & Priority helpers ───────────────────────────────
 // ─────────────────
@@ -247,10 +251,20 @@ const ComplaintsPage = () => {
         return "All";
     });
 
-    const { data: complaintsData, isLoading: isComplaintsLoading } = useComplaints({
+    const {
+        data: complaintsData,
+        isLoading: isComplaintsLoading,
+        isError: isComplaintsError,
+        refetch: refetchComplaints,
+    } = useComplaints({
         hostelId: (isWarden && !isAdmin) ? (user?.hostelId || undefined) : (hostelFilter !== "All" ? hostelFilter : undefined)
     });
-    const { data: statsData, isLoading: isStatsLoading } = useComplaints({
+    const {
+        data: statsData,
+        isLoading: isStatsLoading,
+        isError: isStatsError,
+        refetch: refetchStats,
+    } = useComplaints({
         stats: "true",
         hostelId: (isWarden && !isAdmin) ? (user?.hostelId || undefined) : (hostelFilter !== "All" ? hostelFilter : undefined)
     });
@@ -295,31 +309,41 @@ const ComplaintsPage = () => {
     };
 
     if (isComplaintsLoading || isStatsLoading) return <Loader label="Loading" subLabel="Updates..." icon={MessageSquare} fullScreen={false} />;
+    if (isComplaintsError || isStatsError) {
+        return (
+            <div className="max-w-[1600px] mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load complaints"
+                    description="There was a temporary issue while fetching complaint records."
+                    onRetry={() => {
+                        refetchComplaints?.();
+                        refetchStats?.();
+                    }}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
-            {/* ── Sticky Header ── */}
-            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
-                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <div className="h-8 w-1 bg-indigo-600 rounded-full shrink-0" />
-                        <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Complaints</h1>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Stats</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Live</span>
-                            </div>
-                        </div>
-                    </div>
+            <PageHeader
+                title="Complaints"
+                subtitleStart="Stats"
+                subtitleEnd="Live"
+                maxWidthClass="max-w-[1600px]"
+                accentColorClass="bg-indigo-600"
+                dotColorClass="bg-emerald-500"
+                subtitleEndClass="text-emerald-600"
+                rightSlot={(
                     <div className="flex items-center gap-3">
                         <Button variant="outline" onClick={handleExport}
                             className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-2">
                             <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden sm:inline">Export</span> <span className="sm:hidden">Export</span>
                         </Button>
                     </div>
-                </div>
-            </div>
+                )}
+            />
 
             <div className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
                 {/* ── Stat Cards ── */}
@@ -343,7 +367,9 @@ const ComplaintsPage = () => {
                 </div>
 
                 {/* ── Search + Filter Bar ── */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm animate-in slide-in-from-bottom-6 fade-in duration-500 fill-mode-both delay-100">
+                <FilterToolbar
+                    containerClassName="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm animate-in slide-in-from-bottom-6 fade-in duration-500 fill-mode-both delay-100"
+                    searchSlot={(
                     <div className="flex-1 relative w-full group">
                         <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                         <Input
@@ -358,9 +384,9 @@ const ComplaintsPage = () => {
                             </span>
                         )}
                     </div>
-
-                    <div className="h-8 w-px bg-gray-100 mx-2 hidden md:block" />
-
+                    )}
+                    dividerClassName="h-8 w-px bg-gray-100 mx-2 hidden md:block"
+                    filtersSlot={(
                     <div className="flex items-center gap-1.5 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
                         {/* Status Filter */}
                         <DropdownMenu>
@@ -422,7 +448,8 @@ const ComplaintsPage = () => {
                             </DropdownMenu>
                         )}
                     </div>
-                </div>
+                    )}
+                />
 
                 {/* ── Complaint Cards ── */}
                 <div className="space-y-4 animate-in slide-in-from-bottom-8 fade-in duration-600 fill-mode-both delay-200">
@@ -524,18 +551,21 @@ const ComplaintsPage = () => {
                             />
                         </Dialog>
                     )) : (
-                        <div className="bg-white border border-dashed border-gray-100 rounded-3xl p-24 text-center shadow-sm">
-                            <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-6 border border-gray-100">
-                                <Search className="h-8 w-8 text-gray-300" />
-                            </div>
-                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Empty</h3>
-                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Clear</p>
-                            <Button variant="outline"
-                                className="mt-8 rounded-xl h-10 px-8 font-bold uppercase tracking-widest text-[10px] border-gray-200 hover:bg-black hover:text-white transition-all shadow-sm"
-                                onClick={() => { setSearchQuery(""); setStatusFilter("All"); setPriorityFilter("All"); setHostelFilter("All"); }}>
-                                Reset Filters
-                            </Button>
-                        </div>
+                        <EmptyState
+                            icon={Search}
+                            title="Empty"
+                            description="Clear"
+                            containerClassName="bg-white border border-dashed border-gray-100 rounded-3xl p-24 text-center shadow-sm"
+                            iconWrapperClassName="bg-gray-50 border-gray-100"
+                            iconClassName="text-gray-300"
+                            actionSlot={(
+                                <Button variant="outline"
+                                    className="rounded-xl h-10 px-8 font-bold uppercase tracking-widest text-[10px] border-gray-200 hover:bg-black hover:text-white transition-all shadow-sm"
+                                    onClick={() => { setSearchQuery(""); setStatusFilter("All"); setPriorityFilter("All"); setHostelFilter("All"); }}>
+                                    Reset Filters
+                                </Button>
+                            )}
+                        />
                     )}
                 </div>
 

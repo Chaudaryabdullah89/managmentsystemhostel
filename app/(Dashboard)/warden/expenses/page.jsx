@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import useAuthStore from "@/hooks/Authstate";
 import { useExpenseStats, useExpenses } from "@/hooks/useExpenses";
 import Loader from "@/components/ui/Loader";
+import ErrorState from "@/components/ui/states/ErrorState";
 
 const CATEGORIES = [
     {
@@ -79,13 +80,38 @@ const ExpensesPage = () => {
         user?.canManageUtilities ||
         user?.canManageMaintenance;
 
-    const { data: statsData, isLoading: statsLoading } = useExpenseStats(user?.hostelId || 'all');
-    const { data: allExpenses, isLoading: expensesLoading } = useExpenses({ hostelId: user?.hostelId });
+    const {
+        data: statsData,
+        isLoading: statsLoading,
+        isError: isStatsError,
+        refetch: refetchStats,
+    } = useExpenseStats(user?.hostelId || 'all');
+    const {
+        data: allExpenses,
+        isLoading: expensesLoading,
+        isError: isExpensesError,
+        refetch: refetchExpenses,
+    } = useExpenses({ hostelId: user?.hostelId });
     const expenses = allExpenses || [];
 
     // We no longer trigger early return for permissions before hooks, we just place it below any potential hidden hooks (although we don't see any).
 
     if (statsLoading || expensesLoading) return <Loader label="Loading" subLabel="Getting expense data..." icon={Receipt} fullScreen={false} />;
+    if (isStatsError || isExpensesError) {
+        return (
+            <div className="max-w-[1400px] mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load expenses"
+                    description="Expense stats or records could not be fetched right now."
+                    onRetry={() => {
+                        refetchStats?.();
+                        refetchExpenses?.();
+                    }}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     if (user && user.role === 'WARDEN' && !hasAnyExpensePermission) {
         return (

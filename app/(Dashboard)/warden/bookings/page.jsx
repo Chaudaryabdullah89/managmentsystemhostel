@@ -68,6 +68,10 @@ import { format } from "date-fns";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import Loader from "../../../../components/ui/Loader";
+import FilterToolbar from "@/components/Dashboard/FilterToolbar";
+import PageHeader from "@/components/Dashboard/PageHeader";
+import EmptyState from "@/components/ui/states/EmptyState";
+import ErrorState from "@/components/ui/states/ErrorState";
 
 const useSyncAutomation = () => {
     const queryClient = useQueryClient();
@@ -87,7 +91,13 @@ const useSyncAutomation = () => {
 const GlobalBookingsPage = () => {
     const router = useRouter();
     const queryClient = useQueryClient();
-    const { data: bookingsResponse, isLoading, isFetching } = useBookings();
+    const {
+        data: bookingsResponse,
+        isLoading,
+        isFetching,
+        isError,
+        refetch,
+    } = useBookings();
     const { data: hostelsResponse } = useHostel();
     const { mutate: updateStatus, isPending: isUpdating } = useUpdateBookingStatus();
     const { mutate: deleteBooking, isPending: isDeleting } = useDeleteBooking();
@@ -336,24 +346,30 @@ const GlobalBookingsPage = () => {
     };
 
     if (isLoading) return <Loader label="Loading" subLabel="Getting records..." icon={Calendar} fullScreen={false} />;
+    if (isError) {
+        return (
+            <div className="max-w-[1600px] mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load bookings"
+                    description="Booking records could not be fetched right now."
+                    onRetry={() => refetch?.()}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
-            {/* Minimal Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
-                <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
-                        <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Bookings</h1>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Records</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active</span>
-                            </div>
-                        </div>
-                    </div>
-
+            <PageHeader
+                title="Bookings"
+                subtitleStart="Records"
+                subtitleEnd="Active"
+                maxWidthClass="max-w-[1400px]"
+                accentColorClass="bg-blue-600"
+                dotColorClass="bg-emerald-500"
+                subtitleEndClass="text-emerald-600"
+                rightSlot={(
                     <div className="flex items-center gap-2 md:gap-3">
                         <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9" onClick={() => syncAutomation.mutate()}>
                             <RefreshCw className={`h-4 w-4 text-gray-500 ${syncAutomation.isPending ? 'animate-spin' : ''}`} />
@@ -374,8 +390,8 @@ const GlobalBookingsPage = () => {
                             <span className="hidden sm:inline">Add</span> <span className="sm:hidden">Add</span>
                         </Button>
                     </div>
-                </div>
-            </div>
+                )}
+            />
 
             <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8 min-w-0">
                 {/* Statistics Overview */}
@@ -399,23 +415,26 @@ const GlobalBookingsPage = () => {
                 </div>
 
                 {/* Search and Filters */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm">
-                    <div className="flex-1 relative w-full group px-2">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
-                        <Input
-                            placeholder="Search..."
-                            className="w-full h-11 md:h-12 pl-10 bg-transparent border-none shadow-none font-bold text-[11px] md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                        {searchQuery && (
-                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[8px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase transition-all animate-in fade-in zoom-in duration-300 hidden sm:inline">
-                                {filteredBookings.length} Matches
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="flex items-center gap-1.5 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
+                <FilterToolbar
+                    showDivider={false}
+                    searchSlot={(
+                        <div className="flex-1 relative w-full group px-2">
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-600 transition-colors" />
+                            <Input
+                                placeholder="Search..."
+                                className="w-full h-11 md:h-12 pl-10 bg-transparent border-none shadow-none font-bold text-[11px] md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            {searchQuery && (
+                                <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[8px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase transition-all animate-in fade-in zoom-in duration-300 hidden sm:inline">
+                                    {filteredBookings.length} Matches
+                                </span>
+                            )}
+                        </div>
+                    )}
+                    filtersSlot={(
+                        <div className="flex items-center gap-1.5 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 px-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm shrink-0">
@@ -450,8 +469,9 @@ const GlobalBookingsPage = () => {
                                 ))}
                             </DropdownMenuContent>
                         </DropdownMenu>
-                    </div>
-                </div>
+                        </div>
+                    )}
+                />
 
                 {/* Floating Bulk Action Bar */}
                 {selectedIds.size > 0 && (
@@ -642,20 +662,23 @@ const GlobalBookingsPage = () => {
                             </div>
                         ))
                     ) : (
-                        <div className="bg-white border border-gray-100 rounded-3xl p-12 sm:p-24 text-center shadow-sm border-dashed">
-                            <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-6 border border-gray-100">
-                                <Search className="h-8 w-8 text-gray-300" />
-                            </div>
-                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Empty</h3>
-                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Try changing your filters</p>
-                            <Button
-                                variant="outline"
-                                className="mt-8 rounded-xl h-10 px-8 font-bold uppercase tracking-widest text-[10px] border-gray-200 hover:bg-black hover:text-white transition-all shadow-sm"
-                                onClick={() => { setSearchQuery(""); setStatusFilter("All"); setHostelFilter("All"); }}
-                            >
-                                Reset
-                            </Button>
-                        </div>
+                        <EmptyState
+                            icon={Search}
+                            title="Empty"
+                            description="Try changing your filters"
+                            iconWrapperClassName="bg-gray-50 border-gray-100"
+                            iconClassName="text-gray-300"
+                            containerClassName="bg-white border border-gray-100 rounded-3xl p-12 sm:p-24 text-center shadow-sm border-dashed"
+                            actionSlot={(
+                                <Button
+                                    variant="outline"
+                                    className="rounded-xl h-10 px-8 font-bold uppercase tracking-widest text-[10px] border-gray-200 hover:bg-black hover:text-white transition-all shadow-sm"
+                                    onClick={() => { setSearchQuery(""); setStatusFilter("All"); setHostelFilter("All"); }}
+                                >
+                                    Reset
+                                </Button>
+                            )}
+                        />
                     )}
                 </div>
 

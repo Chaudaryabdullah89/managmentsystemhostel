@@ -39,13 +39,27 @@ import { checkAuth } from "@/hooks/Authstate";
 import SalarySlip from "@/components/SalarySlip";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import PageHeader from "@/components/Dashboard/PageHeader";
+import SectionTitle from "@/components/Dashboard/SectionTitle";
+import ErrorState from "@/components/ui/states/ErrorState";
 
 const WardenProfilePage = () => {
     const params = useParams();
     const queryClient = useQueryClient();
-    const { data: user, isLoading, error } = useUserById(params.id);
+    const {
+        data: user,
+        isLoading,
+        error,
+        isError: isUserError,
+        refetch: refetchUser,
+    } = useUserById(params.id);
     const { data: reports, isLoading: reportsLoading } = useReports('month', user?.hostelId);
-    const { data: payments, isLoading: paymentsLoading } = useWardenPayments(params.id);
+    const {
+        data: payments,
+        isLoading: paymentsLoading,
+        isError: isPaymentsError,
+        refetch: refetchPayments,
+    } = useWardenPayments(params.id);
     const payWarden = usePayWarden();
 
     // ── Permissions state + mutation ────────────────────────────
@@ -152,6 +166,21 @@ const WardenProfilePage = () => {
     if (isLoading) return (
         <Loader label="Loading Warden Profile" subLabel="Fetching warden details..." icon={User} fullScreen={false} />
     );
+    if (isUserError || isPaymentsError) {
+        return (
+            <div className="max-w-[1200px] mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load warden details"
+                    description="Warden profile or payment records could not be fetched right now."
+                    onRetry={() => {
+                        refetchUser?.();
+                        refetchPayments?.();
+                    }}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     if (error || !user) {
         return (
@@ -215,28 +244,24 @@ const WardenProfilePage = () => {
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
 
-            {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <Link href="/admin/hostels">
-                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-500 shrink-0">
-                                <ArrowLeft className="h-4 w-4" />
-                            </Button>
-                        </Link>
-                        <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
-                        <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Profile</h1>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 truncate">{user.name}</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500 hidden sm:block" />
-                                <span className={`text-[9px] font-bold uppercase tracking-wider hidden sm:block ${user.isActive ? 'text-emerald-600' : 'text-rose-500'}`}>
-                                    {user.isActive ? 'Active' : 'Inactive'}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
+            <PageHeader
+                title="Profile"
+                subtitleStart={user.name}
+                subtitleEnd={user.isActive ? "Active" : "Inactive"}
+                subtitleDotClassName="hidden sm:block"
+                maxWidthClass="max-w-[1600px]"
+                accentColorClass="bg-blue-600"
+                dotColorClass="bg-emerald-500"
+                subtitleEndClass={user.isActive ? "text-emerald-600 hidden sm:block" : "text-rose-500 hidden sm:block"}
+                stickyClassName="bg-white border-b sticky top-0 z-50 h-16"
+                leftSlot={(
+                    <Link href="/admin/hostels">
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-500 shrink-0">
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                    </Link>
+                )}
+                rightSlot={(
                     <Dialog open={isPayDialogOpen} onOpenChange={setIsPayDialogOpen}>
                         <DialogTrigger asChild>
                             <Button className="h-9 px-4 md:px-6 rounded-xl bg-gray-900 hover:bg-gray-800 text-white font-bold text-[10px] uppercase tracking-widest shadow-sm transition-all flex items-center gap-2">
@@ -349,8 +374,8 @@ const WardenProfilePage = () => {
                             </form>
                         </DialogContent>
                     </Dialog>
-                </div>
-            </div>
+                )}
+            />
 
             <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8">
 
@@ -469,10 +494,12 @@ const WardenProfilePage = () => {
                 {user.hostelId && (
                     <div className="space-y-4">
                         <div className="flex items-center justify-between px-2">
-                            <div className="flex items-center gap-3">
-                                <div className="h-5 w-1 bg-indigo-600 rounded-full" />
-                                <h3 className="text-xs md:text-sm font-black uppercase tracking-widest text-gray-900">Hostel Insights</h3>
-                            </div>
+                            <SectionTitle
+                                title="Hostel Insights"
+                                accentColorClass="bg-indigo-600"
+                                containerClassName="flex items-center gap-3"
+                                titleClassName="text-xs md:text-sm font-black uppercase tracking-widest text-gray-900"
+                            />
                             {reports && (
                                 <Link href={`/admin/reports?hostelId=${user.hostelId}`}>
                                     <Button variant="ghost" className="h-8 text-[10px] font-bold uppercase tracking-widest text-indigo-600 hover:bg-indigo-50">
@@ -675,10 +702,12 @@ const WardenProfilePage = () => {
 
                 {/* Payment History Section */}
                 <div className="space-y-4">
-                    <div className="flex items-center gap-3 px-2">
-                        <div className="h-5 w-1 bg-gray-900 rounded-full" />
-                        <h3 className="text-xs md:text-sm font-black uppercase tracking-widest text-gray-900">History</h3>
-                    </div>
+                    <SectionTitle
+                        title="History"
+                        accentColorClass="bg-gray-900"
+                        containerClassName="flex items-center gap-3 px-2"
+                        titleClassName="text-xs md:text-sm font-black uppercase tracking-widest text-gray-900"
+                    />
 
                     {paymentsLoading ? (
                         <div className="py-20 flex justify-center">

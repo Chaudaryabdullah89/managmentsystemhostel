@@ -27,6 +27,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import FilterToolbar from "@/components/Dashboard/FilterToolbar";
 import { Label } from "@/components/ui/label";
 import {
     Select,
@@ -337,15 +338,28 @@ const PaymentHistoryPage = () => {
                 </div>
 
                 {/* Operations bar */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex items-center gap-4 shadow-sm">
-                    <Search className="h-4 w-4 text-gray-400 ml-4" />
-                    <Input placeholder="Identify transaction node..." className="border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-xl mr-2">
-                        {['ALL', 'PENDING', 'PAID', 'PARTIAL'].map(s => (
-                            <Button key={s} variant="ghost" onClick={() => setFilterStatus(s)} className={`h-8 px-4 rounded-lg text-[10px] font-bold uppercase transition-all ${filterStatus === s ? 'bg-white text-black shadow-sm' : 'text-gray-400'}`}>{s}</Button>
-                        ))}
-                    </div>
-                </div>
+                <FilterToolbar
+                    containerClassName="bg-white border border-gray-100 rounded-2xl p-2 flex items-center gap-4 shadow-sm"
+                    dividerClassName=""
+                    searchSlot={(
+                        <>
+                            <Search className="h-4 w-4 text-gray-400 ml-4" />
+                            <Input
+                                placeholder="Identify transaction node..."
+                                className="border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </>
+                    )}
+                    filtersSlot={(
+                        <div className="flex items-center gap-2 p-1 bg-gray-50 rounded-xl mr-2">
+                            {['ALL', 'PENDING', 'PAID', 'PARTIAL'].map(s => (
+                                <Button key={s} variant="ghost" onClick={() => setFilterStatus(s)} className={`h-8 px-4 rounded-lg text-[10px] font-bold uppercase transition-all ${filterStatus === s ? 'bg-white text-black shadow-sm' : 'text-gray-400'}`}>{s}</Button>
+                            ))}
+                        </div>
+                    )}
+                />
 
                 {/* Transaction Ribbon Feed */}
                 <div className="space-y-4">

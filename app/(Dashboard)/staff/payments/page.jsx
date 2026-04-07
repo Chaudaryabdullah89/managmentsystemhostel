@@ -26,6 +26,8 @@ import {
     DialogContent,
 } from "@/components/ui/dialog";
 import SalarySlip from '@/components/SalarySlip';
+import EmptyState from "@/components/ui/states/EmptyState";
+import ErrorState from "@/components/ui/states/ErrorState";
 
 const StaffPaymentsPage = () => {
     const { user } = useAuthStore();
@@ -33,7 +35,12 @@ const StaffPaymentsPage = () => {
     const [selectedPayment, setSelectedPayment] = useState(null);
     const [isSlipOpen, setIsSlipOpen] = useState(false);
 
-    const { data: salaries, isLoading } = useAllSalaries({
+    const {
+        data: salaries,
+        isLoading,
+        isError,
+        refetch,
+    } = useAllSalaries({
         userId: user?.id,
         status: 'PAID'
     });
@@ -50,6 +57,18 @@ const StaffPaymentsPage = () => {
                     <div className="h-8 w-8 border-2 border-gray-100 border-t-black rounded-full animate-spin" />
                     <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Auditing Ledger...</p>
                 </div>
+            </div>
+        );
+    }
+    if (isError) {
+        return (
+            <div className="max-w-[1600px] mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load salary records"
+                    description="Salary payment history could not be fetched right now."
+                    onRetry={() => refetch?.()}
+                    retryLabel="Retry"
+                />
             </div>
         );
     }
@@ -170,14 +189,15 @@ const StaffPaymentsPage = () => {
                         ))}
 
                         {filteredPayments?.length === 0 && (
-                            <div className="col-span-full py-20 bg-white rounded-[2rem] border-2 border-dashed border-gray-100 flex flex-col items-center justify-center gap-4 text-center">
-                                <div className="h-12 w-12 bg-gray-50 rounded-full flex items-center justify-center">
-                                    <History className="h-6 w-6 text-gray-200" />
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-900">No Transactions Recorded</p>
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">Registry awaits initial disbursement.</p>
-                                </div>
+                            <div className="col-span-full">
+                                <EmptyState
+                                    icon={History}
+                                    title="No Transactions Recorded"
+                                    description="Registry awaits initial disbursement."
+                                    containerClassName="py-20 bg-white rounded-[2rem] border-2 border-dashed border-gray-100 text-center"
+                                    iconWrapperClassName="bg-gray-50 border-gray-100"
+                                    iconClassName="text-gray-300"
+                                />
                             </div>
                         )}
                     </div>

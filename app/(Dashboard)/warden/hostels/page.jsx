@@ -38,6 +38,7 @@ import { useHostelById } from '@/hooks/usehostel';
 import Loader from '@/components/ui/Loader';
 import { toast } from "sonner";
 import { format } from "date-fns";
+import PageHeader from "@/components/Dashboard/PageHeader";
 
 const WardenHostelsPage = () => {
     const { user } = useAuthStore();
@@ -86,20 +87,15 @@ const WardenHostelsPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
-            {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="h-8 w-1.5 bg-indigo-600 rounded-full shrink-0" />
-                        <div className="flex flex-col">
-                            <h1 className="text-sm md:text-base font-bold text-gray-900 tracking-tight uppercase">My Hostel</h1>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[9px] font-bold uppercase tracking-wider text-gray-400">Manage</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-600">Live</span>
-                            </div>
-                        </div>
-                    </div>
+            <PageHeader
+                title="My Hostel"
+                subtitleStart="Manage"
+                subtitleEnd="Live"
+                maxWidthClass="max-w-[1600px]"
+                accentColorClass="bg-indigo-600"
+                dotColorClass="bg-emerald-500"
+                subtitleEndClass="text-emerald-600"
+                rightSlot={(
                     <Button
                         variant="ghost"
                         className="h-9 px-4 rounded-xl border border-gray-100 font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-gray-50 flex items-center gap-2"
@@ -107,8 +103,8 @@ const WardenHostelsPage = () => {
                     >
                         <RefreshCw className="h-3.5 w-3.5 text-gray-400" /> Refresh
                     </Button>
-                </div>
-            </div>
+                )}
+            />
 
             <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 space-y-6">
 

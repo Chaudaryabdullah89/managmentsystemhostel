@@ -101,6 +101,9 @@ import { useBookings } from "@/hooks/useBooking";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import Loader from "@/components/ui/Loader";
+import EmptyState from "@/components/ui/states/EmptyState";
+import FilterToolbar from "@/components/Dashboard/FilterToolbar";
+import ErrorState from "@/components/ui/states/ErrorState";
 
 const PaymentManagementPage = () => {
     const router = useRouter();
@@ -129,9 +132,19 @@ const PaymentManagementPage = () => {
         notes: ""
     });
 
-    const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ limit: 1000 });
+    const {
+        data: paymentsData,
+        isLoading: paymentsLoading,
+        isError: isPaymentsError,
+        refetch: refetchPayments,
+    } = useAllPayments({ limit: 1000 });
     const { data: refundRequests, isLoading: refundsLoading } = useRefundRequests();
-    const { data: stats, isLoading: statsLoading } = useFinancialStats();
+    const {
+        data: stats,
+        isLoading: statsLoading,
+        isError: isStatsError,
+        refetch: refetchStats,
+    } = useFinancialStats();
     const { data: hostelsData } = useHostel();
     const { data: bookingsResponse } = useBookings();
     const bookings = bookingsResponse || [];
@@ -501,6 +514,21 @@ const PaymentManagementPage = () => {
     if (paymentsLoading || statsLoading) return (
         <Loader label="Loading" subLabel="Getting records..." icon={Wallet} fullScreen={false} />
     );
+    if (isPaymentsError || isStatsError) {
+        return (
+            <div className="max-w-[1400px] mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load payments"
+                    description="Payment ledger data could not be fetched right now."
+                    onRetry={() => {
+                        refetchPayments?.();
+                        refetchStats?.();
+                    }}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">
@@ -581,25 +609,25 @@ const PaymentManagementPage = () => {
                 </div>
 
                 {/* Search and Filters */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm">
-                    <div className="flex-1 relative w-full group">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
-                        <Input
-                            placeholder="Search..."
-                            className="w-full h-11 md:h-12 pl-12 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                        {searchQuery && (
-                            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase animate-in fade-in zoom-in hidden sm:block">
-                                {filteredPayments.length} matches
-                            </span>
-                        )}
-                    </div>
-
-                    <div className="h-4 w-px bg-gray-100 mx-2 hidden md:block" />
-
-                    <div className="flex items-center gap-1 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
+                <FilterToolbar
+                    searchSlot={(
+                        <div className="flex-1 relative w-full group">
+                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300 group-focus-within:text-blue-600 transition-colors" />
+                            <Input
+                                placeholder="Search..."
+                                className="w-full h-11 md:h-12 pl-12 bg-transparent border-none shadow-none font-bold text-sm focus-visible:ring-0 placeholder:text-gray-300"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            {searchQuery && (
+                                <span className="absolute right-6 top-1/2 -translate-y-1/2 text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded-full uppercase animate-in fade-in zoom-in hidden sm:block">
+                                    {filteredPayments.length} matches
+                                </span>
+                            )}
+                        </div>
+                    )}
+                    filtersSlot={(
+                        <div className="flex items-center gap-1 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
@@ -670,7 +698,8 @@ const PaymentManagementPage = () => {
                             )}
                         </div>
                     </div>
-                </div>
+                    )}
+                />
 
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-2">
@@ -723,7 +752,8 @@ const PaymentManagementPage = () => {
                     </div>
 
                     <TabsContent value="ledger" className="space-y-4 outline-none">
-                        {filteredPayments.map((payment) => (
+                        {filteredPayments.length > 0 ? (
+                        filteredPayments.map((payment) => (
                             <div
                                 key={payment.id}
                                 className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-shadow group relative overflow-hidden"
@@ -828,7 +858,16 @@ const PaymentManagementPage = () => {
                                     </Button>
                                 </div>
                             </div>
-                        ))}
+                        ))
+                        ) : (
+                            <EmptyState
+                                icon={Wallet}
+                                title="No Payments Found"
+                                description="No payment records match your current filters."
+                                iconWrapperClassName="bg-blue-50 border-blue-100"
+                                iconClassName="text-blue-500"
+                            />
+                        )}
                     </TabsContent>
 
                     <TabsContent value="verification" className="space-y-6 outline-none">
@@ -923,13 +962,13 @@ const PaymentManagementPage = () => {
                                 </div>
                             ))
                         ) : (
-                            <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center group border-dashed shadow-sm">
-                                <div className="h-16 w-16 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-6 border border-emerald-100">
-                                    <CheckCircle className="h-8 w-8 text-emerald-600" />
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">All caught up!</h3>
-                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1 max-w-[320px] mx-auto leading-relaxed">No payments waiting for approval.</p>
-                            </div>
+                            <EmptyState
+                                icon={CheckCircle}
+                                title="All caught up!"
+                                description="No payments waiting for approval."
+                                iconWrapperClassName="bg-emerald-50 border-emerald-100"
+                                iconClassName="text-emerald-600"
+                            />
                         )}
                     </TabsContent>
 
@@ -1000,15 +1039,13 @@ const PaymentManagementPage = () => {
                                     </div>
                                 ))
                             ) : (
-                                <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center border-dashed shadow-sm">
-                                    <div className="h-16 w-16 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-6 border border-indigo-100">
-                                        <Bell className="h-8 w-8 text-indigo-400" />
-                                    </div>
-                                    <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">No Resident Submissions</h3>
-                                    <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1 max-w-[320px] mx-auto leading-relaxed">
-                                        No residents have uploaded a payment receipt awaiting your review.
-                                    </p>
-                                </div>
+                                <EmptyState
+                                    icon={Bell}
+                                    title="No Resident Submissions"
+                                    description="No residents have uploaded a payment receipt awaiting your review."
+                                    iconWrapperClassName="bg-indigo-50 border-indigo-100"
+                                    iconClassName="text-indigo-400"
+                                />
                             );
                         })()}
                     </TabsContent>
@@ -1080,13 +1117,13 @@ const PaymentManagementPage = () => {
                                 </div>
                             ))
                         ) : (
-                            <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center border-dashed shadow-sm">
-                                <div className="h-16 w-16 rounded-2xl bg-rose-50 flex items-center justify-center mx-auto mb-6 border border-rose-100">
-                                    <Undo2 className="h-8 w-8 text-rose-600" />
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">No Refund Requests</h3>
-                                <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1 max-w-[320px] mx-auto leading-relaxed">No reversal requests submitted for the current filters.</p>
-                            </div>
+                            <EmptyState
+                                icon={Undo2}
+                                title="No Refund Requests"
+                                description="No reversal requests submitted for the current filters."
+                                iconWrapperClassName="bg-rose-50 border-rose-100"
+                                iconClassName="text-rose-600"
+                            />
                         )}
                     </TabsContent>
 

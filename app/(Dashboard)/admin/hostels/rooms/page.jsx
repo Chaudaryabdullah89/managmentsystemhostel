@@ -59,6 +59,10 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { QueryKeys } from '@/lib/queryclient'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
+import PageHeader from "@/components/Dashboard/PageHeader"
+import FilterToolbar from "@/components/Dashboard/FilterToolbar"
+import EmptyState from "@/components/ui/states/EmptyState"
+import ErrorState from "@/components/ui/states/ErrorState"
 
 const useSyncAutomation = () => {
     const queryClient = useQueryClient();
@@ -77,7 +81,13 @@ const useSyncAutomation = () => {
 const GlobalRoomsPage = () => {
     const router = useRouter()
     const queryClient = useQueryClient()
-    const { data: roomsResponse, isLoading: roomsLoading, isFetching: isFetchingRooms } = useRoom()
+    const {
+        data: roomsResponse,
+        isLoading: roomsLoading,
+        isFetching: isFetchingRooms,
+        isError: isRoomsError,
+        refetch: refetchRooms,
+    } = useRoom()
     const syncAutomation = useSyncAutomation();
     const { data: hostelsResponse } = useHostel()
 
@@ -160,24 +170,30 @@ const GlobalRoomsPage = () => {
             </div>
         </div>
     )
+    if (isRoomsError) {
+        return (
+            <div className="max-w-[1600px] mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load rooms"
+                    description="Room records could not be fetched right now."
+                    onRetry={() => refetchRooms?.()}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
-            {/* Minimal Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
-                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-2 md:gap-4">
-                        <div className="h-6 w-px bg-gray-200 hidden md:block" />
-                        <div className="flex flex-col">
-                            <h1 className="text-base md:text-lg font-bold text-gray-900 tracking-tight">All Rooms</h1>
-                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 md:gap-2">
-                                <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse hidden sm:block" />
-                                <span className="hidden sm:inline">ROOMS LIST • UPDATING</span>
-                                <span className="sm:hidden">UPDATING</span>
-                            </p>
-                        </div>
-                    </div>
-
+            <PageHeader
+                title="All Rooms"
+                subtitleStart="Rooms List"
+                subtitleEnd="Updating"
+                maxWidthClass="max-w-[1600px]"
+                accentColorClass="bg-gray-200"
+                dotColorClass="bg-emerald-500"
+                subtitleEndClass="text-gray-400"
+                rightSlot={(
                     <div className="flex items-center gap-2 md:gap-3">
                         <Button
                             variant="ghost"
@@ -196,8 +212,8 @@ const GlobalRoomsPage = () => {
                             </Button>
                         </Link>
                     </div>
-                </div>
-            </div>
+                )}
+            />
 
             <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8 min-w-0">
                 {/* Minimal Metrics Matrix */}
@@ -221,7 +237,9 @@ const GlobalRoomsPage = () => {
                 </div>
 
                 {/* Operations Bar */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm w-full min-w-0">
+                <FilterToolbar
+                    containerClassName="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm w-full min-w-0"
+                    searchSlot={(
                     <div className="flex-1 relative w-full group px-2 min-w-0">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
@@ -231,9 +249,9 @@ const GlobalRoomsPage = () => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-
-                    <div className="h-8 w-px bg-gray-100 mx-2 hidden md:block" />
-
+                    )}
+                    dividerClassName="h-8 w-px bg-gray-100 mx-2 hidden md:block"
+                    filtersSlot={(
                     <div className="flex items-center gap-2 p-1 w-full md:w-auto overflow-x-auto">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -269,7 +287,8 @@ const GlobalRoomsPage = () => {
                             ))}
                         </div>
                     </div>
-                </div>
+                    )}
+                />
 
                 {/* Minimal Ribbon Feed */}
                 <div className="space-y-3">
@@ -418,18 +437,23 @@ const GlobalRoomsPage = () => {
                             </div>
                         ))
                     ) : (
-                        <div className="py-20 flex flex-col items-center justify-center bg-white border border-gray-100 rounded-3xl shadow-sm border-dashed">
-                            <Search className="h-10 w-10 text-gray-200 mb-4" />
-                            <h3 className="text-lg font-bold text-gray-900 uppercase">No rooms found</h3>
-                            <p className="text-gray-400 font-bold uppercase tracking-widest text-[9px] mt-1">No rooms matched your search</p>
-                            <Button
-                                variant="outline"
-                                className="mt-8 rounded-xl border-gray-200 uppercase tracking-widest text-[9px] font-bold h-10 px-8 hover:bg-gray-50 transition-all text-gray-400"
-                                onClick={() => { setSearchQuery(''); setStatusFilter('All'); }}
-                            >
-                                Clear search
-                            </Button>
-                        </div>
+                        <EmptyState
+                            icon={Search}
+                            title="No rooms found"
+                            description="No rooms matched your search"
+                            containerClassName="py-20 flex flex-col items-center justify-center bg-white border border-gray-100 rounded-3xl shadow-sm border-dashed"
+                            iconWrapperClassName="bg-transparent border-transparent mb-0"
+                            iconClassName="text-gray-200"
+                            actionSlot={(
+                                <Button
+                                    variant="outline"
+                                    className="rounded-xl border-gray-200 uppercase tracking-widest text-[9px] font-bold h-10 px-8 hover:bg-gray-50 transition-all text-gray-400"
+                                    onClick={() => { setSearchQuery(''); setStatusFilter('All'); }}
+                                >
+                                    Clear search
+                                </Button>
+                            )}
+                        />
                     )}
                 </div>
 

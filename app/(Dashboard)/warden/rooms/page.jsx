@@ -64,6 +64,10 @@ import { QueryKeys } from '@/lib/queryclient'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 import Loader from '@/components/ui/Loader'
 import useAuthStore from '@/hooks/Authstate'
+import PageHeader from "@/components/Dashboard/PageHeader"
+import FilterToolbar from "@/components/Dashboard/FilterToolbar"
+import EmptyState from "@/components/ui/states/EmptyState"
+import ErrorState from "@/components/ui/states/ErrorState"
 
 const useUpdateLogs = () => {
     const queryClient = useQueryClient();
@@ -93,8 +97,19 @@ const RoomsContent = ({ params: paramsPromise }) => {
     const [typeFilter, setTypeFilter] = useState('All')
     const [isDeleting, setIsDeleting] = useState(null)
 
-    const { data: hostel, isLoading: hostelLoading } = useHostelById(hostelId);
-    const { data: roomsResponse, isLoading: roomsLoading, isFetching: isFetchingRooms } = useRoomByHostelId(hostelId);
+    const {
+        data: hostel,
+        isLoading: hostelLoading,
+        isError: isHostelError,
+        refetch: refetchHostel,
+    } = useHostelById(hostelId);
+    const {
+        data: roomsResponse,
+        isLoading: roomsLoading,
+        isFetching: isFetchingRooms,
+        isError: isRoomsError,
+        refetch: refetchRooms,
+    } = useRoomByHostelId(hostelId);
     const updateLogs = useUpdateLogs();
 
     useEffect(() => {
@@ -148,26 +163,38 @@ const RoomsContent = ({ params: paramsPromise }) => {
     };
 
     if (roomsLoading || hostelLoading) return <Loader label="Loading" subLabel="Getting records..." icon={Building2} fullScreen={false} />;
+    if (isRoomsError || isHostelError) {
+        return (
+            <div className="max-w-[1600px] mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load room data"
+                    description="Room or hostel data could not be fetched right now."
+                    onRetry={() => {
+                        refetchHostel?.();
+                        refetchRooms?.();
+                    }}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
-            {/* Minimal Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
-                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9 shrink-0" onClick={() => router.back()}>
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <div className="h-6 w-px bg-gray-200 shrink-0" />
-                        <div className="flex flex-col min-w-0">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight truncate">{hostel?.name || 'Rooms'}</h1>
-                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5 md:gap-2">
-                                <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="truncate">Rooms</span>
-                            </p>
-                        </div>
-                    </div>
-
+            <PageHeader
+                title={hostel?.name || 'Rooms'}
+                subtitleStart="Rooms"
+                subtitleEnd=""
+                maxWidthClass="max-w-[1600px]"
+                accentColorClass="bg-gray-200"
+                dotColorClass="bg-emerald-500"
+                subtitleEndClass="text-gray-400"
+                leftSlot={(
+                    <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9 shrink-0" onClick={() => router.back()}>
+                        <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                )}
+                rightSlot={(
                     <div className="flex items-center gap-2 md:gap-3">
                         <Button
                             variant="ghost"
@@ -185,8 +212,8 @@ const RoomsContent = ({ params: paramsPromise }) => {
                             </Button>
                         </Link>
                     </div>
-                </div>
-            </div>
+                )}
+            />
 
             <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-8 space-y-8">
                 {/* Minimal Metrics Matrix */}
@@ -210,7 +237,9 @@ const RoomsContent = ({ params: paramsPromise }) => {
                 </div>
 
                 {/* Operations Bar */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col sm:flex-row items-center gap-4 shadow-sm">
+                <FilterToolbar
+                    containerClassName="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col sm:flex-row items-center gap-4 shadow-sm"
+                    searchSlot={(
                     <div className="flex-1 relative w-full group px-2 min-w-0">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                         <Input
@@ -220,9 +249,9 @@ const RoomsContent = ({ params: paramsPromise }) => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-
-                    <div className="hidden sm:block h-8 w-px bg-gray-100" />
-
+                    )}
+                    dividerClassName="hidden sm:block h-8 w-px bg-gray-100"
+                    filtersSlot={(
                     <div className="flex items-center gap-1.5 p-1 bg-gray-50 rounded-xl w-full sm:w-auto overflow-x-auto scrollbar-hide">
                         {['All', 'Available', 'Occupied', 'Maintenance'].map((s) => (
                             <button
@@ -234,7 +263,8 @@ const RoomsContent = ({ params: paramsPromise }) => {
                             </button>
                         ))}
                     </div>
-                </div>
+                    )}
+                />
 
                 {/* Minimal Ribbon Feed */}
                 <div className="space-y-3">
@@ -381,18 +411,23 @@ const RoomsContent = ({ params: paramsPromise }) => {
                             </div>
                         ))
                     ) : (
-                        <div className="py-20 flex flex-col items-center justify-center bg-white border border-gray-100 rounded-3xl shadow-sm border-dashed mx-4">
-                            <Layers className="h-10 w-10 text-gray-200 mb-4 animate-pulse" />
-                            <h3 className="text-base font-black text-gray-900 uppercase tracking-tight">Empty</h3>
-                            <p className="text-gray-400 font-black uppercase tracking-widest text-[9px] mt-1">Try changing your filters.</p>
-                            <Button
-                                variant="outline"
-                                className="mt-8 rounded-xl border-gray-100 uppercase tracking-widest text-[9px] font-black h-11 px-8 hover:bg-gray-50 transition-all text-gray-400 hover:text-indigo-600 shadow-sm"
-                                onClick={() => { setSearchQuery(''); setStatusFilter('All'); }}
-                            >
-                                Reset
-                            </Button>
-                        </div>
+                        <EmptyState
+                            icon={Layers}
+                            title="Empty"
+                            description="Try changing your filters."
+                            containerClassName="py-20 flex flex-col items-center justify-center bg-white border border-gray-100 rounded-3xl shadow-sm border-dashed mx-4"
+                            iconWrapperClassName="bg-transparent border-transparent mb-0"
+                            iconClassName="text-gray-200"
+                            actionSlot={(
+                                <Button
+                                    variant="outline"
+                                    className="rounded-xl border-gray-100 uppercase tracking-widest text-[9px] font-black h-11 px-8 hover:bg-gray-50 transition-all text-gray-400 hover:text-indigo-600 shadow-sm"
+                                    onClick={() => { setSearchQuery(''); setStatusFilter('All'); }}
+                                >
+                                    Reset
+                                </Button>
+                            )}
+                        />
                     )}
                 </div>
 

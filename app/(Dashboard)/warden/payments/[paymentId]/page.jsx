@@ -62,6 +62,7 @@ import { usePaymentById, useUpdatePayment, useDeletePayment } from "@/hooks/useP
 import { format } from "date-fns";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
+import ErrorState from "@/components/ui/states/ErrorState";
 
 const PaymentDetailPage = () => {
     const params = useParams();
@@ -72,7 +73,12 @@ const PaymentDetailPage = () => {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-    const { data: payment, isLoading } = usePaymentById(paymentId);
+    const {
+        data: payment,
+        isLoading,
+        isError,
+        refetch,
+    } = usePaymentById(paymentId);
     const updatePayment = useUpdatePayment();
     const deletePayment = useDeletePayment();
 
@@ -159,6 +165,18 @@ const PaymentDetailPage = () => {
             </div>
         </div>
     );
+    if (isError) {
+        return (
+            <div className="max-w-[1200px] mx-auto px-6 py-8">
+                <ErrorState
+                    title="Unable to load payment"
+                    description="Payment details could not be fetched right now."
+                    onRetry={() => refetch?.()}
+                    retryLabel="Retry"
+                />
+            </div>
+        );
+    }
 
     if (!payment) return (
         <div className="p-24 text-center text-gray-400 font-bold uppercase tracking-widest bg-gray-50 h-screen font-sans">

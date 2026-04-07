@@ -62,6 +62,9 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import Loader from "../../../../components/ui/Loader";
 import useAuthStore from "@/hooks/Authstate";
+import PageHeader from "@/components/Dashboard/PageHeader";
+import FilterToolbar from "@/components/Dashboard/FilterToolbar";
+import EmptyState from "@/components/ui/states/EmptyState";
 
 const HostelsPage = () => {
     const queryClient = useQueryClient()
@@ -144,20 +147,16 @@ const HostelsPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50/50">
-            <div className="bg-white border-b sticky top-0 z-40 py-2 md:h-16">
-                <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
-                        <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Hostels</h1>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Stats</span>
-                                <div className="h-1 w-1 rounded-full bg-emerald-500" />
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active</span>
-                            </div>
-                        </div>
-                    </div>
-
+            <PageHeader
+                title="Hostels"
+                subtitleStart="Stats"
+                subtitleEnd="Active"
+                maxWidthClass="max-w-[1600px]"
+                accentColorClass="bg-blue-600"
+                dotColorClass="bg-emerald-500"
+                subtitleEndClass="text-emerald-600"
+                stickyClassName="bg-white border-b sticky top-0 z-40 py-2 md:h-16"
+                rightSlot={(
                     <div className="flex items-center gap-2 md:gap-4">
                         <div className="hidden lg:flex items-center gap-8 mr-4">
                             <div className="flex flex-col items-end">
@@ -211,8 +210,8 @@ const HostelsPage = () => {
                             </Button>
                         </Link>
                     </div>
-                </div>
-            </div>
+                )}
+            />
 
             <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8 min-w-0">
                 {/* Statistics Overview */}
@@ -236,7 +235,9 @@ const HostelsPage = () => {
                 </div>
 
                 {/* Search & Filter */}
-                <div className="bg-white border border-gray-100 p-2 rounded-2xl flex flex-col md:flex-row gap-4 items-center shadow-sm">
+                <FilterToolbar
+                    containerClassName="bg-white border border-gray-100 p-2 rounded-2xl flex flex-col md:flex-row gap-4 items-center shadow-sm"
+                    searchSlot={(
                     <div className="relative flex-1 group w-full px-2">
                         <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
                         <Input
@@ -246,6 +247,8 @@ const HostelsPage = () => {
                             onChange={(e) => setsearchterm(e.target.value)}
                         />
                     </div>
+                    )}
+                    filtersSlot={(
                     <div className="flex items-center gap-1.5 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide shrink-0">
                         {['All', 'Boys', 'Girls'].map((type) => (
                             <button
@@ -257,7 +260,8 @@ const HostelsPage = () => {
                             </button>
                         ))}
                     </div>
-                </div>
+                    )}
+                />
 
                 {/* Hostel List */}
                 <div className="space-y-4">
@@ -414,20 +418,23 @@ const HostelsPage = () => {
                             </Link>
                         ))
                     ) : (
-                        <div className="py-24 flex flex-col items-center justify-center bg-white border border-gray-100 rounded-2xl shadow-sm border-dashed">
-                            <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-6 border border-gray-100">
-                                <Search className="h-8 w-8 text-gray-300" />
-                            </div>
-                            <h3 className="text-lg font-bold text-gray-900 lg:tracking-tight uppercase">Empty</h3>
-                            <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mt-1">Clear</p>
-                            <Button
-                                variant="outline"
-                                className="mt-8 rounded-xl border-gray-200 uppercase tracking-widest text-[10px] font-bold h-10 px-8 hover:bg-blue-600 hover:text-white transition-all"
-                                onClick={() => { setsearchterm(''); setFilterType('All'); }}
-                            >
-                                Clear Filters
-                            </Button>
-                        </div>
+                        <EmptyState
+                            icon={Search}
+                            title="Empty"
+                            description="Clear"
+                            containerClassName="py-24 flex flex-col items-center justify-center bg-white border border-gray-100 rounded-2xl shadow-sm border-dashed"
+                            iconWrapperClassName="bg-gray-50 border-gray-100"
+                            iconClassName="text-gray-300"
+                            actionSlot={(
+                                <Button
+                                    variant="outline"
+                                    className="rounded-xl border-gray-200 uppercase tracking-widest text-[10px] font-bold h-10 px-8 hover:bg-blue-600 hover:text-white transition-all"
+                                    onClick={() => { setsearchterm(''); setFilterType('All'); }}
+                                >
+                                    Clear Filters
+                                </Button>
+                            )}
+                        />
                     )}
                 </div>
 
