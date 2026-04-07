@@ -198,7 +198,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
                 </div>
             </div>
 
-            <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-8 space-y-8 overflow-x-hidden">
+            <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-8 space-y-8">
                 {/* Minimal Metrics Matrix */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 px-1 md:px-0">
                     {[
@@ -250,12 +250,12 @@ const RoomsContent = ({ params: paramsPromise }) => {
                 <div className="space-y-3">
                     {filteredRooms.length > 0 ? (
                         filteredRooms.map((room, index) => (
-                            <div key={room.id || index} className="bg-white border border-gray-100 rounded-2xl flex flex-col items-stretch shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                            <div key={room.id || index} className="bg-white border border-gray-100 rounded-2xl flex flex-col items-stretch shadow-sm hover:shadow-md transition-shadow relative group">
                                 <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${room.status === 'AVAILABLE' ? 'bg-emerald-500' : room.status === 'OCCUPIED' ? 'bg-blue-600' : 'bg-amber-500'} opacity-70`} />
 
-                                <div className="flex flex-col xl:flex-row items-stretch xl:items-center p-5 md:p-6 gap-6 md:gap-8">
+                                <div className="flex flex-col xl:flex-row xl:flex-wrap items-stretch xl:items-center p-5 md:p-6 gap-6 md:gap-8 w-full">
                                     {/* Section 1: Visual Identity */}
-                                    <div className="flex items-center gap-5 min-w-0 flex-1 xl:flex-none xl:min-w-[280px]">
+                                    <div className="flex items-center gap-5 min-w-0 flex-1">
                                         <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border border-gray-100 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 ${room.status === 'AVAILABLE' ? 'bg-emerald-50/50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'}`}>
                                             <BedDouble className="h-6 w-6" />
                                         </div>
@@ -274,7 +274,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                     </div>
 
                                     {/* Section 2: Infrastructure */}
-                                    <div className="flex items-center gap-8 min-w-0 xl:min-w-[160px] border-t border-gray-50 pt-4 xl:pt-0 xl:border-t-0">
+                                    <div className="flex items-center gap-8 min-w-0 border-t border-gray-50 pt-4 xl:pt-0 xl:border-t-0">
                                         <div className="flex flex-col">
                                             <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Logic Class</span>
                                             <span className="text-[10px] font-black text-gray-700 uppercase">{room.type} SEATER</span>
@@ -289,7 +289,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                     </div>
 
                                     {/* Section 3: Current Occupancy */}
-                                    <div className="flex-1 flex flex-col xl:flex-row xl:items-center gap-4 min-w-0 xl:min-w-[200px] border-t border-gray-50 xl:border-t-0 pt-4 xl:pt-0">
+                                    <div className="flex-1 flex flex-col xl:flex-row xl:items-center gap-4 min-w-0 border-t border-gray-50 xl:border-t-0 pt-4 xl:pt-0">
                                         <div className="h-4 w-px bg-gray-100 hidden xl:block" />
                                         <div className="flex flex-col flex-1 min-w-0">
                                             <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
@@ -311,7 +311,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                     </div>
 
                                     {/* Section 4: Commercial */}
-                                    <div className="flex items-center gap-8 md:gap-10 min-w-0 xl:min-w-[200px] border-t border-gray-50 xl:border-t-0 pt-4 xl:pt-0">
+                                    <div className="flex items-center gap-8 md:gap-10 min-w-0 border-t border-gray-50 xl:border-t-0 pt-4 xl:pt-0">
                                         <div className="flex flex-col">
                                             <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Asset Value</span>
                                             <span className="text-[11px] font-black text-gray-900 italic tracking-tight">PKR {room.price?.toLocaleString()}</span>
@@ -323,7 +323,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                     </div>
 
                                     {/* Section 5: Operational */}
-                                    <div className="flex items-center gap-2 xl:ml-auto border-t border-gray-50 xl:border-t-0 pt-4 xl:pt-0 justify-between sm:justify-end">
+                                    <div className="flex items-center gap-2 xl:ml-auto border-t border-gray-50 xl:border-t-0 pt-4 xl:pt-0 justify-start flex-wrap w-full xl:w-auto">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10 rounded-xl hover:bg-gray-100 text-gray-400 transition-all">
@@ -362,7 +362,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                         </DropdownMenu>
                                         <Button
                                             size="sm"
-                                            className="h-10 md:h-11 px-4 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-[9px] md:text-[10px] shadow-sm flex items-center gap-2 group/btn active:scale-95 transition-all whitespace-nowrap"
+                                            className="h-10 md:h-11 px-4 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-[9px] md:text-[10px] shadow-sm flex items-center gap-2 group/btn active:scale-95 transition-all whitespace-nowrap ml-0 xl:ml-0"
                                             onClick={() => router.push(`/admin/hostels/${encodeURIComponent(hostel?.name || params.hostelId)}/room-details/room/${room.id}?role=${role}&hostelId=${hostelId}`)}
                                         >
                                             Access Node

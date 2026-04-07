@@ -117,9 +117,9 @@ const WardenProfilePage = () => {
         }
     }, [user]);
 
-    useEffect(() => {
-        checkAuth();
-    }, []);
+    // useEffect(() => {
+    //     checkAuth();
+    // }, []);
 
     if (isLoading) return (
         <Loader label="Loading Warden Profile" subLabel="Fetching warden details..." icon={User} fullScreen={false} />
