@@ -165,6 +165,7 @@ export async function POST(request) {
         });
 
         const results = { created: 0, skipped: 0 };
+        const bulkEmailPromises = [];
 
         for (const staff of staffList) {
             const existing = await prisma.salary.findFirst({
@@ -193,25 +194,31 @@ export async function POST(request) {
 
                 results.created++;
 
-                // Send salary notification email
+                // Collect salary notification emails for parallel dispatch
                 if (staff.User?.email) {
                     const [monthPart, yearPart] = month.split(" ");
-                    sendEmail({
-                        to: staff.User.email,
-                        subject: `Salary Generated — ${month} — Mubarak Group of Hostels`,
-                        html: monthlyRentEmail({
-                            name: staff.User.name,
-                            amount: staff.basicSalary + staff.allowances,
-                            month: monthPart || month,
-                            year: yearPart || new Date().getFullYear(),
-                            hostelName: null,
-                            type: "SALARY",
-                        }),
-                    }).catch(err => console.error(`[Email] Salary email failed for ${staff.User.name}:`, err));
+                    bulkEmailPromises.push(
+                        sendEmail({
+                            to: staff.User.email,
+                            subject: `Salary Generated — ${month} — Mubarak Group of Hostels`,
+                            html: monthlyRentEmail({
+                                name: staff.User.name,
+                                amount: staff.basicSalary + staff.allowances,
+                                month: monthPart || month,
+                                year: yearPart || new Date().getFullYear(),
+                                hostelName: null,
+                                type: "SALARY",
+                            }),
+                        }).catch(err => console.error(`[Email] Salary email failed for ${staff.User.name}:`, err))
+                    );
                 }
             } else {
                 results.skipped++;
             }
+        }
+
+        if (bulkEmailPromises.length > 0) {
+            Promise.allSettled(bulkEmailPromises);
         }
 
         return NextResponse.json({

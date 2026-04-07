@@ -94,10 +94,12 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import Loader from "@/components/ui/Loader";
 import useAuthStore from "@/hooks/Authstate";
+import { useQueryClient } from "@tanstack/react-query";
 
 const PaymentManagementPage = () => {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
+  const queryClient = useQueryClient();
   const isAdmin = user?.role === "ADMIN";
   const isWarden = user?.role === "WARDEN";
 
@@ -506,6 +508,7 @@ const PaymentManagementPage = () => {
         let lateFee = 0;
         let overdueDays = 0;
 
+        const currentDay = now.getDate();
         const isTargetCurrent =
           targetMonth === currentMonth && targetYear === currentYear;
 

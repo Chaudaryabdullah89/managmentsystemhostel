@@ -32,10 +32,11 @@ export async function GET(request) {
                 });
                 isolationHostelId = profile?.hostelId;
 
-                // If still null and user is a warden, check the Hostel table (wardenId mapping)
+                // If still null and user is a warden, check the Hostel table via managerId
+                // NOTE: The Hostel model has `managerId`, NOT `wardenId`
                 if (!isolationHostelId && userRole === 'WARDEN') {
-                    const managedHostel = await prisma.hostel.findUnique({
-                        where: { wardenId: auth.user.userId || auth.user.id },
+                    const managedHostel = await prisma.hostel.findFirst({
+                        where: { managerId: auth.user.userId || auth.user.id },
                         select: { id: true }
                     });
                     isolationHostelId = managedHostel?.id;
@@ -107,22 +108,32 @@ export async function GET(request) {
             }
         }
 
-        const users = await prisma.user.findMany({
-            where,
-            include: {
-                ResidentProfile: true,
-                StaffProfile: true,
-                Hostel_User_hostelIdToHostel: {
-                    select: { name: true }
-                }
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 50
-        });
+        const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
+        const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50')));
+        const skip = (page - 1) * limit;
+
+        const [users, total] = await Promise.all([
+            prisma.user.findMany({
+                where,
+                select: {
+                    id: true, name: true, email: true, phone: true, cnic: true,
+                    role: true, isActive: true, hostelId: true, regNumber: true, uid: true,
+                    image: true, createdAt: true, lastLogin: true,
+                    ResidentProfile: true,
+                    StaffProfile: { select: { designation: true, basicSalary: true, joiningDate: true } },
+                    Hostel_User_hostelIdToHostel: { select: { name: true } }
+                },
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limit,
+            }),
+            prisma.user.count({ where }),
+        ]);
 
         return NextResponse.json({
             success: true,
-            data: users
+            data: users,
+            pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
         });
     } catch (error) {
         console.error("[API] GET /api/users Error:", error);
@@ -201,18 +212,22 @@ export async function POST(request) {
             hostelName = hostel?.name || null;
         }
 
-        // Send welcome email with credentials (fire-and-forget)
-        const rawPassword = password || "password123";
+        // Send welcome email with a password-reset link (never send raw passwords via email)
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+        const resetLinkNote = `${baseUrl}/auth/login`;
         sendEmail({
             to: email,
-            subject: "Welcome to Mubarak Group of Hostels — Your Account Details",
-            html: welcomeEmail({ name, email, password: rawPassword, role, hostelName }),
+            subject: "Welcome to Mubarak Group of Hostels — Your Account is Ready",
+            html: welcomeEmail({ name, email, role, hostelName, loginUrl: resetLinkNote }),
         }).catch(err => console.error("[Email] Welcome email failed:", err));
 
         return NextResponse.json({
             success: true,
             message: `User ${name} created successfully as ${role}`,
-            user: newUser
+            user: {
+                id: newUser.id, name: newUser.name, email: newUser.email,
+                role: newUser.role, uid: newUser.uid,
+            },
         });
     } catch (error) {
         console.error("User Creation Error:", error);

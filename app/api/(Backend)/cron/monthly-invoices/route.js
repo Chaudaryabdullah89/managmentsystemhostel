@@ -40,6 +40,8 @@ export async function GET(req) {
         include: { User: true, Room: { include: { Hostel: true } } }
       });
 
+      const rentEmailPromises = [];
+
       for (const booking of activeBookings) {
         results.rent.processed++;
         try {
@@ -89,12 +91,14 @@ export async function GET(req) {
                   </table>
                 </div>
               `;
-              await sendEmail({
-                to: booking.User.email,
-                subject: `Monthly Rent Invoice - ${currentMonthIdentifier}`,
-                html: buildEmailTemplate({ title: "Monthly Rent Invoice", subtitle: currentMonthIdentifier, bodyHtml })
-              });
-              results.rent.emailsSent++;
+              rentEmailPromises.push(
+                sendEmail({
+                  to: booking.User.email,
+                  subject: `Monthly Rent Invoice - ${currentMonthIdentifier}`,
+                  html: buildEmailTemplate({ title: "Monthly Rent Invoice", subtitle: currentMonthIdentifier, bodyHtml })
+                }).then(() => { results.rent.emailsSent++; })
+                .catch(err => console.error("[Cron Email] Rent email failed for", booking.id, err))
+              );
             }
           } else {
             results.rent.skipped++;
@@ -103,6 +107,9 @@ export async function GET(req) {
           results.errors.push({ type: 'RENT', id: booking.id, error: err.message });
         }
       }
+      if (rentEmailPromises.length > 0) {
+        await Promise.allSettled(rentEmailPromises);
+      }
     }
 
     // ─── 2. Monthly Staff Salaries ─────────────────────────────────────────
@@ -110,6 +117,8 @@ export async function GET(req) {
       const activeStaff = await prisma.staffProfile.findMany({
         include: { User: true }
       });
+
+      const salaryEmailPromises = [];
 
       for (const staff of activeStaff) {
         results.salary.processed++;
@@ -137,18 +146,20 @@ export async function GET(req) {
             results.salary.created++;
 
             if (staff.User.email && settings?.enableEmailService) {
-              await sendEmail({
-                to: staff.User.email,
-                subject: `Salary Generated — ${currentMonthIdentifier}`,
-                html: monthlyRentEmail({
-                  name: staff.User.name,
-                  amount,
-                  month: monthName,
-                  year,
-                  type: "SALARY",
-                }),
-              });
-              results.salary.emailsSent++;
+              salaryEmailPromises.push(
+                sendEmail({
+                  to: staff.User.email,
+                  subject: `Salary Generated — ${currentMonthIdentifier}`,
+                  html: monthlyRentEmail({
+                    name: staff.User.name,
+                    amount,
+                    month: monthName,
+                    year,
+                    type: "SALARY",
+                  }),
+                }).then(() => { results.salary.emailsSent++; })
+                .catch(err => console.error("[Cron Email] Salary email failed for", staff.id, err))
+              );
             }
           } else {
             results.salary.skipped++;
@@ -156,6 +167,9 @@ export async function GET(req) {
         } catch (err) {
           results.errors.push({ type: 'SALARY', id: staff.id, error: err.message });
         }
+      }
+      if (salaryEmailPromises.length > 0) {
+        await Promise.allSettled(salaryEmailPromises);
       }
     }
 

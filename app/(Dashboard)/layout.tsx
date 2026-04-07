@@ -13,7 +13,7 @@ import { usePathname } from "next/navigation"
 import { NAVIGATION_ITEMS } from "@/lib/navigation"
 import Link from "next/link"
 
-// ── Nav mode toggle (syncs with sidebar via localStorage + custom event) ────
+// ── Nav mode toggle (syncs with sidebar via localStorage + custom event) ─────
 function NavModeToggle() {
   const [mode, setMode] = useState<"grouped" | "classic">("grouped")
   useEffect(() => {
@@ -40,7 +40,89 @@ function NavModeToggle() {
   )
 }
 
+// ── PageContent: properly-named component so React hooks rules are followed ──
+// This replaces the IIFE pattern that was previously used in RootLayout,
+// which broke the Rules of Hooks by calling usePathname() inside a closure.
+function PageContent({
+  children,
+  user,
+}: {
+  children: React.ReactNode
+  user: any
+}) {
+  const pathname = usePathname()
+  const userRole = user?.role?.toLowerCase() || "guest"
+  const rolePerms = (user as any)?.rolePermissions || {}
+  const sysSettings = (user as any)?.systemSettings || {}
 
+  const allNavItems = Object.values(NAVIGATION_ITEMS).flat()
+  const myItems = NAVIGATION_ITEMS[userRole] || NAVIGATION_ITEMS.guest
+
+  // 1. Is this path protected by SOME role's navigation map?
+  const isProtectedPath = allNavItems.some(
+    (item) =>
+      pathname === item.url ||
+      (item.url !== "/" && pathname.startsWith(item.url + "/"))
+  )
+
+  let isAuthorized = true
+  if (isProtectedPath && user?.role !== "ADMIN") {
+    // 2. Does this specific protected path belong to MY role's allowed map?
+    const myMatch = myItems.find(
+      (item) =>
+        pathname === item.url ||
+        (item.url !== "/" && pathname.startsWith(item.url + "/"))
+    )
+
+    if (!myMatch) {
+      isAuthorized = false // Trying to access another role's area
+    } else {
+      // 3. Check if the specific feature/permission is toggled off
+      if (myMatch.featureKey && sysSettings[myMatch.featureKey] === false)
+        isAuthorized = false
+      if (myMatch.permissionKey && !rolePerms[myMatch.permissionKey])
+        isAuthorized = false
+    }
+  }
+
+  if (!isAuthorized) {
+    const homeUrl =
+      user?.role === "ADMIN"
+        ? "/admin/dashboard"
+        : user?.role === "WARDEN"
+        ? "/warden"
+        : user?.role === "STAFF"
+        ? "/staff/dashboard"
+        : "/guest/dashboard"
+
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-white rounded-3xl border border-gray-100 shadow-sm transition-all animate-in fade-in zoom-in duration-300">
+        <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mb-6">
+          <ShieldAlert className="w-10 h-10 text-rose-500" />
+        </div>
+        <h2 className="text-2xl font-black text-gray-900 tracking-tight">
+          Access Restricted
+        </h2>
+        <p className="text-gray-500 mt-2 max-w-sm mx-auto text-sm leading-relaxed">
+          You don&apos;t have the required permissions to view this page, or this
+          feature has been temporarily disabled by the administrator.
+        </p>
+        <div className="mt-8 flex gap-3">
+          <Link
+            href={homeUrl}
+            className="px-6 h-11 bg-gray-900 text-white text-sm font-bold rounded-xl flex items-center gap-2 hover:bg-black transition-colors"
+          >
+            <Home className="w-4 h-4" /> Go Home
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  return <>{children}</>
+}
+
+// ── Root Dashboard Layout ─────────────────────────────────────────────────────
 export default function RootLayout({
   children,
 }: {
@@ -49,14 +131,18 @@ export default function RootLayout({
   const user = useAuthStore((state) => state.user)
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    checkAuth()
+  }, [])
 
-  const { data: bookings = [] } = useBookings({ userId: user?.id });
-  const isGuest = user?.role === "GUEST";
-  const isCheckedOut = isGuest && bookings.length > 0 &&
-    bookings.some((b: any) => b.status === 'CHECKED_OUT') &&
-    !bookings.some((b: any) => ['CONFIRMED', 'CHECKED_IN', 'Active'].includes(b.status));
+  const { data: bookings = [] } = useBookings({ userId: user?.id })
+  const isGuest = user?.role === "GUEST"
+  const isCheckedOut =
+    isGuest &&
+    bookings.length > 0 &&
+    bookings.some((b: any) => b.status === "CHECKED_OUT") &&
+    !bookings.some((b: any) =>
+      ["CONFIRMED", "CHECKED_IN", "PENDING"].includes(b.status)
+    )
 
   return (
     <>
@@ -73,7 +159,11 @@ export default function RootLayout({
               </p>
             </div>
           )}
-          <header className={`flex h-16 items-center gap-2 border-b px-4 shrink-0 bg-white print:hidden ${!isCheckedOut ? 'sticky top-0 z-50' : ''}`}>
+          <header
+            className={`flex h-16 items-center gap-2 border-b px-4 shrink-0 bg-white print:hidden ${
+              !isCheckedOut ? "sticky top-0 z-50" : ""
+            }`}
+          >
             <SidebarTrigger />
             <NavModeToggle />
             <div className="h-5 w-px bg-gray-200 mx-1" />
@@ -83,16 +173,16 @@ export default function RootLayout({
               <div className="flex items-center gap-4 min-w-0">
                 <HeaderNotices />
                 <div className="flex items-center gap-3 min-w-0">
-
                   {/* Avatar */}
                   <div className="relative shrink-0">
                     <Avatar className="h-10 w-10 rounded-xl border border-gray-200 shadow-sm">
                       <AvatarImage />
-                      <AvatarFallback className="rounded-xl bg-linear-to-br from-indigo-500 to-blue-500 text-white font-semibold">
+                      <AvatarFallback className="rounded-xl bg-linear-to-br from-indigo-500 to-blue-500 text-white font-semibold text-sm">
+                        {user?.name ? user.name.trim().slice(0, 2).toUpperCase() : "?"}
                       </AvatarFallback>
                     </Avatar>
 
-                    {/* Online indicator (optional) */}
+                    {/* Online indicator */}
                     <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white"></span>
                   </div>
 
@@ -105,73 +195,21 @@ export default function RootLayout({
                       {user?.role || "Guest"}
                     </p>
                   </div>
-
                 </div>
               </div>
             </div>
           </header>
 
-          <div className="p-2 md:p-4 flex-1 h-full w-full min-w-0 overflow-y-auto overflow-x-hidden" >
-            {(() => {
-              const pathname = usePathname()
-              const userRole = user?.role?.toLowerCase() || 'guest'
-              const rolePerms = (user as any)?.rolePermissions || {}
-              const sysSettings = (user as any)?.systemSettings || {}
-
-              const allNavItems = Object.values(NAVIGATION_ITEMS).flat()
-              const myItems = NAVIGATION_ITEMS[userRole] || NAVIGATION_ITEMS.guest
-
-              // 1. Is this path protected by SOME role's navigation map?
-              const isProtectedPath = allNavItems.some(item => 
-                pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url + "/"))
-              )
-
-              let isAuthorized = true
-              if (isProtectedPath && user?.role !== 'ADMIN') {
-                // 2. Does this specific protected path belong to MY role's allowed map?
-                const myMatch = myItems.find(item => 
-                   pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url + "/"))
-                )
-
-                if (!myMatch) {
-                   isAuthorized = false // Trying to access another role's area
-                } else {
-                  // 3. If it belongs to me, check if the specific feature/permission is toggled off
-                  if (myMatch.featureKey && sysSettings[myMatch.featureKey] === false) isAuthorized = false
-                  if (myMatch.permissionKey && !rolePerms[myMatch.permissionKey]) isAuthorized = false
-                }
-              }
-
-              if (!isAuthorized) {
-                return (
-                  <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-white rounded-3xl border border-gray-100 shadow-sm transition-all animate-in fade-in zoom-in duration-300">
-                    <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mb-6">
-                      <ShieldAlert className="w-10 h-10 text-rose-500" />
-                    </div>
-                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">Access Restricted</h2>
-                    <p className="text-gray-500 mt-2 max-w-sm mx-auto text-sm leading-relaxed">
-                      You don't have the required permissions to view this page, or this feature has been temporarily disabled by the administrator.
-                    </p>
-                    <div className="mt-8 flex gap-3">
-                      <Link 
-                        href={user?.role === 'ADMIN' ? '/admin/dashboard' : user?.role === 'WARDEN' ? '/warden' : '/guest/dashboard'}
-                        className="px-6 h-11 bg-gray-900 text-white text-sm font-bold rounded-xl flex items-center gap-2 hover:bg-black transition-colors"
-                      >
-                        <Home className="w-4 h-4" /> Go Home
-                      </Link>
-                    </div>
-                  </div>
-                )
-              }
-
-              return children
-            })()}
+          <div className="p-2 md:p-4 flex-1 h-full w-full min-w-0 overflow-y-auto overflow-x-hidden">
+            <PageContent user={user}>
+              {children}
+            </PageContent>
           </div>
           <div className="print:hidden">
             <Footer />
           </div>
         </main>
-        {(user?.role === 'RESIDENT' || user?.role === 'GUEST') && (
+        {(user?.role === "RESIDENT" || user?.role === "GUEST") && (
           <div className="print:hidden">
             <AiAssistant />
           </div>

@@ -33,7 +33,8 @@ export async function POST(req) {
 
     if (!user) {
       console.log(`[API] POST /api/mails/forget-password - User not found for email: ${email}`);
-      return NextResponse.json({ message: "Email Not Found. Try To register or check your email" }, { status: 500, error: "Email Not Found. Try To register or check your email" });
+      // Return 404, not 500 — this is a "not found" case, not a server error
+      return NextResponse.json({ message: "Email not found. Please check your email or register." }, { status: 404 });
     }
 
     console.log(`[API] POST /api/mails/forget-password - User found: ${user.id}`);

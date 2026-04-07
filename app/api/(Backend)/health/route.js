@@ -66,7 +66,7 @@ export async function GET() {
       checkModel("Users API",      () => prisma.user.count()),
       checkModel("Complaints API", () => prisma.complaint.count()),
       checkModel("Notices API",    () => prisma.notice.count()),
-      checkModel("Salaries API",   () => prisma.staffSalary.count()),
+      checkModel("Salaries API",   () => prisma.salary.count()),
     ]);
 
     // ── 5. Live aggregate counts ─────────────────────────────────────────────

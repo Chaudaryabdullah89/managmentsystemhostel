@@ -91,7 +91,7 @@ export async function POST(request) {
             const approvalLink = `${baseUrl}/admin/payment-approvals/${payment.id}`;
 
             if (await isServiceEnabled('enablePaymentEmails')) {
-                for (const manager of managersToNotify) {
+                const emailPromises = managersToNotify.map(manager => 
                     sendEmail({
                         to: manager.email,
                         subject: `💳 New Payment Submitted — Approval Required`,
@@ -112,8 +112,16 @@ export async function POST(request) {
                                 </div>
                             `,
                         }),
-                    }).catch(err => console.error("[Email] Admin payment notification failed:", err));
-                }
+                    })
+                );
+                
+                Promise.allSettled(emailPromises)
+                    .then(results => {
+                        const failures = results.filter(r => r.status === 'rejected');
+                        if (failures.length > 0) {
+                            console.error(`[Email] ${failures.length} admin payment notifications failed.`);
+                        }
+                    });
             }
         } catch (notifyErr) {
             console.error("[Email] Error notifying admins of new payment:", notifyErr);

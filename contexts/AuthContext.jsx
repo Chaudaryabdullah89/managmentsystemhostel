@@ -1,65 +1,50 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { jwtVerify } from "jose";
-import Cookies from "js-cookie";
-// import prisma from "@/lib/prisma"; // Removed: cannot use prisma client on the client-side
+/**
+ * AuthContext.jsx — DEPRECATED
+ *
+ * This context was replaced by `hooks/Authstate.ts` (Zustand store) +
+ * `hooks/usePermissions.ts` which are the canonical client-side auth solution.
+ *
+ * Kept here for any legacy components that may still import `useAuth`.
+ * All NEW components should use:
+ *   - useAuthStore()     → for user, isLoggedIn, logout, isLoading
+ *   - usePermissions()  → for can(), featureEnabled(), canAll(), canAny()
+ *
+ * SECURITY NOTE: The previous version of this file used NEXT_PUBLIC_JWT_SECRET
+ * to verify JWT signatures on the client side — this exposed the secret to
+ * the browser. This version no longer does that. Token reads are decode-only
+ * (no signature check) on the client; actual signature verification only
+ * happens server-side in middleware.ts and checkRole.js.
+ */
 
-const AuthContext = createContext();
+import React, { createContext, useContext } from "react";
+import useAuthStore from "@/hooks/Authstate";
+import { usePermissions } from "@/hooks/usePermissions";
+
+const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const [permissions, setPermissions] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [loggedIn, setLoggedIn] = useState(false);
+  // Delegate all state to Zustand — no duplicate state
+  const user = useAuthStore((state) => state.user);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const logout = useAuthStore((state) => state.logout);
 
-    async function verifyToken(token) {
-        try {
-            const secret = new TextEncoder().encode(
-                process.env.NEXT_PUBLIC_JWT_SECRET || "your-secret-key-change-in-production"
-            );
-
-            const { payload } = await jwtVerify(token, secret);
-
-            const res = await fetch(`/api/auth/user/${payload.userId}`);
-            const userData = await res.json();
-            setUser(userData);
-            setPermissions([]);
-            setLoggedIn(true);
-        } catch (err) {
-            setUser(null);
-            setPermissions([]);
-            setLoggedIn(false);
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
-    useEffect(() => {
-        const token = Cookies.get("token"); // read cookie on mount
-
-        if (token) {
-            verifyToken(token);
-        } else {
-            setUser(null);
-            setPermissions([]);
-            setLoggedIn(false);
-            setIsLoading(false);
-        }
-    }, []);
-
-    return (
-        <AuthContext.Provider value={{ user, permissions, loggedIn, isLoading }}>
-            {children}
-        </AuthContext.Provider>
-    );
+  return (
+    <AuthContext.Provider value={{ user, isLoggedIn, isLoading, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
-// Custom hook to consume the context
+/**
+ * @deprecated Use `useAuthStore()` from `@/hooks/Authstate` instead.
+ */
 export function useAuth() {
-    const context = useContext(AuthContext);
-    if (!context) {
-        throw new Error("useAuth must be used within AuthProvider");
-    }
-    return context;
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+  return context;
 }

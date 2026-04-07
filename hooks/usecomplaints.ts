@@ -54,7 +54,13 @@ export function useCreateComplaint() {
             if (!data.success) throw new Error(data.error);
             return data.data;
         },
-        onSuccess: () => {
+        onSuccess: (data, variables) => {
+            // Invalidate all complaints so listings refresh automatically
+            queryClient.invalidateQueries({ queryKey: ComplaintQueryKeys.all });
+            // Also invalidate the userProfile if we submitted a userId-bound complaint
+            if ((variables as any).userId) {
+                queryClient.invalidateQueries({ queryKey: ['users', 'profile', (variables as any).userId] });
+            }
             toast.success("Grievance logged successfully");
         },
     });

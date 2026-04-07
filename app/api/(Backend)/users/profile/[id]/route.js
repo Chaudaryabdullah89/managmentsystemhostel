@@ -1,16 +1,14 @@
 export const dynamic = 'force-dynamic';
 import { checkRole } from '@/lib/checkRole';
-
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSystemSettings } from "@/lib/permissions";
+import { getSystemSettings, getPermissionsForRole, DEFAULT_ROLE_PERMISSIONS } from "@/lib/permissions";
 
 export async function GET(req, { params }) {
     const auth = await checkRole([]);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
     const { id } = await params;
-    console.log(`[API] GET /api/users/profile/${id} - Fetching profile`);
 
     try {
         const user = await prisma.user.findUnique({
@@ -29,6 +27,7 @@ export async function GET(req, { params }) {
                 createdAt: true,
                 updatedAt: true,
                 hostelId: true,
+                regNumber: true,
                 canManageExpenses: true,
                 canManageMess: true,
                 canManageGeneral: true,
@@ -48,24 +47,19 @@ export async function GET(req, { params }) {
         });
 
         if (!user) {
-            console.warn(`[API] GET /api/users/profile/${id} - User not found`);
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        // Fetch dynamic permissions and global settings for the client
-        const [rolePerm, settings] = await Promise.all([
-          prisma.rolePermission.findUnique({ where: { role: user.role } }),
-          getSystemSettings(),
+        // Fetch dynamic permissions + global settings in parallel (both cached via React.cache())
+        const [rolePermissions, systemSettings] = await Promise.all([
+            getPermissionsForRole(user.role),
+            getSystemSettings(),
         ]);
 
-        const { DEFAULT_ROLE_PERMISSIONS } = require('@/lib/permissions');
-        const rolePermissions = rolePerm?.permissions || DEFAULT_ROLE_PERMISSIONS[user.role] || {};
-
-        console.log(`[API] GET /api/users/profile/${id} - Success`);
         return NextResponse.json({
             ...user,
             rolePermissions,
-            systemSettings: settings
+            systemSettings,
         });
     } catch (error) {
         console.error(`[API] GET /api/users/profile/${id} - Error:`, error);

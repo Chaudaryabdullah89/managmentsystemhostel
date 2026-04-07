@@ -5,12 +5,15 @@ import prisma from "@/lib/prisma";
 import crypto from "crypto";
 
 export async function GET(req) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
-
+    // 1. Check authorization: Allow either valid Vercel Cron Secret OR manual admin trigger
     const authHeader = req.headers.get('authorization');
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-        return new Response('Unauthorized', { status: 401 });
+    const isCronSecretValid = process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`;
+
+    if (!isCronSecretValid) {
+        const auth = await checkRole(["ADMIN"]);
+        if (!auth.success) {
+            return NextResponse.json({ success: false, message: "Unauthorized. Admin access or valid CRON_SECRET required." }, { status: 401 });
+        }
     }
 
     try {
@@ -113,7 +116,7 @@ export async function GET(req) {
             }
         }
 
-        return Response.json({
+        return NextResponse.json({
             success: true,
             timestamp: now.toISOString(),
             report
@@ -121,6 +124,6 @@ export async function GET(req) {
 
     } catch (error) {
         console.error("Service Cycle Execution Failed:", error);
-        return Response.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }

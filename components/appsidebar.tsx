@@ -147,6 +147,7 @@ export function AppSidebar() {
     const pathname = usePathname();
     const logout = useAuthStore((state) => state.logout);
     const user = useAuthStore((state) => state.user);
+    const isLoading = useAuthStore((state) => state.isLoading);
 
     const userRole = user?.role?.toLowerCase() || "guest";
     const isAdmin = user?.role === "ADMIN";
@@ -199,7 +200,17 @@ export function AppSidebar() {
 
             {/* ── Nav ────────────────────────────────────────────────────── */}
             <SidebarContent className="px-3 py-3 overflow-y-auto">
-                {navMode === "classic" ? (
+                {isLoading ? (
+                    // Loading skeleton — prevents flicker of permission-gated items
+                    <div className="space-y-2 animate-pulse">
+                        {[...Array(6)].map((_, i) => (
+                            <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl">
+                                <div className="h-7 w-7 rounded-lg bg-gray-100 shrink-0" />
+                                <div className="h-3 bg-gray-100 rounded-full flex-1" style={{ width: `${55 + (i % 3) * 15}%` }} />
+                            </div>
+                        ))}
+                    </div>
+                ) : navMode === "classic" ? (
                     <nav className="space-y-0.5">
                         {flatItems.filter((i) => filterItem(i, isAdmin, user)).map((item) => (
                             <ClassicLink key={item.url} item={item} pathname={pathname} />

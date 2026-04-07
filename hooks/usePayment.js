@@ -121,18 +121,22 @@ export function useUpdatePayment() {
             return data.payment;
         },
         onMutate: async (newRecord) => {
-            await queryClient.cancelQueries({ queryKey: ["payments"] });
-            const previousData = queryClient.getQueryData(["payments"]);
-            queryClient.setQueryData(["payments"], (old) => {
-                if (!old || !Array.isArray(old)) return old;
-                // Basic snapshot fallback
-                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+            await queryClient.cancelQueries({ queryKey: ['payments'] });
+            const previousData = queryClient.getQueryData(['payments', 'list', {}]);
+            queryClient.setQueriesData({ queryKey: ['payments'] }, (old) => {
+                if (!old || !old.payments || !Array.isArray(old.payments)) return old;
+                return {
+                    ...old,
+                    payments: old.payments.map((item) =>
+                        item.id === newRecord.id ? { ...item, ...newRecord } : item
+                    )
+                };
             });
             return { previousData };
         },
-        onError: (err, newRecord, context) => {
+        onError: (err, _newRecord, context) => {
             if (context?.previousData) {
-                queryClient.setQueryData(["payments"], context.previousData);
+                queryClient.setQueriesData({ queryKey: ['payments'] }, context.previousData);
             }
         },
         onSettled: () => {
@@ -161,19 +165,21 @@ export function useDeletePayment() {
             if (!data.success) throw new Error(data.error);
             return data;
         },
-        onMutate: async (newRecord) => {
-            await queryClient.cancelQueries({ queryKey: ["payments"] });
-            const previousData = queryClient.getQueryData(["payments"]);
-            queryClient.setQueryData(["payments"], (old) => {
-                if (!old || !Array.isArray(old)) return old;
-                // Basic snapshot fallback
-                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+        onMutate: async (deleteId) => {
+            await queryClient.cancelQueries({ queryKey: ['payments'] });
+            const previousData = queryClient.getQueryData(['payments', 'list', {}]);
+            queryClient.setQueriesData({ queryKey: ['payments'] }, (old) => {
+                if (!old || !old.payments || !Array.isArray(old.payments)) return old;
+                return {
+                    ...old,
+                    payments: old.payments.filter((item) => item.id !== deleteId)
+                };
             });
             return { previousData };
         },
-        onError: (err, newRecord, context) => {
+        onError: (err, _deleteId, context) => {
             if (context?.previousData) {
-                queryClient.setQueryData(["payments"], context.previousData);
+                queryClient.setQueriesData({ queryKey: ['payments'] }, context.previousData);
             }
         },
         onSettled: () => {

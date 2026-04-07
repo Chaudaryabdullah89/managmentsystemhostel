@@ -205,7 +205,13 @@ const UserRecordPage = () => {
         try {
             await createUser.mutateAsync(formData);
             setIsCreateDialogOpen(false);
-            setFormData({ name: "", email: "", password: "password123", phone: "", cnic: "", role: "RESIDENT", hostelId: "", designation: "", basicSalary: 0, canManageExpenses: false });
+            // Reset ALL fields including the granular permission checkboxes
+            setFormData({
+                name: "", email: "", password: "password123", phone: "", cnic: "",
+                role: "RESIDENT", hostelId: "", designation: "", basicSalary: 0,
+                canManageExpenses: false, canManageMess: false, canManageGeneral: false,
+                canManageUtilities: false, canManageMaintenance: false, canManageSalaries: false
+            });
         } catch { }
     };
 

@@ -3,6 +3,7 @@ import { checkRole } from "@/lib/checkRole";
 import { isServiceEnabled, hasPermission } from "@/lib/permissions";
 import { NextResponse } from "next/server";
 import ComplaintServices from "@/lib/services/complaintservices/complaintservices";
+import { prisma } from "@/lib/prisma";
 
 const complaintServices = new ComplaintServices();
 

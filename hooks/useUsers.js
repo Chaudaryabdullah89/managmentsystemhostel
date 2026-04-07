@@ -79,15 +79,16 @@ export function useUpdateUser(id) {
             const previousData = queryClient.getQueryData(["users"]);
             queryClient.setQueryData(["users"], (old) => {
                 if (!old || !Array.isArray(old)) return old;
-                // Basic snapshot fallback
-                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+                return old.map(item => item.id === id ? { ...item, ...newRecord } : item);
             });
             return { previousData };
         },
         onError: (err, newRecord, context) => {
+            // Rollback optimistic update on failure
             if (context?.previousData) {
                 queryClient.setQueryData(["users"], context.previousData);
             }
+            toast.error(err.message || "Failed to update user");
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -95,9 +96,6 @@ export function useUpdateUser(id) {
         onSuccess: () => {
             toast.success("Identity synchronized successfully");
         },
-        onError: (error) => {
-            toast.error(error.message);
-        }
     });
 }
 
@@ -114,20 +112,21 @@ export function useUpdateAnyUser() {
             if (!resData.success) throw new Error(resData.error);
             return resData.user;
         },
-        onMutate: async (newRecord) => {
+        onMutate: async ({ id: mutatedId, data: newData }) => {
             await queryClient.cancelQueries({ queryKey: ["users"] });
             const previousData = queryClient.getQueryData(["users"]);
             queryClient.setQueryData(["users"], (old) => {
                 if (!old || !Array.isArray(old)) return old;
-                // Basic snapshot fallback
-                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+                // Correctly destructure {id, data} argument shape
+                return old.map(item => item.id === mutatedId ? { ...item, ...newData } : item);
             });
             return { previousData };
         },
-        onError: (err, newRecord, context) => {
+        onError: (err, variables, context) => {
             if (context?.previousData) {
                 queryClient.setQueryData(["users"], context.previousData);
             }
+            toast.error(err.message || "Failed to update user");
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -135,9 +134,6 @@ export function useUpdateAnyUser() {
         onSuccess: () => {
             toast.success("User record updated");
         },
-        onError: (error) => {
-            toast.error(error.message);
-        }
     });
 }
 
@@ -173,20 +169,21 @@ export function useDeleteUser() {
             if (!data.success) throw new Error(data.error);
             return data;
         },
-        onMutate: async (newRecord) => {
+        onMutate: async (deletedId) => {
             await queryClient.cancelQueries({ queryKey: ["users"] });
             const previousData = queryClient.getQueryData(["users"]);
+            // Correctly filter out the deleted user by their string id
             queryClient.setQueryData(["users"], (old) => {
                 if (!old || !Array.isArray(old)) return old;
-                // Basic snapshot fallback
-                return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
+                return old.filter(item => item.id !== deletedId);
             });
             return { previousData };
         },
-        onError: (err, newRecord, context) => {
+        onError: (err, deletedId, context) => {
             if (context?.previousData) {
                 queryClient.setQueryData(["users"], context.previousData);
             }
+            toast.error(err.message || "Failed to delete user");
         },
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -194,8 +191,5 @@ export function useDeleteUser() {
         onSuccess: () => {
             toast.success("User node purged from registry");
         },
-        onError: (error) => {
-            toast.error(error.message);
-        }
     });
 }

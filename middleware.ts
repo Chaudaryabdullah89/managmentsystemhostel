@@ -92,8 +92,7 @@ export async function middleware(request: NextRequest) {
 
         const roleDashboardMap: Record<string, string> = {
             ADMIN: '/admin/dashboard',
-            SUPER_ADMIN: '/admin/dashboard',
-            WARDEN: '/warden/',
+            WARDEN: '/warden',
             STAFF: '/staff/dashboard',
             GUEST: '/guest/dashboard',
             RESIDENT: '/guest/dashboard',

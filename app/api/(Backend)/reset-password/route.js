@@ -1,69 +1,55 @@
-const { prisma } = require("@/lib/prisma");
-const { NextResponse, NextRequest } = require("next/server");
+import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
+import { prisma } from "@/lib/prisma";
+
 export async function POST(request) {
     const body = await request.json();
     const { email, newpassword, token } = body;
-    console.log(`[API] POST /api/reset-password - Request received for email: ${email}`);
 
     if (!email || !token || !newpassword) {
-        console.log(`[API] POST /api/reset-password - Missing required fields`);
-        return NextResponse.json({ message: "Missing fields" }, { status: 400 });
+        return NextResponse.json({ message: "Missing required fields." }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({
-        where: {
-            email: email
+    if (typeof newpassword !== "string" || newpassword.length < 8) {
+        return NextResponse.json({ message: "Password must be at least 8 characters." }, { status: 400 });
+    }
+
+    try {
+        // Verify the reset token first (don't reveal whether email or token is invalid)
+        const resetRecord = await prisma.resetPassword.findUnique({
+            where: { token },
+            select: { id: true, expiresAt: true, email: true, userId: true },
+        });
+
+        if (!resetRecord || resetRecord.email !== email) {
+            return NextResponse.json({ message: "Invalid or expired reset link." }, { status: 400 });
         }
-    })
-    if (!user) {
-        console.log(`[API] POST /api/reset-password - User not found for email: ${email}`);
-        return NextResponse.json({ message: "User not found" }, { status: 404 })
-    }
 
-    const resetPassword = await prisma.resetPassword.findUnique({
-        where: {
-            token: token,
-        },
-        select: {
-            id: true,
-            expiresAt: true,
-            email: true,
-            userId: true
-        },
-    })
-
-    if (!resetPassword) {
-        console.log(`[API] POST /api/reset-password - Invalid token supplied`);
-        return NextResponse.json({ message: "Invalid token" }, { status: 400 })
-    }
-
-    const isTokenExpired = resetPassword.expiresAt < new Date();
-    if (isTokenExpired) {
-        console.log(`[API] POST /api/reset-password - Token expired`);
-        return NextResponse.json({ message: "Token expired" }, { status: 400 })
-    }
-
-    console.log(`[API] POST /api/reset-password - Hashing new password`);
-    const hashedPassword = await bcrypt.hash(newpassword, 10);
-
-    console.log(`[API] POST /api/reset-password - Updating user password`);
-    await prisma.user.update({
-        where: {
-            id: resetPassword.userId
-        },
-        data: {
-            password: hashedPassword
+        if (resetRecord.expiresAt < new Date()) {
+            // Clean up expired token
+            await prisma.resetPassword.delete({ where: { token } }).catch(() => {});
+            return NextResponse.json({ message: "Reset link has expired. Please request a new one." }, { status: 400 });
         }
-    })
 
-    console.log(`[API] POST /api/reset-password - Deleting used token`);
-    await prisma.resetPassword.delete({
-        where: {
-            token: token
-        }
-    })
+        const hashedPassword = await bcrypt.hash(newpassword, 12);
 
-    console.log(`[API] POST /api/reset-password - Password reset successfully`);
-    return NextResponse.json({ message: "Password reset successfully" }, { status: 200 })
+        // Update password and delete token atomically
+        await prisma.$transaction([
+            prisma.user.update({
+                where: { id: resetRecord.userId },
+                data: { password: hashedPassword },
+            }),
+            prisma.resetPassword.delete({ where: { token } }),
+            // Invalidate all existing sessions
+            prisma.session.updateMany({
+                where: { userId: resetRecord.userId },
+                data: { isActive: false },
+            }),
+        ]);
+
+        return NextResponse.json({ message: "Password reset successfully." }, { status: 200 });
+    } catch (error) {
+        console.error("[API] POST /api/reset-password - Error:", error);
+        return NextResponse.json({ message: "An unexpected error occurred." }, { status: 500 });
+    }
 }

@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import { SignJWT } from "jose";
 import { randomUUID } from "crypto";
 import prisma from "@/lib/prisma";
 import { generateUID, generateRegNumber, UID_PREFIXES } from "@/lib/uid-generator";
@@ -41,11 +41,15 @@ interface AuthResponse {
 }
 
 export default class AuthService {
-    private readonly JWT_SECRET: string;
+    private readonly JWT_SECRET: Uint8Array;
     private readonly SALT_ROUNDS: number = 10;
 
     constructor() {
-        this.JWT_SECRET = process.env.JWT_SECRET || "";
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            throw new Error("FATAL: JWT_SECRET environment variable is not set.");
+        }
+        this.JWT_SECRET = new TextEncoder().encode(secret);
     }
 
     async register(data: RegisterData): Promise<AuthResponse> {
@@ -89,19 +93,18 @@ export default class AuthService {
                 },
             });
 
-            const token = jwt.sign(
-                {
-                    userId: user.id, email: user.email, name: user.name, role: user.role, hostelId: user.hostelId,
-                    canManageExpenses: user.canManageExpenses,
-                    canManageMess: user.canManageMess,
-                    canManageGeneral: user.canManageGeneral,
-                    canManageUtilities: user.canManageUtilities,
-                    canManageMaintenance: user.canManageMaintenance,
-                    canManageSalaries: user.canManageSalaries
-                },
-                this.JWT_SECRET,
-                { expiresIn: '7d' }
-            );
+            const token = await new SignJWT({
+                    id: user.id,
+                    userId: user.id,
+                    email: user.email,
+                    name: user.name,
+                    role: user.role,
+                    hostelId: user.hostelId,
+                })
+                .setProtectedHeader({ alg: "HS256" })
+                .setIssuedAt()
+                .setExpirationTime("7d")
+                .sign(this.JWT_SECRET);
 
             return {
                 success: true,
@@ -170,19 +173,18 @@ export default class AuthService {
                 data: { lastLogin: new Date() }
             });
 
-            const token = jwt.sign(
-                {
-                    userId: user.id, email: user.email, name: user.name, role: user.role, hostelId: user.hostelId,
-                    canManageExpenses: user.canManageExpenses,
-                    canManageMess: user.canManageMess,
-                    canManageGeneral: user.canManageGeneral,
-                    canManageUtilities: user.canManageUtilities,
-                    canManageMaintenance: user.canManageMaintenance,
-                    canManageSalaries: user.canManageSalaries
-                },
-                this.JWT_SECRET,
-                { expiresIn: '7d' }
-            );
+            const token = await new SignJWT({
+                    id: user.id,
+                    userId: user.id,
+                    email: user.email,
+                    name: user.name,
+                    role: user.role,
+                    hostelId: user.hostelId,
+                })
+                .setProtectedHeader({ alg: "HS256" })
+                .setIssuedAt()
+                .setExpirationTime("7d")
+                .sign(this.JWT_SECRET);
 
 
             const expiresAt = new Date();
@@ -228,10 +230,13 @@ export default class AuthService {
         }
     }
 
-    verifyToken(token: string): { userId: string; email: string } | null {
+    // Note: Token verification is handled by `jose` in middleware.ts and checkRole.js.
+    // This method is kept for legacy compatibility but should not be used directly.
+    async verifyToken(token: string): Promise<{ userId: string; email: string } | null> {
         try {
-            const decoded = jwt.verify(token, this.JWT_SECRET) as { userId: string; email: string };
-            return decoded;
+            const { jwtVerify } = await import("jose");
+            const { payload } = await jwtVerify(token, this.JWT_SECRET);
+            return payload as { userId: string; email: string };
         } catch (error) {
             console.error("Token verification error:", error);
             return null;

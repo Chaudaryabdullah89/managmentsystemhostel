@@ -68,11 +68,9 @@ const AdminDashboard = () => {
     const { data: recentPayments, isLoading: paymentsLoading } = useAllPayments({ limit: 5 });
 
     const updateMutation = useUpdateComplaint();
-    const syncAutomation = useSyncAutomation();
 
-    React.useEffect(() => {
-        syncAutomation.mutate();
-    }, []);
+    // NOTE: Automation (overdue invoices, rent generation) is handled by the /api/cron endpoint.
+    // Do NOT trigger it here — it fires on every dashboard mount and is expensive.
 
     const handleResolve = async (id) => {
         updateMutation.mutate({ id, status: 'RESOLVED', resolutionNotes: 'Dashboard fix' });
@@ -133,7 +131,7 @@ const AdminDashboard = () => {
                             <option value="custom">Custom Range</option>
                         </select>
                         {selectedPeriod === 'custom' && (
-                            <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-300 hidden md:flex">
+                            <div className="md:flex items-center gap-2 animate-in fade-in slide-in-from-right-4 duration-300 hidden">
                                 <Input type="date" className="h-9 min-w-[120px] text-[10px] font-bold uppercase tracking-wider bg-gray-50 border-gray-100 rounded-xl" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
                                 <span className="text-gray-300 font-bold text-[9px]">TO</span>
                                 <Input type="date" className="h-9 min-w-[120px] text-[10px] font-bold uppercase tracking-wider bg-gray-50 border-gray-100 rounded-xl" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
@@ -247,7 +245,7 @@ const AdminDashboard = () => {
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         {/* Revenue vs Expenses Area Chart */}
-                        <div className="lg:col-span-2 bg-white border border-gray-100 rounded-[2rem] p-5 md:p-6 shadow-sm">
+                        <div className="lg:col-span-2 bg-white border border-gray-100 rounded-3xl p-5 md:p-6 shadow-sm">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex flex-col">
                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Revenue / Expense</span>
@@ -264,7 +262,7 @@ const AdminDashboard = () => {
 
                         {/* Right column: Occupancy + Complaint doughnut */}
                         <div className="space-y-4">
-                            <div className="bg-white border border-gray-100 rounded-[2rem] p-5 shadow-sm">
+                            <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Occupancy</span>
                                 <div className="flex items-center justify-center">
                                     <OccupancyDonutChart occupancyRate={stats.occupancyRate} />
@@ -274,7 +272,7 @@ const AdminDashboard = () => {
                                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-gray-200" />Vacant</span>
                                 </div>
                             </div>
-                            <div className="bg-white border border-gray-100 rounded-[2rem] p-5 shadow-sm">
+                            <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
                                 <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2">Complaints</span>
                                 <ComplaintStatusChart stats={complaintStats} />
                             </div>
@@ -283,7 +281,7 @@ const AdminDashboard = () => {
 
                     {/* Hostel bar chart */}
                     {hostels.length > 0 && (
-                        <div className="bg-white border border-gray-100 rounded-[2rem] p-5 md:p-6 shadow-sm">
+                        <div className="bg-white border border-gray-100 rounded-3xl p-5 md:p-6 shadow-sm">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex flex-col">
                                     <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Revenue / Expense</span>
@@ -314,7 +312,7 @@ const AdminDashboard = () => {
                             </Link>
                         </div>
 
-                        <div className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden shadow-sm">
+                        <div className="bg-white border border-gray-100 rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-sm">
                             <div className="overflow-x-auto scrollbar-hide">
                                 <table className="w-full text-left border-collapse min-w-[600px]">
                                     <thead className="bg-gray-50/50">
@@ -362,7 +360,7 @@ const AdminDashboard = () => {
 
                         {/* System Status */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 pt-2 md:pt-4">
-                            <Card className="rounded-[2rem] md:rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden group">
+                            <Card className="rounded-3xl md:rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden group">
                                 <CardHeader className="bg-gray-50/50 p-5 md:p-6 flex flex-row items-center justify-between border-b border-gray-50">
                                     <div className="flex items-center gap-3">
                                         <div className="h-8 w-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
@@ -395,7 +393,7 @@ const AdminDashboard = () => {
                                 </CardContent>
                             </Card>
 
-                            <div className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-6 shadow-sm space-y-5 md:space-y-6">
+                            <div className="bg-white border border-gray-100 rounded-3xl md:rounded-[2.5rem] p-5 md:p-6 shadow-sm space-y-5 md:space-y-6">
                                 {recentPayments?.payments?.length > 0 ? recentPayments.payments.slice(0, 4).map((pmt) => (
                                     <div key={pmt.id} className="flex items-center justify-between group cursor-pointer w-full">
                                         <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
@@ -455,7 +453,7 @@ const AdminDashboard = () => {
                         </div>
 
 
-                        <div className="bg-white border border-rose-100 rounded-[2rem] p-5 md:p-6 shadow-sm space-y-4">
+                        <div className="bg-white border border-rose-100 rounded-3xl p-5 md:p-6 shadow-sm space-y-4">
                             <div className="flex items-center gap-3 px-2">
                                 <div className="h-5 w-1 bg-rose-600 rounded-full" />
                                 <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Alerts</h3>
@@ -501,7 +499,7 @@ const AdminDashboard = () => {
                             <div className="h-5 w-1 bg-blue-600 rounded-full" />
                             <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Logs</h3>
                         </div>
-                        <div className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] p-5 md:p-6 shadow-sm space-y-5 md:space-y-6">
+                        <div className="bg-white border border-gray-100 rounded-3xl md:rounded-[2.5rem] p-5 md:p-6 shadow-sm space-y-5 md:space-y-6">
                             {recentPayments?.payments?.length > 0 ? recentPayments.payments.slice(0, 4).map((pmt) => (
                                 <div key={pmt.id} className="flex items-center justify-between group cursor-pointer w-full">
                                     <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
