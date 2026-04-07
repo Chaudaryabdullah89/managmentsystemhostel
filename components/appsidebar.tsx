@@ -235,7 +235,7 @@ export function AppSidebar() {
             <SidebarFooter className="p-0">
                 <div className="h-px bg-gray-100 mx-4" />
                 <div className="px-3 py-3 space-y-0.5">
-                    {isAdmin && (
+                    {/* {isAdmin && (
                         <Link
                             href="/admin/system-health"
                             className={`group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150
@@ -247,7 +247,7 @@ export function AppSidebar() {
                             <span className="flex-1 truncate">System Health</span>
                             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
                         </Link>
-                    )}
+                    )} */}
                     <button
                         onClick={() => logout()}
                         className="flex w-full items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all duration-150 group cursor-pointer"
