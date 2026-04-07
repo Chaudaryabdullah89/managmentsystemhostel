@@ -1,12 +1,15 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
-import { NextResponse } from "next/server";
 import { ReportServices } from "@/lib/services/reportservices/reportservices";
 import prisma from "@/lib/prisma";
+import { requireRoles } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
+import { getAllowedExpenseCategories } from "@/lib/expensePermissions";
+import { getOrSetRouteCache } from "@/lib/routeCache";
 
 export async function GET(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN', 'WARDEN']);
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const { searchParams } = new URL(request.url);
@@ -45,33 +48,20 @@ export async function GET(request) {
 
         let allowedCategories = undefined;
         if (auth.user.role === 'WARDEN' && !isWardenMaster) {
-            allowedCategories = [];
-            if (granularPerms.canManageMess) allowedCategories.push('MESS');
-            if (granularPerms.canManageGeneral) allowedCategories.push('GENERAL');
-            if (granularPerms.canManageUtilities) allowedCategories.push('UTILITY_BILL');
-            if (granularPerms.canManageMaintenance) allowedCategories.push('MAINTENANCE');
-            if (granularPerms.canManageSalaries) allowedCategories.push('SALARY');
-
-            // Explicitly empty array means "no categories allowed"
-            // The service now handles this gracefully.
+            allowedCategories = getAllowedExpenseCategories(granularPerms);
         }
 
-        let stats;
-        if (hostelId) {
-            stats = await ReportServices.getHostelStats(hostelId, period, startDate, endDate, allowedCategories);
-        } else {
-            stats = await ReportServices.getGlobalStats(period, startDate, endDate, allowedCategories);
-        }
-
-        return NextResponse.json({
-            success: true,
-            data: stats
+        const cacheKey = `reports:${auth.user.role}:${auth.user.id || auth.user.userId || auth.user.sub}:${period}:${hostelId || "global"}:${startDate || "na"}:${endDate || "na"}:${(allowedCategories || []).join(",")}`;
+        const stats = await getOrSetRouteCache(cacheKey, 60 * 1000, async () => {
+            if (hostelId) {
+                return await ReportServices.getHostelStats(hostelId, period, startDate, endDate, allowedCategories);
+            }
+            return await ReportServices.getGlobalStats(period, startDate, endDate, allowedCategories);
         });
+
+        return successResponse({ data: stats });
     } catch (error) {
         console.error("Reports API Error:", error);
-        return NextResponse.json({
-            success: false,
-            error: error.message
-        }, { status: 500 });
+        return errorResponse(error.message, 500, { error: error.message });
     }
 }

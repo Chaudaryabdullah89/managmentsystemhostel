@@ -13,12 +13,11 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import Cookies from "js-cookie";
 import useAuthStore from "@/hooks/Authstate";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { setToken, setUser } = useAuthStore();
+  const { setUser } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -45,13 +44,7 @@ export default function LoginPage() {
         return;
       }
 
-      // Set session and update store
-      Cookies.set("token", data.token, {
-        expires: 7,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-      });
-      setToken(data.token);
+      // Server sets secure httpOnly cookie; client only hydrates user state
       if (data.User) {
         await setUser({ ...data.User, id: data.User.id });
       }

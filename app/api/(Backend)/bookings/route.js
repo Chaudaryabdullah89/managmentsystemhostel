@@ -1,15 +1,16 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
 import { isServiceEnabled } from '@/lib/permissions';
-import { NextResponse } from "next/server";
 import BookingServices from "@/lib/services/bookingservices/bookingservices";
 import { sendEmail } from "@/lib/utils/sendmail";
 import { bookingCreatedEmail } from "@/lib/utils/emailTemplates";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 export async function GET(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const { searchParams } = new URL(request.url);
@@ -42,24 +43,24 @@ export async function GET(request) {
             bookings = await new BookingServices().getBookings(hostelId);
         }
 
-        return NextResponse.json({
+        return successResponse({
             message: "Bookings fetched successfully",
             data: bookings,
-            success: true
         });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }
 
 export async function POST(request) {
     // Guard: guest bookings can be disabled globally by admin
     if (!await isServiceEnabled('enableGuestBookings')) {
-        return NextResponse.json({ success: false, message: 'Guest booking requests are currently closed.' }, { status: 503 });
+        return errorResponse('Guest booking requests are currently closed.', 503);
     }
 
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const body = await request.json();
@@ -81,19 +82,18 @@ export async function POST(request) {
                     select: { hostelId: true }
                 });
                 if (room && room.hostelId !== wardenHostelId) {
-                    return NextResponse.json({ success: false, error: "Access Denied: You cannot create bookings for other hostels." }, { status: 403 });
+                    return errorResponse("Access Denied: You cannot create bookings for other hostels.", 403);
                 }
             }
         }
 
         const booking = await new BookingServices().createBooking(body);
 
-        return NextResponse.json({
+        return successResponse({
             message: "Booking created successfully",
             data: booking,
-            success: true
         });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }

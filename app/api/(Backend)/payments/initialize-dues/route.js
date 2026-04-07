@@ -1,12 +1,14 @@
-import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import PaymentServices from "@/lib/services/paymentservices/paymentservices";
+import { prisma } from "@/lib/prisma";
+import { requireRoles } from "@/lib/apiAuth";
 
 const paymentServices = new PaymentServices();
 
 export async function POST(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN', 'WARDEN']);
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         let hostelId = null;

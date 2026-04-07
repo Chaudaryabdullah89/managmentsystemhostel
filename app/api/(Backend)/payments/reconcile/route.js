@@ -1,18 +1,22 @@
-import { checkRole } from '@/lib/checkRole';
-import { NextResponse } from "next/server";
 import PaymentServices from "@/lib/services/paymentservices/paymentservices";
+import { prisma } from "@/lib/prisma";
+import { requireRoles } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
+import { withIdempotency } from "@/lib/idempotency";
 
 const paymentServices = new PaymentServices();
 
 export async function POST(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN', 'WARDEN']);
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const { bookingId, amount, userId, method, notes } = await request.json();
+        const idempotencyKey = request.headers.get("idempotency-key") || request.headers.get("x-idempotency-key");
 
         if (!bookingId || !amount || !userId) {
-            return NextResponse.json({ success: false, error: "Missing required reconciliation parameters." }, { status: 400 });
+            return errorResponse("Missing required reconciliation parameters.", 400);
         }
 
         // Security: If warden, verify context
@@ -33,20 +37,27 @@ export async function POST(request) {
             });
 
             if (resident && resident.hostelId !== wardenHostelId) {
-                return NextResponse.json({ success: false, error: "Access Denied: You cannot reconcile payments for residents of other hostels." }, { status: 403 });
+                return errorResponse("Access Denied: You cannot reconcile payments for residents of other hostels.", 403);
             }
         }
 
-        const result = await paymentServices.reconcileBookingPayments(
-            bookingId,
-            amount,
-            userId,
-            method,
-            notes
-        );
+        const { result, replayed } = await withIdempotency({
+            scope: "payments:reconcile",
+            userId: auth.user.userId || auth.user.id || auth.user.sub,
+            requestKey: idempotencyKey,
+            action: async () => {
+                return await paymentServices.reconcileBookingPayments(
+                    bookingId,
+                    amount,
+                    userId,
+                    method,
+                    notes
+                );
+            },
+        });
 
-        return NextResponse.json({ success: true, ...result });
+        return successResponse({ ...result, replayed });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }

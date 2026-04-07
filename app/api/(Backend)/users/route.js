@@ -1,16 +1,17 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
-import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { generateUID, generateRegNumber, UID_PREFIXES } from "@/lib/uid-generator";
 import { sendEmail } from "@/lib/utils/sendmail";
 import { welcomeEmail } from "@/lib/utils/emailTemplates";
+import { requireAuth, requireRoles } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 export async function GET(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const { searchParams } = new URL(request.url);
@@ -61,7 +62,7 @@ export async function GET(request) {
         if (userRole === 'WARDEN' || (userRole === 'STAFF' && isolationHostelId)) {
             if (!isolationHostelId) {
                 console.warn("[API] GET /api/users - Warden/Staff has no isolationHostelId");
-                return NextResponse.json({ success: true, data: [] });
+                return successResponse({ data: [] });
             }
             
             where.AND = [
@@ -130,20 +131,19 @@ export async function GET(request) {
             prisma.user.count({ where }),
         ]);
 
-        return NextResponse.json({
-            success: true,
+        return successResponse({
             data: users,
             pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
         });
     } catch (error) {
         console.error("[API] GET /api/users Error:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500, { error: error.message });
     }
 }
 
 export async function POST(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN']);
+    if (!guard.ok) return guard.response;
 
     try {
         const body = await request.json();
@@ -155,7 +155,7 @@ export async function POST(request) {
 
         // Check if user exists
         const existing = await prisma.user.findUnique({ where: { email } });
-        if (existing) return NextResponse.json({ success: false, error: "Email already registered" }, { status: 400 });
+        if (existing) return errorResponse("Email already registered", 400, { error: "Email already registered" });
 
         const hashedPassword = await bcrypt.hash(password || "password123", 10);
 
@@ -233,8 +233,7 @@ export async function POST(request) {
             html: welcomeEmail({ name, email, role, hostelName, loginUrl: resetLinkNote }),
         }).catch(err => console.error("[Email] Welcome email failed:", err));
 
-        return NextResponse.json({
-            success: true,
+        return successResponse({
             message: `User ${name} created successfully as ${role}`,
             user: {
                 id: newUser.id, name: newUser.name, email: newUser.email,
@@ -243,7 +242,7 @@ export async function POST(request) {
         });
     } catch (error) {
         console.error("User Creation Error:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500, { error: error.message });
     }
 }
 

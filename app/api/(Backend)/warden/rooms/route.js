@@ -1,13 +1,14 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
+import { requireAuth } from '@/lib/apiAuth';
 import { NextResponse } from "next/server";
 import WardenServices from "@/lib/services/wardenservices/wardenservices";
+import { errorResponse } from '@/lib/apiResponse';
 
 const wardenServices = new WardenServices();
 
 export async function GET(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const auth = await requireAuth();
+    if (!auth.success) return errorResponse(auth.error, auth.status);
 
     try {
         const { searchParams } = new URL(request.url);

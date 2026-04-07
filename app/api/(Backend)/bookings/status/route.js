@@ -1,22 +1,23 @@
-import { checkRole } from '@/lib/checkRole';
-import { NextResponse } from "next/server";
 import BookingServices from "@/lib/services/bookingservices/bookingservices";
 import { sendEmail } from "@/lib/utils/sendmail";
 import { bookingStatusEmail } from "@/lib/utils/emailTemplates";
 import { prisma } from "@/lib/prisma";
+import { requireRoles } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 const bookingServices = new BookingServices();
 
 export async function PUT(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN', 'WARDEN']);
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const body = await request.json();
         const { id, status, notes } = body;
 
         if (!id || !status) {
-            return NextResponse.json({ error: "Booking ID and Status are required" }, { status: 400 });
+            return errorResponse("Booking ID and Status are required", 400);
         }
 
         // Security: Wardens can ONLY update status for their own hostel's bookings
@@ -36,7 +37,7 @@ export async function PUT(request) {
             });
 
             if (booking && booking.Room?.hostelId !== wardenHostelId) {
-                return NextResponse.json({ success: false, error: "Access Denied: You cannot update bookings for other hostels." }, { status: 403 });
+                return errorResponse("Access Denied: You cannot update bookings for other hostels.", 403);
             }
         }
 
@@ -74,11 +75,8 @@ export async function PUT(request) {
             console.error("[Email] Error fetching booking for status email:", emailErr);
         }
 
-        return NextResponse.json({
-            success: true,
-            data: data
-        });
+        return successResponse({ data });
     } catch (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }

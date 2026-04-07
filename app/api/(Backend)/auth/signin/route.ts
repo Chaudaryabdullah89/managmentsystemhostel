@@ -2,15 +2,13 @@ import AuthService from "@/lib/services/AuthServices/authservices";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { rateLimiter } from "@/lib/rateLimit";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 export async function POST(request: NextRequest) {
     // ── Rate Limit: 10 attempts per 15 minutes per IP ────────────────────
     const rateLimitCheck = rateLimiter(request, 10, 15 * 60 * 1000);
     if (!rateLimitCheck.success) {
-        return NextResponse.json(
-            { success: false, message: rateLimitCheck.error },
-            { status: 429 }
-        );
+        return errorResponse(rateLimitCheck.error, 429);
     }
 
     const authService = new AuthService();
@@ -19,10 +17,10 @@ export async function POST(request: NextRequest) {
 
     // ── Basic input validation ────────────────────────────────────────────
     if (!email || typeof email !== "string" || !email.includes("@")) {
-        return NextResponse.json({ success: false, message: "A valid email is required." }, { status: 400 });
+        return errorResponse("A valid email is required.", 400);
     }
     if (!password || typeof password !== "string" || password.length < 1) {
-        return NextResponse.json({ success: false, message: "Password is required." }, { status: 400 });
+        return errorResponse("Password is required.", 400);
     }
 
     const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1";
@@ -32,17 +30,13 @@ export async function POST(request: NextRequest) {
         const response = await authService.login({ email: email.trim().toLowerCase(), password, ipAddress, userAgent });
 
         if (!response.success) {
-            return NextResponse.json(response, { status: 401 });
+            return errorResponse(response.message || "Unauthorized", 401, response);
         }
 
         // ── Set httpOnly cookie server-side for XSS protection ─────────────
-        const nextResponse = NextResponse.json({
-            success: true,
+        const nextResponse = successResponse({
             message: response.message,
             User: response.User,
-            // NOTE: Do NOT send the raw token in the JSON body — it stays in the cookie only.
-            // The client needs the token for the Zustand store; we send it once here then rely on the cookie.
-            token: response.token,
         });
 
         nextResponse.cookies.set("token", response.token!, {
@@ -56,9 +50,6 @@ export async function POST(request: NextRequest) {
         return nextResponse;
     } catch (error: any) {
         console.error(`[API] POST /api/auth/signin - Unexpected error:`, error.message);
-        return NextResponse.json(
-            { success: false, message: "An unexpected error occurred. Please try again." },
-            { status: 500 }
-        );
+        return errorResponse("An unexpected error occurred. Please try again.", 500);
     }
 }

@@ -1,19 +1,16 @@
 export const dynamic = "force-dynamic";
-import { checkRole } from "@/lib/checkRole";
 import { isServiceEnabled, hasPermission } from "@/lib/permissions";
-import { NextResponse } from "next/server";
 import ComplaintServices from "@/lib/services/complaintservices/complaintservices";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 const complaintServices = new ComplaintServices();
 
 export async function GET(request) {
-  const auth = await checkRole([]);
-  if (!auth.success)
-    return NextResponse.json(
-      { success: false, message: auth.error },
-      { status: auth.status },
-    );
+  const guard = await requireAuth();
+  if (!guard.ok) return guard.response;
+  const auth = { user: guard.user };
 
   try {
     const { searchParams } = new URL(request.url);
@@ -51,7 +48,7 @@ export async function GET(request) {
     if (stats) {
       const complaintStats =
         await complaintServices.getComplaintStats(hostelId);
-      return NextResponse.json({ success: true, data: complaintStats });
+      return successResponse({ data: complaintStats });
     }
 
     let filter = {};
@@ -62,35 +59,25 @@ export async function GET(request) {
     if (assignedToId) filter.assignedToId = assignedToId;
 
     const complaints = await complaintServices.getComplaints(filter);
-    return NextResponse.json({ success: true, data: complaints });
+    return successResponse({ data: complaints });
   } catch (error) {
     console.error("API Error in Complaints GET:", error);
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return errorResponse(error.message, 500);
   }
 }
 
 export async function POST(request) {
   // Guard: complaints system must be enabled
   if (!(await isServiceEnabled("enableComplaintsSystem"))) {
-    return NextResponse.json(
-      {
-        success: false,
-        message:
-          "The complaints service is currently disabled. by administrator.",
-      },
-      { status: 503 },
+    return errorResponse(
+      "The complaints service is currently disabled. by administrator.",
+      503,
     );
   }
 
-  const auth = await checkRole([]);
-  if (!auth.success)
-    return NextResponse.json(
-      { success: false, message: auth.error },
-      { status: auth.status },
-    );
+  const guard = await requireAuth();
+  if (!guard.ok) return guard.response;
+  const auth = { user: guard.user };
 
   try {
     const body = await request.json();
@@ -111,26 +98,20 @@ export async function POST(request) {
     }
 
     const complaint = await complaintServices.createComplaint(body);
-    return NextResponse.json({ success: true, data: complaint });
+    return successResponse({ data: complaint });
   } catch (error) {
     console.error("API Error in Complaints POST:", error);
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return errorResponse(error.message, 500);
   }
 }
 
 export async function PUT(request) {
-  const auth = await checkRole([]);
-  if (!auth.success)
-    return NextResponse.json(
-      { success: false, message: auth.error },
-      { status: auth.status },
-    );
+  const guard = await requireAuth();
+  if (!guard.ok) return guard.response;
+  const auth = { user: guard.user };
 
   if (!await hasPermission('manage_complaints')) {
-    return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to update complaints." }, { status: 403 });
+    return errorResponse("Forbidden: You do not have permission to update complaints.", 403);
   }
 
   try {
@@ -158,13 +139,9 @@ export async function PUT(request) {
         wardenHostelId &&
         complaint.hostelId !== wardenHostelId
       ) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              "Access Denied: You cannot manage complaints for other hostels.",
-          },
-          { status: 403 },
+        return errorResponse(
+          "Access Denied: You cannot manage complaints for other hostels.",
+          403,
         );
       }
     }
@@ -175,12 +152,9 @@ export async function PUT(request) {
       resolutionNotes,
       assignedToId,
     );
-    return NextResponse.json({ success: true, data: complaint });
+    return successResponse({ data: complaint });
   } catch (error) {
     console.error("API Error in Complaints PUT:", error);
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 },
-    );
+    return errorResponse(error.message, 500);
   }
 }

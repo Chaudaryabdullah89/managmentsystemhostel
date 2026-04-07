@@ -1,10 +1,11 @@
-import { checkRole } from '@/lib/checkRole';
+import { requireAuth } from '@/lib/apiAuth';
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/utils/sendmail";
+import { errorResponse } from '@/lib/apiResponse';
 
 export async function POST(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
 
     try {
         const { to, subject, html } = await request.json();

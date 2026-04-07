@@ -1,12 +1,13 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
 import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
 import RoomServices from "../../../../lib/services/roomservices/roomservices";
+import { requireRoles } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 export async function GET() {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN', 'WARDEN', 'STAFF']);
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         let hostelId = null;
@@ -24,16 +25,12 @@ export async function GET() {
         }
 
         const roomData = await new RoomServices().getRooms(hostelId)
-        return NextResponse.json({
+        return successResponse({
             message: "Rooms fetched successfully",
             data: roomData,
-            success: true
         })
     } catch (error) {
         console.error("GET Rooms Error:", error);
-        return NextResponse.json({
-            error: "Failed to fetch rooms",
-            success: false
-        }, { status: 500 })
+        return errorResponse("Failed to fetch rooms", 500)
     }
 }

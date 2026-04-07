@@ -1,21 +1,26 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
-import { NextResponse } from "next/server";
 import PaymentServices from "@/lib/services/paymentservices/paymentservices";
 import { sendEmail } from "@/lib/utils/sendmail";
 import { paymentApprovedEmail, buildEmailTemplate } from "@/lib/utils/emailTemplates";
 import { prisma } from "@/lib/prisma";
+import { requireAuth, requireRoles } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
+import { logAuditEvent } from "@/lib/auditLogger";
+import { createInAppNotification } from "@/lib/inAppNotifications";
+import { logNotificationDelivery } from "@/lib/notificationTelemetry";
+import { isValidPaymentTransition, normalizePaymentStatusInput } from "@/lib/statusTransitions";
 
 const paymentServices = new PaymentServices();
 
 export async function GET(request, { params }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const { paymentId } = await params;
         const payment = await paymentServices.getPaymentById(paymentId);
-        if (!payment) return NextResponse.json({ success: false, error: "Payment node not found" }, { status: 404 });
+        if (!payment) return errorResponse("Payment node not found", 404, { error: "Payment node not found" });
 
         // Security: If warden, verify payment belongs to their hostel
         if (auth.user.role === 'WARDEN') {
@@ -30,22 +35,36 @@ export async function GET(request, { params }) {
 
             const paymentHostelId = payment.Booking?.Room?.hostelId || payment.User?.hostelId;
             if (wardenHostelId && paymentHostelId && paymentHostelId !== wardenHostelId) {
-                return NextResponse.json({ success: false, error: "Access Denied: Payment belongs to another hostel." }, { status: 403 });
+                return errorResponse("Access Denied: Payment belongs to another hostel.", 403, { error: "Access Denied: Payment belongs to another hostel." });
             }
         }
 
-        return NextResponse.json({ success: true, payment });
+        return successResponse({ payment });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500, { error: error.message });
     }
 }
 
 export async function PATCH(request, { params }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN', 'WARDEN']);
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const { paymentId } = await params;
+        const existingPayment = await prisma.payment.findUnique({
+            where: { id: paymentId },
+            select: {
+                id: true,
+                status: true,
+                amount: true,
+                userId: true,
+                bookingId: true,
+                Booking: { select: { Room: { select: { hostelId: true } } } },
+                User: { select: { role: true } },
+            },
+        });
+        if (!existingPayment) return errorResponse("Payment not found", 404, { error: "Payment not found" });
 
         // Security: If warden, verify payment belongs to their hostel before update
         if (auth.user.role === 'WARDEN') {
@@ -57,7 +76,7 @@ export async function PATCH(request, { params }) {
                 }
             });
 
-            if (!payment) return NextResponse.json({ success: false, error: "Payment not found" }, { status: 404 });
+            if (!payment) return errorResponse("Payment not found", 404, { error: "Payment not found" });
 
             let wardenHostelId = auth.user.hostelId;
             if (!wardenHostelId) {
@@ -70,16 +89,24 @@ export async function PATCH(request, { params }) {
 
             const paymentHostelId = payment.Booking?.Room?.hostelId || payment.User?.hostelId;
             if (wardenHostelId && paymentHostelId && paymentHostelId !== wardenHostelId) {
-                return NextResponse.json({ success: false, error: "Access Denied: You cannot update payments from other hostels." }, { status: 403 });
+                return errorResponse("Access Denied: You cannot update payments from other hostels.", 403, { error: "Access Denied: You cannot update payments from other hostels." });
             }
         }
 
         const body = await request.json();
         const { status, notes, amount, type, method, receiptUrl } = body;
+        const normalizedStatus = normalizePaymentStatusInput(status);
+        if (normalizedStatus && !isValidPaymentTransition(existingPayment.status, normalizedStatus)) {
+            return errorResponse(
+                `Invalid payment status transition from ${existingPayment.status} to ${normalizedStatus}`,
+                409,
+                { error: "Invalid payment status transition" }
+            );
+        }
 
         // Build update data dynamically
         const updateData = {};
-        if (status !== undefined) updateData.status = status;
+        if (normalizedStatus !== undefined) updateData.status = normalizedStatus;
         if (notes !== undefined) updateData.notes = notes;
         if (amount !== undefined) updateData.amount = parseFloat(amount);
         if (type !== undefined) updateData.type = type;
@@ -93,34 +120,56 @@ export async function PATCH(request, { params }) {
             || "Mubarak Group of Hostels";
 
         // ── APPROVED: Email the resident ─────────────────────────────────
-        if (status === "PAID" || status === "APPROVED" || status === "COMPLETED") {
+        if (normalizedStatus === "PAID") {
             if (payment?.User?.email) {
-                sendEmail({
-                    to: payment.User.email,
-                    subject: "Payment Approved ✅ — Mubarak Group of Hostels",
-                    html: paymentApprovedEmail({
-                        name: payment.User.name,
-                        paymentId: payment.uid || paymentId,
-                        amount: payment.amount,
-                        type: payment.type,
-                        method: payment.method || method,
-                        hostelName,
-                        date: payment.updatedAt,
-                    }),
-                }).catch(err => console.error("[Email] Payment approved email failed:", err));
+                try {
+                    await sendEmail({
+                        to: payment.User.email,
+                        subject: "Payment Approved ✅ — Mubarak Group of Hostels",
+                        html: paymentApprovedEmail({
+                            name: payment.User.name,
+                            paymentId: payment.uid || paymentId,
+                            amount: payment.amount,
+                            type: payment.type,
+                            method: payment.method || method,
+                            hostelName,
+                            date: payment.updatedAt,
+                        }),
+                    });
+                    await logNotificationDelivery({
+                        channel: "EMAIL",
+                        event: "PAYMENT_APPROVED",
+                        recipient: payment.User.email,
+                        status: "DELIVERED",
+                        actorId: auth.user?.id || auth.user?.userId || auth.user?.sub || null,
+                        metadata: { paymentId: payment.uid || paymentId },
+                    });
+                } catch (err) {
+                    await logNotificationDelivery({
+                        channel: "EMAIL",
+                        event: "PAYMENT_APPROVED",
+                        recipient: payment.User.email,
+                        status: "FAILED",
+                        actorId: auth.user?.id || auth.user?.userId || auth.user?.sub || null,
+                        metadata: { paymentId: payment.uid || paymentId },
+                        error: err,
+                    });
+                    console.error("[Email] Payment approved email failed:", err);
+                }
             }
         }
 
         // ── REJECTED: Email the resident with reason ─────────────────────
-        if (status === "REJECTED") {
+        if (normalizedStatus === "REJECTED") {
             if (payment?.User?.email) {
-                sendEmail({
-                    to: payment.User.email,
-                    subject: "Payment Rejected ❌ — Mubarak Group of Hostels",
-                    html: buildEmailTemplate({
-                        title: "Payment Not Approved",
-                        subtitle: `Hello ${payment.User.name}, your payment submission was reviewed and could not be approved at this time.`,
-                        bodyHtml: `
+                try {
+                    await sendEmail({
+                        to: payment.User.email,
+                        subject: "Payment Rejected ❌ — Mubarak Group of Hostels",
+                        html: buildEmailTemplate({
+                            title: "Payment Not Approved",
+                            subtitle: `Hello ${payment.User.name}, your payment submission was reviewed and could not be approved at this time.`,
+                            bodyHtml: `
                             <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:16px;">
                                 <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;">Payment Ref</td><td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;text-align:right;">${(payment.uid || paymentId).toString().slice(-10).toUpperCase()}</td></tr>
                                 <tr><td style="padding:6px 0;color:#6b7280;font-size:12px;">Amount</td><td style="padding:6px 0;color:#111827;font-size:13px;font-weight:600;text-align:right;">PKR ${Number(payment.amount).toLocaleString()}</td></tr>
@@ -132,26 +181,77 @@ export async function PATCH(request, { params }) {
                             </div>` : ''}
                             <p style="margin-top:16px;font-size:12px;color:#6b7280;">Please resubmit with a correct payment receipt or contact your hostel management office for assistance.</p>
                         `,
-                    }),
-                }).catch(err => console.error("[Email] Payment rejection email failed:", err));
+                        }),
+                    });
+                    await logNotificationDelivery({
+                        channel: "EMAIL",
+                        event: "PAYMENT_REJECTED",
+                        recipient: payment.User.email,
+                        status: "DELIVERED",
+                        actorId: auth.user?.id || auth.user?.userId || auth.user?.sub || null,
+                        metadata: { paymentId: payment.uid || paymentId },
+                    });
+                } catch (err) {
+                    await logNotificationDelivery({
+                        channel: "EMAIL",
+                        event: "PAYMENT_REJECTED",
+                        recipient: payment.User.email,
+                        status: "FAILED",
+                        actorId: auth.user?.id || auth.user?.userId || auth.user?.sub || null,
+                        metadata: { paymentId: payment.uid || paymentId },
+                        error: err,
+                    });
+                    console.error("[Email] Payment rejection email failed:", err);
+                }
             }
         }
 
-        return NextResponse.json({ success: true, payment });
+        if (normalizedStatus && normalizedStatus !== existingPayment.status) {
+            await logAuditEvent({
+                action: "PAYMENT_STATUS_UPDATE",
+                actorId: auth.user?.id || auth.user?.userId || auth.user?.sub,
+                actorRole: auth.user?.role,
+                targetType: "PAYMENT",
+                targetId: paymentId,
+                metadata: {
+                    previousStatus: existingPayment.status,
+                    newStatus: normalizedStatus,
+                    amount: existingPayment.amount,
+                    bookingId: existingPayment.bookingId,
+                    userId: existingPayment.userId,
+                },
+            });
+
+            if (normalizedStatus === "PAID" || normalizedStatus === "REJECTED") {
+                await createInAppNotification({
+                    title: normalizedStatus === "PAID" ? "Payment approved" : "Payment rejected",
+                    content: normalizedStatus === "PAID"
+                        ? "Your submitted payment has been approved."
+                        : "Your submitted payment was rejected. Please review details and resubmit if needed.",
+                    priority: normalizedStatus === "REJECTED" ? "HIGH" : "MEDIUM",
+                    category: "PAYMENT",
+                    targetRoles: existingPayment.User?.role ? [existingPayment.User.role] : ["RESIDENT", "GUEST"],
+                    hostelId: existingPayment.Booking?.Room?.hostelId || null,
+                    actorId: auth.user?.id || auth.user?.userId || auth.user?.sub || null,
+                });
+            }
+        }
+
+        return successResponse({ payment });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500, { error: error.message });
     }
 }
 
 export async function DELETE(request, { params }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN']);
+    if (!guard.ok) return guard.response;
 
     try {
         const { paymentId } = await params;
         await paymentServices.deletePayment(paymentId);
-        return NextResponse.json({ success: true, message: "Payment deleted successfully" });
+        return successResponse({ message: "Payment deleted successfully" });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500, { error: error.message });
     }
 }

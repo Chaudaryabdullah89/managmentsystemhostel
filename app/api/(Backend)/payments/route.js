@@ -1,24 +1,23 @@
-import { checkRole } from '@/lib/checkRole';
 import { isServiceEnabled, hasPermission } from '@/lib/permissions';
-import { NextResponse } from "next/server";
 import PaymentServices from "@/lib/services/paymentservices/paymentservices";
 import { sendEmail } from "@/lib/utils/sendmail";
 import { monthlyRentEmail, buildEmailTemplate } from "@/lib/utils/emailTemplates";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 const paymentServices = new PaymentServices();
 
 export async function POST(request) {
     if (!await isServiceEnabled('enablePaymentProcessing')) {
-        return NextResponse.json({ success: false, message: 'Payment processing is currently disabled.' }, { status: 503 });
+        return errorResponse('Payment processing is currently disabled.', 503);
     }
 
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     const currentUserId = auth.user.userId || auth.user.id;
-    const isWarden = auth.user.role === 'WARDEN';
-    const isAdmin = auth.user.role === 'ADMIN';
 
     try {
         const data = await request.json();
@@ -27,7 +26,7 @@ export async function POST(request) {
         // 1. If trying to create a payment for SOMEONE ELSE, require manage_payments
         if (data.userId && data.userId !== currentUserId) {
             if (!await hasPermission('manage_payments')) {
-                return NextResponse.json({ success: false, message: "Forbidden: You cannot submit payments for other users without permission." }, { status: 403 });
+                return errorResponse("Forbidden: You cannot submit payments for other users without permission.", 403);
             }
         }
         
@@ -52,7 +51,7 @@ export async function POST(request) {
                     select: { hostelId: true }
                 });
                 if (resident && resident.hostelId !== wardenHostelId) {
-                    return NextResponse.json({ success: false, error: "Access Denied: You cannot manage residents of other hostels." }, { status: 403 });
+                    return errorResponse("Access Denied: You cannot manage residents of other hostels.", 403, { error: "Access Denied: You cannot manage residents of other hostels." });
                 }
             }
         }
@@ -165,15 +164,16 @@ export async function POST(request) {
             }
         }
 
-        return NextResponse.json({ success: true, payment });
+        return successResponse({ payment });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500, { error: error.message });
     }
 }
 
 export async function GET(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     const currentUserId = auth.user.userId || auth.user.id;
     const isAdmin = auth.user.role === 'ADMIN';
@@ -222,7 +222,7 @@ export async function GET(request) {
 
         if (type === 'stats') {
             const stats = await paymentServices.getFinancialStats(hostelId);
-            return NextResponse.json({ success: true, stats });
+            return successResponse({ stats });
         }
 
         const filters = {
@@ -235,10 +235,10 @@ export async function GET(request) {
         };
 
         const result = await paymentServices.getAllPayments(filters);
-        return NextResponse.json({ success: true, ...result });
+        return successResponse({ ...result });
 
     } catch (error) {
         console.error("API Error in Payments GET:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500, { error: error.message });
     }
 }

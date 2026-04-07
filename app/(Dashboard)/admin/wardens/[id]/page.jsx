@@ -83,6 +83,12 @@ const WardenProfilePage = () => {
 
         if (key === 'canManageExpenses') {
             const nextMaster = !perms.canManageExpenses;
+            if (!nextMaster) {
+                const confirmed = window.confirm(
+                    "Disable full expense access and clear all category permissions for this warden?"
+                );
+                if (!confirmed) return;
+            }
             updated.canManageExpenses = nextMaster;
             // Turning OFF master means fully restricted expense access.
             if (!nextMaster) {
@@ -94,6 +100,17 @@ const WardenProfilePage = () => {
             }
         } else {
             // Category toggles are granular access; keep master OFF in this mode.
+            if (perms[key]) {
+                const remainingEnabled = Object.entries(perms)
+                    .filter(([permKey]) => permKey !== "canManageExpenses")
+                    .filter(([, enabled]) => Boolean(enabled)).length;
+                if (remainingEnabled === 1) {
+                    const confirmed = window.confirm(
+                        "This will remove the last category permission and fully restrict expense access. Continue?"
+                    );
+                    if (!confirmed) return;
+                }
+            }
             updated[key] = !perms[key];
             updated.canManageExpenses = false;
         }

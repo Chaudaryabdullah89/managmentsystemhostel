@@ -1,13 +1,13 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
-import { NextResponse } from "next/server";
 import TaskServices from "@/lib/services/taskservices/taskservices";
+import { requireAuth } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 const taskServices = new TaskServices();
 
 export async function GET(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
 
     try {
         const { searchParams } = new URL(request.url);
@@ -18,7 +18,7 @@ export async function GET(request) {
 
         if (stats) {
             const taskStats = await taskServices.getTaskStats(hostelId);
-            return NextResponse.json({ success: true, data: taskStats });
+            return successResponse({ data: taskStats });
         }
 
         let filter = {};
@@ -27,35 +27,35 @@ export async function GET(request) {
         if (createdById) filter.createdById = createdById;
 
         const tasks = await taskServices.getTasks(filter);
-        return NextResponse.json({ success: true, data: tasks });
+        return successResponse({ data: tasks });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }
 
 export async function POST(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
 
     try {
         const body = await request.json();
         const task = await taskServices.createTask(body);
-        return NextResponse.json({ success: true, data: task });
+        return successResponse({ data: task });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }
 
 export async function PUT(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
 
     try {
         const body = await request.json();
         const { id, ...data } = body;
         const task = await taskServices.updateTask(id, data);
-        return NextResponse.json({ success: true, data: task });
+        return successResponse({ data: task });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }

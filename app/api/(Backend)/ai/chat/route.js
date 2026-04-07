@@ -1,4 +1,5 @@
-import { checkRole } from '@/lib/checkRole';
+import { requireAuth } from '@/lib/apiAuth';
+import { errorResponse } from '@/lib/apiResponse';
 import { chat } from '@/lib/ollama';
 import { getRelevantContext, DEFAULT_SYSTEM_PROMPT } from '@/lib/ragContext';
 import { NextResponse } from 'next/server';
@@ -17,9 +18,9 @@ import { NextResponse } from 'next/server';
  * Returns: { success, reply, context? }
  */
 export async function POST(request) {
-  const auth = await checkRole([]);
+  const auth = await requireAuth();
   if (!auth.success) {
-    return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    return errorResponse(auth.error, auth.status);
   }
 
   try {

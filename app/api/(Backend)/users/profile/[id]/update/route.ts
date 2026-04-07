@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
-import { checkRole } from '@/lib/checkRole';
 import { userUpdate } from "@/lib/services/UserServices/userservices"
+import { requireSelfOrRoles } from "@/lib/apiAuth";
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
-
-
     const { id } = await params
+    const guard = await requireSelfOrRoles(id, ['ADMIN']);
+    if (!guard.ok) return guard.response;
     console.log(`[API] PUT /api/users/profile/${id}/update - Request received for profile update`);
 
     const body = await req.json()

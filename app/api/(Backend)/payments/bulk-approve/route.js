@@ -1,13 +1,13 @@
-import { checkRole } from '@/lib/checkRole';
 import { NextResponse } from "next/server";
 import PaymentServices from "@/lib/services/paymentservices/paymentservices";
-import { prisma } from "@/lib/prisma";
+import { requireRoles } from "@/lib/apiAuth";
 
 const paymentServices = new PaymentServices();
 
 export async function POST(request) {
-    const auth = await checkRole(['ADMIN', 'SUPERADMIN', 'ACCOUNTANT']);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN']);
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const body = await request.json();
@@ -17,7 +17,7 @@ export async function POST(request) {
             return NextResponse.json({ success: false, error: "No payments selected" }, { status: 400 });
         }
 
-        const adminId = "admin"; // In a real system, get this from auth context/session
+        const adminId = auth.user?.id || auth.user?.userId || auth.user?.sub;
 
         const results = await paymentServices.bulkApprovePayments(paymentIds, adminId);
 

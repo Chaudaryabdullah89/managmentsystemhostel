@@ -1,36 +1,36 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
-import { NextResponse } from "next/server";
 import TaskServices from "@/lib/services/taskservices/taskservices";
+import { requireAuth } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 const taskServices = new TaskServices();
 
 export async function GET(request, { params }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
 
     try {
-        const { taskId } = params;
+        const { taskId } = await params;
         const task = await taskServices.getTasks({ id: taskId });
         if (task.length === 0) {
-            return NextResponse.json({ success: false, error: "Task not found" }, { status: 404 });
+            return errorResponse("Task not found", 404);
         }
-        return NextResponse.json({ success: true, data: task[0] });
+        return successResponse({ data: task[0] });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }
 
 export async function POST(request, { params }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
 
     try {
-        const { taskId } = params;
+        const { taskId } = await params;
         const body = await request.json();
         const comment = await taskServices.addTaskComment({ ...body, taskId });
-        return NextResponse.json({ success: true, data: comment });
+        return successResponse({ data: comment });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }

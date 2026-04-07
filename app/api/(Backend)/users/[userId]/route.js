@@ -1,18 +1,26 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
-import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { requireRoles, requireSelfOrRoles } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
+import { logAuditEvent } from "@/lib/auditLogger";
+import { createInAppNotification } from "@/lib/inAppNotifications";
 
 export async function GET(request, { params }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
-
     try {
         const { userId } = await params;
+        const { searchParams } = new URL(request.url);
+        const bookingPage = Math.max(1, parseInt(searchParams.get("bookingPage") || "1"));
+        const bookingLimit = Math.min(25, Math.max(1, parseInt(searchParams.get("bookingLimit") || "5")));
+        const bookingSkip = (bookingPage - 1) * bookingLimit;
+        const paymentPage = Math.max(1, parseInt(searchParams.get("paymentPage") || "1"));
+        const paymentLimit = Math.min(25, Math.max(1, parseInt(searchParams.get("paymentLimit") || "10")));
+        const paymentSkip = (paymentPage - 1) * paymentLimit;
 
         if (!userId) {
-            return NextResponse.json({ success: false, error: "User ID is required" }, { status: 400 });
+            return errorResponse("User ID is required", 400);
         }
+        const guard = await requireSelfOrRoles(userId, ['ADMIN']);
+        if (!guard.ok) return guard.response;
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
@@ -28,19 +36,6 @@ export async function GET(request, { params }) {
                 },
                 Hostel_User_hostelIdToHostel: {
                     select: { name: true }
-                },
-                Booking: {
-                    include: {
-                        Room: {
-                            include: { Hostel: true }
-                        },
-                        Payment: true
-                    },
-                    orderBy: { createdAt: 'desc' }
-                },
-                Payment: {
-                    orderBy: { date: 'desc' },
-                    take: 10
                 },
                 Complaint_Complaint_userIdToUser: {
                     include: { Hostel: true },
@@ -62,22 +57,63 @@ export async function GET(request, { params }) {
         });
 
         if (!user) {
-            return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
+            return errorResponse("User not found", 404);
         }
 
-        return NextResponse.json({
-            success: true,
-            user
+        const [bookings, totalBookings, payments, totalPayments] = await Promise.all([
+            prisma.booking.findMany({
+                where: { userId },
+                include: {
+                    Room: { include: { Hostel: true } },
+                    Payment: true,
+                },
+                orderBy: { createdAt: 'desc' },
+                skip: bookingSkip,
+                take: bookingLimit,
+            }),
+            prisma.booking.count({ where: { userId } }),
+            prisma.payment.findMany({
+                where: { userId },
+                orderBy: { date: 'desc' },
+                skip: paymentSkip,
+                take: paymentLimit,
+            }),
+            prisma.payment.count({ where: { userId } }),
+        ]);
+
+        return successResponse({
+            user: {
+                ...user,
+                Booking: bookings,
+                Payment: payments,
+            },
+            pagination: {
+                bookings: {
+                    page: bookingPage,
+                    limit: bookingLimit,
+                    total: totalBookings,
+                    totalPages: Math.max(1, Math.ceil(totalBookings / bookingLimit)),
+                },
+                payments: {
+                    page: paymentPage,
+                    limit: paymentLimit,
+                    total: totalPayments,
+                    totalPages: Math.max(1, Math.ceil(totalPayments / paymentLimit)),
+                },
+            },
         });
     } catch (error) {
         console.error("User Detail Fetch Error:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }
 
 export async function PATCH(request, { params }) {
     try {
         const { userId } = await params;
+        const guard = await requireRoles(['ADMIN']);
+        if (!guard.ok) return guard.response;
+        const actor = guard.user;
         const body = await request.json();
 
         // Sanitize body: remove relation fields that cause Prisma to fail if passed directly
@@ -115,10 +151,7 @@ export async function PATCH(request, { params }) {
 
             if (existingUser) {
                 const conflictField = existingUser.email === updateData.email ? "Email" : "UID";
-                return NextResponse.json({
-                    success: false,
-                    error: `${conflictField} is already assigned to another identity. Please reconcile values.`
-                }, { status: 400 });
+                return errorResponse(`${conflictField} is already assigned to another identity. Please reconcile values.`, 400);
             }
         }
 
@@ -137,8 +170,43 @@ export async function PATCH(request, { params }) {
             }
         });
 
-        return NextResponse.json({
-            success: true,
+        const permissionKeys = [
+            "canManageExpenses",
+            "canManageMess",
+            "canManageGeneral",
+            "canManageUtilities",
+            "canManageMaintenance",
+            "canManageSalaries",
+        ];
+        const changedPermissions = permissionKeys
+            .filter((key) => Object.prototype.hasOwnProperty.call(updateData, key))
+            .reduce((acc, key) => {
+                acc[key] = updateData[key];
+                return acc;
+            }, {});
+
+        if (Object.keys(changedPermissions).length > 0) {
+            await logAuditEvent({
+                action: "USER_PERMISSION_UPDATE",
+                actorId: actor?.id || actor?.userId || actor?.sub,
+                actorRole: actor?.role,
+                targetType: "USER",
+                targetId: userId,
+                metadata: { changedPermissions },
+            });
+
+            await createInAppNotification({
+                title: "Permission profile updated",
+                content: `Your access permissions were updated by ${actor?.role || "an admin"}. Please refresh your dashboard if needed.`,
+                priority: "MEDIUM",
+                category: "PERMISSION",
+                targetRoles: [updatedUser.role],
+                hostelId: updatedUser.hostelId || null,
+                actorId: actor?.id || actor?.userId || actor?.sub || null,
+            });
+        }
+
+        return successResponse({
             message: "User identity synchronized",
             user: updatedUser
         });
@@ -147,24 +215,21 @@ export async function PATCH(request, { params }) {
 
         // Handle specific Prisma errors if the findFirst check missed something (e.g. race condition)
         if (error.code === 'P2002') {
-            return NextResponse.json({
-                success: false,
-                error: "Unique constraint violation: Email or UID already exists."
-            }, { status: 400 });
+            return errorResponse("Unique constraint violation: Email or UID already exists.", 400);
         }
 
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }
 
 export async function DELETE(request, { params }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN']);
+    if (!guard.ok) return guard.response;
 
     try {
         const { userId } = await params;
         if (!userId) {
-            return NextResponse.json({ success: false, error: "User ID is required" }, { status: 400 });
+            return errorResponse("User ID is required", 400);
         }
 
         const targetUser = await prisma.user.findUnique({
@@ -177,7 +242,7 @@ export async function DELETE(request, { params }) {
         });
 
         if (!targetUser) {
-            return NextResponse.json({ success: false, error: "User not found" }, { status: 404 });
+            return errorResponse("User not found", 404);
         }
 
         const bookingIds = targetUser.Booking.map((b) => b.id);
@@ -220,12 +285,12 @@ export async function DELETE(request, { params }) {
 
         // Idempotent behavior: if already deleted by a concurrent request, return success.
         if (!deleteUserResult || deleteUserResult.count === 0) {
-            return NextResponse.json({ success: true, message: "User already removed" });
+            return successResponse({ message: "User already removed" });
         }
 
-        return NextResponse.json({ success: true, message: "User node purged" });
+        return successResponse({ message: "User node purged" });
     } catch (error) {
         console.error("User DELETE Error:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }

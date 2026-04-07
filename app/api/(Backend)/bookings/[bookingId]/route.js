@@ -1,25 +1,26 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
-
-import { NextResponse } from "next/server";
 import BookingServices from "@/lib/services/bookingservices/bookingservices";
+import { prisma } from "@/lib/prisma";
+import { requireRoles } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 const bookingServices = new BookingServices();
 
 export async function GET(request, { params }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN', 'WARDEN']);
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const { bookingId } = await params;
         if (!bookingId) {
-            return NextResponse.json({ success: false, error: "Booking ID is required" }, { status: 400 });
+            return errorResponse("Booking ID is required", 400);
         }
 
         const booking = await bookingServices.getBookingById(bookingId);
 
         if (!booking) {
-            return NextResponse.json({ success: false, error: "Booking not found" }, { status: 404 });
+            return errorResponse("Booking not found", 404);
         }
 
         // Security: Wardens can ONLY see their own hostel's bookings
@@ -34,26 +35,27 @@ export async function GET(request, { params }) {
             }
 
             if (booking.Room?.hostelId !== wardenHostelId) {
-                return NextResponse.json({ success: false, error: "Access Denied: You cannot view bookings from other hostels." }, { status: 403 });
+                return errorResponse("Access Denied: You cannot view bookings from other hostels.", 403);
             }
         }
 
-        return NextResponse.json({ success: true, booking });
+        return successResponse({ booking });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }
 
 export async function PUT(request, { params }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN', 'WARDEN']);
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const { bookingId } = await params;
         const data = await request.json();
 
         if (!bookingId) {
-            return NextResponse.json({ success: false, error: "Booking ID is required" }, { status: 400 });
+            return errorResponse("Booking ID is required", 400);
         }
 
         // Security: Wardens can ONLY update their own hostel's bookings
@@ -73,26 +75,27 @@ export async function PUT(request, { params }) {
             });
 
             if (booking && booking.Room?.hostelId !== wardenHostelId) {
-                return NextResponse.json({ success: false, error: "Access Denied: You cannot update bookings from other hostels." }, { status: 403 });
+                return errorResponse("Access Denied: You cannot update bookings from other hostels.", 403);
             }
         }
 
         const updatedBooking = await bookingServices.updateBooking(bookingId, data);
-        return NextResponse.json({ success: true, booking: updatedBooking });
+        return successResponse({ booking: updatedBooking });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }
 
 export async function DELETE(request, { params }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN', 'WARDEN']);
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const { bookingId } = await params;
 
         if (!bookingId) {
-            return NextResponse.json({ success: false, error: "Booking ID is required" }, { status: 400 });
+            return errorResponse("Booking ID is required", 400);
         }
 
         // Security: Wardens can ONLY delete their own hostel's bookings
@@ -112,13 +115,13 @@ export async function DELETE(request, { params }) {
             });
 
             if (booking && booking.Room?.hostelId !== wardenHostelId) {
-                return NextResponse.json({ success: false, error: "Access Denied: You cannot delete bookings from other hostels." }, { status: 403 });
+                return errorResponse("Access Denied: You cannot delete bookings from other hostels.", 403);
             }
         }
 
         await bookingServices.deleteBooking(bookingId);
-        return NextResponse.json({ success: true, message: "Booking deleted successfully" });
+        return successResponse({ message: "Booking deleted successfully" });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }

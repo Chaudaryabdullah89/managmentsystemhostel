@@ -1,11 +1,12 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireRoles } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 export async function GET(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN', 'WARDEN']);
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const { searchParams } = new URL(request.url);
@@ -45,8 +46,8 @@ export async function GET(request) {
             orderBy: { createdAt: 'desc' }
         });
 
-        return NextResponse.json({ success: true, refundRequests });
+        return successResponse({ refundRequests });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500, { error: error.message });
     }
 }

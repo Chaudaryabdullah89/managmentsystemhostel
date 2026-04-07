@@ -1,27 +1,26 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
-import { NextResponse } from "next/server";
 import BookingServices from "@/lib/services/bookingservices/bookingservices";
+import { requireAuth } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 export async function GET(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
 
     try {
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get("userId");
 
         if (!userId) {
-            return NextResponse.json({ error: "UserId is required", success: false }, { status: 400 });
+            return errorResponse("UserId is required", 400);
         }
 
         const bookings = await new BookingServices().getBookingHistoryByUserId(userId);
-        return NextResponse.json({
+        return successResponse({
             message: "Booking history fetched successfully",
             bookings: bookings,
-            success: true
         });
     } catch (error) {
-        return NextResponse.json({ error: error.message, success: false }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }

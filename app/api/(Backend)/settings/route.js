@@ -1,32 +1,27 @@
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { checkRole } from "@/lib/checkRole";
 import { DEFAULT_SETTINGS } from "@/lib/permissions";
+import { requireAuth, requireRoles } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 export async function GET() {
     // Require authentication — system settings reveal feature flags that shouldn't be public
-    const auth = await checkRole([]);
-    if (!auth.success) {
-        return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 });
-    }
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
 
     try {
         const settings = await prisma.systemSettings.findUnique({ where: { id: "global" } });
-        return NextResponse.json({
-            success: true,
+        return successResponse({
             settings: settings ? { ...DEFAULT_SETTINGS, ...settings } : DEFAULT_SETTINGS,
         });
     } catch (error) {
         console.error("GET /api/settings error:", error);
-        return NextResponse.json({ success: false, message: "Server Error" }, { status: 500 });
+        return errorResponse("Server Error", 500);
     }
 }
 
 export async function PUT(req) {
-    const auth = await checkRole(["ADMIN"]);
-    if (!auth.success) {
-        return NextResponse.json({ success: false, message: "Forbidden: Admin access required." }, { status: 403 });
-    }
+    const guard = await requireRoles(["ADMIN"]);
+    if (!guard.ok) return guard.response;
 
     try {
         const body = await req.json();
@@ -41,7 +36,7 @@ export async function PUT(req) {
         }
 
         if (Object.keys(data).length === 0) {
-            return NextResponse.json({ success: false, message: "No valid settings fields provided." }, { status: 400 });
+            return errorResponse("No valid settings fields provided.", 400);
         }
 
         const settings = await prisma.systemSettings.upsert({
@@ -50,9 +45,9 @@ export async function PUT(req) {
             create: { id: "global", ...DEFAULT_SETTINGS, ...data },
         });
 
-        return NextResponse.json({ success: true, settings });
+        return successResponse({ settings });
     } catch (error) {
         console.error("PUT /api/settings error:", error);
-        return NextResponse.json({ success: false, message: "Server Error" }, { status: 500 });
+        return errorResponse("Server Error", 500);
     }
 }

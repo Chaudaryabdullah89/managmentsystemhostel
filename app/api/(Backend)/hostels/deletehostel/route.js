@@ -1,13 +1,13 @@
-import { checkRole } from '@/lib/checkRole';
 import HostelServices from "../../../../../lib/services/hostelservices/hostelservices";
+import { requireRoles } from '@/lib/apiAuth';
 
 const { NextResponse, Request } = require("next/server")
 
 
 
 export async function POST(req) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN']);
+    if (!guard.ok) return guard.response;
 
     console.log("[API] POST /api/hostels/deletehostel - Request received");
 

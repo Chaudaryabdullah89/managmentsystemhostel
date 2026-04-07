@@ -1,7 +1,10 @@
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireRoles } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 export async function PATCH(request, { params }) {
+    const guard = await requireRoles(['ADMIN', 'WARDEN']);
+    if (!guard.ok) return guard.response;
     try {
         // Await params object for Next.js 15+ compatibility
         const { id } = await params;
@@ -13,7 +16,7 @@ export async function PATCH(request, { params }) {
                 include: { Payment: true }
             });
 
-            if (!currentRequest) throw new Error("Refund request not found");
+            if (!currentRequest) return null;
 
             // Update Refund Request
             const updated = await tx.refundRequest.update({
@@ -35,9 +38,12 @@ export async function PATCH(request, { params }) {
 
             return updated;
         });
+        if (!refundRequest) {
+            return errorResponse("Refund request not found", 404, { error: "Refund request not found" });
+        }
 
-        return NextResponse.json({ success: true, refundRequest });
+        return successResponse({ refundRequest });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500, { error: error.message });
     }
 }

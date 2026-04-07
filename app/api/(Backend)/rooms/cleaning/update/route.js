@@ -1,12 +1,13 @@
-import { checkRole } from '@/lib/checkRole';
+import { requireAuth } from '@/lib/apiAuth';
 import { NextResponse } from "next/server";
 import RoomServices from "@/lib/services/roomservices/roomservices";
+import { errorResponse } from '@/lib/apiResponse';
 
 const roomServices = new RoomServices();
 
 export async function PUT(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const auth = await requireAuth();
+    if (!auth.success) return errorResponse(auth.error, auth.status);
 
     try {
         const body = await request.json();

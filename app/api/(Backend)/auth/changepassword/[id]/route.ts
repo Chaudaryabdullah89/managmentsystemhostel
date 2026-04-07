@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { prisma } from "@/lib/prisma";
-import { checkRole } from "@/lib/checkRole";
+import { requireAuth } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 type Body = {
     currentPassword?: string;
@@ -13,10 +14,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const { id } = await params;
 
     // ── Authentication required ───────────────────────────────────────────
-    const auth = await checkRole([]);
-    if (!auth.success) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     const callerId = auth.user.userId || auth.user.id;
     const callerRole = auth.user.role;
@@ -25,32 +25,32 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const { currentPassword, newPassword, isReset } = body;
 
     if (!newPassword || newPassword.length < 8) {
-        return NextResponse.json({ error: "newPassword must be at least 8 characters." }, { status: 400 });
+        return errorResponse("newPassword must be at least 8 characters.", 400);
     }
 
     // ── RBAC: Only ADMIN or WARDEN can use isReset flag ──────────────────
     if (isReset && callerRole !== "ADMIN" && callerRole !== "WARDEN") {
-        return NextResponse.json({ error: "Forbidden: Only admins or wardens can reset passwords." }, { status: 403 });
+        return errorResponse("Forbidden: Only admins or wardens can reset passwords.", 403);
     }
 
     // ── Users can only change their OWN password (unless admin/warden reset) ──
     if (!isReset && callerId !== id) {
-        return NextResponse.json({ error: "Forbidden: You can only change your own password." }, { status: 403 });
+        return errorResponse("Forbidden: You can only change your own password.", 403);
     }
 
     if (!isReset && !currentPassword) {
-        return NextResponse.json({ error: "currentPassword is required." }, { status: 400 });
+        return errorResponse("currentPassword is required.", 400);
     }
 
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) {
-        return NextResponse.json({ error: "User not found." }, { status: 404 });
+        return errorResponse("User not found.", 404);
     }
 
     if (!isReset) {
         const isPasswordValid = await bcrypt.compare(currentPassword!, user.password);
         if (!isPasswordValid) {
-            return NextResponse.json({ error: "Current password is incorrect." }, { status: 401 });
+            return errorResponse("Current password is incorrect.", 401);
         }
     }
 
@@ -63,5 +63,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         data: { isActive: false },
     });
 
-    return NextResponse.json({ message: "Password updated successfully." }, { status: 200 });
+    return successResponse({ message: "Password updated successfully." }, 200);
 }

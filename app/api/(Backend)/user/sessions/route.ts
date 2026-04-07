@@ -1,23 +1,15 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { useSession } from "../../auth/usesession";
+import { requireAuth } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 export async function GET(req: NextRequest) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
-
-    const authUser = await useSession();
-
-    if (!authUser || !authUser.userId) {
-        if (!authUser?.id) {
-            console.warn(`[API] GET /api/user/sessions - Unauthorized attempt`);
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-    }
-
-    const userId = authUser.userId || authUser.id;
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
+    const authUser = guard.user;
+    const userId = authUser.userId || authUser.id || authUser.sub;
+    if (!userId) return errorResponse("Unauthorized", 401);
     console.log(`[API] GET /api/user/sessions - Fetching sessions for user: ${userId}`);
 
     try {
@@ -39,23 +31,19 @@ export async function GET(req: NextRequest) {
         });
 
         console.log(`[API] GET /api/user/sessions - Found ${sessions.length} sessions for user: ${userId}`);
-        return NextResponse.json({ sessions });
+        return successResponse({ sessions });
     } catch (error) {
         console.error(`[API] GET /api/user/sessions - Error fetching sessions: ${error}`);
-        return NextResponse.json({ error: "Failed to fetch sessions" }, { status: 500 });
+        return errorResponse("Failed to fetch sessions", 500);
     }
 }
 
 export async function DELETE(req: NextRequest) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
-
-    const authUser = await useSession();
-    if (!authUser || (!authUser.userId && !authUser.id)) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userId = authUser.userId || authUser.id;
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
+    const authUser = guard.user;
+    const userId = authUser.userId || authUser.id || authUser.sub;
+    if (!userId) return errorResponse("Unauthorized", 401);
     const { searchParams } = new URL(req.url);
     const sessionId = searchParams.get("sessionId");
 
@@ -68,7 +56,7 @@ export async function DELETE(req: NextRequest) {
                     userId: userId as string
                 }
             });
-            return NextResponse.json({ success: true, message: "Session terminated" });
+            return successResponse({ message: "Session terminated" });
         } else {
             // Terminate all sessions
             await prisma.session.deleteMany({
@@ -76,10 +64,10 @@ export async function DELETE(req: NextRequest) {
                     userId: userId as string
                 }
             });
-            return NextResponse.json({ success: true, message: "All sessions terminated" });
+            return successResponse({ message: "All sessions terminated" });
         }
     } catch (error) {
         console.error(`[API] DELETE /api/user/sessions - Error:`, error);
-        return NextResponse.json({ error: "Failed to terminate session(s)" }, { status: 500 });
+        return errorResponse("Failed to terminate session(s)", 500);
     }
 }

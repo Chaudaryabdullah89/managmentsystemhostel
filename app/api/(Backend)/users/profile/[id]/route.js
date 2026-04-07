@@ -1,14 +1,13 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSystemSettings, getPermissionsForRole, DEFAULT_ROLE_PERMISSIONS } from "@/lib/permissions";
+import { requireSelfOrRoles } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 export async function GET(req, { params }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
-
     const { id } = await params;
+    const guard = await requireSelfOrRoles(id, ['ADMIN']);
+    if (!guard.ok) return guard.response;
 
     try {
         const user = await prisma.user.findUnique({
@@ -47,7 +46,7 @@ export async function GET(req, { params }) {
         });
 
         if (!user) {
-            return NextResponse.json({ error: "User not found" }, { status: 404 });
+            return errorResponse("User not found", 404);
         }
 
         // Fetch dynamic permissions + global settings in parallel (both cached via React.cache())
@@ -56,13 +55,13 @@ export async function GET(req, { params }) {
             getSystemSettings(),
         ]);
 
-        return NextResponse.json({
+        return successResponse({
             ...user,
             rolePermissions,
             systemSettings,
         });
     } catch (error) {
         console.error(`[API] GET /api/users/profile/${id} - Error:`, error);
-        return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 });
+        return errorResponse("Failed to fetch user", 500);
     }
 }

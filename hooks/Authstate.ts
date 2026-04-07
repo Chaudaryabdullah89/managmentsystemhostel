@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import Cookies from "js-cookie";
-import verifyToken from "../lib/verifytoken";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,7 +25,7 @@ type AuthState = {
   isLoading: boolean;
   /** Fetch full user profile (with rolePermissions + systemSettings) and store it */
   setUser: (user: DecodedUser) => Promise<void>;
-  setToken: (token: string) => void;
+  setToken: (token: string | null) => void;
   setIsLoggedIn: (isLoggedIn: boolean) => void;
   logout: () => Promise<void>;
 };
@@ -68,13 +67,7 @@ const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  setToken: (token) => {
-    Cookies.set("token", token, { sameSite: "strict" });
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("auth_token", token);
-    }
-    set({ token });
-  },
+  setToken: (token) => set({ token }),
 
   setIsLoggedIn: (status) => set({ isLoggedIn: status }),
 
@@ -85,9 +78,6 @@ const useAuthStore = create<AuthState>((set) => ({
       console.error("[AuthStore] Logout API call failed:", error);
     }
     Cookies.remove("token");
-    if (typeof window !== "undefined") {
-      window.localStorage.removeItem("auth_token");
-    }
     set({ user: null, token: null, isLoggedIn: false, isLoading: false });
     window.location.href = "/auth/login";
   },
@@ -105,36 +95,17 @@ const useAuthStore = create<AuthState>((set) => ({
  * redirects for protected routes.
  */
 export const checkAuth = async () => {
-  let token = Cookies.get("token");
-  if (!token && typeof window !== "undefined") {
-    token = window.localStorage.getItem("auth_token") || undefined;
-  }
-
-  if (!token) {
-    // No cookie → mark loading done, stay unauthenticated
-    useAuthStore.setState({ isLoggedIn: false, isLoading: false });
-    return;
-  }
-
-  const decoded = verifyToken(token) as any;
-
-  if (!decoded) {
-    // Malformed token → clear it and mark done (don't trigger full logout redirect)
-    Cookies.remove("token");
+  try {
+    const response = await fetch("/api/auth/me", { cache: "no-store" });
+    const data = await response.json();
+    if (!response.ok || !data?.success || !data?.user) {
+      useAuthStore.setState({ user: null, token: null, isLoggedIn: false, isLoading: false });
+      return;
+    }
+    await useAuthStore.getState().setUser(data.user);
+  } catch {
     useAuthStore.setState({ user: null, token: null, isLoggedIn: false, isLoading: false });
-    return;
   }
-
-  const id = decoded.id || decoded.userId || decoded.sub;
-  if (!id) {
-    Cookies.remove("token");
-    useAuthStore.setState({ user: null, token: null, isLoggedIn: false, isLoading: false });
-    return;
-  }
-
-  const user: DecodedUser = { ...decoded, id };
-  useAuthStore.getState().setToken(token);
-  await useAuthStore.getState().setUser(user);
 };
 
 export default useAuthStore;

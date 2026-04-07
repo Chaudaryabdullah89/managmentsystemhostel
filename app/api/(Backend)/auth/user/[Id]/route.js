@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { requireSelfOrRoles } from "@/lib/apiAuth";
 
 
 export async function GET(req, { params }) {
@@ -11,6 +12,9 @@ export async function GET(req, { params }) {
     if (!Id) {
         return NextResponse.json({ error: "User ID is required" });
     }
+
+    const guard = await requireSelfOrRoles(Id, ["ADMIN"]);
+    if (!guard.ok) return guard.response;
 
     try {
         const user = await prisma.user.findUnique({

@@ -1,18 +1,18 @@
-import { checkRole } from '@/lib/checkRole';
 import { isServiceEnabled, hasPermission } from '@/lib/permissions';
-import { NextResponse } from "next/server";
 import NoticeService from "@/lib/services/noticeservices/noticeservices";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/apiAuth";
+import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 const noticeService = new NoticeService();
 
 export async function GET(request) {
     if (!await isServiceEnabled('enableNoticeBoard')) {
-        return NextResponse.json({ success: true, data: [] }); // Gracefully return empty if disabled
+        return successResponse({ data: [] }); // Gracefully return empty if disabled
     }
 
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
 
     try {
         const { searchParams } = new URL(request.url);
@@ -22,10 +22,11 @@ export async function GET(request) {
 
         if (stats) {
             const noticeStats = await noticeService.getNoticeStats(hostelId);
-            return NextResponse.json({ success: true, data: noticeStats });
+            return successResponse({ data: noticeStats });
         }
 
         let filter = {};
+        const viewerRole = guard.user?.role;
         if (hostelId) {
             // Fetch notices for specific hostel OR global notices (hostelId null)
             filter = {
@@ -36,24 +37,38 @@ export async function GET(request) {
             };
         }
 
+        if (viewerRole) {
+            filter = {
+                AND: [
+                    filter,
+                    {
+                        OR: [
+                            { targetRoles: { isEmpty: true } },
+                            { targetRoles: { has: viewerRole } },
+                        ],
+                    },
+                ],
+            };
+        }
+
         const notices = await noticeService.getNotices(filter);
-        return NextResponse.json({ success: true, data: notices });
+        return successResponse({ data: notices });
     } catch (error) {
         console.error("[API] GET /api/notices - Error:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }
 
 export async function POST(request) {
     if (!await isServiceEnabled('enableNoticeBoard')) {
-        return NextResponse.json({ success: false, message: 'Notice board is currently disabled.' }, { status: 503 });
+        return errorResponse('Notice board is currently disabled.', 503);
     }
 
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
 
     if (!await hasPermission('manage_notices')) {
-        return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to post notices." }, { status: 403 });
+        return errorResponse("Forbidden: You do not have permission to post notices.", 403);
     }
 
     try {
@@ -62,7 +77,7 @@ export async function POST(request) {
         // Validate author exists to prevent P2003
         if (body.authorId) {
             const user = await prisma.user.findUnique({ where: { id: body.authorId }, select: { id: true } });
-            if (!user) return NextResponse.json({ success: false, error: "Author user does not exist. Your session might be stale." }, { status: 401 });
+            if (!user) return errorResponse("Author user does not exist. Your session might be stale.", 401);
         }
 
         // Validate hostelId if provided
@@ -73,52 +88,52 @@ export async function POST(request) {
                 if (body.hostelId === 'null' || body.hostelId === 'undefined') {
                     body.hostelId = null;
                 } else {
-                    return NextResponse.json({ success: false, error: "Selected hostel does not exist." }, { status: 400 });
+                    return errorResponse("Selected hostel does not exist.", 400);
                 }
             }
         }
 
         const notice = await noticeService.createNotice(body);
-        return NextResponse.json({ success: true, data: notice });
+        return successResponse({ data: notice });
     } catch (error) {
         console.error("Notice POST Error:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }
 
 export async function PUT(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
 
     if (!await hasPermission('manage_notices')) {
-        return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to update notices." }, { status: 403 });
+        return errorResponse("Forbidden: You do not have permission to update notices.", 403);
     }
 
     try {
         const body = await request.json();
         const { id, ...data } = body;
         const notice = await noticeService.updateNotice(id, data);
-        return NextResponse.json({ success: true, data: notice });
+        return successResponse({ data: notice });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }
 
 export async function DELETE(request) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
 
     if (!await hasPermission('manage_notices')) {
-        return NextResponse.json({ success: false, message: "Forbidden: You do not have permission to delete notices." }, { status: 403 });
+        return errorResponse("Forbidden: You do not have permission to delete notices.", 403);
     }
 
     try {
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
-        if (!id) throw new Error("Notice ID is required");
+        if (!id) return errorResponse("Notice ID is required", 400);
         const notice = await noticeService.deleteNotice(id);
-        return NextResponse.json({ success: true, data: notice });
+        return successResponse({ data: notice });
     } catch (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return errorResponse(error.message, 500);
     }
 }

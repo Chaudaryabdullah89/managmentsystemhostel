@@ -1,10 +1,11 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { requireRoles } from "@/lib/apiAuth";
 export async function GET(request, { params }) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const guard = await requireRoles(['ADMIN', 'WARDEN', 'STAFF']);
+    if (!guard.ok) return guard.response;
+    const auth = { user: guard.user };
 
     try {
         const { id } = await params;

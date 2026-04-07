@@ -1,12 +1,13 @@
 export const dynamic = 'force-dynamic';
-import { checkRole } from '@/lib/checkRole';
+import { requireAuth } from '@/lib/apiAuth';
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { errorResponse } from '@/lib/apiResponse';
 
 // GET - fetch all leave requests (admin/warden)
 export async function GET(req) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const auth = await requireAuth();
+    if (!auth.success) return errorResponse(auth.error, auth.status);
 
     try {
         const { searchParams } = new URL(req.url);
@@ -50,8 +51,8 @@ export async function GET(req) {
 
 // POST - create leave request (resident)
 export async function POST(req) {
-    const auth = await checkRole([]);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    const auth = await requireAuth();
+    if (!auth.success) return errorResponse(auth.error, auth.status);
 
     try {
         const { userId, hostelId, roomId, startDate, endDate, reason, emergencyContact } = await req.json();
@@ -102,7 +103,7 @@ export async function POST(req) {
 // PUT - update leave request status (admin/warden)
 export async function PUT(req) {
     const auth = await checkRole(['ADMIN', 'WARDEN']);
-    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+    if (!auth.success) return errorResponse(auth.error, auth.status);
 
     try {
         const { id, status, notes } = await req.json();
