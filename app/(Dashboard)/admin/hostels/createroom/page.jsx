@@ -344,7 +344,7 @@ const CreateRoomForm = () => {
                                     />
                                 </div>
 
-                                <div className="space-y-2.5">
+                                {/* <div className="space-y-2.5">
                                     <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Image Link</Label>
                                     <div className="relative">
                                         <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
@@ -355,7 +355,7 @@ const CreateRoomForm = () => {
                                             onChange={(e) => setImageUrl(e.target.value)}
                                         />
                                     </div>
-                                </div>
+                                </div> */}
                             </CardContent>
                         </Card>
                     </div>

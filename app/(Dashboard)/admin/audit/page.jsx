@@ -307,9 +307,13 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                                 { label: 'CNIC / ID', value: user.cnic || '—' },
                                                 { label: 'Reg Number', value: user.regNumber || '—' },
                                                 { label: 'Emergency', value: details?.ResidentProfile?.emergencyContact || '—' },
+                                                { label: 'Guardian Name', value: details?.ResidentProfile?.guardianName || '—' },
+                                                { label: 'Guardian Phone', value: details?.ResidentProfile?.guardianPhone || '—' },
                                                 { label: 'Address', value: user.address || '—' },
+                                                { label: 'City', value: user.city || details?.ResidentProfile?.city || '—' },
                                                 { label: 'Current Residence', value: details?.ResidentProfile?.documents?.currentResidence || '—' },
                                                 { label: 'Additional Docs', value: Array.isArray(details?.ResidentProfile?.documents?.galleryImages) ? details.ResidentProfile.documents.galleryImages.length : 0 },
+                                                { label: 'Maintenance Records', value: `${details?.maintanance_maintanance_userIdToUser?.length || 0}` },
                                                 { label: 'Join Date', value: format(new Date(user.createdAt), 'MMMM dd, yyyy') },
                                             ].map((f, i) => (
                                                 <div key={i}>
@@ -790,7 +794,7 @@ const SearchPage = () => {
                                 ref={inputRef}
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
-                                placeholder="Search"
+                                placeholder="Search by name, email, phone, CNIC, UID, reg no..."
                                 className="h-14 bg-transparent border-none shadow-none font-bold text-base focus-visible:ring-0 placeholder:text-gray-300"
                             />
                             {query && (

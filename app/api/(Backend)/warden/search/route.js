@@ -11,10 +11,10 @@ export async function GET(req) {
         const { searchParams } = new URL(req.url);
         const query = searchParams.get('query');
 
-        if (!query || query.trim().length < 3) {
+        if (!query || query.trim().length < 2) {
             return NextResponse.json({
                 success: false,
-                error: "Search term must be at least 3 characters"
+                error: "Search term must be at least 2 characters"
             });
         }
 
@@ -56,7 +56,9 @@ export async function GET(req) {
                                 { email: { contains: query, mode: 'insensitive' } },
                                 { name: { contains: query, mode: 'insensitive' } },
                                 { phone: { contains: query, mode: 'insensitive' } },
-                                { regNumber: { contains: query, mode: 'insensitive' } }
+                                { regNumber: { contains: query, mode: 'insensitive' } },
+                                { cnic: { contains: query, mode: 'insensitive' } },
+                                { id: { contains: query, mode: 'insensitive' } }
                             ]
                         }
                     ]
@@ -83,6 +85,7 @@ export async function GET(req) {
                         {
                             OR: [
                                 { uid: { contains: searchTerm, mode: 'insensitive' } },
+                                { id: { contains: query, mode: 'insensitive' } },
                                 {
                                     User: {
                                         OR: [
@@ -126,6 +129,7 @@ export async function GET(req) {
                             OR: [
                                 { uid: { contains: searchTerm, mode: 'insensitive' } },
                                 { transactionId: { contains: query, mode: 'insensitive' } },
+                                { id: { contains: query, mode: 'insensitive' } },
                                 {
                                     User: {
                                         OR: [
@@ -156,6 +160,7 @@ export async function GET(req) {
                             OR: [
                                 { uid: { contains: searchTerm, mode: 'insensitive' } },
                                 { title: { contains: query, mode: 'insensitive' } },
+                                { id: { contains: query, mode: 'insensitive' } },
                                 {
                                     User_Complaint_userIdToUser: {
                                         OR: [
@@ -185,6 +190,7 @@ export async function GET(req) {
                             OR: [
                                 { uid: { contains: searchTerm, mode: 'insensitive' } },
                                 { title: { contains: query, mode: 'insensitive' } },
+                                { id: { contains: query, mode: 'insensitive' } },
                                 {
                                     User_maintanance_userIdToUser: {
                                         OR: [
