@@ -79,14 +79,25 @@ const WardenProfilePage = () => {
     });
 
     const handlePermToggle = (key) => {
-        const updated = { ...perms, [key]: !perms[key] };
-        // If master expense is OFF, clear sub-permissions too
-        if (key === 'canManageExpenses' && perms.canManageExpenses) {
-            updated.canManageMess = false;
-            updated.canManageGeneral = false;
-            updated.canManageUtilities = false;
-            updated.canManageMaintenance = false;
+        const updated = { ...perms };
+
+        if (key === 'canManageExpenses') {
+            const nextMaster = !perms.canManageExpenses;
+            updated.canManageExpenses = nextMaster;
+            // Turning OFF master means fully restricted expense access.
+            if (!nextMaster) {
+                updated.canManageMess = false;
+                updated.canManageGeneral = false;
+                updated.canManageUtilities = false;
+                updated.canManageMaintenance = false;
+                updated.canManageSalaries = false;
+            }
+        } else {
+            // Category toggles are granular access; keep master OFF in this mode.
+            updated[key] = !perms[key];
+            updated.canManageExpenses = false;
         }
+
         setPerms(updated);
         updatePerms.mutate(updated);
     };
@@ -604,38 +615,44 @@ const WardenProfilePage = () => {
                             </button>
                         </div>
 
-                        {/* Sub-permissions — only shown when master is ON */}
-                        {perms.canManageExpenses && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-2">
-                                {[
-                                    { key: 'canManageMess', label: 'Mess / Food', desc: 'Food & mess expenses' },
-                                    { key: 'canManageGeneral', label: 'General', desc: 'Miscellaneous expenses' },
-                                    { key: 'canManageUtilities', label: 'Utilities', desc: 'Electricity, water, gas' },
-                                    { key: 'canManageMaintenance', label: 'Maintenance', desc: 'Repair & upkeep costs' },
-                                    { key: 'canManageSalaries', label: 'Salaries', desc: 'Staff salary expenses' },
-                                ].map(({ key, label, desc }) => (
-                                    <div
-                                        key={key}
-                                        className={`flex items-center justify-between p-3 rounded-xl border transition-all ${perms[key] ? 'bg-emerald-50 border-emerald-100' : 'bg-gray-50 border-gray-100'
+                        <div className={`mb-4 px-3 py-2 rounded-xl border text-[8px] font-bold uppercase tracking-widest ${perms.canManageExpenses
+                                ? 'bg-indigo-50 border-indigo-100 text-indigo-700'
+                                : 'bg-emerald-50 border-emerald-100 text-emerald-700'
+                            }`}>
+                            {perms.canManageExpenses
+                                ? 'Mode: Full Access (all expense categories enabled)'
+                                : 'Mode: Granular Access (only selected categories enabled)'}
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-2">
+                            {[
+                                { key: 'canManageMess', label: 'Mess / Food', desc: 'Food & mess expenses' },
+                                { key: 'canManageGeneral', label: 'General', desc: 'Miscellaneous expenses' },
+                                { key: 'canManageUtilities', label: 'Utilities', desc: 'Electricity, water, gas' },
+                                { key: 'canManageMaintenance', label: 'Maintenance', desc: 'Repair & upkeep costs' },
+                                { key: 'canManageSalaries', label: 'Salaries', desc: 'Staff salary expenses' },
+                            ].map(({ key, label, desc }) => (
+                                <div
+                                    key={key}
+                                    className={`flex items-center justify-between p-3 rounded-xl border transition-all ${perms[key] ? 'bg-emerald-50 border-emerald-100' : 'bg-gray-50 border-gray-100'
+                                        }`}
+                                >
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-black text-gray-800 uppercase tracking-tight">{label}</span>
+                                        <span className="text-[8px] font-bold text-gray-400">{desc}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => handlePermToggle(key)}
+                                        disabled={updatePerms.isPending}
+                                        className={`relative h-5 w-9 rounded-full transition-colors duration-200 focus:outline-none disabled:opacity-50 shrink-0 ${perms[key] ? 'bg-emerald-500' : 'bg-gray-200'
                                             }`}
                                     >
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-gray-800 uppercase tracking-tight">{label}</span>
-                                            <span className="text-[8px] font-bold text-gray-400">{desc}</span>
-                                        </div>
-                                        <button
-                                            onClick={() => handlePermToggle(key)}
-                                            disabled={updatePerms.isPending}
-                                            className={`relative h-5 w-9 rounded-full transition-colors duration-200 focus:outline-none disabled:opacity-50 shrink-0 ${perms[key] ? 'bg-emerald-500' : 'bg-gray-200'
-                                                }`}
-                                        >
-                                            <span className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${perms[key] ? 'translate-x-4' : 'translate-x-0'
-                                                }`} />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                                        <span className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${perms[key] ? 'translate-x-4' : 'translate-x-0'
+                                            }`} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
 

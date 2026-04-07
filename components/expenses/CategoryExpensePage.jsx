@@ -80,7 +80,6 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
     // Granular permission check
     const hasPermission = isAdmin ||
         user?.role === 'ADMIN' ||
-        user?.role === 'WARDEN' ||
         user?.canManageExpenses ||
         (category.perm && user?.[category.perm]);
 
@@ -150,13 +149,20 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
         if (!expenses) return [];
         return expenses.filter(exp => {
             const q = searchQuery.toLowerCase();
+            const amountText = String(exp.amount || "");
             return (
                 exp.title.toLowerCase().includes(q) ||
                 exp.id.toLowerCase().includes(q) ||
-                (exp.Hostel?.name || '').toLowerCase().includes(q)
+                (exp.Hostel?.name || '').toLowerCase().includes(q) ||
+                amountText.includes(q)
             );
         }).sort((a, b) => new Date(b.date) - new Date(a.date));
     }, [expenses, searchQuery]);
+
+    const latestEntry = useMemo(() => {
+        if (!filteredExpenses?.length) return null;
+        return filteredExpenses[0];
+    }, [filteredExpenses]);
 
     const stats = useMemo(() => {
         const total = filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0);
@@ -263,10 +269,20 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
     const saveInlineEdit = async (expenseId, e) => {
         e.stopPropagation();
         try {
+            const nextTitle = String(editDraft.title || "").trim();
+            const nextAmount = Number(editDraft.amount);
+            if (!nextTitle) {
+                toast.error("Title is required");
+                return;
+            }
+            if (!Number.isFinite(nextAmount) || nextAmount <= 0) {
+                toast.error("Enter a valid amount greater than zero");
+                return;
+            }
             await updateExpenseFields.mutateAsync({
                 id: expenseId,
-                title: editDraft.title,
-                amount: Number(editDraft.amount),
+                title: nextTitle,
+                amount: nextAmount,
             });
             setEditingId(null);
             setEditDraft({ title: "", amount: "" });
@@ -335,6 +351,21 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
             toast.success("PDF Exported!");
         } catch { toast.error("Failed to export PDF"); }
         finally { setIsExportingExpenses(false); }
+    };
+
+    const applyLastEntry = () => {
+        if (!latestEntry) {
+            toast.error("No previous entry found");
+            return;
+        }
+        setNewExpenseForm((prev) => ({
+            ...prev,
+            title: latestEntry.title || "",
+            amount: String(latestEntry.amount || ""),
+            description: latestEntry.description || "",
+            date: format(new Date(), 'yyyy-MM-dd'),
+        }));
+        toast.success("Copied from latest entry");
     };
 
     if (expensesLoading) return <Loader label="Loading" subLabel={`Accessing ${category.label} ledger...`} icon={Receipt} fullScreen={false} />;
@@ -459,6 +490,29 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                     </div>
                 </div>
 
+                {!isAdmin && user?.role === "WARDEN" && (
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                            variant={filterStatus === "PENDING" ? "default" : "outline"}
+                            className={`h-8 rounded-lg text-[9px] font-bold uppercase tracking-widest ${filterStatus === "PENDING" ? "bg-amber-500 hover:bg-amber-600 text-white" : "border-gray-200 text-gray-600"}`}
+                            onClick={() => setFilterStatus("PENDING")}
+                        >
+                            Pending First
+                        </Button>
+                        <Button
+                            variant="outline"
+                            className="h-8 rounded-lg text-[9px] font-bold uppercase tracking-widest border-gray-200 text-gray-600"
+                            onClick={() => {
+                                setFilterStatus("all");
+                                setSearchQuery("");
+                                setActiveTab("current");
+                            }}
+                        >
+                            Today Workflow
+                        </Button>
+                    </div>
+                )}
+
                 {/* Tabs & Content */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -519,6 +573,10 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                                         value={editDraft.title}
                                                         onClick={(e) => e.stopPropagation()}
                                                         onChange={(e) => setEditDraft((prev) => ({ ...prev, title: e.target.value }))}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Enter") saveInlineEdit(expense.id, e);
+                                                            if (e.key === "Escape") cancelInlineEdit(e);
+                                                        }}
                                                         className="h-8 rounded-lg border-gray-200 bg-white text-[12px] font-bold"
                                                         placeholder="Expense title"
                                                     />
@@ -558,6 +616,10 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                                     value={editDraft.amount}
                                                     onClick={(e) => e.stopPropagation()}
                                                     onChange={(e) => setEditDraft((prev) => ({ ...prev, amount: e.target.value }))}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === "Enter") saveInlineEdit(expense.id, e);
+                                                        if (e.key === "Escape") cancelInlineEdit(e);
+                                                    }}
                                                     className="h-8 w-28 rounded-lg border-gray-200 bg-white text-[12px] font-bold text-right"
                                                 />
                                             ) : (
@@ -630,6 +692,15 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                 <Sparkles className="h-3 w-3" /> Quick Fill
                             </p>
                             <div className="flex flex-wrap gap-2 mb-3">
+                                <button
+                                    type="button"
+                                    onClick={applyLastEntry}
+                                    className="h-8 px-3 rounded-lg border border-blue-100 bg-white text-[9px] font-bold uppercase tracking-wider text-blue-700"
+                                >
+                                    Repeat Last Entry
+                                </button>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mb-3">
                                 {(quickTitles[category.key] || []).map((title) => (
                                     <button
                                         key={title}
@@ -638,9 +709,8 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                             setQuickTitle(title);
                                             setNewExpenseForm((prev) => ({ ...prev, title }));
                                         }}
-                                        className={`h-8 px-3 rounded-lg border text-[9px] font-bold uppercase tracking-wider ${
-                                            quickTitle === title ? "border-blue-200 bg-blue-100 text-blue-700" : "border-blue-100 bg-white text-blue-600"
-                                        }`}
+                                        className={`h-8 px-3 rounded-lg border text-[9px] font-bold uppercase tracking-wider ${quickTitle === title ? "border-blue-200 bg-blue-100 text-blue-700" : "border-blue-100 bg-white text-blue-600"
+                                            }`}
                                     >
                                         {title}
                                     </button>

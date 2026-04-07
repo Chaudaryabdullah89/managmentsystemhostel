@@ -54,7 +54,7 @@ export async function GET(request) {
 
             if (!hostelId || hostelId === 'all') {
                 hostelId = wardenHostelId;
-            } else if (hostelId !== wardenHostelId && !auth.user.canManageExpenses) {
+            } else if (hostelId !== wardenHostelId) {
                 console.warn(`[API] Warden ${auth.user.email} attempted access to hostel ${hostelId}. Reverting to assigned ${wardenHostelId}.`);
                 hostelId = wardenHostelId;
             }
@@ -121,14 +121,40 @@ export async function POST(request) {
         // Security: Enforce Warden's hostel if they are a warden
         if (auth.user.role === 'WARDEN') {
             let wardenHostelId = auth.user.hostelId;
+            let wardenPermissions = {
+                canManageExpenses: auth.user.canManageExpenses,
+                canManageMess: auth.user.canManageMess,
+                canManageGeneral: auth.user.canManageGeneral,
+                canManageUtilities: auth.user.canManageUtilities,
+                canManageMaintenance: auth.user.canManageMaintenance,
+                canManageSalaries: auth.user.canManageSalaries
+            };
             if (!wardenHostelId) {
                 const targetId = auth.user.userId || auth.user.id || auth.user.sub;
                 if (targetId) {
                     const wardenProfile = await prisma.user.findUnique({
                         where: { id: targetId },
-                        select: { hostelId: true }
+                        select: {
+                            hostelId: true,
+                            canManageExpenses: true,
+                            canManageMess: true,
+                            canManageGeneral: true,
+                            canManageUtilities: true,
+                            canManageMaintenance: true,
+                            canManageSalaries: true
+                        }
                     });
                     wardenHostelId = wardenProfile?.hostelId;
+                    if (wardenProfile) {
+                        wardenPermissions = {
+                            canManageExpenses: wardenProfile.canManageExpenses,
+                            canManageMess: wardenProfile.canManageMess,
+                            canManageGeneral: wardenProfile.canManageGeneral,
+                            canManageUtilities: wardenProfile.canManageUtilities,
+                            canManageMaintenance: wardenProfile.canManageMaintenance,
+                            canManageSalaries: wardenProfile.canManageSalaries
+                        };
+                    }
                 }
             }
 
@@ -136,6 +162,18 @@ export async function POST(request) {
                 body.hostelId = wardenHostelId;
             } else {
                 return NextResponse.json({ success: false, error: "Permission Denied: No hostel assigned to your account." }, { status: 403 });
+            }
+
+            const categoryPermissions = {
+                MESS: wardenPermissions.canManageMess,
+                GENERAL: wardenPermissions.canManageGeneral,
+                UTILITY_BILL: wardenPermissions.canManageUtilities,
+                MAINTENANCE: wardenPermissions.canManageMaintenance,
+                SALARY: wardenPermissions.canManageSalaries,
+            };
+
+            if (!wardenPermissions.canManageExpenses && !categoryPermissions[body.category]) {
+                return NextResponse.json({ success: false, error: "Permission Denied: You cannot create expenses for this category." }, { status: 403 });
             }
         }
 
