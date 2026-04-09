@@ -42,19 +42,19 @@ import { useCreatePayment } from "@/hooks/usePayment";
 import useAuthStore from "@/hooks/Authstate";
 import { format, isValid } from "date-fns";
 import { toast } from "sonner";
-import Loader from "@/components/ui/Loader";
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 import ActivityFeed from "@/components/admin/ActivityFeed";
 import { generateInvoice } from "@/lib/utils/invoice-generator";
 import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
 
 const DetailItem = ({ icon: Icon, label, value, color = "text-indigo-600" }) => (
     <div className="flex items-start gap-4">
-        <div className={`h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 ${color}`}>
+        <div className={`h-10 w-10 rounded-xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center shrink-0 ${color}`}>
             <Icon className="h-4 w-4" />
         </div>
         <div className="flex flex-col min-w-0">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">{label}</span>
-            <span className="text-sm font-bold text-gray-900 truncate tracking-tight">{value || "Not Provided"}</span>
+            <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none mb-1">{label}</span>
+            <span className="text-sm font-bold text-gray-900 dark:text-foreground truncate tracking-tight">{value || "Not Provided"}</span>
         </div>
     </div>
 );
@@ -261,19 +261,17 @@ const ResidentDetailContent = () => {
         }
     };
 
-    if (userLoading || detailsLoading) return (
-        <Loader label="Loading Profile..." subLabel="Getting resident data" icon={Fingerprint} fullScreen={true} />
-    );
+    if (userLoading || detailsLoading) return <DetailPageSkeleton />;
 
     if (!user) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
+        <div className="flex h-screen items-center justify-center bg-white dark:bg-card font-sans">
             <div className="text-center space-y-6">
-                <div className="h-20 w-20 bg-gray-50 text-gray-400 rounded-4xl flex items-center justify-center mx-auto border border-gray-100 shadow-sm">
+                <div className="h-20 w-20 bg-gray-50 dark:bg-muted/10 text-gray-400 dark:text-muted-foreground rounded-4xl flex items-center justify-center mx-auto border border-gray-100 dark:border-border shadow-sm">
                     <UserX className="h-10 w-10" />
                 </div>
                 <div className="space-y-1">
-                    <h1 className="text-xl font-bold text-gray-900 uppercase tracking-tight">Resident Not Found</h1>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">The resident was not found in our records.</p>
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Resident Not Found</h1>
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">The resident was not found in our records.</p>
                 </div>
                 <Button onClick={() => router.back()} variant="outline" className="h-11 px-8 rounded-xl font-bold text-[10px] uppercase tracking-wider">
                     Go Back
@@ -283,17 +281,17 @@ const ResidentDetailContent = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50/30 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/30 pb-20 font-sans tracking-tight">
             {/* Header */}
-            <header className="bg-white border-b sticky top-0 z-50 h-16 shadow-sm">
+            <header className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16 shadow-sm">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9" onClick={() => router.back()}>
-                            <ChevronLeft className="h-5 w-5 text-gray-400" />
+                            <ChevronLeft className="h-5 w-5 text-gray-400 dark:text-muted-foreground" />
                         </Button>
                         <div className="h-8 w-px bg-gray-100" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase leading-none">{user.name}</h1>
+                            <h1 className="text-lg font-bold text-gray-900 dark:text-foreground tracking-tight uppercase leading-none">{user.name}</h1>
                             <div className="flex items-center gap-2 mt-1">
                                 <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600">{user.role}</span>
                                 {user.regNumber && (
@@ -310,7 +308,7 @@ const ResidentDetailContent = () => {
                         <Button
                             variant="outline"
                             onClick={() => { refetchUser(); refetchDetails(); }}
-                            className="h-9 px-4 rounded-xl border-gray-200 font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-gray-50"
+                            className="h-9 px-4 rounded-xl border-gray-200 dark:border-border font-bold text-[10px] uppercase tracking-wider text-gray-500 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10"
                         >
                             <RefreshCw className="h-3.5 w-3.5 mr-2" /> Refresh
                         </Button>
@@ -320,8 +318,8 @@ const ResidentDetailContent = () => {
                                     <Settings2 className="h-3.5 w-3.5 mr-2" /> Actions
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-2xl border-gray-100 bg-white">
-                                <DropdownMenuLabel className="text-[9px] font-black uppercase text-gray-400 tracking-widest px-3 py-2">Warden Menu</DropdownMenuLabel>
+                            <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-2xl border-gray-100 dark:border-border bg-white dark:bg-card">
+                                <DropdownMenuLabel className="text-[9px] font-black uppercase text-gray-400 dark:text-muted-foreground tracking-widest px-3 py-2">Warden Menu</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={() => { setEditData(user); setIsEditDialogOpen(true); }} className="rounded-xl px-4 py-3 font-bold text-[10px] uppercase tracking-widest gap-3 focus:bg-slate-50 cursor-pointer">
                                     <Edit className="h-4 w-4 text-indigo-600" /> Edit Profile
                                 </DropdownMenuItem>
@@ -347,16 +345,16 @@ const ResidentDetailContent = () => {
                     {[
                         { label: 'Payments', value: `PKR ${stats.totalPaid.toLocaleString()}`, icon: Wallet, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                         { label: 'Complaints', value: stats.compl, icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Stay Status', value: stats.activeStay ? 'Checked-In' : 'No Stay', icon: CheckCircle2, color: stats.activeStay ? 'text-emerald-600' : 'text-gray-400', bg: stats.activeStay ? 'bg-emerald-50' : 'bg-gray-50' },
+                        { label: 'Stay Status', value: stats.activeStay ? 'Checked-In' : 'No Stay', icon: CheckCircle2, color: stats.activeStay ? 'text-emerald-600' : 'text-gray-400 dark:text-muted-foreground', bg: stats.activeStay ? 'bg-emerald-50' : 'bg-gray-50 dark:bg-muted/10' },
                         { label: 'Room No', value: userDetails?.bookings?.find(b => b.status === 'CHECKED_IN')?.room?.roomNumber ? `RM-${userDetails.bookings.find(b => b.status === 'CHECKED_IN').room.roomNumber}` : 'N/A', icon: Home, color: 'text-pink-600', bg: 'bg-pink-50' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
+                        <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-5 flex items-center gap-4 shadow-sm">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
-                                <span className="text-lg font-black text-gray-900 tracking-tight uppercase">{stat.value}</span>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{stat.label}</span>
+                                <span className="text-lg font-black text-gray-900 dark:text-foreground tracking-tight uppercase">{stat.value}</span>
                             </div>
                         </div>
                     ))}
@@ -365,7 +363,7 @@ const ResidentDetailContent = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Profile */}
                     <div className="lg:col-span-4 space-y-6">
-                        <Card className="rounded-[2.5rem] border-none shadow-xl shadow-gray-200/40 bg-white overflow-hidden">
+                        <Card className="rounded-[2.5rem] border-none shadow-xl shadow-gray-200/40 bg-white dark:bg-card overflow-hidden">
                             <div className="p-8 space-y-8">
                                 <div className="flex flex-col items-center">
                                     <Avatar className="h-32 w-32 border-4 border-white shadow-2xl mb-6">
@@ -374,8 +372,8 @@ const ResidentDetailContent = () => {
                                             {user.name?.charAt(0)}
                                         </AvatarFallback>
                                     </Avatar>
-                                    <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight text-center leading-none">{user.name}</h2>
-                                    <p className="text-[10px] font-bold uppercase text-gray-400 tracking-widest mt-2">{user.email}</p>
+                                    <h2 className="text-2xl font-black text-gray-900 dark:text-foreground uppercase tracking-tight text-center leading-none">{user.name}</h2>
+                                    <p className="text-[10px] font-bold uppercase text-gray-400 dark:text-muted-foreground tracking-widest mt-2">{user.email}</p>
                                     {user.regNumber && (
                                         <Badge className="mt-4 bg-indigo-600 text-white border-none text-[10px] font-black px-6 py-2 shadow-lg shadow-indigo-100 uppercase tracking-widest">
                                             {user.regNumber}
@@ -391,19 +389,19 @@ const ResidentDetailContent = () => {
                                 </div>
 
                                 {user.ResidentProfile && (
-                                    <div className="p-6 bg-gray-50/50 rounded-3xl border border-gray-100 space-y-4">
+                                    <div className="p-6 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-3xl border border-gray-100 dark:border-border space-y-4">
                                         <div className="flex items-center gap-3">
                                             <Shield className="h-4 w-4 text-emerald-600" />
-                                            <span className="text-[9px] font-black uppercase text-gray-900 tracking-widest">Emergency Contact</span>
+                                            <span className="text-[9px] font-black uppercase text-gray-900 dark:text-foreground tracking-widest">Emergency Contact</span>
                                         </div>
                                         <div className="grid grid-cols-1 gap-3">
                                             <div className="flex flex-col">
-                                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Guardian Name</span>
-                                                <span className="text-xs font-bold text-gray-700 uppercase">{user.ResidentProfile.guardianName}</span>
+                                                <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Guardian Name</span>
+                                                <span className="text-xs font-bold text-gray-700 dark:text-foreground uppercase">{user.ResidentProfile.guardianName}</span>
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Emergency Number</span>
-                                                <span className="text-xs font-bold text-gray-700">{user.ResidentProfile.emergencyContact}</span>
+                                                <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Emergency Number</span>
+                                                <span className="text-xs font-bold text-gray-700 dark:text-foreground">{user.ResidentProfile.emergencyContact}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -412,11 +410,11 @@ const ResidentDetailContent = () => {
                         </Card>
 
                         {/* Controls */}
-                        <Card className="rounded-[2.5rem] p-8 border-none shadow-sm bg-white overflow-hidden space-y-4">
-                            <h3 className="text-[10px] font-black uppercase text-gray-400 tracking-[0.2em] mb-4">Warden Menu</h3>
+                        <Card className="rounded-[2.5rem] p-8 border-none shadow-sm bg-white dark:bg-card overflow-hidden space-y-4">
+                            <h3 className="text-[10px] font-black uppercase text-gray-400 dark:text-muted-foreground tracking-[0.2em] mb-4">Warden Menu</h3>
                             <Button
                                 variant="outline"
-                                className="w-full h-12 justify-between px-6 rounded-2xl border-gray-100 font-bold text-[10px] uppercase tracking-widest group"
+                                className="w-full h-12 justify-between px-6 rounded-2xl border-gray-100 dark:border-border font-bold text-[10px] uppercase tracking-widest group"
                                 onClick={() => setIsInvoiceDialogOpen(true)}
                                 disabled={!stats.activeStay}
                             >
@@ -445,7 +443,7 @@ const ResidentDetailContent = () => {
                     {/* Data Tabs */}
                     <div className="lg:col-span-8 space-y-8">
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-                            <TabsList className="bg-white border border-gray-100 p-1.5 rounded-2xl h-14 shadow-sm inline-flex">
+                            <TabsList className="bg-white dark:bg-card border border-gray-100 dark:border-border p-1.5 rounded-2xl h-14 shadow-sm inline-flex">
                                 <TabsTrigger value="overview" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Overview</TabsTrigger>
                                 <TabsTrigger value="payments" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Payments</TabsTrigger>
                                 <TabsTrigger value="history" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Complaints</TabsTrigger>
@@ -454,37 +452,37 @@ const ResidentDetailContent = () => {
 
                             <TabsContent value="overview" className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <Card className="rounded-[2.5rem] bg-white p-8 border-none shadow-sm space-y-6">
+                                    <Card className="rounded-[2.5rem] bg-white dark:bg-card p-8 border-none shadow-sm space-y-6">
                                         <div className="flex items-center justify-between mb-2">
-                                            <h3 className="text-xs font-black uppercase tracking-widest text-gray-900">Recent Stream</h3>
-                                            <History className="h-4 w-4 text-gray-400" />
+                                            <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground">Recent Stream</h3>
+                                            <History className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />
                                         </div>
                                         <ActivityFeed events={activityFeed} />
                                     </Card>
 
-                                    <Card className="rounded-[2.5rem] bg-white p-8 border-none shadow-sm relative overflow-hidden group">
+                                    <Card className="rounded-[2.5rem] bg-white dark:bg-card p-8 border-none shadow-sm relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 p-8">
                                             <Zap className="h-12 w-12 text-indigo-50 opacity-40" />
                                         </div>
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-8">Summary Metrics</h3>
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground mb-8">Summary Metrics</h3>
                                         <div className="space-y-6">
                                             <div className="flex justify-between items-end border-b border-gray-50 pb-4">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Paid</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Total Paid</span>
                                                     <span className="text-2xl font-black text-indigo-600 tracking-tight">PKR {stats.totalPaid.toLocaleString()}</span>
                                                 </div>
                                                 <TrendingUp className="h-5 w-5 text-emerald-500" />
                                             </div>
                                             <div className="flex justify-between items-end border-b border-gray-50 pb-4">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Alert Count</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Alert Count</span>
                                                     <span className="text-2xl font-black text-amber-500 tracking-tight">{stats.compl} Reports</span>
                                                 </div>
                                                 <AlertCircle className="h-5 w-5 text-amber-500" />
                                             </div>
                                             <div className="pt-4">
                                                 <Button
-                                                    className="w-full h-12 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold text-[10px] uppercase tracking-widest border border-gray-100 shadow-none"
+                                                    className="w-full h-12 rounded-2xl bg-gray-50 dark:bg-muted/10 hover:bg-gray-100 text-gray-600 dark:text-muted-foreground font-bold text-[10px] uppercase tracking-widest border border-gray-100 dark:border-border shadow-none"
                                                     onClick={() => toast.info("Report downloading...")}
                                                 >
                                                     <Download className="h-4 w-4 mr-2" /> Download Full Report
@@ -496,12 +494,12 @@ const ResidentDetailContent = () => {
                             </TabsContent>
 
                             <TabsContent value="payments" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                <Card className="rounded-[2.5rem] bg-white overflow-hidden border-none shadow-sm">
+                                <Card className="rounded-[2.5rem] bg-white dark:bg-card overflow-hidden border-none shadow-sm">
                                     <div className="p-8 border-b border-gray-50">
-                                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Payment History</h3>
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-foreground">Payment History</h3>
                                     </div>
                                     <Table>
-                                        <TableHeader className="bg-gray-50/50">
+                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
                                             <TableRow className="border-none">
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Date</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Type</TableHead>
@@ -512,16 +510,16 @@ const ResidentDetailContent = () => {
                                         </TableHeader>
                                         <TableBody>
                                             {userDetails?.payments?.map((p) => (
-                                                <TableRow key={p.id} className="border-gray-50 hover:bg-gray-50/50 transition-colors group">
+                                                <TableRow key={p.id} className="border-gray-50 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors group">
                                                     <TableCell className="px-8 py-5">
-                                                        <span className="text-xs font-bold text-gray-900">{safeFormat(p.date || p.createdAt, 'MMM dd, yyyy')}</span>
+                                                        <span className="text-xs font-bold text-gray-900 dark:text-foreground">{safeFormat(p.date || p.createdAt, 'MMM dd, yyyy')}</span>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-5">
-                                                        <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-widest bg-gray-50/30 px-3 py-1 rounded-lg">
+                                                        <Badge variant="outline" className="text-[8px] font-bold uppercase tracking-widest bg-gray-50 dark:bg-muted/10/30 px-3 py-1 rounded-lg">
                                                             {p.type}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell className="px-4 py-5 font-bold text-gray-900 text-xs">PKR {p.amount.toLocaleString()}</TableCell>
+                                                    <TableCell className="px-4 py-5 font-bold text-gray-900 dark:text-foreground text-xs">PKR {p.amount.toLocaleString()}</TableCell>
                                                     <TableCell className="px-8 py-5 text-center">
                                                         <Badge className={`rounded-full px-4 py-1.5 font-bold text-[8px] uppercase tracking-widest border shadow-none ${p.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
                                                             {p.status}
@@ -540,7 +538,7 @@ const ResidentDetailContent = () => {
                                                 <TableRow>
                                                     <TableCell colSpan={5} className="h-60 text-center">
                                                         <History className="h-10 w-10 text-gray-100 mx-auto mb-3" />
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">No Payments Yet</p>
+                                                        <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">No Payments Yet</p>
                                                     </TableCell>
                                                 </TableRow>
                                             )}
@@ -552,19 +550,19 @@ const ResidentDetailContent = () => {
                             <TabsContent value="history" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {userDetails?.complaints?.map((c) => (
-                                        <Card key={c.id} className="rounded-4xl bg-white p-8 border-none shadow-sm space-y-4 hover:shadow-md transition-shadow group">
+                                        <Card key={c.id} className="rounded-4xl bg-white dark:bg-card p-8 border-none shadow-sm space-y-4 hover:shadow-md transition-shadow group">
                                             <div className="flex justify-between items-start">
-                                                <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-inner">
+                                                <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center text-gray-400 dark:text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-inner">
                                                     <AlertCircle className="h-5 w-5" />
                                                 </div>
                                                 <Badge className={`rounded-full px-3 py-1 font-bold text-[8px] uppercase tracking-widest shadow-none ${c.status === 'RESOLVED' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>{c.status}</Badge>
                                             </div>
                                             <div className="space-y-1">
-                                                <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight">{c.title}</h4>
-                                                <p className="text-xs text-gray-500 font-medium line-clamp-2 leading-relaxed italic">{c.description}</p>
+                                                <h4 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tight">{c.title}</h4>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground font-medium line-clamp-2 leading-relaxed italic">{c.description}</p>
                                             </div>
                                             <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{safeFormat(c.createdAt, 'MMM dd, yyyy')}</span>
+                                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{safeFormat(c.createdAt, 'MMM dd, yyyy')}</span>
                                                 <Link href={`/warden/complaints`}>
                                                     <Button variant="ghost" className="h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest text-indigo-600">View All</Button>
                                                 </Link>
@@ -572,9 +570,9 @@ const ResidentDetailContent = () => {
                                         </Card>
                                     ))}
                                     {(!userDetails?.complaints || userDetails.complaints.length === 0) && (
-                                        <div className="md:col-span-2 h-60 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100 opacity-50">
+                                        <div className="md:col-span-2 h-60 flex flex-col items-center justify-center bg-white dark:bg-card rounded-[2.5rem] border-2 border-dashed border-gray-100 dark:border-border opacity-50">
                                             <MessageSquare className="h-10 w-10 text-gray-200 mb-3" />
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No Complaints</p>
+                                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">No Complaints</p>
                                         </div>
                                     )}
                                 </div>
@@ -582,56 +580,56 @@ const ResidentDetailContent = () => {
 
                             <TabsContent value="profile-plus" className="m-0 space-y-6 animate-in fade-in duration-500">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <Card className="rounded-[2.5rem] bg-white p-10 border-none shadow-sm space-y-8">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 flex items-center gap-3">
+                                    <Card className="rounded-[2.5rem] bg-white dark:bg-card p-10 border-none shadow-sm space-y-8">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground flex items-center gap-3">
                                             <Info className="h-4 w-4 text-indigo-600" /> Personal Details
                                         </h3>
                                         <div className="grid grid-cols-1 gap-6">
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Father / Guardian</span>
-                                                <span className="text-sm font-bold text-gray-800 uppercase italic underline decoration-indigo-600/20 underline-offset-4">{user.ResidentProfile?.guardianName || 'N/A'}</span>
+                                                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Father / Guardian</span>
+                                                <span className="text-sm font-bold text-gray-800 dark:text-foreground uppercase italic underline decoration-indigo-600/20 underline-offset-4">{user.ResidentProfile?.guardianName || 'N/A'}</span>
                                             </div>
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Blood Group</span>
+                                                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Blood Group</span>
                                                 <span className="text-sm font-bold text-rose-600 uppercase"> {user.ResidentProfile?.bloodGroup || 'N/A'}</span>
                                             </div>
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Date of Birth</span>
-                                                <span className="text-sm font-bold text-gray-800">{safeFormat(user.ResidentProfile?.dob, 'MMMM dd, yyyy')}</span>
+                                                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Date of Birth</span>
+                                                <span className="text-sm font-bold text-gray-800 dark:text-foreground">{safeFormat(user.ResidentProfile?.dob, 'MMMM dd, yyyy')}</span>
                                             </div>
                                         </div>
                                     </Card>
 
-                                    <Card className="rounded-[2.5rem] bg-white p-10 border-none shadow-sm space-y-8">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 flex items-center gap-3">
+                                    <Card className="rounded-[2.5rem] bg-white dark:bg-card p-10 border-none shadow-sm space-y-8">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground flex items-center gap-3">
                                             <Building2 className="h-4 w-4 text-indigo-600" /> Institution Info
                                         </h3>
                                         <div className="grid grid-cols-1 gap-6">
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">University / College</span>
-                                                <span className="text-sm font-bold text-gray-800 uppercase italic line-clamp-1">{user.ResidentProfile?.institution || 'N/A'}</span>
+                                                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">University / College</span>
+                                                <span className="text-sm font-bold text-gray-800 dark:text-foreground uppercase italic line-clamp-1">{user.ResidentProfile?.institution || 'N/A'}</span>
                                             </div>
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Occupation</span>
-                                                <span className="text-sm font-bold text-gray-800 uppercase italic line-clamp-1">{user.ResidentProfile?.occupation || 'N/A'}</span>
+                                                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Occupation</span>
+                                                <span className="text-sm font-bold text-gray-800 dark:text-foreground uppercase italic line-clamp-1">{user.ResidentProfile?.occupation || 'N/A'}</span>
                                             </div>
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Full Address</span>
-                                                <span className="text-sm font-medium text-gray-500 line-clamp-2">{user.address || 'N/A'}</span>
+                                                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Full Address</span>
+                                                <span className="text-sm font-medium text-gray-500 dark:text-muted-foreground line-clamp-2">{user.address || 'N/A'}</span>
                                             </div>
                                         </div>
                                     </Card>
 
-                                    <Card className="md:col-span-2 rounded-[2.5rem] bg-white p-10 border-none shadow-sm">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-8 flex items-center gap-3">
+                                    <Card className="md:col-span-2 rounded-[2.5rem] bg-white dark:bg-card p-10 border-none shadow-sm">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground mb-8 flex items-center gap-3">
                                             <FileText className="h-4 w-4 text-indigo-600" /> Documents
                                         </h3>
                                         {user.ResidentProfile?.documents && Object.keys(user.ResidentProfile.documents).length > 0 ? (
                                             <div className="space-y-6">
                                                 {user?.ResidentProfile?.documents?.currentResidence && (
-                                                    <div className="p-4 rounded-2xl bg-gray-50/50 border border-gray-100">
-                                                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">Current Residence</p>
-                                                        <p className="text-sm font-bold text-gray-800">{user.ResidentProfile.documents.currentResidence}</p>
+                                                    <div className="p-4 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border">
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground mb-1">Current Residence</p>
+                                                        <p className="text-sm font-bold text-gray-800 dark:text-foreground">{user.ResidentProfile.documents.currentResidence}</p>
                                                     </div>
                                                 )}
                                                 {Array.isArray(user?.ResidentProfile?.documents?.galleryImages) && user.ResidentProfile.documents.galleryImages.length > 0 && (
@@ -642,7 +640,7 @@ const ResidentDetailContent = () => {
                                                                 href={src}
                                                                 target="_blank"
                                                                 rel="noreferrer"
-                                                                className="block rounded-xl overflow-hidden border border-gray-100 bg-white"
+                                                                className="block rounded-xl overflow-hidden border border-gray-100 dark:border-border bg-white dark:bg-card"
                                                             >
                                                                 <img src={src} alt={`document-${idx}`} className="h-28 w-full object-cover" />
                                                             </a>
@@ -651,7 +649,7 @@ const ResidentDetailContent = () => {
                                                 )}
                                             </div>
                                         ) : (
-                                            <div className="col-span-full py-12 text-center bg-gray-50/30 rounded-4xl border-2 border-dashed border-gray-100">
+                                            <div className="col-span-full py-12 text-center bg-gray-50 dark:bg-muted/10/30 rounded-4xl border-2 border-dashed border-gray-100 dark:border-border">
                                                 <span className="text-[9px] font-bold text-gray-300 uppercase tracking-[0.3em]">No Documents Uploaded</span>
                                             </div>
                                         )}
@@ -665,27 +663,27 @@ const ResidentDetailContent = () => {
 
             {/* Dialogs */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="rounded-[2.5rem] border-none p-10 max-w-lg shadow-2xl bg-white font-sans">
+                <DialogContent className="rounded-[2.5rem] border-none p-10 max-w-lg shadow-2xl bg-white dark:bg-card font-sans">
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-black uppercase tracking-tighter italic">Edit Resident Info</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-6 pt-6">
                         <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-widest pl-1 text-gray-400">Full Name</Label>
-                                <Input value={editData?.name} onChange={e => setEditData({ ...editData, name: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
+                                <Label className="text-[9px] font-black uppercase tracking-widest pl-1 text-gray-400 dark:text-muted-foreground">Full Name</Label>
+                                <Input value={editData?.name} onChange={e => setEditData({ ...editData, name: e.target.value })} className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold px-4" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-widest pl-1 text-gray-400">Email Address</Label>
-                                <Input value={editData?.email} onChange={e => setEditData({ ...editData, email: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
+                                <Label className="text-[9px] font-black uppercase tracking-widest pl-1 text-gray-400 dark:text-muted-foreground">Email Address</Label>
+                                <Input value={editData?.email} onChange={e => setEditData({ ...editData, email: e.target.value })} className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold px-4" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-widest pl-1 text-gray-400">Phone Number</Label>
-                                <Input value={editData?.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
+                                <Label className="text-[9px] font-black uppercase tracking-widest pl-1 text-gray-400 dark:text-muted-foreground">Phone Number</Label>
+                                <Input value={editData?.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold px-4" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-widest pl-1 text-gray-400">CNIC Number</Label>
-                                <Input value={editData?.cnic} onChange={e => setEditData({ ...editData, cnic: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
+                                <Label className="text-[9px] font-black uppercase tracking-widest pl-1 text-gray-400 dark:text-muted-foreground">CNIC Number</Label>
+                                <Input value={editData?.cnic} onChange={e => setEditData({ ...editData, cnic: e.target.value })} className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold px-4" />
                             </div>
                         </div>
                         <DialogFooter className="pt-4 gap-3">
@@ -699,14 +697,14 @@ const ResidentDetailContent = () => {
             </Dialog>
 
             <Dialog open={isAccessDialogOpen} onOpenChange={setIsAccessDialogOpen}>
-                <DialogContent className="rounded-[2.5rem] border-none p-10 max-w-sm shadow-2xl bg-white font-sans">
+                <DialogContent className="rounded-[2.5rem] border-none p-10 max-w-sm shadow-2xl bg-white dark:bg-card font-sans">
                     <DialogHeader className="text-center">
                         <DialogTitle className="text-2xl font-black uppercase tracking-tighter">Reset Password</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-6 pt-6">
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 text-center block w-full">New Password</Label>
-                            <Input value={newPass} onChange={e => setNewPass(e.target.value)} className="h-14 rounded-2xl border-gray-100 bg-gray-50 text-center font-black tracking-[0.3em] text-lg uppercase" />
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground text-center block w-full">New Password</Label>
+                            <Input value={newPass} onChange={e => setNewPass(e.target.value)} className="h-14 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 text-center font-black tracking-[0.3em] text-lg uppercase" />
                         </div>
                         <Button className="w-full h-14 rounded-2xl bg-indigo-600 text-white font-black text-[9px] uppercase tracking-widest shadow-lg" onClick={handleResetKey} disabled={resetPassword.isPending}>
                             {resetPassword.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update Password"}
@@ -717,27 +715,27 @@ const ResidentDetailContent = () => {
 
             {/* Billing Dialog */}
             <Dialog open={isInvoiceDialogOpen} onOpenChange={setIsInvoiceDialogOpen}>
-                <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] border-none p-10 font-sans shadow-2xl bg-white">
+                <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] border-none p-10 font-sans shadow-2xl bg-white dark:bg-card">
                     <DialogHeader className="mb-8">
                         <DialogTitle className="text-xl font-black uppercase tracking-tight">Create Invoice / Bill</DialogTitle>
-                        <DialogDescription className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Warden Menu</DialogDescription>
+                        <DialogDescription className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Warden Menu</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Invoice Value (PKR)</Label>
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Invoice Value (PKR)</Label>
                             <Input
                                 type="number"
                                 placeholder="0.00"
-                                className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-black text-lg px-6 focus:ring-indigo-600/20"
+                                className="h-14 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-black text-lg px-6 focus:ring-indigo-600/20"
                                 value={invoiceForm.amount}
                                 onChange={(e) => setInvoiceForm({ ...invoiceForm, amount: e.target.value })}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Category</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Category</Label>
                                 <Select value={invoiceForm.type} onValueChange={(v) => setInvoiceForm({ ...invoiceForm, type: v })}>
-                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-bold text-xs uppercase px-6">
+                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold text-xs uppercase px-6">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl">
@@ -750,20 +748,20 @@ const ResidentDetailContent = () => {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Due Date</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Due Date</Label>
                                 <Input
                                     type="date"
-                                    className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-bold text-xs px-6"
+                                    className="h-14 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold text-xs px-6"
                                     value={invoiceForm.dueDate}
                                     onChange={(e) => setInvoiceForm({ ...invoiceForm, dueDate: e.target.value })}
                                 />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Notes</Label>
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Notes</Label>
                             <Textarea
                                 placeholder="Log details for reference..."
-                                className="min-h-[100px] rounded-2xl bg-gray-50/50 border-gray-100 font-medium p-6 resize-none focus:ring-indigo-600/20"
+                                className="min-h-[100px] rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-medium p-6 resize-none focus:ring-indigo-600/20"
                                 value={invoiceForm.notes}
                                 onChange={(e) => setInvoiceForm({ ...invoiceForm, notes: e.target.value })}
                             />
@@ -784,26 +782,26 @@ const ResidentDetailContent = () => {
 
             {/* Grievance Dialog */}
             <Dialog open={isGrievanceDialogOpen} onOpenChange={setIsGrievanceDialogOpen}>
-                <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] border-none p-10 font-sans shadow-2xl bg-white">
+                <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] border-none p-10 font-sans shadow-2xl bg-white dark:bg-card">
                     <DialogHeader className="mb-8">
                         <DialogTitle className="text-xl font-black uppercase tracking-tight">Report Resident Problem</DialogTitle>
-                        <DialogDescription className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Warden Menu</DialogDescription>
+                        <DialogDescription className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Warden Menu</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Case Subject</Label>
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Case Subject</Label>
                             <Input
                                 placeholder="Core issue summary..."
-                                className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-black text-xs px-6 uppercase focus:ring-indigo-600/20"
+                                className="h-14 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-black text-xs px-6 uppercase focus:ring-indigo-600/20"
                                 value={grievanceForm.title}
                                 onChange={(e) => setGrievanceForm({ ...grievanceForm, title: e.target.value })}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Category</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Category</Label>
                                 <Select value={grievanceForm.category} onValueChange={(v) => setGrievanceForm({ ...grievanceForm, category: v })}>
-                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-bold text-xs uppercase px-6">
+                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold text-xs uppercase px-6">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl">
@@ -817,9 +815,9 @@ const ResidentDetailContent = () => {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Priority</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Priority</Label>
                                 <Select value={grievanceForm.priority} onValueChange={(v) => setGrievanceForm({ ...grievanceForm, priority: v })}>
-                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50/50 border-gray-100 font-bold text-xs uppercase px-6">
+                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold text-xs uppercase px-6">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl">
@@ -832,10 +830,10 @@ const ResidentDetailContent = () => {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Dossier Details</Label>
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Dossier Details</Label>
                             <Textarea
                                 placeholder="Evidence and context..."
-                                className="min-h-[120px] rounded-2xl bg-gray-50/50 border-gray-100 font-medium p-6 resize-none focus:ring-indigo-600/20"
+                                className="min-h-[120px] rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-medium p-6 resize-none focus:ring-indigo-600/20"
                                 value={grievanceForm.description}
                                 onChange={(e) => setGrievanceForm({ ...grievanceForm, description: e.target.value })}
                             />
@@ -866,7 +864,7 @@ const safeFormat = (date, formatStr, fallback = '—') => {
 
 export default function WardenResidentDetailPage() {
     return (
-        <Suspense fallback={<Loader label="Accessing Records" subLabel="Synchronizing dossier data" icon={Fingerprint} />}>
+        <Suspense fallback={<DetailPageSkeleton />}>
             <ResidentDetailContent />
         </Suspense>
     );

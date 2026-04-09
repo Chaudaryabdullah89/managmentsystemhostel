@@ -15,7 +15,7 @@ import { useBookings } from "@/hooks/useBooking";
 import { useAllPayments } from "@/hooks/usePayment";
 import { format } from "date-fns";
 import Link from "next/link";
-import Loader from "@/components/ui/Loader";
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 
 const amenityIcons = {
     'WiFi': Wifi, 'Internet': Wifi, 'AC': Wind, 'Air Conditioning': Wind,
@@ -43,17 +43,17 @@ const GuestRoomPage = () => {
     const today = new Date();
     const daysStayed = checkInDate ? Math.floor((today - checkInDate) / (1000 * 60 * 60 * 24)) : 0;
 
-    if (isLoading) return <Loader label="Loading Your Room" subLabel="Fetching residency details..." icon={Bed} fullScreen={false} />;
+    if (isLoading) return <DetailPageSkeleton />;
 
     if (!currentBooking || !room) {
         return (
-            <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center gap-6 p-8">
+            <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex flex-col items-center justify-center gap-6 p-8">
                 <div className="h-20 w-20 rounded-3xl bg-gray-100 flex items-center justify-center">
                     <Bed className="h-10 w-10 text-gray-300" />
                 </div>
                 <div className="text-center">
-                    <h2 className="text-2xl font-bold text-gray-900 uppercase tracking-tight">No Active Residency</h2>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mt-2">You don't have an active room assignment</p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">No Active Residency</h2>
+                    <p className="text-xs font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-2">You don't have an active room assignment</p>
                 </div>
                 <Link href="/guest/bookings">
                     <Button className="h-12 px-8 rounded-2xl bg-indigo-600 text-white font-bold text-xs uppercase tracking-widest">
@@ -74,9 +74,9 @@ const GuestRoomPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/30 pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/30 pb-20 font-sans">
             {/* Header */}
-            <header className="bg-white border-b sticky top-0 z-40 h-16">
+            <header className="bg-white dark:bg-card border-b sticky top-0 z-40 h-16">
                 <div className="max-w-5xl mx-auto px-4 md:px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl h-9 w-9 hover:bg-gray-100">
@@ -84,8 +84,8 @@ const GuestRoomPage = () => {
                         </Button>
                         <div className="h-5 w-px bg-gray-100" />
                         <div>
-                            <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight">My Room</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Residency Details</p>
+                            <h1 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">My Room</h1>
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Residency Details</p>
                         </div>
                     </div>
                     <Badge className={`${currentBooking.status === 'CHECKED_IN' ? 'bg-emerald-50 text-emerald-700' : 'bg-indigo-50 text-indigo-700'} border-none text-[9px] font-bold uppercase px-3`}>
@@ -103,7 +103,7 @@ const GuestRoomPage = () => {
                     </div>
 
                     <div className="relative z-10">
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-3">{hostel?.name}</p>
+                        <p className="text-[10px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-[0.3em] mb-3">{hostel?.name}</p>
                         <div className="flex items-end gap-4 mb-6">
                             <h2 className="text-5xl md:text-7xl font-black tracking-tighter">
                                 Room {room.roomNumber}
@@ -113,16 +113,16 @@ const GuestRoomPage = () => {
                             </div>
                         </div>
                         <div className="flex flex-wrap items-center gap-4 text-sm">
-                            <div className="flex items-center gap-2 text-gray-400">
+                            <div className="flex items-center gap-2 text-gray-400 dark:text-muted-foreground">
                                 <Building2 className="h-4 w-4" />
                                 <span className="font-bold text-xs uppercase tracking-wider">Floor {room.floor}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-400">
+                            <div className="flex items-center gap-2 text-gray-400 dark:text-muted-foreground">
                                 <Users className="h-4 w-4" />
                                 <span className="font-bold text-xs uppercase tracking-wider">{room.type} Room • {room.capacity} Beds</span>
                             </div>
                             {hostel?.city && (
-                                <div className="flex items-center gap-2 text-gray-400">
+                                <div className="flex items-center gap-2 text-gray-400 dark:text-muted-foreground">
                                     <MapPin className="h-4 w-4" />
                                     <span className="font-bold text-xs uppercase tracking-wider">{hostel.city}</span>
                                 </div>
@@ -133,15 +133,15 @@ const GuestRoomPage = () => {
                     {/* Booking Stats Strip */}
                     <div className="relative z-10 grid grid-cols-3 gap-4 mt-10 pt-8 border-t border-white/10">
                         <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Check-in</span>
+                            <span className="text-[9px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest mb-1">Check-in</span>
                             <span className="text-sm md:text-base font-bold text-white">{checkInDate ? format(checkInDate, 'MMM dd, yyyy') : 'N/A'}</span>
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Days Stayed</span>
+                            <span className="text-[9px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest mb-1">Days Stayed</span>
                             <span className="text-sm md:text-base font-bold text-emerald-400">{daysStayed} Days</span>
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">Monthly Rent</span>
+                            <span className="text-[9px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest mb-1">Monthly Rent</span>
                             <span className="text-sm md:text-base font-bold text-white">PKR {(room.monthlyrent || room.montlyrent || room.price || 0).toLocaleString()}</span>
                         </div>
                     </div>
@@ -155,13 +155,13 @@ const GuestRoomPage = () => {
                         { label: 'Booking ID', value: currentBooking.uid || currentBooking.id?.slice(-8).toUpperCase(), icon: FileText, color: 'text-indigo-600 bg-indigo-50' },
                         { label: 'Security Deposit', value: `PKR ${(currentBooking.securityDeposit || 0).toLocaleString()}`, icon: ShieldCheck, color: 'text-purple-600 bg-purple-50' },
                     ].map((item, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm flex flex-col gap-3 hover:shadow-md transition-all">
+                        <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-5 shadow-sm flex flex-col gap-3 hover:shadow-md transition-all">
                             <div className={`h-10 w-10 rounded-xl ${item.color} flex items-center justify-center`}>
                                 <item.icon className="h-5 w-5" />
                             </div>
                             <div>
-                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{item.label}</p>
-                                <p className="text-sm font-bold text-gray-900 mt-0.5 truncate">{item.value}</p>
+                                <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{item.label}</p>
+                                <p className="text-sm font-bold text-gray-900 dark:text-foreground mt-0.5 truncate">{item.value}</p>
                             </div>
                         </div>
                     ))}
@@ -171,15 +171,15 @@ const GuestRoomPage = () => {
                     {/* Left: Amenities + Hostel Info */}
                     <div className="lg:col-span-1 space-y-6">
                         {/* Amenities */}
-                        <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
-                            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-5">Room Amenities</h3>
+                        <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-6 shadow-sm">
+                            <h3 className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-5">Room Amenities</h3>
                             <div className="flex flex-wrap gap-2">
                                 {(room.amenities || []).length > 0 ? room.amenities.map((amenity, i) => {
                                     const Icon = amenityIcons[amenity] || Star;
                                     return (
-                                        <div key={i} className="flex items-center gap-2 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
+                                        <div key={i} className="flex items-center gap-2 bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border rounded-xl px-3 py-2">
                                             <Icon className="h-3.5 w-3.5 text-indigo-500" />
-                                            <span className="text-[10px] font-bold text-gray-600 uppercase tracking-wide">{amenity}</span>
+                                            <span className="text-[10px] font-bold text-gray-600 dark:text-muted-foreground uppercase tracking-wide">{amenity}</span>
                                         </div>
                                     );
                                 }) : (
@@ -189,8 +189,8 @@ const GuestRoomPage = () => {
                         </div>
 
                         {/* Hostel Info */}
-                        <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
-                            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hostel Info</h3>
+                        <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-6 shadow-sm space-y-4">
+                            <h3 className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Hostel Info</h3>
                             {[
                                 { label: 'Name', value: hostel?.name, icon: Building2 },
                                 { label: 'Address', value: hostel?.completeaddress || hostel?.address, icon: MapPin },
@@ -199,12 +199,12 @@ const GuestRoomPage = () => {
                                 { label: 'Email', value: hostel?.email, icon: Mail },
                             ].filter(i => i.value).map((item, i) => (
                                 <div key={i} className="flex items-start gap-3">
-                                    <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
-                                        <item.icon className="h-3.5 w-3.5 text-gray-400" />
+                                    <div className="h-8 w-8 rounded-lg bg-gray-50 dark:bg-muted/10 flex items-center justify-center shrink-0">
+                                        <item.icon className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{item.label}</p>
-                                        <p className="text-xs font-bold text-gray-700 mt-0.5">{item.value}</p>
+                                        <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{item.label}</p>
+                                        <p className="text-xs font-bold text-gray-700 dark:text-foreground mt-0.5">{item.value}</p>
                                     </div>
                                 </div>
                             ))}
@@ -220,9 +220,9 @@ const GuestRoomPage = () => {
                     {/* Right: Payment History */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Payment Summary */}
-                        <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+                        <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-6 shadow-sm">
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Payment History</h3>
+                                <h3 className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Payment History</h3>
                                 <Link href="/guest/payments">
                                     <Button variant="ghost" className="h-8 px-4 rounded-xl text-[9px] font-bold uppercase tracking-widest text-indigo-600 hover:bg-indigo-50">
                                         View All <ChevronRight className="h-3 w-3 ml-1" />
@@ -232,8 +232,8 @@ const GuestRoomPage = () => {
 
                             {/* Progress bar */}
                             {(totalPaid + totalPending) > 0 && (
-                                <div className="mb-6 p-4 bg-gray-50 rounded-2xl">
-                                    <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                                <div className="mb-6 p-4 bg-gray-50 dark:bg-muted/10 rounded-2xl">
+                                    <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground mb-2">
                                         <span>Paid: PKR {totalPaid.toLocaleString()}</span>
                                         <span>Pending: PKR {totalPending.toLocaleString()}</span>
                                     </div>
@@ -249,15 +249,15 @@ const GuestRoomPage = () => {
                             {/* Payment list */}
                             <div className="space-y-3">
                                 {payments.length > 0 ? payments.slice(0, 8).map((payment) => (
-                                    <div key={payment.id} className="flex items-center justify-between p-4 rounded-2xl border border-gray-50 hover:bg-gray-50 transition-colors group">
+                                    <div key={payment.id} className="flex items-center justify-between p-4 rounded-2xl border border-gray-50 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 transition-colors group">
                                         <div className="flex items-center gap-4">
                                             <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${payment.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : payment.status === 'OVERDUE' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'}`}>
                                                 <Receipt className="h-4 w-4" />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-gray-900">{payment.notes || payment.type || 'Monthly Rent'}</p>
+                                                <p className="text-sm font-bold text-gray-900 dark:text-foreground">{payment.notes || payment.type || 'Monthly Rent'}</p>
                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{format(new Date(payment.date), 'MMM dd, yyyy')}</p>
+                                                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">{format(new Date(payment.date), 'MMM dd, yyyy')}</p>
                                                     {payment.month && (
                                                         <span className="text-[9px] font-bold text-gray-300">• {payment.month}</span>
                                                     )}
@@ -265,7 +265,7 @@ const GuestRoomPage = () => {
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-sm font-bold text-gray-900">PKR {payment.amount?.toLocaleString()}</p>
+                                            <p className="text-sm font-bold text-gray-900 dark:text-foreground">PKR {payment.amount?.toLocaleString()}</p>
                                             <Badge className={`mt-1 text-[8px] font-bold border-none px-2 ${payment.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : payment.status === 'OVERDUE' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'}`}>
                                                 {payment.status}
                                             </Badge>
@@ -285,7 +285,7 @@ const GuestRoomPage = () => {
                             <div className="absolute top-0 right-0 opacity-10 p-6"><FileText className="h-24 w-24" /></div>
                             <div className="relative z-10">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
+                                    <div className="h-10 w-10 rounded-xl bg-white dark:bg-card/10 flex items-center justify-center">
                                         <ShieldCheck className="h-5 w-5" />
                                     </div>
                                     <div>

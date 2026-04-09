@@ -7,6 +7,7 @@ import { sendEmail } from "@/lib/utils/sendmail";
 import { welcomeEmail } from "@/lib/utils/emailTemplates";
 import { requireAuth, requireRoles } from "@/lib/apiAuth";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
+import { getBranding } from "@/lib/permissions";
 
 export async function GET(request) {
     const guard = await requireAuth();
@@ -225,12 +226,13 @@ export async function POST(request) {
         }
 
         // Send welcome email with a password-reset link (never send raw passwords via email)
+        const branding = await getBranding();
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
         const resetLinkNote = `${baseUrl}/auth/login`;
         sendEmail({
             to: email,
-            subject: "Welcome to Mubarak Group of Hostels — Your Account is Ready",
-            html: welcomeEmail({ name, email, role, hostelName, loginUrl: resetLinkNote }),
+            subject: `Welcome to ${branding.companyName} — Your Account is Ready`,
+            html: welcomeEmail({ name, email, role, hostelName, loginUrl: resetLinkNote, branding }),
         }).catch(err => console.error("[Email] Welcome email failed:", err));
 
         return successResponse({

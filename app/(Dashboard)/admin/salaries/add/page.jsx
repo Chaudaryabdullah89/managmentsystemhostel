@@ -110,11 +110,11 @@ const AddSalaryPage = () => {
 
     // Mock employee data - replace with actual API call
     const employees = [
-        { id: "EMP_001", name: "Ali Ahmed", designation: "Warden", hostel: "Mubarak Group of Hostels 1" },
-        { id: "EMP_002", name: "Sara Khan", designation: "Assistant Warden", hostel: "Mubarak Group of Hostels 2" },
-        { id: "EMP_003", name: "Hassan Ali", designation: "Security Guard", hostel: "Mubarak Group of Hostels 1" },
-        { id: "EMP_004", name: "Fatima Noor", designation: "Cleaning Staff", hostel: "Mubarak Group of Hostels 3" },
-        { id: "EMP_005", name: "Usman Tariq", designation: "Maintenance Staff", hostel: "Mubarak Group of Hostels 2" }
+        { id: "EMP_001", name: "Ali Ahmed", designation: "Warden", hostel: "Hostel Branch 1" },
+        { id: "EMP_002", name: "Sara Khan", designation: "Assistant Warden", hostel: "Hostel Branch 2" },
+        { id: "EMP_003", name: "Hassan Ali", designation: "Security Guard", hostel: "Hostel Branch 1" },
+        { id: "EMP_004", name: "Fatima Noor", designation: "Cleaning Staff", hostel: "Hostel Branch 3" },
+        { id: "EMP_005", name: "Usman Tariq", designation: "Maintenance Staff", hostel: "Hostel Branch 2" }
     ];
 
     const handleEmployeeSelect = (employeeId) => {
@@ -206,7 +206,7 @@ const AddSalaryPage = () => {
                                     <Input
                                         value={formData.employeeId}
                                         disabled
-                                        className="mt-1 bg-gray-50"
+                                        className="mt-1 bg-gray-50 dark:bg-muted/10"
                                     />
                                 </div>
 
@@ -215,7 +215,7 @@ const AddSalaryPage = () => {
                                     <Input
                                         value={formData.designation}
                                         disabled
-                                        className="mt-1 bg-gray-50"
+                                        className="mt-1 bg-gray-50 dark:bg-muted/10"
                                     />
                                 </div>
 
@@ -224,7 +224,7 @@ const AddSalaryPage = () => {
                                     <Input
                                         value={formData.hostel}
                                         disabled
-                                        className="mt-1 bg-gray-50"
+                                        className="mt-1 bg-gray-50 dark:bg-muted/10"
                                     />
                                 </div>
 
@@ -281,7 +281,7 @@ const AddSalaryPage = () => {
                                         Base Salary (PKR) <span className="text-red-500">*</span>
                                     </Label>
                                     <div className="relative mt-1">
-                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-muted-foreground" />
                                         <Input
                                             id="baseSalary"
                                             type="number"
@@ -300,7 +300,7 @@ const AddSalaryPage = () => {
                                         Allowances (PKR)
                                     </Label>
                                     <div className="relative mt-1">
-                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-muted-foreground" />
                                         <Input
                                             id="allowances"
                                             type="number"
@@ -311,7 +311,7 @@ const AddSalaryPage = () => {
                                             min="0"
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Transport, Housing, etc.</p>
+                                    <p className="text-xs text-gray-500 dark:text-muted-foreground mt-1">Transport, Housing, etc.</p>
                                 </div>
 
                                 <div>
@@ -319,7 +319,7 @@ const AddSalaryPage = () => {
                                         Bonuses (PKR)
                                     </Label>
                                     <div className="relative mt-1">
-                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-muted-foreground" />
                                         <Input
                                             id="bonuses"
                                             type="number"
@@ -330,7 +330,7 @@ const AddSalaryPage = () => {
                                             min="0"
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Performance, Overtime, etc.</p>
+                                    <p className="text-xs text-gray-500 dark:text-muted-foreground mt-1">Performance, Overtime, etc.</p>
                                 </div>
 
                                 <div>
@@ -338,7 +338,7 @@ const AddSalaryPage = () => {
                                         Deductions (PKR)
                                     </Label>
                                     <div className="relative mt-1">
-                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-muted-foreground" />
                                         <Input
                                             id="deductions"
                                             type="number"
@@ -349,7 +349,7 @@ const AddSalaryPage = () => {
                                             min="0"
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Tax, Advance, etc.</p>
+                                    <p className="text-xs text-gray-500 dark:text-muted-foreground mt-1">Tax, Advance, etc.</p>
                                 </div>
 
                                 <div className="md:col-span-2 bg-green-50 border border-green-200 rounded-lg p-4">
@@ -449,7 +449,7 @@ const AddSalaryPage = () => {
                                         onChange={(e) => handleInputChange("bankName", e.target.value)}
                                         className="mt-1"
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">Optional: For bank transfer</p>
+                                    <p className="text-xs text-gray-500 dark:text-muted-foreground mt-1">Optional: For bank transfer</p>
                                 </div>
 
                                 <div>
@@ -463,7 +463,7 @@ const AddSalaryPage = () => {
                                         onChange={(e) => handleInputChange("accountNumber", e.target.value)}
                                         className="mt-1"
                                     />
-                                    <p className="text-xs text-gray-500 mt-1">Optional: Employee account</p>
+                                    <p className="text-xs text-gray-500 dark:text-muted-foreground mt-1">Optional: Employee account</p>
                                 </div>
                             </div>
                         </CardContent>
@@ -513,11 +513,11 @@ const AddSalaryPage = () => {
                                         Attachments
                                     </Label>
                                     <div className="mt-1 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors cursor-pointer">
-                                        <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-                                        <p className="text-sm text-gray-600 mb-1">
+                                        <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400 dark:text-muted-foreground" />
+                                        <p className="text-sm text-gray-600 dark:text-muted-foreground mb-1">
                                             Click to upload or drag and drop
                                         </p>
-                                        <p className="text-xs text-gray-500">
+                                        <p className="text-xs text-gray-500 dark:text-muted-foreground">
                                             PDF, PNG, JPG up to 10MB
                                         </p>
                                         <Input
@@ -529,7 +529,7 @@ const AddSalaryPage = () => {
                                             className="hidden"
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-2">
+                                    <p className="text-xs text-gray-500 dark:text-muted-foreground mt-2">
                                         Upload salary slips or payment receipts
                                     </p>
                                 </div>

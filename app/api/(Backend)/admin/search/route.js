@@ -175,14 +175,14 @@ export async function GET(req) {
             }),
 
             // Search maintenance by UID, title or User fields
-            prisma.maintanance.findMany({
+            prisma.maintenance.findMany({
                 where: {
                     OR: [
                         { uid: { contains: searchTerm, mode: 'insensitive' } },
                         { title: { contains: query, mode: 'insensitive' } },
                         { id: { contains: query, mode: 'insensitive' } },
                         {
-                            User_maintanance_userIdToUser: {
+                            Maintenance_userIdToUser: {
                                 OR: [
                                     { name: { contains: query, mode: 'insensitive' } },
                                     { email: { contains: query, mode: 'insensitive' } },
@@ -193,7 +193,7 @@ export async function GET(req) {
                     ]
                 },
                 include: {
-                    User_maintanance_userIdToUser: {
+                    Maintenance_userIdToUser: {
                         select: {
                             id: true,
                             uid: true,

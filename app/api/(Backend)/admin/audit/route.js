@@ -91,7 +91,7 @@ export async function GET(request) {
 
         // 5. Try to find Maintenance by ID
         if (!results.maintenance) {
-            results.maintenance = await prisma.maintanance.findUnique({
+            results.maintenance = await prisma.maintenance.findUnique({
                 where: { id: query },
                 include: {
                     Hostel: true,
@@ -107,7 +107,7 @@ export async function GET(request) {
             const [allPayments, allComplaints, allMaintenance, allBookings] = await Promise.all([
                 prisma.payment.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } }),
                 prisma.complaint.findMany({ where: { userId }, orderBy: { createdAt: 'desc' }, include: { comments: true } }),
-                prisma.maintanance.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } }),
+                prisma.maintenance.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } }),
                 prisma.booking.findMany({
                     where: { userId },
                     orderBy: { createdAt: 'desc' },

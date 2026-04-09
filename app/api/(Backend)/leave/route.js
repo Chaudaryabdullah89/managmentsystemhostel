@@ -25,7 +25,7 @@ export async function GET(req) {
         // by storing leave requests as a JSON object in the ResidentProfile via a direct query
 
         // We'll use the maintanance model with a category 'LEAVE_REQUEST' as a lightweight approach
-        const leaves = await prisma.maintanance.findMany({
+        const leaves = await prisma.maintenance.findMany({
             where: {
                 ...(userId ? { userId } : {}),
                 ...(hostelId ? { hostelId } : {}),
@@ -33,7 +33,7 @@ export async function GET(req) {
                 title: { startsWith: '[LEAVE]' }
             },
             include: {
-                User_maintanance_userIdToUser: {
+                Maintenance_userIdToUser: {
                     select: { id: true, name: true, email: true, uid: true, phone: true, image: true }
                 },
                 Hostel: { select: { id: true, name: true } },
@@ -69,7 +69,7 @@ export async function POST(req) {
         }
 
         // Check for existing pending leave
-        const existing = await prisma.maintanance.findFirst({
+        const existing = await prisma.maintenance.findFirst({
             where: {
                 userId,
                 status: 'PENDING',
@@ -81,7 +81,7 @@ export async function POST(req) {
             return NextResponse.json({ success: false, error: 'You already have a pending leave request' }, { status: 400 });
         }
 
-        const leave = await prisma.maintanance.create({
+        const leave = await prisma.maintenance.create({
             data: {
                 title: `[LEAVE] Leave Request: ${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`,
                 description: JSON.stringify({ startDate, endDate, reason, emergencyContact }),
@@ -116,7 +116,7 @@ export async function PUT(req) {
             return NextResponse.json({ success: false, error: 'Invalid status' }, { status: 400 });
         }
 
-        const updated = await prisma.maintanance.update({
+        const updated = await prisma.maintenance.update({
             where: { id },
             data: {
                 status,

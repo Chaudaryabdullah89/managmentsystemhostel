@@ -33,7 +33,7 @@ import {
 import { useNotices, useCreateNotice, useUpdateNotice, useDeleteNotice } from "@/hooks/useNotices"
 import useAuthStore from "@/hooks/Authstate"
 import { format } from "date-fns"
-import Loader from "@/components/ui/Loader"
+import { ListPageSkeleton } from "@/components/ui/skeletons";
 
 const WardenNoticePage = () => {
     const { user } = useAuthStore()
@@ -85,7 +85,7 @@ const WardenNoticePage = () => {
             case 'HIGH': return 'bg-orange-50 text-orange-700 border-orange-100'
             case 'MEDIUM': return 'bg-blue-50 text-blue-700 border-blue-100'
             case 'LOW': return 'bg-emerald-50 text-emerald-700 border-emerald-100'
-            default: return 'bg-gray-50 text-gray-600 border-gray-100'
+            default: return 'bg-gray-50 dark:bg-muted/10 text-gray-600 dark:text-muted-foreground border-gray-100 dark:border-border'
         }
     }
 
@@ -113,25 +113,25 @@ const WardenNoticePage = () => {
         expiring: notices?.filter(n => n.expiresAt && new Date(n.expiresAt) < new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)).length || 0,
     }
 
-    if (isLoading) return <Loader label="Loading" subLabel="Updates..." icon={Megaphone} fullScreen={false} />
+    if (isLoading) return <ListPageSkeleton />
 
     const NoticeForm = ({ onSubmit, isPending, submitLabel }) => (
         <form onSubmit={onSubmit} className="space-y-4 pt-2">
             <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Title</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Title</Label>
                 <Input
                     required
-                    className="rounded-xl border-gray-100 bg-gray-50/50 focus:bg-white text-sm font-medium"
+                    className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background focus:bg-white dark:bg-card text-sm font-medium"
                     placeholder="Title"
                     value={formData.title}
                     onChange={e => setFormData({ ...formData, title: e.target.value })}
                 />
             </div>
             <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Content</Label>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Content</Label>
                 <Textarea
                     required
-                    className="min-h-[100px] rounded-xl border-gray-100 bg-gray-50/50 focus:bg-white resize-none text-sm font-medium"
+                    className="min-h-[100px] rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background focus:bg-white dark:bg-card resize-none text-sm font-medium"
                     placeholder="Message"
                     value={formData.content}
                     onChange={e => setFormData({ ...formData, content: e.target.value })}
@@ -139,12 +139,12 @@ const WardenNoticePage = () => {
             </div>
             <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Priority</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Priority</Label>
                     <Select value={formData.priority} onValueChange={val => setFormData({ ...formData, priority: val })}>
-                        <SelectTrigger className="rounded-xl border-gray-100 font-bold text-[10px] uppercase tracking-wider">
+                        <SelectTrigger className="rounded-xl border-gray-100 dark:border-border font-bold text-[10px] uppercase tracking-wider">
                             <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                        <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl">
                             {['LOW', 'MEDIUM', 'HIGH', 'URGENT'].map(p => (
                                 <SelectItem key={p} value={p} className="text-[10px] font-bold uppercase tracking-widest">{p}</SelectItem>
                             ))}
@@ -152,10 +152,10 @@ const WardenNoticePage = () => {
                     </Select>
                 </div>
                 <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400">End</Label>
+                    <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">End</Label>
                     <Input
                         type="date"
-                        className="rounded-xl border-gray-100 font-medium text-sm"
+                        className="rounded-xl border-gray-100 dark:border-border font-medium text-sm"
                         value={formData.expiresAt}
                         onChange={e => setFormData({ ...formData, expiresAt: e.target.value })}
                     />
@@ -172,17 +172,17 @@ const WardenNoticePage = () => {
     )
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
 
             {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="h-8 w-1 bg-indigo-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Notices</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 dark:text-foreground tracking-tight uppercase">Notices</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Total</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Total</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
                                 <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600 hidden sm:block">Active</span>
                             </div>
@@ -192,10 +192,10 @@ const WardenNoticePage = () => {
                     <div className="flex items-center gap-2 md:gap-3 shrink-0">
                         {/* Search — desktop */}
                         <div className="relative group hidden lg:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground group-focus-within:text-indigo-600 transition-colors" />
                             <Input
                                 placeholder="Search..."
-                                className="h-9 w-[240px] pl-9 rounded-xl border-gray-100 bg-gray-50/50 font-bold text-[10px] uppercase tracking-wider text-gray-600 shadow-sm focus:ring-0 focus:bg-white placeholder:text-gray-300"
+                                className="h-9 w-[240px] pl-9 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-bold text-[10px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground shadow-sm focus:ring-0 focus:bg-white dark:bg-card placeholder:text-gray-300"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                             />
@@ -209,10 +209,10 @@ const WardenNoticePage = () => {
                                     <span className="sm:hidden">Post</span>
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-[440px] rounded-3xl border-gray-100 p-8">
+                            <DialogContent className="sm:max-w-[440px] rounded-3xl border-gray-100 dark:border-border p-8">
                                 <DialogHeader className="mb-2">
-                                    <DialogTitle className="text-base font-black uppercase tracking-widest text-gray-900">Add</DialogTitle>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Post update.</p>
+                                    <DialogTitle className="text-base font-black uppercase tracking-widest text-gray-900 dark:text-foreground">Add</DialogTitle>
+                                    <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Post update.</p>
                                 </DialogHeader>
                                 <NoticeForm onSubmit={handleCreate} isPending={createMutation.isPending} submitLabel="Post" />
                             </DialogContent>
@@ -225,10 +225,10 @@ const WardenNoticePage = () => {
 
                 {/* Mobile Search */}
                 <div className="lg:hidden relative group w-full">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
                     <Input
                         placeholder="Search..."
-                        className="h-12 w-full pl-11 rounded-2xl border-gray-100 bg-white font-bold text-[11px] uppercase tracking-wider text-gray-600 shadow-sm focus:ring-0"
+                        className="h-12 w-full pl-11 rounded-2xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-[11px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground shadow-sm focus:ring-0"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
                     />
@@ -242,15 +242,15 @@ const WardenNoticePage = () => {
                         { label: 'High', value: stats.high, sub: 'High', icon: Bell, color: 'text-orange-600', bg: 'bg-orange-50/50' },
                         { label: 'Ending', value: stats.expiring, sub: 'Soon', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50/50' },
                     ].map((stat, i) => (
-                        <div key={i} className={`border border-gray-100 rounded-2xl p-3 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-all group min-w-0 ${stat.bg}`}>
-                            <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white flex items-center justify-center shrink-0 border border-gray-100 group-hover:scale-110 transition-transform ${stat.color}`}>
+                        <div key={i} className={`border border-gray-100 dark:border-border rounded-2xl p-3 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-all group min-w-0 ${stat.bg}`}>
+                            <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white dark:bg-card flex items-center justify-center shrink-0 border border-gray-100 dark:border-border group-hover:scale-110 transition-transform ${stat.color}`}>
                                 <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
+                                <span className="text-[8px] md:text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">{stat.label}</span>
                                 <div className="flex items-baseline gap-1.5 min-w-0">
                                     <span className={`text-base md:text-xl font-bold tracking-tight truncate ${stat.color}`}>{stat.value}</span>
-                                    <span className="text-[7px] md:text-[8px] font-black text-gray-400 uppercase tracking-wider truncate mb-0.5">{stat.sub}</span>
+                                    <span className="text-[7px] md:text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-wider truncate mb-0.5">{stat.sub}</span>
                                 </div>
                             </div>
                         </div>
@@ -258,14 +258,14 @@ const WardenNoticePage = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-wrap items-center gap-2.5 bg-white border border-gray-100 rounded-2xl p-3 shadow-sm">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 px-2">Filter</span>
+                <div className="flex flex-wrap items-center gap-2.5 bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-3 shadow-sm">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground px-2">Filter</span>
                     <div className="h-4 w-px bg-gray-100" />
                     <Select value={filterPriority} onValueChange={setFilterPriority}>
-                        <SelectTrigger className="h-9 w-[150px] rounded-xl border-gray-100 bg-gray-50/50 font-bold text-[10px] uppercase tracking-wider text-gray-600 shadow-sm focus:ring-0">
+                        <SelectTrigger className="h-9 w-[150px] rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-bold text-[10px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground shadow-sm focus:ring-0">
                             <SelectValue placeholder="Priority" />
                         </SelectTrigger>
-                        <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                        <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl">
                             <SelectItem value="all" className="text-[10px] font-bold uppercase tracking-widest">All</SelectItem>
                             <SelectItem value="URGENT" className="text-[10px] font-bold uppercase tracking-widest">Urgent</SelectItem>
                             <SelectItem value="HIGH" className="text-[10px] font-bold uppercase tracking-widest">High</SelectItem>
@@ -282,7 +282,7 @@ const WardenNoticePage = () => {
                             Reset
                         </Button>
                     )}
-                    <span className="ml-auto text-[10px] font-bold text-gray-400 uppercase tracking-widest pr-2">
+                    <span className="ml-auto text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest pr-2">
                         {filteredNotices.length} Matches
                     </span>
                 </div>
@@ -291,12 +291,12 @@ const WardenNoticePage = () => {
                 <div className="space-y-4">
                     <div className="flex items-center gap-3 px-2">
                         <div className="h-5 w-1 bg-indigo-600 rounded-full" />
-                        <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900">Recent</h3>
+                        <h3 className="text-xs md:text-sm font-bold uppercase tracking-widest text-gray-900 dark:text-foreground">Recent</h3>
                     </div>
 
                     <div className="grid grid-cols-1 gap-3 md:gap-4">
                         {filteredNotices.length > 0 ? filteredNotices.map((notice) => (
-                            <div key={notice.id} className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+                            <div key={notice.id} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
                                 {/* Priority accent bar */}
                                 <div className={`absolute left-0 top-0 bottom-0 w-1 ${getPriorityAccent(notice.priority)} opacity-70`} />
 
@@ -311,16 +311,16 @@ const WardenNoticePage = () => {
                                                     {notice.priority}
                                                 </Badge>
                                                 {notice.category && (
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{notice.category}</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{notice.category}</span>
                                                 )}
                                             </div>
-                                            <h3 className="text-[13px] md:text-sm font-black text-gray-900 uppercase tracking-tight line-clamp-1 group-hover:text-indigo-600 transition-colors">{notice.title}</h3>
-                                            <p className="text-[11px] md:text-xs text-gray-500 font-medium leading-relaxed mt-1 line-clamp-2">{notice.content}</p>
+                                            <h3 className="text-[13px] md:text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tight line-clamp-1 group-hover:text-indigo-600 transition-colors">{notice.title}</h3>
+                                            <p className="text-[11px] md:text-xs text-gray-500 dark:text-muted-foreground font-medium leading-relaxed mt-1 line-clamp-2">{notice.content}</p>
 
                                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3">
                                                 <div className="flex items-center gap-1.5">
-                                                    <Clock className="h-3 w-3 text-gray-400" />
-                                                    <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-tight">{format(new Date(notice.createdAt), 'MMM dd, yyyy')}</span>
+                                                    <Clock className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
+                                                    <span className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-tight">{format(new Date(notice.createdAt), 'MMM dd, yyyy')}</span>
                                                 </div>
                                                 {notice.expiresAt && (
                                                     <div className="flex items-center gap-1.5">
@@ -334,11 +334,11 @@ const WardenNoticePage = () => {
 
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 shrink-0">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl text-gray-400 dark:text-muted-foreground hover:text-gray-600 dark:text-muted-foreground hover:bg-gray-100 shrink-0">
                                                 <MoreVertical className="h-4 w-4" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="rounded-xl border-gray-100 shadow-xl p-1">
+                                        <DropdownMenuContent align="end" className="rounded-xl border-gray-100 dark:border-border shadow-xl p-1">
                                             <DropdownMenuItem onClick={() => startEditing(notice)} className="rounded-lg text-[10px] font-bold uppercase tracking-widest py-2 gap-3">
                                                 <Edit3 className="h-3.5 w-3.5 text-indigo-500" /> Edit
                                             </DropdownMenuItem>
@@ -353,15 +353,15 @@ const WardenNoticePage = () => {
                                 </div>
                             </div>
                         )) : (
-                            <div className="py-24 flex flex-col items-center justify-center bg-white border border-dashed border-gray-200 rounded-[2rem] text-center px-6">
-                                <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-6 border border-gray-100">
+                            <div className="py-24 flex flex-col items-center justify-center bg-white dark:bg-card border border-dashed border-gray-200 dark:border-border rounded-[2rem] text-center px-6">
+                                <div className="h-16 w-16 rounded-2xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center mb-6 border border-gray-100 dark:border-border">
                                     <Inbox className="h-8 w-8 text-gray-200" />
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Empty</h3>
-                                <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mt-2">No records match.</p>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Empty</h3>
+                                <p className="text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-widest text-[10px] mt-2">No records match.</p>
                                 <Button
                                     variant="outline"
-                                    className="mt-8 rounded-xl border-gray-200 uppercase tracking-widest text-[10px] font-bold h-10 px-8 hover:bg-indigo-600 hover:text-white transition-all"
+                                    className="mt-8 rounded-xl border-gray-200 dark:border-border uppercase tracking-widest text-[10px] font-bold h-10 px-8 hover:bg-indigo-600 hover:text-white transition-all"
                                     onClick={() => { setFilterPriority('all'); setSearchTerm('') }}
                                 >
                                     Reset
@@ -374,10 +374,10 @@ const WardenNoticePage = () => {
 
             {/* Edit Modal */}
             <Dialog open={!!editingNotice} onOpenChange={() => setEditingNotice(null)}>
-                <DialogContent className="sm:max-w-[440px] rounded-3xl border-gray-100 p-8">
+                <DialogContent className="sm:max-w-[440px] rounded-3xl border-gray-100 dark:border-border p-8">
                     <DialogHeader className="mb-2">
-                        <DialogTitle className="text-base font-black uppercase tracking-widest text-gray-900">Edit</DialogTitle>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Update post.</p>
+                        <DialogTitle className="text-base font-black uppercase tracking-widest text-gray-900 dark:text-foreground">Edit</DialogTitle>
+                        <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Update post.</p>
                     </DialogHeader>
                     <NoticeForm onSubmit={handleUpdate} isPending={updateMutation.isPending} submitLabel="Save" />
                 </DialogContent>

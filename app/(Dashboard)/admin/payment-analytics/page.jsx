@@ -30,7 +30,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAllPayments } from "@/hooks/usePayment";
-import Loader from "@/components/ui/Loader";
+import { ListPageSkeleton } from "@/components/ui/skeletons";
 import { useHostel } from "@/hooks/usehostel";
 // Dynamically import recharts to avoid SSR hydration issues
 import dynamic from "next/dynamic";
@@ -241,7 +241,7 @@ export default function PaymentAnalyticsPage() {
         toast.success("Analytics CSV Exported!");
     };
 
-    if (paymentsLoading) return <Loader label="Crunching ledger data..." subLabel="Applying filters and generating insights..." icon={Layers} fullScreen={false} />;
+    if (paymentsLoading) return <ListPageSkeleton />;
 
     const formatCurrency = (val) => {
         if (val >= 10000000) return `PKR ${(val / 10000000).toFixed(1)}Cr`;
@@ -252,9 +252,9 @@ export default function PaymentAnalyticsPage() {
     const CustomAreaTooltip = ({ active, payload, label }) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-white border border-gray-100 p-3 rounded-2xl shadow-lg">
-                    <p className="text-[10px] uppercase font-bold text-gray-400 tracking-wider mb-1">{label}</p>
-                    <p className="text-sm font-black text-gray-900 tracking-tight">{formatCurrency(payload[0].value)}</p>
+                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border p-3 rounded-2xl shadow-lg">
+                    <p className="text-[10px] uppercase font-bold text-gray-400 dark:text-muted-foreground tracking-wider mb-1">{label}</p>
+                    <p className="text-sm font-black text-gray-900 dark:text-foreground tracking-tight">{formatCurrency(payload[0].value)}</p>
                 </div>
             );
         }
@@ -262,17 +262,17 @@ export default function PaymentAnalyticsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight print:hidden">
 
             {/* Premium Header - Synchronized Design */}
-            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 py-2 md:h-16">
                 <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="h-8 w-1 bg-indigo-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Payment Analytics</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 dark:text-foreground tracking-tight uppercase">Payment Analytics</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Hostel</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Hostel</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
                                 <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600">Live</span>
                             </div>
@@ -282,10 +282,10 @@ export default function PaymentAnalyticsPage() {
                     <div className="flex flex-wrap items-center gap-2 md:gap-3">
                         <Button
                             variant="outline"
-                            className="h-9 px-3 md:px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 flex-1 sm:flex-none flex items-center justify-center gap-2 hover:bg-gray-50"
+                            className="h-9 px-3 md:px-4 rounded-xl border-gray-200 dark:border-border bg-white dark:bg-card font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground flex-1 sm:flex-none flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10"
                             onClick={handleExport}
                         >
-                            <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden sm:inline">Export CSV</span><span className="inline sm:hidden">CSV</span>
+                            <Download className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" /> <span className="hidden sm:inline">Export CSV</span><span className="inline sm:hidden">CSV</span>
                         </Button>
                     </div>
                 </div>
@@ -301,15 +301,15 @@ export default function PaymentAnalyticsPage() {
                         { label: 'Clearance Rate', value: `${financialData.totalTx > 0 ? ((financialData.successfulTx / financialData.totalTx) * 100).toFixed(1) : 0}%`, fullValue: `${financialData.totalTx > 0 ? ((financialData.successfulTx / financialData.totalTx) * 100).toFixed(1) : 0}%`, icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                         { label: 'Refunds', value: `PKR ${(financialData.refundVolume / 1000).toFixed(1)}k`, fullValue: formatCurrency(financialData.refundVolume), icon: Undo2, color: 'text-rose-600', bg: 'bg-rose-50' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-4 md:p-5 flex items-center justify-between shadow-sm group hover:shadow-md transition-shadow min-w-0">
+                        <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl md:rounded-3xl p-4 md:p-5 flex items-center justify-between shadow-sm group hover:shadow-md transition-shadow min-w-0">
                             <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
                                 <div className={`h-9 w-9 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
                                     <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
                                 </div>
                                 <div className="flex flex-col min-w-0">
-                                    <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
-                                    <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate hidden md:block">{stat.fullValue}</span>
-                                    <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate block md:hidden">{stat.value}</span>
+                                    <span className="text-[8px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">{stat.label}</span>
+                                    <span className="text-sm md:text-xl font-bold text-gray-900 dark:text-foreground tracking-tight truncate hidden md:block">{stat.fullValue}</span>
+                                    <span className="text-sm md:text-xl font-bold text-gray-900 dark:text-foreground tracking-tight truncate block md:hidden">{stat.value}</span>
                                 </div>
                             </div>
                             {stat.trend !== undefined && (
@@ -323,19 +323,19 @@ export default function PaymentAnalyticsPage() {
                 </div>
 
                 {/* Operations Bar - Unified Search & Filter */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm w-full relative z-40">
+                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm w-full relative z-40">
                     <div className="flex-1 w-full pl-2 hidden md:block">
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                             <Filter className="w-3.5 h-3.5" /> Data Filters
                         </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
+                    <div className="flex items-center gap-1.5 md:gap-2 p-1 bg-gray-50 dark:bg-muted/10 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
                         {isAdmin && (
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none hover:bg-gray-100">
-                                        <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                    <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 dark:text-muted-foreground flex-1 md:flex-none hover:bg-gray-100">
+                                        <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400 dark:text-muted-foreground" />
                                         <span className="truncate">{selectedHostel === 'all' ? 'Hostel' : hostels.find(h => h.id === selectedHostel)?.name}</span>
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -352,8 +352,8 @@ export default function PaymentAnalyticsPage() {
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none hover:bg-gray-100">
-                                    <Zap className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 dark:text-muted-foreground flex-1 md:flex-none hover:bg-gray-100">
+                                    <Zap className="h-3.5 w-3.5 mr-2 text-gray-400 dark:text-muted-foreground" />
                                     <span className="truncate">{typeFilter === 'all' ? 'Type' : typeFilter}</span>
                                 </Button>
                             </DropdownMenuTrigger>
@@ -367,8 +367,8 @@ export default function PaymentAnalyticsPage() {
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none hover:bg-gray-100">
-                                    <ShieldCheck className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 dark:text-muted-foreground flex-1 md:flex-none hover:bg-gray-100">
+                                    <ShieldCheck className="h-3.5 w-3.5 mr-2 text-gray-400 dark:text-muted-foreground" />
                                     <span className="truncate">{statusFilter === 'all' ? 'Status' : statusFilter}</span>
                                 </Button>
                             </DropdownMenuTrigger>
@@ -383,8 +383,8 @@ export default function PaymentAnalyticsPage() {
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 flex-1 md:flex-none hover:bg-gray-100">
-                                    <Calendar className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 dark:text-muted-foreground flex-1 md:flex-none hover:bg-gray-100">
+                                    <Calendar className="h-3.5 w-3.5 mr-2 text-gray-400 dark:text-muted-foreground" />
                                     <span className="truncate">{timeFilter === 'all' ? 'Time' : timeFilter.replace('_', ' ')}</span>
                                 </Button>
                             </DropdownMenuTrigger>
@@ -407,16 +407,16 @@ export default function PaymentAnalyticsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 relative z-30">
 
                     {/* BIG REVENUE CHART */}
-                    <div className="lg:col-span-2 bg-white border border-gray-100 shadow-sm rounded-2xl md:rounded-3xl overflow-hidden min-w-0 flex flex-col">
-                        <div className="p-6 md:p-8 border-b border-gray-50 flex items-center justify-between bg-white">
+                    <div className="lg:col-span-2 bg-white dark:bg-card border border-gray-100 dark:border-border shadow-sm rounded-2xl md:rounded-3xl overflow-hidden min-w-0 flex flex-col">
+                        <div className="p-6 md:p-8 border-b border-gray-50 flex items-center justify-between bg-white dark:bg-card">
                             <div>
-                                <h3 className="text-sm md:text-base font-black text-gray-900 tracking-tight uppercase">Timeline</h3>
-                                <p className="text-[10px] md:text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-1">Monthly collection trajectory</p>
+                                <h3 className="text-sm md:text-base font-black text-gray-900 dark:text-foreground tracking-tight uppercase">Timeline</h3>
+                                <p className="text-[10px] md:text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">Monthly collection trajectory</p>
                             </div>
                             <div className="flex items-center gap-4 hidden sm:flex">
                                 <div className="flex items-center gap-2">
                                     <div className="h-2 w-2 rounded-full bg-indigo-600" />
-                                    <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest">Revenue</span>
+                                    <span className="text-[9px] font-bold text-gray-600 dark:text-muted-foreground uppercase tracking-widest">Revenue</span>
                                 </div>
                             </div>
                         </div>
@@ -459,8 +459,8 @@ export default function PaymentAnalyticsPage() {
                                     </RechartsResponsiveContainer>
                                 ) : (
                                     <div className="h-full flex flex-col items-center justify-center space-y-3 opacity-30">
-                                        <Activity className="w-12 h-12 text-gray-400" />
-                                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">No timeline data</p>
+                                        <Activity className="w-12 h-12 text-gray-400 dark:text-muted-foreground" />
+                                        <p className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">No timeline data</p>
                                     </div>
                                 )}
                             </div>
@@ -468,10 +468,10 @@ export default function PaymentAnalyticsPage() {
                     </div>
 
                     {/* REVENUE MIX DOUGHNUT */}
-                    <div className="lg:col-span-1 bg-white border border-gray-100 shadow-sm rounded-2xl md:rounded-3xl flex flex-col overflow-hidden min-w-0">
+                    <div className="lg:col-span-1 bg-white dark:bg-card border border-gray-100 dark:border-border shadow-sm rounded-2xl md:rounded-3xl flex flex-col overflow-hidden min-w-0">
                         <div className="p-6 md:p-8 border-b border-gray-50 flex items-center justify-between">
-                            <h3 className="text-sm md:text-base font-black text-gray-900 tracking-tight uppercase">Breakdown</h3>
-                            <PieChartIcon className="w-4 h-4 text-gray-400" />
+                            <h3 className="text-sm md:text-base font-black text-gray-900 dark:text-foreground tracking-tight uppercase">Breakdown</h3>
+                            <PieChartIcon className="w-4 h-4 text-gray-400 dark:text-muted-foreground" />
                         </div>
                         <div className="p-6 md:p-8 flex-1 space-y-6 md:space-y-8 flex flex-col justify-center">
 
@@ -496,7 +496,7 @@ export default function PaymentAnalyticsPage() {
                                             </RechartsPieChart>
                                         </RechartsResponsiveContainer>
                                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter text-center">Gross<br />Mix</p>
+                                            <p className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-tighter text-center">Gross<br />Mix</p>
                                         </div>
                                     </>
                                 ) : <div className="h-full flex items-center justify-center text-[10px] font-bold text-gray-300 uppercase">Awaiting Data</div>}
@@ -508,10 +508,10 @@ export default function PaymentAnalyticsPage() {
                                         <div key={d.name} className="flex items-center justify-between group cursor-default">
                                             <div className="flex items-center gap-3">
                                                 <div className="h-2 w-2 md:h-2.5 md:w-2.5 rounded-full" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
-                                                <span className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest group-hover:text-gray-900 transition-colors">{d.name}</span>
+                                                <span className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest group-hover:text-gray-900 dark:text-foreground transition-colors">{d.name}</span>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-[11px] font-black text-gray-900">{((d.value / financialData.grossVolume) * 100).toFixed(1)}%</p>
+                                                <p className="text-[11px] font-black text-gray-900 dark:text-foreground">{((d.value / financialData.grossVolume) * 100).toFixed(1)}%</p>
                                             </div>
                                         </div>
                                     ))}
@@ -525,11 +525,11 @@ export default function PaymentAnalyticsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 pb-10">
 
                     {/* PAYMENT METHOD EFFICIENCY */}
-                    <div className="bg-white border border-gray-100 shadow-sm rounded-2xl md:rounded-3xl overflow-hidden min-w-0">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border shadow-sm rounded-2xl md:rounded-3xl overflow-hidden min-w-0">
                         <div className="p-6 md:p-8 flex items-center justify-between border-b border-gray-50">
                             <div>
-                                <h3 className="text-sm md:text-base font-black text-gray-900 tracking-tight uppercase">Channels</h3>
-                                <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Gateway performance</p>
+                                <h3 className="text-sm md:text-base font-black text-gray-900 dark:text-foreground tracking-tight uppercase">Channels</h3>
+                                <p className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">Gateway performance</p>
                             </div>
                             <Wallet className="w-4 h-4 md:w-5 md:h-5 text-gray-300" />
                         </div>
@@ -539,12 +539,12 @@ export default function PaymentAnalyticsPage() {
                                     <div key={method.name} className="flex flex-col gap-2 md:gap-3 group">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2 md:gap-3">
-                                                <div className="h-6 w-6 md:h-8 md:w-8 rounded-lg md:rounded-xl flex items-center justify-center bg-gray-50 text-gray-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                                                <div className="h-6 w-6 md:h-8 md:w-8 rounded-lg md:rounded-xl flex items-center justify-center bg-gray-50 dark:bg-muted/10 text-gray-500 dark:text-muted-foreground group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
                                                     <Banknote className="h-3 w-3 md:h-4 md:w-4" />
                                                 </div>
-                                                <span className="text-[10px] md:text-xs font-black text-gray-900 uppercase tracking-tight">{method.name.replace('_', ' ')}</span>
+                                                <span className="text-[10px] md:text-xs font-black text-gray-900 dark:text-foreground uppercase tracking-tight">{method.name.replace('_', ' ')}</span>
                                             </div>
-                                            <span className="text-[10px] md:text-[11px] font-black text-gray-900">{method.percentage.toFixed(1)}%</span>
+                                            <span className="text-[10px] md:text-[11px] font-black text-gray-900 dark:text-foreground">{method.percentage.toFixed(1)}%</span>
                                         </div>
                                         <div className="w-full bg-gray-100 h-1.5 md:h-2 rounded-full overflow-hidden">
                                             <div
@@ -552,48 +552,48 @@ export default function PaymentAnalyticsPage() {
                                                 style={{ width: `${method.percentage}%` }}
                                             />
                                         </div>
-                                        <div className="flex items-center justify-between text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                                        <div className="flex items-center justify-between text-[8px] md:text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                                             <p>Volume</p>
                                             <p>{formatCurrency(method.value)}</p>
                                         </div>
                                     </div>
                                 ))}
                                 {financialData.methodMix.length === 0 && (
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center py-4">No channel data</p>
+                                    <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center py-4">No channel data</p>
                                 )}
                             </div>
                         </div>
                     </div>
 
                     {/* TOP RESIDENTS LIST */}
-                    <div className="bg-white border border-gray-100 shadow-sm rounded-2xl md:rounded-3xl overflow-hidden min-w-0">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border shadow-sm rounded-2xl md:rounded-3xl overflow-hidden min-w-0">
                         <div className="p-6 md:p-8 pb-4 border-b border-gray-50 flex items-center justify-between">
                             <div>
-                                <h3 className="text-sm md:text-base font-black text-gray-900 tracking-tight uppercase">Top Contributors</h3>
-                                <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Highest impact</p>
+                                <h3 className="text-sm md:text-base font-black text-gray-900 dark:text-foreground tracking-tight uppercase">Top Contributors</h3>
+                                <p className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">Highest impact</p>
                             </div>
                             <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-gray-300" />
                         </div>
                         <div className="p-4">
                             <div className="space-y-1">
                                 {financialData.leadingResidents.map((user, i) => (
-                                    <div key={i} className="flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-gray-50 transition-all group">
+                                    <div key={i} className="flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 transition-all group">
                                         <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
-                                            <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl bg-gray-100 flex items-center justify-center font-black text-gray-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors uppercase text-xs md:text-sm shrink-0">
+                                            <div className="h-8 w-8 md:h-10 md:w-10 rounded-xl bg-gray-100 flex items-center justify-center font-black text-gray-600 dark:text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-colors uppercase text-xs md:text-sm shrink-0">
                                                 {user.name.charAt(0)}
                                             </div>
                                             <div className="min-w-0 pr-4">
-                                                <p className="text-xs md:text-sm font-black text-gray-900 tracking-tight uppercase truncate">{user.name}</p>
-                                                <p className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest truncate">{user.count} txns</p>
+                                                <p className="text-xs md:text-sm font-black text-gray-900 dark:text-foreground tracking-tight uppercase truncate">{user.name}</p>
+                                                <p className="text-[8px] md:text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">{user.count} txns</p>
                                             </div>
                                         </div>
                                         <div className="text-right shrink-0">
-                                            <p className="text-xs md:text-sm font-black text-gray-900 leading-none">PKR {user.total.toLocaleString()}</p>
+                                            <p className="text-xs md:text-sm font-black text-gray-900 dark:text-foreground leading-none">PKR {user.total.toLocaleString()}</p>
                                         </div>
                                     </div>
                                 ))}
                                 {financialData.leadingResidents.length === 0 && (
-                                    <div className="py-10 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest">No contributor data</div>
+                                    <div className="py-10 text-center text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">No contributor data</div>
                                 )}
                             </div>
                         </div>

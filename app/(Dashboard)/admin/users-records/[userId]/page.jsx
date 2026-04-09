@@ -80,7 +80,7 @@ import { useResetPassword, useDeleteUser } from "@/hooks/useUsers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import ActivityFeed from "@/components/admin/ActivityFeed";
-import Loader from "@/components/ui/Loader";
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 import { toast } from "sonner";
 import { useCreatePayment } from "@/hooks/usePayment";
 import { useReports } from "@/hooks/useReports";
@@ -89,12 +89,12 @@ import SalarySlip from "@/components/SalarySlip";
 
 const DetailItem = ({ icon: Icon, label, value, color = "text-indigo-600" }) => (
     <div className="flex items-start gap-4">
-        <div className={`h-10 w-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 ${color}`}>
+        <div className={`h-10 w-10 rounded-xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border flex items-center justify-center shrink-0 ${color}`}>
             <Icon className="h-4 w-4" />
         </div>
         <div className="flex flex-col min-w-0">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">{label}</span>
-            <span className="text-sm font-bold text-gray-900 wrap-break-word tracking-tight">{value || "Not Provided"}</span>
+            <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none mb-1">{label}</span>
+            <span className="text-sm font-bold text-gray-900 dark:text-foreground wrap-break-word tracking-tight">{value || "Not Provided"}</span>
         </div>
     </div>
 );
@@ -110,16 +110,16 @@ const KeyValueGrid = ({ title, data = {} }) => {
     const rows = Object.entries(data).filter(([, value]) => value !== undefined);
     if (!rows.length) return null;
     return (
-        <Card className="rounded-[2.5rem] bg-white p-8 border border-gray-100 shadow-sm">
-            <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-6 flex items-center gap-2">
+        <Card className="rounded-[2.5rem] bg-white dark:bg-card p-8 border border-gray-100 dark:border-border shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground mb-6 flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-indigo-500" />
                 {title}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {rows.map(([key, value]) => (
-                    <div key={key} className="p-4 rounded-2xl border border-gray-100 bg-gray-50/40 hover:bg-white transition-colors">
-                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">{formatFieldLabel(key)}</p>
-                        <p className="text-sm font-bold text-gray-900 wrap-break-word">
+                    <div key={key} className="p-4 rounded-2xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/40 hover:bg-white dark:bg-card transition-colors">
+                        <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">{formatFieldLabel(key)}</p>
+                        <p className="text-sm font-bold text-gray-900 dark:text-foreground wrap-break-word">
                             {typeof value === "object" ? JSON.stringify(value) : String(value || "—")}
                         </p>
                     </div>
@@ -293,9 +293,7 @@ const UserDetailsPage = () => {
         return events.sort((a, b) => b.date - a.date).slice(0, 10);
     }, [userDetails]);
 
-    if (userLoading || detailsLoading) return (
-        <Loader label="Syncing Personnel..." subLabel="Fetching detailed profile records" icon={Scan} fullScreen={true} />
-    );
+    if (userLoading || detailsLoading) return <DetailPageSkeleton />;
 
     if (!user) return (
         <div className="flex h-screen items-center justify-center">
@@ -304,8 +302,8 @@ const UserDetailsPage = () => {
                     <User className="h-10 w-10" />
                 </div>
                 <div className="space-y-1">
-                    <h1 className="text-xl font-bold text-gray-900 uppercase tracking-tight">User Not Found</h1>
-                    <p className="text-sm text-gray-400 font-medium">The user you are looking for does not exist.</p>
+                    <h1 className="text-xl font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">User Not Found</h1>
+                    <p className="text-sm text-gray-400 dark:text-muted-foreground font-medium">The user you are looking for does not exist.</p>
                 </div>
                 <Button onClick={() => router.back()} variant="outline" className="h-11 px-8 rounded-xl font-bold text-[10px] uppercase tracking-wider">
                     Go Back
@@ -315,23 +313,23 @@ const UserDetailsPage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
             {/* Minimal Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16 shadow-sm">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16 shadow-sm">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9" onClick={() => router.back()}>
-                            <ChevronLeft className="h-5 w-5 text-gray-400" />
+                            <ChevronLeft className="h-5 w-5 text-gray-400 dark:text-muted-foreground" />
                         </Button>
                         <div className="h-8 w-px bg-gray-100" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">{user.name}</h1>
+                            <h1 className="text-lg font-bold text-gray-900 dark:text-foreground tracking-tight uppercase">{user.name}</h1>
                             <div className="flex items-center gap-2">
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-600">{user.role}</span>
                                 {user.uid && (
                                     <>
                                         <div className="h-1 w-1 rounded-full bg-gray-300" />
-                                        <span className="text-[10px] font-mono font-bold tracking-wider text-gray-600 bg-gray-100 px-2 py-0.5 rounded">ID: {user.uid}</span>
+                                        <span className="text-[10px] font-mono font-bold tracking-wider text-gray-600 dark:text-muted-foreground bg-gray-100 px-2 py-0.5 rounded">ID: {user.uid}</span>
                                     </>
                                 )}
                                 {user.regNumber && (
@@ -347,14 +345,14 @@ const UserDetailsPage = () => {
                     <div className="flex items-center gap-3">
                         {user.phone && (
                             <a href={`tel:${user.phone}`}>
-                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all shadow-none" title="Call User">
+                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 dark:border-border text-gray-500 dark:text-muted-foreground hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all shadow-none" title="Call User">
                                     <PhoneCall className="h-4 w-4" />
                                 </Button>
                             </a>
                         )}
                         {user.email && (
                             <a href={`mailto:${user.email}`}>
-                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all shadow-none" title="Email User">
+                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 dark:border-border text-gray-500 dark:text-muted-foreground hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all shadow-none" title="Email User">
                                     <Mail className="h-4 w-4" />
                                 </Button>
                             </a>
@@ -363,7 +361,7 @@ const UserDetailsPage = () => {
                             variant="outline"
                             size="icon"
                             onClick={() => window.print()}
-                            className="h-9 w-9 rounded-xl border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all hidden md:flex shadow-none print:hidden"
+                            className="h-9 w-9 rounded-xl border-gray-200 dark:border-border text-gray-500 dark:text-muted-foreground hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all hidden md:flex shadow-none print:hidden"
                             title="Print Record"
                         >
                             <Printer className="h-4 w-4" />
@@ -383,8 +381,8 @@ const UserDetailsPage = () => {
                                     <Settings2 className="h-3.5 w-3.5 mr-2" /> Manage
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-2xl border-gray-100 bg-white">
-                                <DropdownMenuLabel className="text-[9px] font-black uppercase text-gray-400 tracking-widest px-3 py-2">Quick Actions</DropdownMenuLabel>
+                            <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 shadow-2xl border-gray-100 dark:border-border bg-white dark:bg-card">
+                                <DropdownMenuLabel className="text-[9px] font-black uppercase text-gray-400 dark:text-muted-foreground tracking-widest px-3 py-2">Quick Actions</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={() => { setEditData(user); setIsEditDialogOpen(true); }} className="rounded-xl px-4 py-3 font-bold text-[10px] uppercase tracking-widest gap-3 focus:bg-slate-50 cursor-pointer">
                                     <User className="h-4 w-4 text-indigo-600" /> Edit Profile
                                 </DropdownMenuItem>
@@ -411,15 +409,15 @@ const UserDetailsPage = () => {
                         { label: 'Payments', value: `PKR ${stats.totalPaid.toLocaleString()}`, icon: Wallet, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                         { label: 'Complaints', value: stats.compl, icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50' },
                         { label: 'Maintenance', value: stats.maint, icon: Zap, color: 'text-pink-600', bg: 'bg-pink-50' },
-                        { label: 'Status', value: user.isActive ? 'Active' : 'Inactive', icon: ShieldCheck, color: user.isActive ? 'text-emerald-600' : 'text-gray-400', bg: user.isActive ? 'bg-emerald-50' : 'bg-gray-50' }
+                        { label: 'Status', value: user.isActive ? 'Active' : 'Inactive', icon: ShieldCheck, color: user.isActive ? 'text-emerald-600' : 'text-gray-400 dark:text-muted-foreground', bg: user.isActive ? 'bg-emerald-50' : 'bg-gray-50 dark:bg-muted/10' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow">
+                        <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-5 flex items-center gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
-                                <span className="text-xl font-bold text-gray-900 tracking-tight">{stat.value}</span>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{stat.label}</span>
+                                <span className="text-xl font-bold text-gray-900 dark:text-foreground tracking-tight">{stat.value}</span>
                             </div>
                         </div>
                     ))}
@@ -428,16 +426,16 @@ const UserDetailsPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Left Panel: Profile Detail */}
                     <div className="lg:col-span-4 space-y-6">
-                        <Card className="rounded-[2.5rem] border-none shadow-xl shadow-gray-200/50 bg-white overflow-hidden">
+                        <Card className="rounded-[2.5rem] border-none shadow-xl shadow-gray-200/50 bg-white dark:bg-card overflow-hidden">
                             <div className="p-8 space-y-8">
                                 <div className="flex flex-col items-center">
                                     <div className="h-32 w-32 rounded-[2.5rem] bg-indigo-50 border-4 border-white shadow-2xl shadow-indigo-100 flex items-center justify-center text-indigo-600 overflow-hidden shrink-0 mb-6">
                                         {user.image ? <img src={user.image} alt="" className="h-full w-full object-cover" /> : <User className="h-12 w-12" />}
                                     </div>
-                                    <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight text-center leading-none">{user.name}</h2>
+                                    <h2 className="text-2xl font-black text-gray-900 dark:text-foreground uppercase tracking-tight text-center leading-none">{user.name}</h2>
                                     <p className="text-[10px] font-black uppercase text-indigo-500 tracking-[0.3em] mt-3">{user.role}</p>
                                     {user.uid && (
-                                        <Badge className="mt-2 bg-gray-100 text-gray-500 border-none text-[9px] font-mono font-bold px-3 py-1">
+                                        <Badge className="mt-2 bg-gray-100 text-gray-500 dark:text-muted-foreground border-none text-[9px] font-mono font-bold px-3 py-1">
                                             ID: {user.uid}
                                         </Badge>
                                     )}
@@ -458,7 +456,7 @@ const UserDetailsPage = () => {
 
                                 {additionalImages.length > 0 && (
                                     <div className="pt-6 border-t border-gray-50 space-y-3">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Additional Documents</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Additional Documents</span>
                                         <div className="grid grid-cols-2 gap-3">
                                             {additionalImages.map((src, idx) => (
                                                 <a
@@ -466,7 +464,7 @@ const UserDetailsPage = () => {
                                                     href={src}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="block rounded-xl overflow-hidden border border-gray-100 bg-white"
+                                                    className="block rounded-xl overflow-hidden border border-gray-100 dark:border-border bg-white dark:bg-card"
                                                 >
                                                     <img src={src} alt={`document-${idx}`} className="h-24 w-full object-cover" />
                                                 </a>
@@ -476,26 +474,26 @@ const UserDetailsPage = () => {
                                 )}
 
                                 {user.ResidentProfile && (
-                                    <div className="p-6 bg-gray-50 rounded-3xl border border-gray-100 space-y-4">
+                                    <div className="p-6 bg-gray-50 dark:bg-muted/10 rounded-3xl border border-gray-100 dark:border-border space-y-4">
                                         <div className="flex items-center gap-3 mb-2">
-                                            <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center text-indigo-600 shadow-sm border">
+                                            <div className="h-8 w-8 rounded-lg bg-white dark:bg-card flex items-center justify-center text-indigo-600 shadow-sm border">
                                                 <UserCheck className="h-4 w-4" />
                                             </div>
-                                            <span className="text-[10px] font-black uppercase text-gray-900 tracking-widest">Emergency Contact</span>
+                                            <span className="text-[10px] font-black uppercase text-gray-900 dark:text-foreground tracking-widest">Emergency Contact</span>
                                         </div>
                                         <div className="grid grid-cols-1 gap-4">
                                             <div className="flex flex-col">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Guardian Name</span>
-                                                <span className="text-xs font-bold text-gray-700">{user.ResidentProfile.guardianName}</span>
+                                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none mb-1">Guardian Name</span>
+                                                <span className="text-xs font-bold text-gray-700 dark:text-foreground">{user.ResidentProfile.guardianName}</span>
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Contact No</span>
-                                                <span className="text-xs font-bold text-gray-700">{user.ResidentProfile.emergencyContact}</span>
+                                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none mb-1">Contact No</span>
+                                                <span className="text-xs font-bold text-gray-700 dark:text-foreground">{user.ResidentProfile.emergencyContact}</span>
                                             </div>
                                             {user?.ResidentProfile?.documents?.currentResidence && (
                                                 <div className="flex flex-col">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">Current Residence</span>
-                                                    <span className="text-xs font-bold text-gray-700">{user.ResidentProfile.documents.currentResidence}</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none mb-1">Current Residence</span>
+                                                    <span className="text-xs font-bold text-gray-700 dark:text-foreground">{user.ResidentProfile.documents.currentResidence}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -506,7 +504,7 @@ const UserDetailsPage = () => {
 
                         {/* Quick Hostel Box */}
                         <Card className="rounded-[2.5rem] p-8 bg-indigo-600 text-white relative overflow-hidden border-none shadow-xl shadow-indigo-200">
-                            <div className="absolute top-0 right-0 h-full w-32 bg-white/5 skew-x-12 translate-x-16" />
+                            <div className="absolute top-0 right-0 h-full w-32 bg-white dark:bg-card/5 skew-x-12 translate-x-16" />
                             <div className="relative z-10 flex flex-col gap-6">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
@@ -521,7 +519,7 @@ const UserDetailsPage = () => {
                                         <span className="text-sm font-black text-white">{userDetails?.bookings?.[0]?.room?.roomNumber || 'N/A'}</span>
                                     </div>
                                     <Link href={`/admin/hostels/${user.hostelId}`}>
-                                        <Button size="icon" className="h-10 w-10 rounded-xl bg-white/10 hover:bg-white/20 border-white/20 text-white shadow-none">
+                                        <Button size="icon" className="h-10 w-10 rounded-xl bg-white dark:bg-card/10 hover:bg-white dark:bg-card/20 border-white/20 text-white shadow-none">
                                             <ArrowUpRight className="h-5 w-5" />
                                         </Button>
                                     </Link>
@@ -534,7 +532,7 @@ const UserDetailsPage = () => {
                     <div className="lg:col-span-8 space-y-8">
                         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
                             <div className="overflow-x-auto pb-1">
-                                <TabsList className="bg-white border border-gray-100 p-1.5 rounded-2xl h-14 shadow-sm inline-flex min-w-max">
+                                <TabsList className="bg-white dark:bg-card border border-gray-100 dark:border-border p-1.5 rounded-2xl h-14 shadow-sm inline-flex min-w-max">
                                     <TabsTrigger value="overview" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Overview</TabsTrigger>
                                     <TabsTrigger value="database" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">All Details</TabsTrigger>
                                     {(user.role === 'RESIDENT' || user.role === 'GUEST') ? (
@@ -551,30 +549,30 @@ const UserDetailsPage = () => {
 
                             <TabsContent value="overview" className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <Card className="rounded-[2.5rem] bg-white p-8 border-none shadow-sm space-y-6">
+                                    <Card className="rounded-[2.5rem] bg-white dark:bg-card p-8 border-none shadow-sm space-y-6">
                                         <div className="flex items-center justify-between">
-                                            <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Recent Activity</h3>
-                                            <History className="h-4 w-4 text-gray-400" />
+                                            <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-foreground">Recent Activity</h3>
+                                            <History className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />
                                         </div>
                                         <ActivityFeed events={activityFeed} />
                                     </Card>
 
                                     {isWarden && wardenReports && (
-                                        <Card className="rounded-[2.5rem] bg-white p-8 border-none shadow-sm relative overflow-hidden group">
+                                        <Card className="rounded-[2.5rem] bg-white dark:bg-card p-8 border-none shadow-sm relative overflow-hidden group">
                                             <div className="absolute top-0 right-0 p-8">
                                                 <Building2 className="h-12 w-12 text-indigo-50 opacity-50 group-hover:scale-110 transition-transform" />
                                             </div>
-                                            <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 mb-8">Warden Performance (Current Month)</h3>
+                                            <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-foreground mb-8">Warden Performance (Current Month)</h3>
                                             <div className="space-y-6 relative z-10 hidden xs:block">
                                                 <div className="flex justify-between items-center border-b border-gray-50 pb-4">
                                                     <div className="flex flex-col">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Hostel Revenue</span>
+                                                        <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Hostel Revenue</span>
                                                         <span className="text-2xl font-black text-indigo-600 tracking-tight">PKR {(wardenReports.finances?.revenue?.current || 0).toLocaleString()}</span>
                                                     </div>
                                                 </div>
                                                 <div className="flex justify-between items-center border-b border-gray-50 pb-4">
                                                     <div className="flex flex-col">
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Hostel Expenses</span>
+                                                        <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Hostel Expenses</span>
                                                         <span className="text-2xl font-black text-rose-500 tracking-tight">PKR {(wardenReports.finances?.expenses?.current || 0).toLocaleString()}</span>
                                                     </div>
                                                 </div>
@@ -583,40 +581,40 @@ const UserDetailsPage = () => {
                                                         <OccupancyDonutChart occupancyRate={wardenReports.occupancy?.rate || 0} />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-[9px] font-black uppercase text-gray-400 tracking-widest">Occupancy</span>
-                                                        <span className="text-sm font-black text-gray-900">{wardenReports.occupancy?.occupiedRooms || 0} / {wardenReports.occupancy?.totalRooms || 0} Rooms occupied</span>
+                                                        <span className="text-[9px] font-black uppercase text-gray-400 dark:text-muted-foreground tracking-widest">Occupancy</span>
+                                                        <span className="text-sm font-black text-gray-900 dark:text-foreground">{wardenReports.occupancy?.occupiedRooms || 0} / {wardenReports.occupancy?.totalRooms || 0} Rooms occupied</span>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="space-y-6 relative z-10 xs:hidden">
-                                                <span className="text-xs font-bold text-gray-500">Summary hidden on narrow screens</span>
+                                                <span className="text-xs font-bold text-gray-500 dark:text-muted-foreground">Summary hidden on narrow screens</span>
                                             </div>
                                         </Card>
                                     )}
 
-                                    <Card className={`rounded-[2.5rem] bg-white p-8 border-none shadow-sm relative overflow-hidden group ${isWarden ? "md:col-span-2" : ""}`}>
+                                    <Card className={`rounded-[2.5rem] bg-white dark:bg-card p-8 border-none shadow-sm relative overflow-hidden group ${isWarden ? "md:col-span-2" : ""}`}>
                                         <div className="absolute top-0 right-0 p-8">
                                             <Zap className="h-12 w-12 text-indigo-50 opacity-50 group-hover:scale-110 transition-transform" />
                                         </div>
-                                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 mb-8">Performance Summary</h3>
+                                        <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-foreground mb-8">Performance Summary</h3>
                                         <div className="space-y-6 relative z-10">
                                             <div className="flex justify-between items-end border-b border-gray-50 pb-4">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total {(user.role === 'RESIDENT' || user.role === 'GUEST') ? 'Paid' : 'Earned'}</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Total {(user.role === 'RESIDENT' || user.role === 'GUEST') ? 'Paid' : 'Earned'}</span>
                                                     <span className="text-2xl font-black text-indigo-600 tracking-tight">PKR {stats.totalPaid.toLocaleString()}</span>
                                                 </div>
                                                 <TrendingUp className="h-5 w-5 text-emerald-500" />
                                             </div>
                                             <div className="flex justify-between items-end border-b border-gray-50 pb-4">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Issue Count</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Issue Count</span>
                                                     <span className="text-2xl font-black text-amber-500 tracking-tight">{stats.compl} Reports</span>
                                                 </div>
                                                 <AlertCircle className="h-5 w-5 text-amber-500" />
                                             </div>
                                             <div className="pt-4">
                                                 <Button
-                                                    className="w-full h-12 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold text-[10px] uppercase tracking-widest border border-gray-200/50 shadow-none"
+                                                    className="w-full h-12 rounded-2xl bg-gray-50 dark:bg-muted/10 hover:bg-gray-100 text-gray-600 dark:text-muted-foreground font-bold text-[10px] uppercase tracking-widest border border-gray-200 dark:border-border/50 shadow-none"
                                                     onClick={() => {
                                                         const headers = ["Activity", "Description", "Date", "Status"];
                                                         const rows = activityFeed.map(e => [
@@ -667,18 +665,18 @@ const UserDetailsPage = () => {
                                 />
 
                                 {(user?.ResidentProfile?.documents?.currentResidence || additionalImages.length > 0) && (
-                                    <Card className="rounded-[2.5rem] bg-white p-8 border border-gray-100 shadow-sm">
-                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-6">Documents</h3>
+                                    <Card className="rounded-[2.5rem] bg-white dark:bg-card p-8 border border-gray-100 dark:border-border shadow-sm">
+                                        <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground mb-6">Documents</h3>
                                         <div className="space-y-6">
-                                            <div className="rounded-2xl border border-gray-100 bg-gray-50/50 p-4">
-                                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Current Residence</p>
-                                                <p className="text-sm font-bold text-gray-900 wrap-break-word">
+                                            <div className="rounded-2xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-4">
+                                                <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Current Residence</p>
+                                                <p className="text-sm font-bold text-gray-900 dark:text-foreground wrap-break-word">
                                                     {user?.ResidentProfile?.documents?.currentResidence || "—"}
                                                 </p>
                                             </div>
                                             {additionalImages.length > 0 && (
                                                 <div>
-                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3">Additional Document Images</p>
+                                                    <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-3">Additional Document Images</p>
                                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                                                         {additionalImages.map((src, idx) => (
                                                             <a
@@ -686,7 +684,7 @@ const UserDetailsPage = () => {
                                                                 href={src}
                                                                 target="_blank"
                                                                 rel="noreferrer"
-                                                                className="block rounded-xl overflow-hidden border border-gray-100 bg-white"
+                                                                className="block rounded-xl overflow-hidden border border-gray-100 dark:border-border bg-white dark:bg-card"
                                                             >
                                                                 <img src={src} alt={`database-document-${idx}`} className="h-24 w-full object-cover" />
                                                             </a>
@@ -698,8 +696,8 @@ const UserDetailsPage = () => {
                                     </Card>
                                 )}
 
-                                <Card className="rounded-[2.5rem] bg-white p-8 border border-gray-100 shadow-sm">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 mb-6">Related Records Summary</h3>
+                                <Card className="rounded-[2.5rem] bg-white dark:bg-card p-8 border border-gray-100 dark:border-border shadow-sm">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground mb-6">Related Records Summary</h3>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         {[
                                             { label: "Bookings", value: userDetails?.bookings?.length || 0 },
@@ -711,9 +709,9 @@ const UserDetailsPage = () => {
                                             { label: "Approved Expenses", value: userDetails?.approvedExpenses?.length || 0 },
                                             { label: "Rejected Expenses", value: userDetails?.rejectedExpenses?.length || 0 },
                                         ].map((item) => (
-                                            <div key={item.label} className="rounded-2xl border border-gray-100 bg-gray-50/50 p-4">
-                                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{item.label}</p>
-                                                <p className="text-2xl font-black text-gray-900 mt-1">{item.value}</p>
+                                            <div key={item.label} className="rounded-2xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-4">
+                                                <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{item.label}</p>
+                                                <p className="text-2xl font-black text-gray-900 dark:text-foreground mt-1">{item.value}</p>
                                             </div>
                                         ))}
                                     </div>
@@ -721,9 +719,9 @@ const UserDetailsPage = () => {
                             </TabsContent>
 
                             <TabsContent value="salaries" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                <Card className="rounded-[2.5rem] bg-white overflow-hidden border-none shadow-sm">
+                                <Card className="rounded-[2.5rem] bg-white dark:bg-card overflow-hidden border-none shadow-sm">
                                     <Table>
-                                        <TableHeader className="bg-gray-50/50">
+                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
                                             <TableRow className="border-none hover:bg-transparent">
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Payroll Month</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Amount</TableHead>
@@ -734,20 +732,20 @@ const UserDetailsPage = () => {
                                         </TableHeader>
                                         <TableBody>
                                             {userDetails?.salaries?.map((s) => (
-                                                <TableRow key={s.id} className="border-gray-50 hover:bg-gray-50 transition-colors">
+                                                <TableRow key={s.id} className="border-gray-50 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 transition-colors">
                                                     <TableCell className="px-8 py-5">
                                                         <div className="flex flex-col">
-                                                            <span className="text-xs font-bold text-gray-900">{s.month}</span>
-                                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{s.paymentDate ? format(new Date(s.paymentDate), 'MMM dd, yyyy') : 'Processing'}</span>
+                                                            <span className="text-xs font-bold text-gray-900 dark:text-foreground">{s.month}</span>
+                                                            <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{s.paymentDate ? format(new Date(s.paymentDate), 'MMM dd, yyyy') : 'Processing'}</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-5">
                                                         <div className="flex flex-col">
-                                                            <span className="text-xs font-bold text-gray-900">PKR {s.amount.toLocaleString()}</span>
-                                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Base: {s.basicSalary.toLocaleString()}</span>
+                                                            <span className="text-xs font-bold text-gray-900 dark:text-foreground">PKR {s.amount.toLocaleString()}</span>
+                                                            <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Base: {s.basicSalary.toLocaleString()}</span>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="px-4 py-5 font-bold text-gray-700 text-xs uppercase tracking-wider">{s.paymentMethod || 'N/A'}</TableCell>
+                                                    <TableCell className="px-4 py-5 font-bold text-gray-700 dark:text-foreground text-xs uppercase tracking-wider">{s.paymentMethod || 'N/A'}</TableCell>
                                                     <TableCell className="px-4 py-5">
                                                         <Badge className={`rounded-lg px-3 py-1 font-bold text-[9px] uppercase tracking-widest border shadow-none ${s.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
                                                             s.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' :
@@ -776,7 +774,7 @@ const UserDetailsPage = () => {
                                                     <TableCell colSpan={4} className="h-60 text-center">
                                                         <div className="flex flex-col items-center gap-3">
                                                             <Wallet className="h-10 w-10 text-gray-200" />
-                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">No payroll records detected</p>
+                                                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">No payroll records detected</p>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -787,9 +785,9 @@ const UserDetailsPage = () => {
                             </TabsContent>
 
                             <TabsContent value="bookings" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                <Card className="rounded-[2.5rem] bg-white overflow-hidden border-none shadow-sm">
+                                <Card className="rounded-[2.5rem] bg-white dark:bg-card overflow-hidden border-none shadow-sm">
                                     <Table>
-                                        <TableHeader className="bg-gray-50/50">
+                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
                                             <TableRow className="border-none hover:bg-transparent">
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Stay Period</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Hostel & Room</TableHead>
@@ -801,7 +799,7 @@ const UserDetailsPage = () => {
                                             {userDetails?.bookings?.map((b) => (
                                                 <TableRow
                                                     key={b.id}
-                                                    className="border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                                                    className="border-gray-50 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 transition-colors cursor-pointer"
                                                     onClick={() => {
                                                         setSelectedBooking(b);
                                                         setIsBookingDialogOpen(true);
@@ -809,17 +807,17 @@ const UserDetailsPage = () => {
                                                 >
                                                     <TableCell className="px-8 py-5">
                                                         <div className="flex flex-col">
-                                                            <span className="text-xs font-bold text-gray-900">{b.checkIn ? format(new Date(b.checkIn), 'MMM dd, yyyy') : '—'}</span>
-                                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">to {b.checkOut ? format(new Date(b.checkOut), 'MMM dd, yyyy') : 'Present'}</span>
+                                                            <span className="text-xs font-bold text-gray-900 dark:text-foreground">{b.checkIn ? format(new Date(b.checkIn), 'MMM dd, yyyy') : '—'}</span>
+                                                            <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">to {b.checkOut ? format(new Date(b.checkOut), 'MMM dd, yyyy') : 'Present'}</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-5">
                                                         <div className="flex flex-col">
-                                                            <span className="text-xs font-bold text-gray-700">{b.room?.Hostel?.name}</span>
+                                                            <span className="text-xs font-bold text-gray-700 dark:text-foreground">{b.room?.Hostel?.name}</span>
                                                             <span className="text-[10px] font-black text-indigo-500 uppercase tracking-wider">Room {b.room?.roomNumber}</span>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="px-4 py-5 font-bold text-gray-900 text-xs">PKR {b.totalAmount.toLocaleString()}</TableCell>
+                                                    <TableCell className="px-4 py-5 font-bold text-gray-900 dark:text-foreground text-xs">PKR {b.totalAmount.toLocaleString()}</TableCell>
                                                     <TableCell className="px-8 py-5 text-right">
                                                         <Badge className={`rounded-lg px-3 py-1 font-bold text-[9px] uppercase tracking-widest border shadow-none ${b.status === 'CHECKED_IN' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
                                                             b.status === 'COMPLETED' ? 'bg-indigo-50 text-indigo-700 border-indigo-100' :
@@ -835,7 +833,7 @@ const UserDetailsPage = () => {
                                                     <TableCell colSpan={4} className="h-60 text-center">
                                                         <div className="flex flex-col items-center gap-3">
                                                             <Building2 className="h-10 w-10 text-gray-200" />
-                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">No booking records</p>
+                                                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">No booking records</p>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -846,9 +844,9 @@ const UserDetailsPage = () => {
                             </TabsContent>
 
                             <TabsContent value="payments" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                <Card className="rounded-[2.5rem] bg-white overflow-hidden border-none shadow-sm">
+                                <Card className="rounded-[2.5rem] bg-white dark:bg-card overflow-hidden border-none shadow-sm">
                                     <Table>
-                                        <TableHeader className="bg-gray-50/50">
+                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
                                             <TableRow className="border-none hover:bg-transparent">
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Transaction Date</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Method</TableHead>
@@ -860,19 +858,19 @@ const UserDetailsPage = () => {
                                             {userDetails?.payments?.map((p) => (
                                                 <TableRow
                                                     key={p.id}
-                                                    className="border-gray-50 hover:bg-gray-50 transition-colors cursor-pointer"
+                                                    className="border-gray-50 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 transition-colors cursor-pointer"
                                                     onClick={() => router.push(`/admin/payments/${p.id}`)}
                                                 >
                                                     <TableCell className="px-8 py-5">
-                                                        <span className="text-xs font-bold text-gray-900">{p.date || p.createdAt ? format(new Date(p.date || p.createdAt), 'MMMM dd, yyyy') : '—'}</span>
+                                                        <span className="text-xs font-bold text-gray-900 dark:text-foreground">{p.date || p.createdAt ? format(new Date(p.date || p.createdAt), 'MMMM dd, yyyy') : '—'}</span>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-5">
                                                         <div className="flex flex-col">
-                                                            <span className="text-xs font-bold text-gray-700">{p.method}</span>
-                                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">ID: #{p.id.slice(-6).toUpperCase()}</span>
+                                                            <span className="text-xs font-bold text-gray-700 dark:text-foreground">{p.method}</span>
+                                                            <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">ID: #{p.id.slice(-6).toUpperCase()}</span>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="px-4 py-5 font-bold text-gray-900 text-sm">PKR {p.amount.toLocaleString()}</TableCell>
+                                                    <TableCell className="px-4 py-5 font-bold text-gray-900 dark:text-foreground text-sm">PKR {p.amount.toLocaleString()}</TableCell>
                                                     <TableCell className="px-8 py-5 text-right">
                                                         <Badge className={`rounded-lg px-3 py-1 font-bold text-[9px] uppercase tracking-widest border shadow-none ${p.status === 'PAID' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
                                                             p.status === 'PENDING' ? 'bg-amber-50 text-amber-700 border-amber-100' :
@@ -888,7 +886,7 @@ const UserDetailsPage = () => {
                                                     <TableCell colSpan={4} className="h-60 text-center">
                                                         <div className="flex flex-col items-center gap-3">
                                                             <CreditCard className="h-10 w-10 text-gray-200" />
-                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">No financial data</p>
+                                                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">No financial data</p>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -901,19 +899,19 @@ const UserDetailsPage = () => {
                             <TabsContent value="complaints" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {userDetails?.complaints?.map((c) => (
-                                        <Card key={c.id} className="rounded-[2.5rem] bg-white p-8 border-none shadow-sm space-y-4 hover:shadow-md transition-shadow group">
+                                        <Card key={c.id} className="rounded-[2.5rem] bg-white dark:bg-card p-8 border-none shadow-sm space-y-4 hover:shadow-md transition-shadow group">
                                             <div className="flex justify-between items-start">
-                                                <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                                <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center text-gray-400 dark:text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-all">
                                                     <AlertCircle className="h-5 w-5" />
                                                 </div>
-                                                <Badge variant="outline" className="rounded-lg px-2 py-0.5 font-bold text-[8px] uppercase tracking-widest text-gray-400 border-gray-100">{c.status}</Badge>
+                                                <Badge variant="outline" className="rounded-lg px-2 py-0.5 font-bold text-[8px] uppercase tracking-widest text-gray-400 dark:text-muted-foreground border-gray-100 dark:border-border">{c.status}</Badge>
                                             </div>
                                             <div className="space-y-1">
-                                                <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight">{c.title}</h4>
-                                                <p className="text-xs text-gray-500 font-medium line-clamp-2 leading-relaxed italic">"{c.description}"</p>
+                                                <h4 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tight">{c.title}</h4>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground font-medium line-clamp-2 leading-relaxed italic">"{c.description}"</p>
                                             </div>
                                             <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{c.createdAt ? format(new Date(c.createdAt), 'MMM dd, yyyy') : '—'}</span>
+                                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{c.createdAt ? format(new Date(c.createdAt), 'MMM dd, yyyy') : '—'}</span>
                                                 <Link href={`/admin/complaints/${c.id}`}>
                                                     <Button variant="ghost" className="h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50">View details</Button>
                                                 </Link>
@@ -921,9 +919,9 @@ const UserDetailsPage = () => {
                                         </Card>
                                     ))}
                                     {(!userDetails?.complaints || userDetails.complaints.length === 0) && (
-                                        <div className="md:col-span-2 h-60 flex flex-col items-center justify-center bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100">
+                                        <div className="md:col-span-2 h-60 flex flex-col items-center justify-center bg-white dark:bg-card rounded-[2.5rem] border-2 border-dashed border-gray-100 dark:border-border">
                                             <MessageSquare className="h-10 w-10 text-gray-200 mb-3" />
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">No reports found</p>
+                                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">No reports found</p>
                                         </div>
                                     )}
                                 </div>
@@ -959,28 +957,28 @@ const UserDetailsPage = () => {
                     <div className="space-y-6 pt-6">
                         <div className="grid grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400">Full Name</Label>
-                                <Input value={editData?.name} onChange={e => setEditData({ ...editData, name: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
+                                <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400 dark:text-muted-foreground">Full Name</Label>
+                                <Input value={editData?.name} onChange={e => setEditData({ ...editData, name: e.target.value })} className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold px-4" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400">Email Address</Label>
-                                <Input value={editData?.email} onChange={e => setEditData({ ...editData, email: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
+                                <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400 dark:text-muted-foreground">Email Address</Label>
+                                <Input value={editData?.email} onChange={e => setEditData({ ...editData, email: e.target.value })} className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold px-4" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400">Phone Number</Label>
-                                <Input value={editData?.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
+                                <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400 dark:text-muted-foreground">Phone Number</Label>
+                                <Input value={editData?.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold px-4" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400">CNIC / ID</Label>
-                                <Input value={editData?.cnic} onChange={e => setEditData({ ...editData, cnic: e.target.value })} className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold px-4" />
+                                <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400 dark:text-muted-foreground">CNIC / ID</Label>
+                                <Input value={editData?.cnic} onChange={e => setEditData({ ...editData, cnic: e.target.value })} className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold px-4" />
                             </div>
                         </div>
 
                         {editData?.role === 'WARDEN' && (
                             <div className="space-y-4 pt-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Expense Permissions</Label>
-                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Expense Permissions</Label>
+                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-muted/10 rounded-xl border border-gray-100 dark:border-border">
+                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200 dark:border-border">
                                         <input
                                             type="checkbox"
                                             id="edit-manage-expenses-detailed"
@@ -988,7 +986,7 @@ const UserDetailsPage = () => {
                                             checked={editData?.canManageExpenses || false}
                                             onChange={(e) => setEditData({ ...editData, canManageExpenses: e.target.checked })}
                                         />
-                                        <Label htmlFor="edit-manage-expenses-detailed" className="text-[11px] font-bold text-gray-700 cursor-pointer uppercase">Master Access (All)</Label>
+                                        <Label htmlFor="edit-manage-expenses-detailed" className="text-[11px] font-bold text-gray-700 dark:text-foreground cursor-pointer uppercase">Master Access (All)</Label>
                                     </div>
                                     {[
                                         { id: 'canManageMess', label: 'Mess' },
@@ -1006,7 +1004,7 @@ const UserDetailsPage = () => {
                                                 checked={editData?.canManageExpenses || editData?.[p.id] || false}
                                                 onChange={(e) => setEditData({ ...editData, [p.id]: e.target.checked })}
                                             />
-                                            <Label htmlFor={`edit-detailed-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${editData?.canManageExpenses ? 'text-gray-300' : 'text-gray-600'}`}>{p.label}</Label>
+                                            <Label htmlFor={`edit-detailed-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${editData?.canManageExpenses ? 'text-gray-300' : 'text-gray-600 dark:text-muted-foreground'}`}>{p.label}</Label>
                                         </div>
                                     ))}
                                 </div>
@@ -1030,7 +1028,7 @@ const UserDetailsPage = () => {
                                 key={r}
                                 onClick={() => setEditData({ ...editData, role: r })}
                                 variant={editData?.role === r ? 'default' : 'outline'}
-                                className={`h-12 w-full rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${editData?.role === r ? 'bg-indigo-600 border-indigo-600' : 'border-gray-100 text-gray-400'}`}
+                                className={`h-12 w-full rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all ${editData?.role === r ? 'bg-indigo-600 border-indigo-600' : 'border-gray-100 dark:border-border text-gray-400 dark:text-muted-foreground'}`}
                             >
                                 {r}
                             </Button>
@@ -1038,9 +1036,9 @@ const UserDetailsPage = () => {
 
                         {editData?.role === 'WARDEN' && (
                             <div className="space-y-4 pt-2 text-left">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Expense Permissions</Label>
-                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Expense Permissions</Label>
+                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-muted/10 rounded-xl border border-gray-100 dark:border-border">
+                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200 dark:border-border">
                                         <input
                                             type="checkbox"
                                             id="role-manage-expenses-detailed"
@@ -1048,7 +1046,7 @@ const UserDetailsPage = () => {
                                             checked={editData?.canManageExpenses || false}
                                             onChange={(e) => setEditData({ ...editData, canManageExpenses: e.target.checked })}
                                         />
-                                        <Label htmlFor="role-manage-expenses-detailed" className="text-[11px] font-bold text-gray-700 cursor-pointer uppercase">Master Access (All)</Label>
+                                        <Label htmlFor="role-manage-expenses-detailed" className="text-[11px] font-bold text-gray-700 dark:text-foreground cursor-pointer uppercase">Master Access (All)</Label>
                                     </div>
                                     {[
                                         { id: 'canManageMess', label: 'Mess' },
@@ -1066,7 +1064,7 @@ const UserDetailsPage = () => {
                                                 checked={editData?.canManageExpenses || editData?.[p.id] || false}
                                                 onChange={(e) => setEditData({ ...editData, [p.id]: e.target.checked })}
                                             />
-                                            <Label htmlFor={`role-detailed-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${editData?.canManageExpenses ? 'text-gray-300' : 'text-gray-600'}`}>{p.label}</Label>
+                                            <Label htmlFor={`role-detailed-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${editData?.canManageExpenses ? 'text-gray-300' : 'text-gray-600 dark:text-muted-foreground'}`}>{p.label}</Label>
                                         </div>
                                     ))}
                                 </div>
@@ -1085,13 +1083,13 @@ const UserDetailsPage = () => {
                         <DialogTitle className="text-xl font-black uppercase tracking-tighter italic text-center">Reset Password</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-6 pt-6">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest text-center">Set a new temporary password for this user.</p>
+                        <p className="text-[10px] text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-widest text-center">Set a new temporary password for this user.</p>
                         <Input
                             type="text"
                             placeholder="New password..."
                             value={newPass}
                             onChange={e => setNewPass(e.target.value)}
-                            className="h-14 rounded-2xl border-gray-100 bg-gray-50 font-black text-center text-lg tracking-widest"
+                            className="h-14 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-black text-center text-lg tracking-widest"
                         />
                     </div>
                     <DialogFooter className="pt-8">
@@ -1102,9 +1100,9 @@ const UserDetailsPage = () => {
 
             {/* Booking Details & Payment Dialog */}
             <Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
-                <DialogContent className="rounded-3xl border-none p-10 max-w-2xl shadow-2xl bg-white">
+                <DialogContent className="rounded-3xl border-none p-10 max-w-2xl shadow-2xl bg-white dark:bg-card">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-black uppercase tracking-tighter italic text-gray-900 flex items-center gap-3">
+                        <DialogTitle className="text-2xl font-black uppercase tracking-tighter italic text-gray-900 dark:text-foreground flex items-center gap-3">
                             <Building2 className="h-6 w-6 text-indigo-600" />
                             Booking Details
                         </DialogTitle>
@@ -1126,7 +1124,7 @@ const UserDetailsPage = () => {
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Check-In</p>
-                                        <p className="text-sm font-bold text-gray-700">{selectedBooking.checkIn ? format(new Date(selectedBooking.checkIn), 'MMM dd, yyyy') : '—'}</p>
+                                        <p className="text-sm font-bold text-gray-700 dark:text-foreground">{selectedBooking.checkIn ? format(new Date(selectedBooking.checkIn), 'MMM dd, yyyy') : '—'}</p>
                                     </div>
                                     <div className="space-y-1">
                                         <p className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Total Amt</p>
@@ -1138,24 +1136,24 @@ const UserDetailsPage = () => {
                             {/* Payment Section */}
                             <div className="space-y-4">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <CreditCard className="h-5 w-5 text-gray-400" />
-                                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-900">Record Payment</h3>
+                                    <CreditCard className="h-5 w-5 text-gray-400 dark:text-muted-foreground" />
+                                    <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-foreground">Record Payment</h3>
                                 </div>
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400">Amount (PKR)</Label>
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400 dark:text-muted-foreground">Amount (PKR)</Label>
                                         <Input
                                             type="number"
                                             value={paymentAmount}
                                             onChange={e => setPaymentAmount(e.target.value)}
                                             placeholder="e.g. 5000"
-                                            className="h-12 rounded-xl border-gray-200 bg-gray-50/50 font-bold px-4"
+                                            className="h-12 rounded-xl border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-bold px-4"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400">Method</Label>
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400 dark:text-muted-foreground">Method</Label>
                                         <select
-                                            className="w-full h-12 rounded-xl border border-gray-200 bg-gray-50/50 font-bold px-4 text-sm outline-none focus:ring-2 focus:ring-indigo-600"
+                                            className="w-full h-12 rounded-xl border border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-bold px-4 text-sm outline-none focus:ring-2 focus:ring-indigo-600"
                                             value={paymentMethod}
                                             onChange={e => setPaymentMethod(e.target.value)}
                                         >

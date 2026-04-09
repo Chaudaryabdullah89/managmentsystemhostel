@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import { useBranding } from '@/hooks/useBranding';
 import {
     Dialog,
     DialogContent,
@@ -45,7 +46,9 @@ import { toast } from "sonner";
  * @param {ReactNode} children - Trigger element
  */
 const UnifiedReceipt = ({ data, type, children }) => {
+    const { companyName, companyShortName } = useBranding();
     if (!data) return null;
+    const { companyName, companyShortName } = useBranding();
 
     // 1. Data Mapping Logic
     const getReceiptData = () => {
@@ -54,7 +57,7 @@ const UnifiedReceipt = ({ data, type, children }) => {
             id: "",
             date: new Date(),
             status: "N/A",
-            brand: "Mubarak Group Of Hostels (MGH)",
+            brand: `${companyName} (${companyShortName})`,
             customerName: "N/A",
             customerDetail: "",
             contextLabel: "Property",
@@ -119,7 +122,7 @@ const UnifiedReceipt = ({ data, type, children }) => {
                 mapped.customerName = data.StaffProfile?.User?.name;
                 mapped.customerDetail = `${data.StaffProfile?.User?.regNumber ? `REG # ${data.StaffProfile.User.regNumber} • ` : ''}${data.StaffProfile?.designation} - ${data.StaffProfile?.User?.email}`;
                 mapped.contextLabel = "Organization";
-                mapped.contextValue = data.StaffProfile?.User?.Hostel_User_hostelIdToHostel?.name || "MGH Admin Office";
+                mapped.contextValue = data.StaffProfile?.User?.Hostel_User_hostelIdToHostel?.name || `${companyShortName} Admin Office`;
                 mapped.items = [
                     { label: "Basic Retainer", value: data.basicSalary },
                     { label: "Allowances & Perks", value: data.allowances || 0 },

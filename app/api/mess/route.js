@@ -1,6 +1,9 @@
 export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { requireRoles } from "@/lib/apiAuth";
+import { errorResponse } from "@/lib/apiResponse";
+
 
 export async function GET(req) {
     try {
@@ -32,6 +35,9 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
+    const auth = await requireRoles(['ADMIN', 'WARDEN']);
+    if (!auth.success) return errorResponse(auth.error, auth.status);
+
     try {
         const body = await req.json();
         const {

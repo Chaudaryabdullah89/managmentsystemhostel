@@ -28,6 +28,13 @@ function ResetPasswordForm() {
     const searchParams = useSearchParams();
     const token = searchParams.get("token");
     const email = searchParams.get("email");
+    const [branding, setBranding] = React.useState({ companyName: "HMS", companyShortName: "HMS" });
+
+    React.useEffect(() => {
+        fetch("/api/settings/public").then(r => r.json()).then(d => {
+            if (d.settings) setBranding({ companyName: d.settings.companyName, companyShortName: d.settings.companyShortName });
+        }).catch(() => {});
+    }, []);
 
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
@@ -97,8 +104,8 @@ function ResetPasswordForm() {
                             <Home className="w-5 h-5 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-lg font-bold tracking-tight">MGH</h1>
-                            <p className="text-[10px] uppercase tracking-widest text-slate-400">Mubarak Group of Hostels</p>
+                            <h1 className="text-lg font-bold tracking-tight">{branding.companyShortName}</h1>
+                            <p className="text-[10px] uppercase tracking-widest text-slate-400">{branding.companyName}</p>
                         </div>
                     </div>
 

@@ -7,6 +7,7 @@ import { sendEmail } from "@/lib/utils/sendmail";
 import { monthlyRentEmail } from "@/lib/utils/emailTemplates";
 import crypto from "crypto";
 import { errorResponse } from '@/lib/apiResponse';
+import { getBranding } from "@/lib/permissions";
 
 export async function GET(request) {
     const auth = await requireAuth();
@@ -142,9 +143,10 @@ export async function POST(request) {
             // Send salary notification email
             if (staff.User?.email) {
                 const [monthPart, yearPart] = month.split(" ");
+                const branding = await getBranding();
                 sendEmail({
                     to: staff.User.email,
-                    subject: `Salary Generated — ${month} — Mubarak Group of Hostels`,
+                    subject: `Salary Generated — ${month} — ${branding.companyName}`,
                     html: monthlyRentEmail({
                         name: staff.User.name,
                         amount,
@@ -152,6 +154,7 @@ export async function POST(request) {
                         year: yearPart || new Date().getFullYear(),
                         hostelName: null,
                         type: "SALARY",
+                        branding,
                     }),
                 }).catch(err => console.error("[Email] Salary email failed:", err));
             }
@@ -209,10 +212,11 @@ export async function POST(request) {
                 // Collect salary notification emails for parallel dispatch
                 if (staff.User?.email) {
                     const [monthPart, yearPart] = month.split(" ");
+                    const branding = await getBranding();
                     bulkEmailPromises.push(
                         sendEmail({
                             to: staff.User.email,
-                            subject: `Salary Generated — ${month} — Mubarak Group of Hostels`,
+                            subject: `Salary Generated — ${month} — ${branding.companyName}`,
                             html: monthlyRentEmail({
                                 name: staff.User.name,
                                 amount: staff.basicSalary + staff.allowances,
@@ -220,6 +224,7 @@ export async function POST(request) {
                                 year: yearPart || new Date().getFullYear(),
                                 hostelName: null,
                                 type: "SALARY",
+                                branding,
                             }),
                         }).catch(err => console.error(`[Email] Salary email failed for ${staff.User.name}:`, err))
                     );

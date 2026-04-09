@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useHostelById } from "@/hooks/usehostel";
 import { format } from "date-fns";
-import Loader from "@/components/ui/Loader";
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 import useAuthStore from "@/hooks/Authstate";
 
 const HostelOverviewPage = () => {
@@ -54,22 +54,14 @@ const HostelOverviewPage = () => {
     }
   }, [isWarden, user?.hostelId, hostelId, router]);
 
-  if (isLoading)
-    return (
-      <Loader
-        label="Loading Hostel Details"
-        subLabel="Fetching the latest information..."
-        icon={Building2}
-        fullScreen={false}
-      />
-    );
+  if (isLoading) return <DetailPageSkeleton />;
 
   if (!hostel)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50/50 font-sans">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-sans">
         <div className="text-center space-y-4">
           <Info className="h-10 w-10 text-gray-300 mx-auto" />
-          <h2 className="text-xl font-bold text-gray-900 uppercase">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-foreground uppercase">
             Hostel Not Found
           </h2>
           <Button
@@ -103,14 +95,14 @@ const HostelOverviewPage = () => {
       case "INACTIVE":
         return "bg-red-50 text-red-700 border-red-100";
       default:
-        return "bg-gray-50 text-gray-700 border-gray-100";
+        return "bg-gray-50 dark:bg-muted/10 text-gray-700 dark:text-foreground border-gray-100 dark:border-border";
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans">
       {/* Minimal Premium Header */}
-      <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
+      <div className="bg-white dark:bg-card border-b sticky top-0 z-50 py-2 md:h-16">
         <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
           <div className="flex items-center gap-3 md:gap-4">
             <Button
@@ -123,10 +115,10 @@ const HostelOverviewPage = () => {
             </Button>
             <div className="h-6 w-px bg-gray-200 shrink-0" />
             <div className="flex flex-col min-w-0">
-              <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase truncate">
+              <h1 className="text-sm md:text-lg font-bold text-gray-900 dark:text-foreground tracking-tight uppercase truncate">
                 {hostel.name}
               </h1>
-              <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 md:gap-2">
+              <p className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 md:gap-2">
                 <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="truncate">Node Details • {hostel.type}</span>
               </p>
@@ -149,15 +141,15 @@ const HostelOverviewPage = () => {
                   size="icon"
                   className="rounded-xl h-9 w-9 shrink-0"
                 >
-                  <MoreVertical className="h-4 w-4 text-gray-400" />
+                  <MoreVertical className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-56 p-1 rounded-xl border-gray-100 shadow-xl"
+                className="w-56 p-1 rounded-xl border-gray-100 dark:border-border shadow-xl"
               >
                 <DropdownMenuItem
-                  className="p-2.5 gap-2.5 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-600 cursor-pointer"
+                  className="p-2.5 gap-2.5 rounded-lg font-bold text-[10px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground cursor-pointer"
                   onClick={() =>
                     router.push(
                       `/admin/hostels/${encodeURIComponent(hostel.name)}/edithostel?hostelId=${hostelId}`,
@@ -225,7 +217,7 @@ const HostelOverviewPage = () => {
           ].map((stat, i) => (
             <div
               key={i}
-              className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left"
+              className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left"
             >
               <div
                 className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform shrink-0`}
@@ -233,10 +225,10 @@ const HostelOverviewPage = () => {
                 <stat.icon className="h-5 w-5" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">
+                <span className="text-[8px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">
                   {stat.label}
                 </span>
-                <span className="text-sm md:text-xl font-black text-gray-900 tracking-tight uppercase truncate">
+                <span className="text-sm md:text-xl font-black text-gray-900 dark:text-foreground tracking-tight uppercase truncate">
                   {stat.value}
                 </span>
               </div>
@@ -248,24 +240,24 @@ const HostelOverviewPage = () => {
           {/* Left Column: Hostel Identity */}
           <div className="lg:col-span-2 space-y-8">
             {/* Hostel Details Card */}
-            <div className="bg-white border border-gray-100 rounded-2xl p-6 md:p-8 shadow-sm">
+            <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-6 md:p-8 shadow-sm">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100 text-indigo-600">
                     <Building2 className="h-5 w-5" />
                   </div>
                   <div>
-                    <h2 className="text-sm md:text-base font-black text-gray-900 uppercase">
+                    <h2 className="text-sm md:text-base font-black text-gray-900 dark:text-foreground uppercase">
                       Hostel Detail
                     </h2>
-                    <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-wider">
+                    <p className="text-[9px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-wider">
                       Detailed Hostel Data
                     </p>
                   </div>
                 </div>
                 <Badge
                   variant="outline"
-                  className="text-[9px] font-black uppercase tracking-widest border-gray-100 text-gray-400 shrink-0"
+                  className="text-[9px] font-black uppercase tracking-widest border-gray-100 dark:border-border text-gray-400 dark:text-muted-foreground shrink-0"
                 >
                   NODE: {hostelId.slice(-6).toUpperCase()}
                 </Badge>
@@ -273,30 +265,30 @@ const HostelOverviewPage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
                 <div className="space-y-6">
-                  <div className="flex flex-col gap-1.5 p-4 bg-gray-50/50 rounded-xl border border-gray-100">
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                  <div className="flex flex-col gap-1.5 p-4 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border">
+                    <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                       <MapPin className="h-3 w-3" /> Location Trace
                     </span>
-                    <p className="text-[11px] font-black text-gray-900 uppercase italic">
+                    <p className="text-[11px] font-black text-gray-900 dark:text-foreground uppercase italic">
                       {hostel.completeaddress ||
                         `${hostel.address}, ${hostel.city}`}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1 p-4 bg-gray-50/50 rounded-xl border border-gray-100">
-                      <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                    <div className="flex flex-col gap-1 p-4 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border">
+                      <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                         <Phone className="h-3 w-3" /> Contact
                       </span>
-                      <span className="text-[11px] font-black text-gray-900 uppercase">
+                      <span className="text-[11px] font-black text-gray-900 dark:text-foreground uppercase">
                         {hostel.phone || "N/A"}
                       </span>
                     </div>
-                    <div className="flex flex-col gap-1 p-4 bg-gray-50/50 rounded-xl border border-gray-100">
-                      <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                    <div className="flex flex-col gap-1 p-4 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border">
+                      <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                         <Calendar className="h-3 w-3" /> Updated
                       </span>
-                      <span className="text-[11px] font-black text-gray-900 uppercase tabular-nums">
+                      <span className="text-[11px] font-black text-gray-900 dark:text-foreground uppercase tabular-nums">
                         {hostel.updatedAt
                           ? format(new Date(hostel.updatedAt), "dd/MM/yy")
                           : "—"}
@@ -307,7 +299,7 @@ const HostelOverviewPage = () => {
 
                 <div className="space-y-6">
                   <div className="bg-indigo-600 text-white rounded-[1.5rem] p-5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-10 -mt-10" />
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-white dark:bg-card/10 rounded-full -mr-10 -mt-10" />
                     <div className="relative z-10 space-y-3">
                       <div className="flex items-center gap-2">
                         <Zap className="h-3.5 w-3.5 text-indigo-200" />
@@ -321,7 +313,7 @@ const HostelOverviewPage = () => {
                       <div className="grid grid-cols-2 gap-2 mt-4">
                         <Button
                           size="sm"
-                          className="h-9 bg-white/10 hover:bg-white/20 text-[9px] font-black uppercase tracking-widest rounded-lg border-none"
+                          className="h-9 bg-white dark:bg-card/10 hover:bg-white dark:bg-card/20 text-[9px] font-black uppercase tracking-widest rounded-lg border-none"
                           onClick={() =>
                             router.push(
                               `/admin/hostels/${encodeURIComponent(hostel.name)}/residents?hostelId=${hostelId}`,
@@ -332,7 +324,7 @@ const HostelOverviewPage = () => {
                         </Button>
                         <Button
                           size="sm"
-                          className="h-9 bg-white text-indigo-600 hover:bg-indigo-50 text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg border-none"
+                          className="h-9 bg-white dark:bg-card text-indigo-600 hover:bg-indigo-50 text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg border-none"
                           onClick={() =>
                             router.push(
                               `/admin/hostels/${encodeURIComponent(hostel.name)}/rooms?hostelId=${hostelId}`,
@@ -349,19 +341,19 @@ const HostelOverviewPage = () => {
             </div>
 
             {/* Recent Rooms Table */}
-            <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl shadow-sm overflow-hidden">
               <div className="px-6 md:px-8 py-6 border-b border-gray-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-sm font-black text-gray-900 uppercase">
+                  <h3 className="text-sm font-black text-gray-900 dark:text-foreground uppercase">
                     Recent Rooms
                   </h3>
-                  <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-wider mt-0.5">
+                  <p className="text-[9px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-wider mt-0.5">
                     Rooms Status
                   </p>
                 </div>
                 <Button
                   variant="outline"
-                  className="h-8 rounded-lg px-4 font-black text-[9px] uppercase tracking-widest border-gray-100 hover:bg-gray-50"
+                  className="h-8 rounded-lg px-4 font-black text-[9px] uppercase tracking-widest border-gray-100 dark:border-border hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10"
                   onClick={() =>
                     router.push(
                       `/admin/hostels/${encodeURIComponent(hostel.name)}/rooms?hostelId=${hostelId}`,
@@ -374,7 +366,7 @@ const HostelOverviewPage = () => {
               <div className="overflow-x-auto scrollbar-hide">
                 <table className="w-full text-left min-w-[600px]">
                   <thead>
-                    <tr className="bg-gray-50/50 text-[9px] font-black uppercase tracking-widest text-gray-400 border-b">
+                    <tr className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground border-b">
                       <th className="px-8 py-4">Block ID</th>
                       <th className="px-8 py-4">Status</th>
                       <th className="px-8 py-4">Category</th>
@@ -385,7 +377,7 @@ const HostelOverviewPage = () => {
                     {(hostel.Room || []).slice(0, 5).map((room, i) => (
                       <tr
                         key={i}
-                        className="group hover:bg-gray-50/30 transition-colors"
+                        className="group hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/30 transition-colors"
                       >
                         <td className="px-8 py-5">
                           <div className="flex items-center gap-4">
@@ -393,10 +385,10 @@ const HostelOverviewPage = () => {
                               <BedDouble className="h-5 w-5 text-indigo-600 group-hover:text-white transition-colors" />
                             </div>
                             <div className="flex flex-col">
-                              <span className="text-xs font-black text-gray-900 uppercase">
+                              <span className="text-xs font-black text-gray-900 dark:text-foreground uppercase">
                                 Room {room.roomNumber}
                               </span>
-                              <span className="text-[9px] font-black text-gray-400 uppercase">
+                              <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase">
                                 SYS_REF: {room.roomNumber}
                               </span>
                             </div>
@@ -415,7 +407,7 @@ const HostelOverviewPage = () => {
                             {room.status}
                           </Badge>
                         </td>
-                        <td className="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-tighter">
+                        <td className="px-8 py-5 text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-tighter">
                           {room.type} SEATER
                         </td>
                         <td className="px-8 py-5 text-right">
@@ -490,7 +482,7 @@ const HostelOverviewPage = () => {
               ].map((node, i) => (
                 <div
                   key={i}
-                  className="bg-white border border-gray-100 rounded-2xl p-4 flex items-center justify-between cursor-pointer group hover:border-blue-600/10 hover:shadow-md transition-all relative overflow-hidden"
+                  className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 flex items-center justify-between cursor-pointer group hover:border-blue-600/10 hover:shadow-md transition-all relative overflow-hidden"
                   onClick={() => router.push(node.link)}
                 >
                   <div
@@ -503,10 +495,10 @@ const HostelOverviewPage = () => {
                       <node.icon className={`h-5 w-5 ${node.color}`} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-black text-gray-900 group-hover:text-indigo-600 transition-colors uppercase tracking-tight truncate">
+                      <p className="text-sm font-black text-gray-900 dark:text-foreground group-hover:text-indigo-600 transition-colors uppercase tracking-tight truncate">
                         {node.title}
                       </p>
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-0.5 truncate">
+                      <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5 truncate">
                         {node.sub}
                       </p>
                     </div>
@@ -517,37 +509,37 @@ const HostelOverviewPage = () => {
             </div>
 
             {/* Registration Info Card */}
-            <div className="bg-white border border-gray-100 rounded-2xl p-6 relative overflow-hidden shadow-sm">
+            <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-6 relative overflow-hidden shadow-sm">
               <div className="absolute top-0 right-0 p-6 opacity-5">
                 <ShieldCheck className="h-20 w-20 text-blue-600" />
               </div>
-              <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-6">
+              <h3 className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em] mb-6">
                 More Info
               </h3>
               <div className="space-y-5">
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                  <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                     Created On
                   </span>
-                  <span className="text-[11px] font-bold text-gray-900 mt-1 uppercase italic">
+                  <span className="text-[11px] font-bold text-gray-900 dark:text-foreground mt-1 uppercase italic">
                     {hostel.createdAt
                       ? format(new Date(hostel.createdAt), "MMM dd, yyyy")
                       : "—"}
                   </span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                  <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                     System Status
                   </span>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className="text-[11px] font-bold text-gray-600 uppercase italic">
+                    <span className="text-[11px] font-bold text-gray-600 dark:text-muted-foreground uppercase italic">
                       Online
                     </span>
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   </div>
                 </div>
-                <div className="pt-4 border-t border-gray-100">
-                  <p className="text-[9px] font-bold text-gray-400 leading-relaxed uppercase">
+                <div className="pt-4 border-t border-gray-100 dark:border-border">
+                  <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground leading-relaxed uppercase">
                     All records are securely managed for hostel staff.
                   </p>
                 </div>

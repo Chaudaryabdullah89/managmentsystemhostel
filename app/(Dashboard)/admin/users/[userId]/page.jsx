@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/select";
 import { useUserDetailedProfile, useUserUpdate } from "@/hooks/useusers";
 import { toast } from "sonner";
-import Loader from "@/components/ui/Loader";
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 
 const UserEditPage = () => {
     const params = useParams();
@@ -145,22 +145,22 @@ const UserEditPage = () => {
         }
     };
 
-    if (isLoading) return <Loader label="Loading User Profile" subLabel="Fetching user details..." icon={UserCog} fullScreen={false} />;
+    if (isLoading) return <DetailPageSkeleton />;
 
     if (!user) {
         return (
-            <div className="p-8 text-center bg-white min-h-screen">
+            <div className="p-8 text-center bg-white dark:bg-card min-h-screen">
                 <User className="w-12 h-12 mx-auto mb-3 text-gray-200" />
-                <h2 className="text-xl font-bold text-gray-900">User Registry Missed</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-foreground">User Registry Missed</h2>
                 <Button onClick={() => router.back()} className="mt-4">Return to Hub</Button>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans">
             {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl h-9 w-9">
@@ -168,8 +168,8 @@ const UserEditPage = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight">Modify Profile</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{user.name} • {user.role}</p>
+                            <h1 className="text-lg font-bold text-gray-900 dark:text-foreground tracking-tight">Modify Profile</h1>
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{user.name} • {user.role}</p>
                         </div>
                     </div>
                     <Button
@@ -187,51 +187,51 @@ const UserEditPage = () => {
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Basic Info Section */}
                     <Card className="border-none shadow-sm overflow-hidden">
-                        <CardHeader className="bg-gray-50/50 border-b">
-                            <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                        <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b">
+                            <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground flex items-center gap-2">
                                 <User className="h-3.5 w-3.5" /> Identity & Contact
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">Full Name</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Full Name</Label>
                                 <Input
-                                    className="h-11 rounded-xl bg-gray-50/50 border-gray-100 font-bold"
+                                    className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                     value={form.name}
                                     onChange={(e) => handleBaseChange('name', e.target.value)}
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">Email Address</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Email Address</Label>
                                 <Input
                                     type="email"
-                                    className="h-11 rounded-xl bg-gray-50/50 border-gray-100 font-bold"
+                                    className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                     value={form.email}
                                     onChange={(e) => handleBaseChange('email', e.target.value)}
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">Phone Number</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Phone Number</Label>
                                 <Input
-                                    className="h-11 rounded-xl bg-gray-50/50 border-gray-100 font-bold"
+                                    className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                     value={form.phone}
                                     onChange={(e) => handleBaseChange('phone', e.target.value)}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">CNIC / ID Number</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">CNIC / ID Number</Label>
                                 <Input
-                                    className="h-11 rounded-xl bg-gray-50/50 border-gray-100 font-bold"
+                                    className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                     value={form.cnic}
                                     onChange={(e) => handleBaseChange('cnic', e.target.value)}
                                 />
                             </div>
                             <div className="col-span-1 md:col-span-2 space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">Current Address</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Current Address</Label>
                                 <Textarea
-                                    className="min-h-[80px] rounded-xl bg-gray-50/50 border-gray-100 font-medium resize-none pt-3"
+                                    className="min-h-[80px] rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-medium resize-none pt-3"
                                     value={form.address}
                                     onChange={(e) => handleBaseChange('address', e.target.value)}
                                 />
@@ -242,35 +242,35 @@ const UserEditPage = () => {
                     {/* Extended Profile Section (Only for Residents/Guests) */}
                     {(user.role === 'GUEST' || user.role === 'RESIDENT') && (
                         <Card className="border-none shadow-sm overflow-hidden">
-                            <CardHeader className="bg-gray-50/50 border-b">
-                                <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b">
+                                <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground flex items-center gap-2">
                                     <FileText className="h-3.5 w-3.5" /> Resident Dossier
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">Guardian / Father's Name</Label>
+                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Guardian / Father's Name</Label>
                                     <Input
-                                        className="h-11 rounded-xl bg-gray-50/50 border-gray-100 font-bold"
+                                        className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                         value={form.residentProfile.guardianName}
                                         onChange={(e) => handleProfileChange('guardianName', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">Emergency Contact Number</Label>
+                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Emergency Contact Number</Label>
                                     <Input
-                                        className="h-11 rounded-xl bg-gray-50/50 border-gray-100 font-bold"
+                                        className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                         value={form.residentProfile.emergencyContact}
                                         onChange={(e) => handleProfileChange('emergencyContact', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">Blood Group</Label>
+                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Blood Group</Label>
                                     <Select
                                         value={form.residentProfile.bloodGroup}
                                         onValueChange={(v) => handleProfileChange('bloodGroup', v)}
                                     >
-                                        <SelectTrigger className="h-11 rounded-xl bg-gray-50/50 border-gray-100 font-bold">
+                                        <SelectTrigger className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold">
                                             <SelectValue placeholder="Select Blood Group" />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl">
@@ -281,28 +281,28 @@ const UserEditPage = () => {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">Date of Birth</Label>
+                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Date of Birth</Label>
                                     <Input
                                         type="date"
-                                        className="h-11 rounded-xl bg-gray-50/50 border-gray-100 font-bold"
+                                        className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                         value={form.residentProfile.dob}
                                         onChange={(e) => handleProfileChange('dob', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">Institution</Label>
+                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Institution</Label>
                                     <Input
                                         placeholder="University or College"
-                                        className="h-11 rounded-xl bg-gray-50/50 border-gray-100 font-bold"
+                                        className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                         value={form.residentProfile.institution}
                                         onChange={(e) => handleProfileChange('institution', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">Occupation</Label>
+                                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Occupation</Label>
                                     <Input
                                         placeholder="Job or Designation"
-                                        className="h-11 rounded-xl bg-gray-50/50 border-gray-100 font-bold"
+                                        className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                         value={form.residentProfile.occupation}
                                         onChange={(e) => handleProfileChange('occupation', e.target.value)}
                                     />
@@ -313,19 +313,19 @@ const UserEditPage = () => {
 
                     {/* Role & Access (Admins Only View) */}
                     <Card className="border-none shadow-sm overflow-hidden">
-                        <CardHeader className="bg-gray-50/50 border-b">
-                            <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-500 flex items-center gap-2">
+                        <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b">
+                            <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground flex items-center gap-2">
                                 <Shield className="h-3.5 w-3.5" /> Registry Role
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-8">
                             <div className="max-w-xs space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 ml-1">System Role</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">System Role</Label>
                                 <Select
                                     value={form.role}
                                     onValueChange={(v) => handleBaseChange('role', v)}
                                 >
-                                    <SelectTrigger className="h-11 rounded-xl bg-gray-50/50 border-gray-100 font-bold">
+                                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl">

@@ -48,7 +48,7 @@ const GuestDashboard = () => {
     // Derived State
     const currentBooking = bookingsData?.find(b => ['CONFIRMED', 'CHECKED_IN'].includes(b.status)) || bookingsData?.[0];
     const hasCheckedOut = bookingsData?.some(b => b.status === 'CHECKED_OUT');
-    const hasActiveBooking = bookingsData?.some(b => ['CONFIRMED', 'CHECKED_IN', 'Active'].includes(b.status));
+    const hasActiveBooking = bookingsData?.some(b => ['CONFIRMED', 'CHECKED_IN'].includes(b.status));
     const isCheckedOut = hasCheckedOut && !hasActiveBooking;
     const pendingPayment = paymentsData?.payments?.find(p => p.status === 'PENDING' || p.status === 'OVERDUE');
     const activeComplaints = complaintsData?.filter(c => c.status !== 'RESOLVED' && c.status !== 'CLOSED') || [];
@@ -67,7 +67,7 @@ const GuestDashboard = () => {
                         {/* Animated Icon Avatar */}
                         <div className="animate-in zoom-in-50 fade-in duration-1000 ease-out fill-mode-both mb-12 relative group">
                             <div className="absolute inset-0 bg-indigo-500 rounded-full blur-2xl opacity-40 animate-pulse duration-[2000ms]"></div>
-                            <div className="relative w-32 h-32 md:w-48 md:h-48 bg-white/5 rounded-full flex items-center justify-center backdrop-blur-3xl border border-white/10 shadow-[0_0_100px_rgba(79,70,229,0.3)]">
+                            <div className="relative w-32 h-32 md:w-48 md:h-48 bg-white dark:bg-card/5 rounded-full flex items-center justify-center backdrop-blur-3xl border border-white/10 shadow-[0_0_100px_rgba(79,70,229,0.3)]">
                                 <Bed className="h-16 w-16 md:h-24 md:w-24 text-white/90 drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]" />
                             </div>
                         </div>
@@ -89,7 +89,7 @@ const GuestDashboard = () => {
                         <div className="mt-16 animate-in slide-in-from-bottom-5 fade-in duration-1000 delay-[2500ms] fill-mode-both relative z-20">
                             <Button
                                 onClick={handleContinue}
-                                className="h-14 px-8 rounded-full bg-white/10 hover:bg-white/20 text-white font-bold tracking-widest uppercase text-xs backdrop-blur-md border border-white/20 shadow-[0_0_30px_rgba(79,70,229,0.3)] hover:shadow-[0_0_50px_rgba(79,70,229,0.5)] transition-all group"
+                                className="h-14 px-8 rounded-full bg-white dark:bg-card/10 hover:bg-white dark:bg-card/20 text-white font-bold tracking-widest uppercase text-xs backdrop-blur-md border border-white/20 shadow-[0_0_30px_rgba(79,70,229,0.3)] hover:shadow-[0_0_50px_rgba(79,70,229,0.5)] transition-all group"
                             >
                                 Continue to Dashboard
                                 <ChevronRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -102,7 +102,7 @@ const GuestDashboard = () => {
                         {[...Array(40)].map((_, i) => (
                             <div
                                 key={i}
-                                className="absolute bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,1)] animate-in fade-in zoom-in"
+                                className="absolute bg-white dark:bg-card rounded-full shadow-[0_0_15px_rgba(255,255,255,1)] animate-in fade-in zoom-in"
                                 style={{
                                     top: `${Math.random() * 100}%`,
                                     left: `${Math.random() * 100}%`,
@@ -121,24 +121,24 @@ const GuestDashboard = () => {
             )}
 
             {isLoading ? (
-                <div className="min-h-screen bg-gray-50/50 flex items-center justify-center">
-                    <Activity className="h-8 w-8 text-gray-400 animate-pulse" />
+                <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex items-center justify-center">
+                    <Activity className="h-8 w-8 text-gray-400 dark:text-muted-foreground animate-pulse" />
                 </div>
             ) : (
-                <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight relative overflow-hidden">
+                <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight relative overflow-hidden">
                     {/* Header */}
-                    <header className="bg-white border-b sticky top-0 z-40 animate-in slide-in-from-top-4 fade-in duration-700">
+                    <header className="bg-white dark:bg-card border-b sticky top-0 z-40 animate-in slide-in-from-top-4 fade-in duration-700">
                         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                             <div>
-                                <h1 className="text-xl font-bold text-gray-900 tracking-tight">Welcome, {user?.name?.split(' ')[0]}</h1>
+                                <h1 className="text-xl font-bold text-gray-900 dark:text-foreground tracking-tight">Welcome, {user?.name?.split(' ')[0]}</h1>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                    <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                                         {isCheckedOut ? 'Archived Resident' : 'Guest Dashboard'}
                                     </span>
                                     {user?.uid && (
                                         <>
                                             <span className="h-1 w-1 rounded-full bg-gray-200" />
-                                            <Badge className="bg-gray-100 text-gray-500 border-none text-[8px] font-mono font-bold px-1.5 py-0">
+                                            <Badge className="bg-gray-100 text-gray-500 dark:text-muted-foreground border-none text-[8px] font-mono font-bold px-1.5 py-0">
                                                 ID: {user.uid}
                                             </Badge>
                                         </>
@@ -160,31 +160,31 @@ const GuestDashboard = () => {
                         {/* Info Cards */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {/* Room Info */}
-                            <Card className="bg-white border-gray-100 shadow-sm rounded-3xl overflow-hidden group hover:shadow-md transition-all animate-in slide-in-from-bottom-6 fade-in duration-700 fill-mode-both delay-100">
+                            <Card className="bg-white dark:bg-card border-gray-100 dark:border-border shadow-sm rounded-3xl overflow-hidden group hover:shadow-md transition-all animate-in slide-in-from-bottom-6 fade-in duration-700 fill-mode-both delay-100">
                                 <CardHeader className={`flex flex-row items-center justify-between pb-2 border-b ${isCheckedOut ? 'bg-gradient-to-br from-rose-50 to-white border-rose-50/50' : 'bg-gradient-to-br from-emerald-50 to-white border-emerald-50/50'}`}>
-                                    <CardTitle className="text-sm font-bold text-gray-900 uppercase tracking-widest">Residency Status</CardTitle>
+                                    <CardTitle className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-widest">Residency Status</CardTitle>
                                     <Bed className={`h-5 w-5 ${isCheckedOut ? 'text-rose-600' : 'text-emerald-600'}`} />
                                 </CardHeader>
                                 <CardContent className="pt-6">
                                     {isCheckedOut ? (
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-2xl font-bold text-gray-400 tracking-tighter uppercase italic">Checked Out</span>
-                                            <span className="text-xs font-bold text-gray-500">History: {currentBooking?.Room?.roomNumber || 'N/A'} • {currentBooking?.Room?.Hostel?.name || 'N/A'}</span>
+                                            <span className="text-2xl font-bold text-gray-400 dark:text-muted-foreground tracking-tighter uppercase italic">Checked Out</span>
+                                            <span className="text-xs font-bold text-gray-500 dark:text-muted-foreground">History: {currentBooking?.Room?.roomNumber || 'N/A'} • {currentBooking?.Room?.Hostel?.name || 'N/A'}</span>
                                             <Badge className="w-fit mt-2 bg-rose-50 text-rose-500 border-none rounded-full text-[10px] uppercase font-bold tracking-wider">
                                                 Access Limited
                                             </Badge>
                                         </div>
                                     ) : currentBooking ? (
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-3xl font-bold text-gray-900 tracking-tighter">Room {currentBooking.Room?.roomNumber || 'N/A'}</span>
-                                            <span className="text-xs font-bold text-gray-500">{currentBooking.Room?.Hostel?.name || 'Assigned'}</span>
+                                            <span className="text-3xl font-bold text-gray-900 dark:text-foreground tracking-tighter">Room {currentBooking.Room?.roomNumber || 'N/A'}</span>
+                                            <span className="text-xs font-bold text-gray-500 dark:text-muted-foreground">{currentBooking.Room?.Hostel?.name || 'Assigned'}</span>
                                             <Badge className="w-fit mt-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-none rounded-full text-[10px] uppercase font-bold tracking-wider">
                                                 Stay Active
                                             </Badge>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-lg font-bold text-gray-400 italic">No Active Room</span>
+                                            <span className="text-lg font-bold text-gray-400 dark:text-muted-foreground italic">No Active Room</span>
                                             <Link href="/guest/bookings">
                                                 <Button variant="link" className="p-0 text-emerald-600 font-bold text-[10px] uppercase">
                                                     Apply for a room
@@ -197,23 +197,23 @@ const GuestDashboard = () => {
 
 
                             {/* Pending Dues */}
-                            <Card className="bg-white border-gray-100 shadow-sm rounded-3xl overflow-hidden group hover:shadow-md transition-all animate-in slide-in-from-bottom-6 fade-in duration-700 fill-mode-both delay-200">
+                            <Card className="bg-white dark:bg-card border-gray-100 dark:border-border shadow-sm rounded-3xl overflow-hidden group hover:shadow-md transition-all animate-in slide-in-from-bottom-6 fade-in duration-700 fill-mode-both delay-200">
                                 <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-br from-indigo-50 to-white border-b border-indigo-50/50">
-                                    <CardTitle className="text-sm font-bold text-gray-900 uppercase tracking-widest">Amount Due</CardTitle>
+                                    <CardTitle className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-widest">Amount Due</CardTitle>
                                     <CreditCard className="h-5 w-5 text-indigo-600" />
                                 </CardHeader>
                                 <CardContent className="pt-6">
                                     {pendingPayment ? (
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-3xl font-bold text-gray-900 tracking-tighter">PKR {pendingPayment.amount?.toLocaleString()}</span>
-                                            <span className="text-xs font-bold text-gray-500">For {pendingPayment.notes || 'Current Month'}</span>
+                                            <span className="text-3xl font-bold text-gray-900 dark:text-foreground tracking-tighter">PKR {pendingPayment.amount?.toLocaleString()}</span>
+                                            <span className="text-xs font-bold text-gray-500 dark:text-muted-foreground">For {pendingPayment.notes || 'Current Month'}</span>
                                             <Badge className="w-fit mt-2 bg-rose-100 text-rose-700 border-none rounded-full text-[10px] uppercase font-bold tracking-wider">
                                                 Payment Pending
                                             </Badge>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-lg font-bold text-gray-400 italic">No Dues</span>
+                                            <span className="text-lg font-bold text-gray-400 dark:text-muted-foreground italic">No Dues</span>
                                             <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider">All payments cleared</span>
                                         </div>
                                     )}
@@ -221,15 +221,15 @@ const GuestDashboard = () => {
                             </Card>
 
                             {/* Reported Issues */}
-                            <Card className="bg-white border-gray-100 shadow-sm rounded-3xl overflow-hidden group hover:shadow-md transition-all animate-in slide-in-from-bottom-6 fade-in duration-700 fill-mode-both delay-300">
+                            <Card className="bg-white dark:bg-card border-gray-100 dark:border-border shadow-sm rounded-3xl overflow-hidden group hover:shadow-md transition-all animate-in slide-in-from-bottom-6 fade-in duration-700 fill-mode-both delay-300">
                                 <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-br from-amber-50 to-white border-b border-amber-50/50">
-                                    <CardTitle className="text-sm font-bold text-gray-900 uppercase tracking-widest">{isCheckedOut ? 'Support History' : 'Active Issues'}</CardTitle>
+                                    <CardTitle className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-widest">{isCheckedOut ? 'Support History' : 'Active Issues'}</CardTitle>
                                     <MessageSquare className="h-5 w-5 text-amber-600" />
                                 </CardHeader>
                                 <CardContent className="pt-6">
                                     <div className="flex flex-col gap-1">
-                                        <span className="text-3xl font-bold text-gray-900 tracking-tighter">{activeComplaints.length} {isCheckedOut ? 'Archived' : 'Shared'}</span>
-                                        <span className="text-xs font-bold text-gray-500">
+                                        <span className="text-3xl font-bold text-gray-900 dark:text-foreground tracking-tighter">{activeComplaints.length} {isCheckedOut ? 'Archived' : 'Shared'}</span>
+                                        <span className="text-xs font-bold text-gray-500 dark:text-muted-foreground">
                                             {isCheckedOut ? 'Historical records restricted' : activeComplaints.length > 0 ? 'Team is working on it' : 'Everything looks good'}
                                         </span>
                                         <Link href="/guest/support">
@@ -255,34 +255,34 @@ const GuestDashboard = () => {
                                 {/* Recent Payments Summary */}
                                 <div className="space-y-6 animate-in slide-in-from-bottom-8 fade-in duration-700 fill-mode-both delay-[500ms]">
                                     <div className="flex items-center justify-between px-2">
-                                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Recent Payments</h3>
+                                        <h3 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-widest">Recent Payments</h3>
                                         <Link href="/guest/payments">
-                                            <Button variant="ghost" size="sm" className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-black">
+                                            <Button variant="ghost" size="sm" className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest hover:text-black">
                                                 History
                                             </Button>
                                         </Link>
                                     </div>
-                                    <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
+                                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-6 shadow-sm space-y-4">
                                         {paymentsData?.payments?.length > 0 ? paymentsData.payments.slice(0, 3).map((payment) => (
-                                            <div key={payment.id} className="flex items-center justify-between group cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors -mx-2">
+                                            <div key={payment.id} className="flex items-center justify-between group cursor-pointer hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 p-2 rounded-xl transition-colors -mx-2">
                                                 <div className="flex items-center gap-4">
                                                     <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${payment.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
                                                         <CreditCard className="h-4 w-4" />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-bold text-gray-900">{payment.notes || 'Stay Payment'}</span>
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{new Date(payment.date).toLocaleDateString()}</span>
+                                                        <span className="text-sm font-bold text-gray-900 dark:text-foreground">{payment.notes || 'Stay Payment'}</span>
+                                                        <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wide">{new Date(payment.date).toLocaleDateString()}</span>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="text-sm font-bold text-gray-900">PKR {payment.amount?.toLocaleString()}</div>
+                                                    <div className="text-sm font-bold text-gray-900 dark:text-foreground">PKR {payment.amount?.toLocaleString()}</div>
                                                     <span className={`text-[9px] font-bold uppercase tracking-wider ${payment.status === 'PAID' ? 'text-emerald-500' : 'text-amber-500'}`}>
                                                         {payment.status === 'PAID' ? 'Done' : 'Pending'}
                                                     </span>
                                                 </div>
                                             </div>
                                         )) : (
-                                            <div className="text-center py-8 text-gray-400 text-xs font-bold uppercase tracking-widest">No payments yet</div>
+                                            <div className="text-center py-8 text-gray-400 dark:text-muted-foreground text-xs font-bold uppercase tracking-widest">No payments yet</div>
                                         )}
                                     </div>
                                 </div>
@@ -290,23 +290,23 @@ const GuestDashboard = () => {
                                 {/* Recent Issues Summary */}
                                 <div className="space-y-6 animate-in slide-in-from-bottom-8 fade-in duration-700 fill-mode-both delay-[500ms]">
                                     <div className="flex items-center justify-between px-2">
-                                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest">Recent Issues</h3>
+                                        <h3 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-widest">Recent Issues</h3>
                                         <Link href="/guest/support">
-                                            <Button variant="ghost" size="sm" className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-black">
+                                            <Button variant="ghost" size="sm" className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest hover:text-black">
                                                 Support hub
                                             </Button>
                                         </Link>
                                     </div>
-                                    <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
+                                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-6 shadow-sm space-y-4">
                                         {complaintsData && complaintsData.length > 0 ? complaintsData.slice(0, 3).map((complaint) => (
-                                            <div key={complaint.id} className="flex items-center justify-between group cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors -mx-2">
+                                            <div key={complaint.id} className="flex items-center justify-between group cursor-pointer hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 p-2 rounded-xl transition-colors -mx-2">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="h-10 w-10 rounded-xl bg-gray-50 text-gray-500 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
+                                                    <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-muted/10 text-gray-500 dark:text-muted-foreground flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
                                                         <AlertCircle className="h-4 w-4" />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-bold text-gray-900">{complaint.title}</span>
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{new Date(complaint.createdAt).toLocaleDateString()}</span>
+                                                        <span className="text-sm font-bold text-gray-900 dark:text-foreground">{complaint.title}</span>
+                                                        <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wide">{new Date(complaint.createdAt).toLocaleDateString()}</span>
                                                     </div>
                                                 </div>
                                                 <Badge variant="outline" className={`border-none rounded-full text-[9px] font-bold uppercase tracking-wider
@@ -316,7 +316,7 @@ const GuestDashboard = () => {
                                                 </Badge>
                                             </div>
                                         )) : (
-                                            <div className="text-center py-8 text-gray-400 text-xs font-bold uppercase tracking-widest">No issues reported</div>
+                                            <div className="text-center py-8 text-gray-400 dark:text-muted-foreground text-xs font-bold uppercase tracking-widest">No issues reported</div>
                                         )}
                                     </div>
                                 </div>

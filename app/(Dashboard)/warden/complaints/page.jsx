@@ -28,7 +28,7 @@ import { useStaffList } from "@/hooks/useSalaries";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
-import Loader from "@/components/ui/Loader";
+import { ListPageSkeleton } from "@/components/ui/skeletons";
 import PageHeader from "@/components/Dashboard/PageHeader";
 import FilterToolbar from "@/components/Dashboard/FilterToolbar";
 import EmptyState from "@/components/ui/states/EmptyState";
@@ -42,7 +42,7 @@ const getStatusStyle = (status) => {
         case "REJECTED": return "bg-rose-50 text-rose-700 border-rose-100";
         case "IN_PROGRESS": return "bg-indigo-50 text-indigo-700 border-indigo-100";
         case "PENDING": return "bg-amber-50 text-amber-700 border-amber-100";
-        default: return "bg-gray-100 text-gray-600 border-gray-200";
+        default: return "bg-gray-100 text-gray-600 dark:text-muted-foreground border-gray-200 dark:border-border";
     }
 };
 
@@ -61,8 +61,8 @@ const getPriorityStyle = (priority) => {
         case "URGENT": return "bg-rose-500 text-white border-rose-500";
         case "HIGH": return "bg-rose-50 text-rose-600 border-rose-100";
         case "MEDIUM": return "bg-amber-50 text-amber-600 border-amber-100";
-        case "LOW": return "bg-gray-100 text-gray-500 border-gray-200";
-        default: return "bg-gray-100 text-gray-500 border-gray-200";
+        case "LOW": return "bg-gray-100 text-gray-500 dark:text-muted-foreground border-gray-200 dark:border-border";
+        default: return "bg-gray-100 text-gray-500 dark:text-muted-foreground border-gray-200 dark:border-border";
     }
 };
 
@@ -91,15 +91,15 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
 
     return (
         <DialogContent className="max-w-2xl p-0 overflow-hidden border-none rounded-3xl shadow-2xl">
-            <div className="bg-white">
+            <div className="bg-white dark:bg-card">
                 {/* Modal Header */}
-                <div className="p-7 border-b border-gray-50 flex items-center gap-4 bg-gray-50/40">
+                <div className="p-7 border-b border-gray-50 flex items-center gap-4 bg-gray-50 dark:bg-muted/10/40">
                     <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-white shadow-lg ${getRibbonColor(complaint.status)}`}>
                         <MessageSquare className="h-4.5 w-4.5 h-5 w-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight truncate">{complaint.title}</h3>
-                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mt-0.5">
+                        <h3 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight truncate">{complaint.title}</h3>
+                        <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">
                             #{complaint.uid ?? complaint.id.slice(-8).toUpperCase()} &nbsp;·&nbsp; {complaint.category}
                         </p>
                     </div>
@@ -122,19 +122,19 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
                             { icon: Building2, label: "Hostel", value: complaint.Hostel?.name ?? "N/A" },
                             { icon: Clock, label: "Age", value: age === 0 ? "Today" : `${age} days ago` },
                         ].map(({ icon: Icon, label, value }) => (
-                            <div key={label} className="flex flex-col gap-1 p-4 bg-gray-50/60 rounded-2xl border border-gray-100">
-                                <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
+                            <div key={label} className="flex flex-col gap-1 p-4 bg-gray-50 dark:bg-muted/10/60 rounded-2xl border border-gray-100 dark:border-border">
+                                <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground flex items-center gap-1.5">
                                     <Icon className="h-3 w-3" /> {label}
                                 </span>
-                                <span className="text-sm font-bold text-gray-900 truncate">{value}</span>
+                                <span className="text-sm font-bold text-gray-900 dark:text-foreground truncate">{value}</span>
                             </div>
                         ))}
                     </div>
 
                     {/* Description */}
-                    <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Description</p>
-                        <p className="text-sm text-gray-600 font-medium leading-relaxed">"{complaint.description}"</p>
+                    <div className="p-5 bg-gray-50 dark:bg-muted/10 rounded-2xl border border-gray-100 dark:border-border">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground mb-2">Description</p>
+                        <p className="text-sm text-gray-600 dark:text-muted-foreground font-medium leading-relaxed">"{complaint.description}"</p>
                     </div>
 
                     {/* Resolution notes (read‑only) */}
@@ -150,12 +150,12 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
 
                     {/* Action Controls */}
                     {(complaint.status === "PENDING" || complaint.status === "IN_PROGRESS") && (
-                        <div className="space-y-4 pt-2 border-t border-gray-100">
-                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Actions</p>
+                        <div className="space-y-4 pt-2 border-t border-gray-100 dark:border-border">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Actions</p>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400">Assign To Staff</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Assign To Staff</Label>
                                 <Select defaultValue={complaint.assignedToId} onValueChange={setAssignedStaffId}>
-                                    <SelectTrigger className="h-10 rounded-xl border-gray-100 text-xs font-bold uppercase tracking-wider shadow-sm focus:ring-indigo-300">
+                                    <SelectTrigger className="h-10 rounded-xl border-gray-100 dark:border-border text-xs font-bold uppercase tracking-wider shadow-sm focus:ring-indigo-300">
                                         <SelectValue placeholder="Choose staff" />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl shadow-2xl">
@@ -168,12 +168,12 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400">Resolution Notes</Label>
+                                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Resolution Notes</Label>
                                 <Textarea
                                     placeholder="Notes..."
                                     value={notes}
                                     onChange={(e) => setNotes(e.target.value)}
-                                    className="min-h-[80px] text-xs font-medium rounded-xl border-gray-100 resize-none focus:ring-indigo-300"
+                                    className="min-h-[80px] text-xs font-medium rounded-xl border-gray-100 dark:border-border resize-none focus:ring-indigo-300"
                                 />
                             </div>
                             <div className="grid grid-cols-3 gap-2">
@@ -194,18 +194,18 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
                     )}
 
                     {/* Chat Thread */}
-                    <div className="space-y-4 pt-2 border-t border-gray-100">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400">Messages</p>
+                    <div className="space-y-4 pt-2 border-t border-gray-100 dark:border-border">
+                        <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Messages</p>
                         <div className="space-y-3 max-h-[240px] overflow-y-auto pr-1">
                             {complaint.comments?.length > 0 ? complaint.comments.map((c) => {
                                 const isAdmin = c.User.role !== "RESIDENT" && c.User.role !== "GUEST";
                                 return (
                                     <div key={c.id} className={`flex gap-2.5 ${isAdmin ? "flex-row-reverse" : ""}`}>
-                                        <div className={`h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${isAdmin ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600"}`}>
+                                        <div className={`h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${isAdmin ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 dark:text-muted-foreground"}`}>
                                             {c.User.name?.charAt(0)}
                                         </div>
-                                        <div className={`p-3 rounded-2xl max-w-[78%] ${isAdmin ? "bg-indigo-600 text-white rounded-tr-none" : "bg-gray-50 border border-gray-100 rounded-tl-none"}`}>
-                                            <p className={`text-[8px] font-black uppercase tracking-widest mb-1 ${isAdmin ? "text-white/60" : "text-gray-400"}`}>
+                                        <div className={`p-3 rounded-2xl max-w-[78%] ${isAdmin ? "bg-indigo-600 text-white rounded-tr-none" : "bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border rounded-tl-none"}`}>
+                                            <p className={`text-[8px] font-black uppercase tracking-widest mb-1 ${isAdmin ? "text-white/60" : "text-gray-400 dark:text-muted-foreground"}`}>
                                                 {c.User.name} · {new Date(c.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                             </p>
                                             <p className="text-xs font-medium leading-relaxed">{c.message}</p>
@@ -213,13 +213,13 @@ const ComplaintDetailDialog = ({ complaint, staffMembers, updateMutation, addCom
                                     </div>
                                 );
                             }) : (
-                                <div className="text-center py-8 text-gray-400 text-xs font-bold uppercase tracking-widest">Empty</div>
+                                <div className="text-center py-8 text-gray-400 dark:text-muted-foreground text-xs font-bold uppercase tracking-widest">Empty</div>
                             )}
                         </div>
                         <div className="flex items-center gap-2">
                             <Input
                                 placeholder="Message..."
-                                className="rounded-xl border-gray-100 text-xs font-medium"
+                                className="rounded-xl border-gray-100 dark:border-border text-xs font-medium"
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendComment(); } }}
@@ -299,7 +299,7 @@ const ComplaintsPage = () => {
         toast.success("Complaints exported successfully");
     };
 
-    if (isComplaintsLoading || isStatsLoading) return <Loader label="Loading Complaints" subLabel="Getting records..." icon={MessageSquare} fullScreen={false} />;
+    if (isComplaintsLoading || isStatsLoading) return <ListPageSkeleton />;
     if (isComplaintsError || isStatsError) {
         return (
             <div className="max-w-[1600px] mx-auto px-6 py-8">
@@ -317,7 +317,7 @@ const ComplaintsPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans">
             <PageHeader
                 title="Complaints"
                 subtitleStart="Records"
@@ -329,8 +329,8 @@ const ComplaintsPage = () => {
                 rightSlot={(
                     <div className="flex items-center gap-3">
                         <Button variant="outline" onClick={handleExport}
-                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 hover:bg-gray-50 transition-all flex items-center gap-2">
-                            <Download className="h-3.5 w-3.5 text-gray-400" /> <span className="hidden sm:inline">Export</span> <span className="sm:hidden">Export</span>
+                            className="h-9 px-4 rounded-xl border-gray-200 dark:border-border bg-white dark:bg-card font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 transition-all flex items-center gap-2">
+                            <Download className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" /> <span className="hidden sm:inline">Export</span> <span className="sm:hidden">Export</span>
                         </Button>
                     </div>
                 )}
@@ -345,13 +345,13 @@ const ComplaintsPage = () => {
                         { label: "Urgent", value: stats.urgent, icon: AlertTriangle, color: "text-rose-600", bg: "bg-rose-50" },
                         { label: "Done", value: `${stats.resolutionRate}%`, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-3 md:gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default text-center sm:text-left">
+                        <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-3 md:gap-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-shadow cursor-default text-center sm:text-left">
                             <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
-                                <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight">{stat.value}</span>
+                                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">{stat.label}</span>
+                                <span className="text-sm md:text-xl font-bold text-gray-900 dark:text-foreground tracking-tight">{stat.value}</span>
                             </div>
                         </div>
                     ))}
@@ -359,10 +359,10 @@ const ComplaintsPage = () => {
 
                 {/* ── Search + Filter Bar ── */}
                 <FilterToolbar
-                    containerClassName="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm animate-in slide-in-from-bottom-6 fade-in duration-500 fill-mode-both delay-100"
+                    containerClassName="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 md:gap-4 shadow-sm animate-in slide-in-from-bottom-6 fade-in duration-500 fill-mode-both delay-100"
                     searchSlot={(
                     <div className="flex-1 relative w-full group">
-                        <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                        <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-muted-foreground group-focus-within:text-indigo-600 transition-colors" />
                         <Input
                             placeholder="Search..."
                             className="w-full h-11 md:h-12 pl-10 md:pl-12 bg-transparent border-none shadow-none font-bold text-xs md:text-sm focus-visible:ring-0 placeholder:text-gray-300"
@@ -378,18 +378,18 @@ const ComplaintsPage = () => {
                     )}
                     dividerClassName="h-8 w-px bg-gray-100 mx-2 hidden md:block"
                     filtersSlot={(
-                    <div className="flex items-center gap-1.5 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
+                    <div className="flex items-center gap-1.5 md:gap-2 p-1 bg-gray-50 dark:bg-muted/10 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
                         {/* Status Filter */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
-                                    <Filter className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 dark:text-muted-foreground hover:bg-white dark:bg-card hover:text-black hover:shadow-sm flex-1 md:flex-none">
+                                    <Filter className="h-3.5 w-3.5 mr-2 text-gray-400 dark:text-muted-foreground" />
                                     <span className="truncate">{statusFilter === "All" ? "All" : statusFilter.replace("_", " ")}</span>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[220px] rounded-xl border-gray-100 shadow-xl p-2">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Complaint Status</DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-gray-50 mb-1" />
+                            <DropdownMenuContent align="end" className="w-[220px] rounded-xl border-gray-100 dark:border-border shadow-xl p-2">
+                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground p-2">Complaint Status</DropdownMenuLabel>
+                                <DropdownMenuSeparator className="bg-gray-50 dark:bg-muted/10 mb-1" />
                                 {["All", "PENDING", "IN_PROGRESS", "RESOLVED", "REJECTED"].map((s) => (
                                     <DropdownMenuItem key={s} onClick={() => setStatusFilter(s)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer">
                                         {s.replace("_", " ")}
@@ -401,14 +401,14 @@ const ComplaintsPage = () => {
                         {/* Priority Filter */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
-                                    <AlertTriangle className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 dark:text-muted-foreground hover:bg-white dark:bg-card hover:text-black hover:shadow-sm flex-1 md:flex-none">
+                                    <AlertTriangle className="h-3.5 w-3.5 mr-2 text-gray-400 dark:text-muted-foreground" />
                                     <span className="truncate">{priorityFilter === "All" ? "All" : priorityFilter}</span>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[200px] rounded-xl border-gray-100 shadow-xl p-2">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Priority Level</DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-gray-50 mb-1" />
+                            <DropdownMenuContent align="end" className="w-[200px] rounded-xl border-gray-100 dark:border-border shadow-xl p-2">
+                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground p-2">Priority Level</DropdownMenuLabel>
+                                <DropdownMenuSeparator className="bg-gray-50 dark:bg-muted/10 mb-1" />
                                 {["All", "URGENT", "HIGH", "MEDIUM", "LOW"].map((p) => (
                                     <DropdownMenuItem key={p} onClick={() => setPriorityFilter(p)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer">
                                         {p}
@@ -420,14 +420,14 @@ const ComplaintsPage = () => {
                         {/* Hostel Filter */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none">
-                                    <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400" />
+                                <Button variant="ghost" className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 dark:text-muted-foreground hover:bg-white dark:bg-card hover:text-black hover:shadow-sm flex-1 md:flex-none">
+                                    <Building2 className="h-3.5 w-3.5 mr-2 text-gray-400 dark:text-muted-foreground" />
                                     <span className="truncate">{hostelFilter === "All" ? "All" : hostelFilter}</span>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[260px] rounded-xl border-gray-100 shadow-xl p-2">
-                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">Select Hostel</DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-gray-50 mb-1" />
+                            <DropdownMenuContent align="end" className="w-[260px] rounded-xl border-gray-100 dark:border-border shadow-xl p-2">
+                                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground p-2">Select Hostel</DropdownMenuLabel>
+                                <DropdownMenuSeparator className="bg-gray-50 dark:bg-muted/10 mb-1" />
                                 <DropdownMenuItem onClick={() => setHostelFilter("All")} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">All</DropdownMenuItem>
                                 {hostels.map((h) => (
                                     <DropdownMenuItem key={h.id} onClick={() => setHostelFilter(h.name)} className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg">
@@ -444,20 +444,20 @@ const ComplaintsPage = () => {
                 <div className="space-y-4 animate-in slide-in-from-bottom-8 fade-in duration-600 fill-mode-both delay-200">
                     {filteredComplaints.length > 0 ? filteredComplaints.map((complaint) => (
                         <Dialog key={complaint.id}>
-                            <div className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-shadow group relative overflow-hidden">
+                            <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-shadow group relative overflow-hidden">
                                 {/* Left color ribbon */}
                                 <div className={`absolute top-0 left-0 w-1 md:w-1.5 h-full ${getRibbonColor(complaint.status)} opacity-80`} />
 
                                 <div className="flex items-center gap-4 md:gap-6 flex-1 min-w-0 w-full lg:w-auto">
                                     {/* Avatar + Title */}
                                     <div className="flex items-center gap-3 md:gap-5 flex-1 min-w-0">
-                                        <div className={`h-11 w-11 md:h-14 md:w-14 rounded-xl flex items-center justify-center border border-gray-100 shadow-sm shrink-0 transition-colors group-hover:border-indigo-100 ${complaint.priority === "URGENT" ? "bg-rose-50" : "bg-gray-50"}`}>
-                                            <MessageSquare className={`h-5 w-5 md:h-6 md:w-6 ${complaint.priority === "URGENT" ? "text-rose-400" : "text-gray-400"} group-hover:text-indigo-500 transition-colors`} />
+                                        <div className={`h-11 w-11 md:h-14 md:w-14 rounded-xl flex items-center justify-center border border-gray-100 dark:border-border shadow-sm shrink-0 transition-colors group-hover:border-indigo-100 ${complaint.priority === "URGENT" ? "bg-rose-50" : "bg-gray-50 dark:bg-muted/10"}`}>
+                                            <MessageSquare className={`h-5 w-5 md:h-6 md:w-6 ${complaint.priority === "URGENT" ? "text-rose-400" : "text-gray-400 dark:text-muted-foreground"} group-hover:text-indigo-500 transition-colors`} />
                                         </div>
                                         <div className="flex flex-col min-w-0">
-                                            <h4 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight truncate">{complaint.title}</h4>
+                                            <h4 className="text-sm md:text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight truncate">{complaint.title}</h4>
                                             <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate max-w-[120px] md:max-w-[160px]">
+                                                <span className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate max-w-[120px] md:max-w-[160px]">
                                                     {complaint.User_Complaint_userIdToUser?.name}
                                                 </span>
                                                 {complaint.uid && (
@@ -483,18 +483,18 @@ const ComplaintsPage = () => {
                                     <div className="hidden md:flex flex-col gap-1 min-w-[140px] flex-1">
                                         <div className="flex items-center gap-2">
                                             <Building2 className="h-3.5 w-3.5 text-indigo-400" />
-                                            <span className="text-xs font-bold text-gray-900 uppercase truncate">{complaint.Hostel?.name ?? "N/A"}</span>
+                                            <span className="text-xs font-bold text-gray-900 dark:text-foreground uppercase truncate">{complaint.Hostel?.name ?? "N/A"}</span>
                                         </div>
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5">{complaint.category}</span>
+                                        <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest px-0.5">{complaint.category}</span>
                                     </div>
 
                                     {/* Date + Priority inline panel */}
                                     <div className="hidden xl:flex items-center gap-6 min-w-[300px] bg-indigo-50/30 p-3 rounded-2xl border border-indigo-100/50">
                                         <div className="flex flex-col gap-0.5 text-left">
-                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5 pl-0.5">
+                                            <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 pl-0.5">
                                                 <Calendar className="h-2.5 w-2.5" /> Filed
                                             </span>
-                                            <span className="text-[11px] font-bold text-gray-900 uppercase">
+                                            <span className="text-[11px] font-bold text-gray-900 dark:text-foreground uppercase">
                                                 {format(new Date(complaint.createdAt), "MMM dd, yyyy")}
                                             </span>
                                         </div>
@@ -505,7 +505,7 @@ const ComplaintsPage = () => {
                                             </div>
                                         </div>
                                         <div className="flex flex-col gap-0.5 text-right">
-                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest pr-0.5">Priority</span>
+                                            <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest pr-0.5">Priority</span>
                                             <Badge variant="outline" className={`${getPriorityStyle(complaint.priority)} text-[8px] font-black uppercase tracking-widest border px-2 py-0.5 rounded-full`}>
                                                 {complaint.priority}
                                             </Badge>
@@ -544,12 +544,12 @@ const ComplaintsPage = () => {
                             icon={Search}
                             title="Empty"
                             description="Try changing your search or filters"
-                            containerClassName="bg-white border border-dashed border-gray-100 rounded-3xl p-24 text-center shadow-sm"
-                            iconWrapperClassName="bg-gray-50 border-gray-100"
+                            containerClassName="bg-white dark:bg-card border border-dashed border-gray-100 dark:border-border rounded-3xl p-24 text-center shadow-sm"
+                            iconWrapperClassName="bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border"
                             iconClassName="text-gray-300"
                             actionSlot={(
                                 <Button variant="outline"
-                                    className="rounded-xl h-10 px-8 font-bold uppercase tracking-widest text-[10px] border-gray-200 hover:bg-black hover:text-white transition-all shadow-sm"
+                                    className="rounded-xl h-10 px-8 font-bold uppercase tracking-widest text-[10px] border-gray-200 dark:border-border hover:bg-black hover:text-white transition-all shadow-sm"
                                     onClick={() => { setSearchQuery(""); setStatusFilter("All"); setPriorityFilter("All"); setHostelFilter("All"); }}>
                                     Reset
                                 </Button>

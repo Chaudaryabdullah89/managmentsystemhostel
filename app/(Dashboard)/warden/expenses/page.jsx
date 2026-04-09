@@ -20,8 +20,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import useAuthStore from "@/hooks/Authstate";
 import { useExpenseStats, useExpenses } from "@/hooks/useExpenses";
-import Loader from "@/components/ui/Loader";
+import { GridPageSkeleton } from "@/components/ui/skeletons";
 import ErrorState from "@/components/ui/states/ErrorState";
+import { exportToExcel } from "@/lib/utils/exportToExcel";
+import { format } from "date-fns";
+import { toast } from "sonner";
 
 const CATEGORIES = [
     {
@@ -96,7 +99,7 @@ const ExpensesPage = () => {
 
     // We no longer trigger early return for permissions before hooks, we just place it below any potential hidden hooks (although we don't see any).
 
-    if (statsLoading || expensesLoading) return <Loader label="Loading" subLabel="Getting expense data..." icon={Receipt} fullScreen={false} />;
+    if (statsLoading || expensesLoading) return <GridPageSkeleton />;
     if (isStatsError || isExpensesError) {
         return (
             <div className="max-w-[1400px] mx-auto px-6 py-8">
@@ -115,13 +118,13 @@ const ExpensesPage = () => {
 
     if (user && user.role === 'WARDEN' && !hasAnyExpensePermission) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[80vh] bg-gray-50/50 p-6 font-sans">
-                <div className="bg-white border border-gray-100 rounded-[3rem] p-12 shadow-xl flex flex-col items-center text-center max-w-md animate-in fade-in zoom-in duration-500">
+            <div className="flex flex-col items-center justify-center min-h-[80vh] bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-6 font-sans">
+                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-[3rem] p-12 shadow-xl flex flex-col items-center text-center max-w-md animate-in fade-in zoom-in duration-500">
                     <div className="h-20 w-20 rounded-[2rem] bg-rose-50 flex items-center justify-center mb-6">
                         <ShieldCheck className="h-10 w-10 text-rose-500" />
                     </div>
-                    <h1 className="text-2xl font-black text-gray-900 tracking-tight uppercase">Access Restricted</h1>
-                    <p className="text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2 mb-8 leading-relaxed">
+                    <h1 className="text-2xl font-black text-gray-900 dark:text-foreground tracking-tight uppercase">Access Restricted</h1>
+                    <p className="text-gray-400 dark:text-muted-foreground font-bold text-[10px] uppercase tracking-[0.2em] mt-2 mb-8 leading-relaxed">
                         Your account does not have permission to view or manage hostel expenses.
                     </p>
                     <Link href="/warden">
@@ -137,20 +140,44 @@ const ExpensesPage = () => {
     const stats = statsData?.summary || { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalCount: 0 };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
             {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 py-2 md:h-16">
                 <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
                     <div className="flex items-center gap-3 md:gap-4">
                         <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase">Hostel Expenses</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 dark:text-foreground tracking-tight uppercase">Hostel Expenses</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400">Overview</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Overview</span>
                                 <div className="h-1 w-1 rounded-full bg-blue-500 animate-pulse" />
                                 <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-blue-600">Live</span>
                             </div>
                         </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-black text-[10px] uppercase tracking-widest transition-all shadow-sm flex items-center gap-2"
+                            onClick={() => {
+                                if (!expenses.length) return toast.error("No expenses to export");
+                                const rows = expenses.map(e => ({
+                                    "Expense ID": e.uid || e.id,
+                                    "Date": e.date ? format(new Date(e.date), 'dd/MM/yyyy') : '—',
+                                    "Category": e.category,
+                                    "Title": e.title || '—',
+                                    "Amount": e.amount,
+                                    "Status": e.status,
+                                    "Payer": e.userName || '—'
+                                }));
+                                exportToExcel(rows, `Expenses_Export_${format(new Date(), 'yyyy-MM-dd')}`, "Expenses");
+                            }}
+                        >
+                            <Download className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">Excel Report</span>
+                            <span className="sm:hidden">Excel</span>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -164,13 +191,13 @@ const ExpensesPage = () => {
                         { label: 'Pending', value: `PKR ${(stats.pendingAmount / 1000).toFixed(1)}k`, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
                         { label: 'Records', value: stats.totalCount || 0, icon: BarChart3, color: 'text-purple-600', bg: 'bg-purple-50' },
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default min-w-0">
+                        <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default min-w-0">
                             <div className={`h-9 w-9 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
-                                <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate">{stat.value}</span>
+                                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">{stat.label}</span>
+                                <span className="text-sm md:text-xl font-bold text-gray-900 dark:text-foreground tracking-tight truncate">{stat.value}</span>
                             </div>
                         </div>
                     ))}
@@ -179,8 +206,8 @@ const ExpensesPage = () => {
                 {/* Section header */}
                 <div className="flex items-center gap-3 px-1">
                     <div className="h-5 w-1 bg-blue-600 rounded-full" />
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900">Categories</h3>
-                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-auto">Manage Items</span>
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-gray-900 dark:text-foreground">Categories</h3>
+                    <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-auto">Manage Items</span>
                 </div>
 
                 {/* Category cards */}
@@ -198,9 +225,9 @@ const ExpensesPage = () => {
                             <Link
                                 key={cat.key}
                                 href={`/warden/expenses/${cat.slug}`}
-                                className="bg-white border border-gray-100 rounded-[2rem] p-5 flex flex-col gap-4 shadow-sm hover:shadow-md hover:border-gray-200 transition-all group relative overflow-hidden"
+                                className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-[2rem] p-5 flex flex-col gap-4 shadow-sm hover:shadow-md hover:border-gray-200 dark:border-border transition-all group relative overflow-hidden"
                             >
-                                <div className="absolute top-0 right-0 w-20 h-full bg-gray-50/50 skew-x-12 translate-x-8 group-hover:translate-x-6 transition-transform hidden md:block" />
+                                <div className="absolute top-0 right-0 w-20 h-full bg-gray-50 dark:bg-muted/10/50 dark:bg-background skew-x-12 translate-x-8 group-hover:translate-x-6 transition-transform hidden md:block" />
 
                                 <div className={`relative z-10 h-10 w-10 md:h-11 md:w-11 rounded-xl ${cat.bg} ${cat.color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
                                     <cat.Icon className="h-5 w-5" />
@@ -208,19 +235,19 @@ const ExpensesPage = () => {
 
                                 <div className="relative z-10 flex flex-col min-w-0">
                                     <h3 className={`text-[11px] md:text-[13px] font-bold uppercase tracking-tight ${cat.color}`}>{cat.label}</h3>
-                                    <p className="text-[9px] font-bold text-gray-400 leading-relaxed mt-0.5">{cat.description}</p>
+                                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground leading-relaxed mt-0.5">{cat.description}</p>
                                 </div>
 
                                 <div className="relative z-10 flex flex-col gap-1.5 pt-2 border-t border-gray-50">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest">Spent</span>
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Spent</span>
                                         <span className={`text-[11px] md:text-[13px] font-bold tracking-tight ${cat.color}`}>
                                             PKR {(catTotal / 1000).toFixed(1)}k
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest">Records</span>
-                                        <Badge variant="outline" className="text-[8px] md:text-[9px] font-black rounded-full px-2 py-0.5 border-gray-100 bg-white shadow-sm">
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Records</span>
+                                        <Badge variant="outline" className="text-[8px] md:text-[9px] font-black rounded-full px-2 py-0.5 border-gray-100 dark:border-border bg-white dark:bg-card shadow-sm">
                                             {catCount}
                                         </Badge>
                                     </div>

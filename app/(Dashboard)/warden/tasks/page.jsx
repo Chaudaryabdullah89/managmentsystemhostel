@@ -51,7 +51,7 @@ import { useStaffList } from "@/hooks/useSalaries";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
-import Loader from "@/components/ui/Loader";
+import { ListPageSkeleton } from "@/components/ui/skeletons";
 
 const TasksPage = () => {
     const user = useAuthStore((state) => state.user);
@@ -91,8 +91,8 @@ const TasksPage = () => {
             case "COMPLETED": return "bg-emerald-50 text-emerald-700 border-emerald-100";
             case "CANCELLED": return "bg-rose-50 text-rose-700 border-rose-100";
             case "IN_PROGRESS": return "bg-amber-50 text-amber-700 border-amber-100";
-            case "PENDING": return "bg-gray-100 text-gray-700 border-gray-200";
-            default: return "bg-gray-50 text-gray-600 border-gray-100";
+            case "PENDING": return "bg-gray-100 text-gray-700 dark:text-foreground border-gray-200 dark:border-border";
+            default: return "bg-gray-50 dark:bg-muted/10 text-gray-600 dark:text-muted-foreground border-gray-100 dark:border-border";
         }
     };
 
@@ -102,7 +102,7 @@ const TasksPage = () => {
             case "HIGH": return "bg-rose-50 text-rose-600 border-rose-100";
             case "MEDIUM": return "bg-amber-50 text-amber-600 border-amber-100";
             case "LOW": return "bg-emerald-50 text-emerald-600 border-emerald-100";
-            default: return "bg-gray-100 text-gray-600 border-gray-200";
+            default: return "bg-gray-100 text-gray-600 dark:text-muted-foreground border-gray-200 dark:border-border";
         }
     };
 
@@ -160,19 +160,19 @@ const TasksPage = () => {
         return matchesSearch && matchesStatus && matchesPriority;
     });
 
-    if (isTasksLoading) return <Loader label="Loading" subLabel="Getting records..." fullScreen={false} />;
+    if (isTasksLoading) return <ListPageSkeleton />;
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight leading-relaxed">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight leading-relaxed">
             {/* Minimal Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
                         <div className="h-8 w-1 bg-black rounded-full shrink-0" />
                         <div className="flex flex-col min-w-0">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight uppercase truncate">Tasks</h1>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 dark:text-foreground tracking-tight uppercase truncate">Tasks</h1>
                             <div className="flex items-center gap-1.5 md:gap-2">
-                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400 truncate">Operations</span>
+                                <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground truncate">Operations</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500 shrink-0 hidden sm:block" />
                                 <span className="text-[9px] md:text-[10px] font-bold uppercase tracking-wider text-emerald-600 truncate hidden xs:block">Online</span>
                             </div>
@@ -180,10 +180,10 @@ const TasksPage = () => {
                     </div>
                     <div className="flex items-center gap-2 md:gap-3 shrink-0">
                         <div className="relative group hidden lg:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 group-focus-within:text-black transition-colors" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground group-focus-within:text-black transition-colors" />
                             <Input
                                 placeholder="Search..."
-                                className="h-9 w-[280px] pl-9 rounded-xl border-gray-100 bg-gray-50/50 font-bold text-[10px] uppercase tracking-wider text-gray-600 shadow-sm transition-all focus:bg-white focus:ring-0"
+                                className="h-9 w-[280px] pl-9 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-bold text-[10px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground shadow-sm transition-all focus:bg-white dark:bg-card focus:ring-0"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -198,46 +198,46 @@ const TasksPage = () => {
                                     <span className="sm:hidden">Task</span>
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="w-[95%] max-w-md p-0 overflow-hidden border-none rounded-[2rem] md:rounded-[2.5rem] shadow-2xl bg-white mx-auto">
-                                <div className="bg-white">
-                                    <div className="p-6 md:p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/20">
+                            <DialogContent className="w-[95%] max-w-md p-0 overflow-hidden border-none rounded-[2rem] md:rounded-[2.5rem] shadow-2xl bg-white dark:bg-card mx-auto">
+                                <div className="bg-white dark:bg-card">
+                                    <div className="p-6 md:p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50 dark:bg-muted/10/20">
                                         <div className="flex items-center gap-4">
                                             <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-black flex items-center justify-center text-white shadow-lg shadow-black/10 shrink-0">
                                                 <ClipboardList className="h-5 w-5 md:h-6 md:w-6" />
                                             </div>
                                             <div className="min-w-0">
-                                                <h3 className="text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight italic truncate">New Task</h3>
-                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic truncate">Add a task.</p>
+                                                <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight italic truncate">New Task</h3>
+                                                <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1 italic truncate">Add a task.</p>
                                             </div>
                                         </div>
                                     </div>
                                     <div className="p-6 md:p-8 space-y-4 md:space-y-6">
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Title</Label>
+                                            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground italic px-1">Title</Label>
                                             <Input
                                                 placeholder="Task title..."
-                                                className="h-11 md:h-12 rounded-xl border-gray-100 font-bold text-xs shadow-sm focus:ring-0"
+                                                className="h-11 md:h-12 rounded-xl border-gray-100 dark:border-border font-bold text-xs shadow-sm focus:ring-0"
                                                 value={newTaskData.title}
                                                 onChange={(e) => setNewTaskData({ ...newTaskData, title: e.target.value })}
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Description (Optional)</Label>
+                                            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground italic px-1">Description (Optional)</Label>
                                             <Textarea
                                                 placeholder="Write a note..."
-                                                className="min-h-[80px] md:min-h-[100px] rounded-xl border-gray-100 font-medium text-xs shadow-sm focus:ring-0 pt-3"
+                                                className="min-h-[80px] md:min-h-[100px] rounded-xl border-gray-100 dark:border-border font-medium text-xs shadow-sm focus:ring-0 pt-3"
                                                 value={newTaskData.description}
                                                 onChange={(e) => setNewTaskData({ ...newTaskData, description: e.target.value })}
                                             />
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Priority</Label>
+                                                <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground italic px-1">Priority</Label>
                                                 <Select value={newTaskData.priority} onValueChange={(v) => setNewTaskData({ ...newTaskData, priority: v })}>
-                                                    <SelectTrigger className="h-11 md:h-12 rounded-xl border-gray-100 bg-white font-bold text-[10px] uppercase tracking-widest text-gray-600 shadow-sm focus:ring-0">
+                                                    <SelectTrigger className="h-11 md:h-12 rounded-xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-[10px] uppercase tracking-widest text-gray-600 dark:text-muted-foreground shadow-sm focus:ring-0">
                                                         <SelectValue />
                                                     </SelectTrigger>
-                                                    <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                                                    <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl">
                                                         <SelectItem value="LOW" className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Low Priority</SelectItem>
                                                         <SelectItem value="MEDIUM" className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Medium Priority</SelectItem>
                                                         <SelectItem value="HIGH" className="text-[10px] font-bold uppercase tracking-widest text-rose-600">High Priority</SelectItem>
@@ -246,12 +246,12 @@ const TasksPage = () => {
                                                 </Select>
                                             </div>
                                             <div className="space-y-2">
-                                                <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Category</Label>
+                                                <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground italic px-1">Category</Label>
                                                 <Select value={newTaskData.category} onValueChange={(v) => setNewTaskData({ ...newTaskData, category: v })}>
-                                                    <SelectTrigger className="h-11 md:h-12 rounded-xl border-gray-100 bg-white font-bold text-[10px] uppercase tracking-widest text-gray-600 shadow-sm focus:ring-0">
+                                                    <SelectTrigger className="h-11 md:h-12 rounded-xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-[10px] uppercase tracking-widest text-gray-600 dark:text-muted-foreground shadow-sm focus:ring-0">
                                                         <SelectValue />
                                                     </SelectTrigger>
-                                                    <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                                                    <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl">
                                                         <SelectItem value="GENERAL" className="text-[10px] font-bold uppercase tracking-widest">General Ops</SelectItem>
                                                         <SelectItem value="CLEANING" className="text-[10px] font-bold uppercase tracking-widest">Cleaning</SelectItem>
                                                         <SelectItem value="MAINTENANCE" className="text-[10px] font-bold uppercase tracking-widest">Maintenance</SelectItem>
@@ -262,12 +262,12 @@ const TasksPage = () => {
                                             </div>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Assign To</Label>
+                                            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground italic px-1">Assign To</Label>
                                             <Select value={newTaskData.assignedToId} onValueChange={(v) => setNewTaskData({ ...newTaskData, assignedToId: v })}>
-                                                <SelectTrigger className="h-11 md:h-12 rounded-xl border-gray-100 bg-white font-bold text-[10px] uppercase tracking-widest text-gray-600 shadow-sm focus:ring-0">
+                                                <SelectTrigger className="h-11 md:h-12 rounded-xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-[10px] uppercase tracking-widest text-gray-600 dark:text-muted-foreground shadow-sm focus:ring-0">
                                                     <SelectValue placeholder="Select Staff" />
                                                 </SelectTrigger>
-                                                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                                                <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl">
                                                     {staffMembers.map((staff) => (
                                                         <SelectItem key={staff.userId} value={staff.userId} className="text-[10px] font-bold uppercase tracking-widest">
                                                             {staff.User.name} - {staff.designation}
@@ -277,10 +277,10 @@ const TasksPage = () => {
                                             </Select>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Due Date</Label>
+                                            <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground italic px-1">Due Date</Label>
                                             <Input
                                                 type="datetime-local"
-                                                className="h-11 md:h-12 rounded-xl border-gray-100 font-bold text-xs shadow-sm focus:ring-0 uppercase"
+                                                className="h-11 md:h-12 rounded-xl border-gray-100 dark:border-border font-bold text-xs shadow-sm focus:ring-0 uppercase"
                                                 value={newTaskData.dueDate}
                                                 onChange={(e) => setNewTaskData({ ...newTaskData, dueDate: e.target.value })}
                                             />
@@ -303,10 +303,10 @@ const TasksPage = () => {
             <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 md:py-10 space-y-6 md:space-y-10">
                 {/* Search Bar - Mobile Focus */}
                 <div className="lg:hidden relative group">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-black transition-colors" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-muted-foreground group-focus-within:text-black transition-colors" />
                     <Input
                         placeholder="Search tasks or staff..."
-                        className="h-11 md:h-14 pl-11 rounded-[1.25rem] border-gray-100 bg-white font-bold text-[10px] md:text-xs uppercase tracking-wider text-gray-900 shadow-sm transition-all focus:ring-0"
+                        className="h-11 md:h-14 pl-11 rounded-[1.25rem] border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-[10px] md:text-xs uppercase tracking-wider text-gray-900 dark:text-foreground shadow-sm transition-all focus:ring-0"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -315,20 +315,20 @@ const TasksPage = () => {
                 {/* Metrics Matrix */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                     {[
-                        { label: 'Total', value: stats.total, sub: 'All', icon: ClipboardList, color: 'text-gray-900', bg: 'bg-white' },
+                        { label: 'Total', value: stats.total, sub: 'All', icon: ClipboardList, color: 'text-gray-900 dark:text-foreground', bg: 'bg-white dark:bg-card' },
                         { label: 'Pending', value: stats.pending, sub: 'Pending', icon: Clock, color: 'text-rose-500', bg: 'bg-rose-50/50' },
                         { label: 'Urgent', value: stats.urgent, sub: 'Urgent', icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50/50' },
                         { label: 'Done', value: `${stats.completionRate}%`, sub: 'Quality', icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50/50' }
                     ].map((node, i) => (
-                        <div key={i} className={`border border-gray-100 rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col sm:flex-row items-center sm:items-center gap-3 md:gap-5 shadow-sm hover:shadow-md transition-all group ${node.bg} min-w-0`}>
-                            <div className={`h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-white flex items-center justify-center shrink-0 border border-gray-100 group-hover:scale-110 transition-transform ${node.color} shadow-sm`}>
+                        <div key={i} className={`border border-gray-100 dark:border-border rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col sm:flex-row items-center sm:items-center gap-3 md:gap-5 shadow-sm hover:shadow-md transition-all group ${node.bg} min-w-0`}>
+                            <div className={`h-10 w-10 md:h-14 md:w-14 rounded-xl md:rounded-2xl bg-white dark:bg-card flex items-center justify-center shrink-0 border border-gray-100 dark:border-border group-hover:scale-110 transition-transform ${node.color} shadow-sm`}>
                                 <node.icon className="h-5 w-5 md:h-6 md:w-6" />
                             </div>
                             <div className="flex flex-col text-center sm:text-left min-w-0">
-                                <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest italic truncate">{node.label}</span>
+                                <span className="text-[8px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest italic truncate">{node.label}</span>
                                 <div className="flex items-baseline justify-center sm:justify-start gap-1.5 md:gap-2 mt-0.5 md:mt-1 truncate">
                                     <span className={`text-sm md:text-2xl font-black tracking-tighter ${node.color}`}>{node.value}</span>
-                                    <span className="text-[7px] md:text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] hidden xs:block">{node.sub}</span>
+                                    <span className="text-[7px] md:text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em] hidden xs:block">{node.sub}</span>
                                 </div>
                             </div>
                         </div>
@@ -337,15 +337,15 @@ const TasksPage = () => {
 
                 <div className="flex flex-col md:flex-row gap-4 lg:items-center">
                     <div className="flex items-center gap-2 px-1">
-                        <Filter className="h-3.5 w-3.5 text-gray-400" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Filter</span>
+                        <Filter className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground">Filter</span>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 md:gap-3">
                         <Select value={filterStatus} onValueChange={setFilterStatus}>
-                            <SelectTrigger className="flex-1 md:flex-none h-11 md:h-12 w-[140px] md:w-[160px] rounded-xl md:rounded-[1.25rem] border-gray-100 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-[0.15em] text-gray-600 shadow-sm focus:ring-0">
+                            <SelectTrigger className="flex-1 md:flex-none h-11 md:h-12 w-[140px] md:w-[160px] rounded-xl md:rounded-[1.25rem] border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-[9px] md:text-[10px] uppercase tracking-[0.15em] text-gray-600 dark:text-muted-foreground shadow-sm focus:ring-0">
                                 <SelectValue placeholder="STATUS" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                            <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl">
                                 <SelectItem value="all" className="text-[10px] font-bold uppercase tracking-widest">All</SelectItem>
                                 <SelectItem value="PENDING" className="text-[10px] font-bold uppercase tracking-widest text-amber-600">Pending</SelectItem>
                                 <SelectItem value="IN_PROGRESS" className="text-[10px] font-bold uppercase tracking-widest text-blue-600">In Progress</SelectItem>
@@ -355,10 +355,10 @@ const TasksPage = () => {
                         </Select>
 
                         <Select value={filterPriority} onValueChange={setFilterPriority}>
-                            <SelectTrigger className="flex-1 md:flex-none h-11 md:h-12 w-[140px] md:w-[160px] rounded-xl md:rounded-[1.25rem] border-gray-100 bg-white font-bold text-[9px] md:text-[10px] uppercase tracking-[0.15em] text-gray-600 shadow-sm focus:ring-0">
+                            <SelectTrigger className="flex-1 md:flex-none h-11 md:h-12 w-[140px] md:w-[160px] rounded-xl md:rounded-[1.25rem] border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-[9px] md:text-[10px] uppercase tracking-[0.15em] text-gray-600 dark:text-muted-foreground shadow-sm focus:ring-0">
                                 <SelectValue placeholder="PRIORITY" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                            <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl">
                                 <SelectItem value="all" className="text-[10px] font-bold uppercase tracking-widest">All</SelectItem>
                                 <SelectItem value="URGENT" className="text-[10px] font-bold uppercase tracking-widest text-rose-600 italic">Urgent Priority</SelectItem>
                                 <SelectItem value="HIGH" className="text-[10px] font-bold uppercase tracking-widest">High Priority</SelectItem>
@@ -384,23 +384,23 @@ const TasksPage = () => {
                 </div>
 
                 {/* Task Registry Card */}
-                <Card className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
-                    <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50/20">
+                <Card className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-sm overflow-hidden">
+                    <div className="p-8 border-b border-gray-50 flex items-center justify-between bg-gray-50 dark:bg-muted/10/20">
                         <div className="flex items-center gap-4">
                             <div className="h-10 w-10 rounded-xl bg-black flex items-center justify-center text-white shadow-lg shadow-black/10">
                                 <ClipboardList className="h-5 w-5" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight italic">Tasks</h3>
-                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic">List of tasks.</p>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight italic">Tasks</h3>
+                                <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1 italic">List of tasks.</p>
                             </div>
                         </div>
                     </div>
                     <div className="p-0">
                         {/* Mobile Card View */}
-                        <div className="md:hidden divide-y divide-gray-50">
+                        <div className="md:hidden divide-y divide-gray-50 dark:divide-border/20">
                             {filteredTasks.map((task) => (
-                                <div key={task.id} className="p-5 space-y-4 active:bg-gray-50 transition-colors">
+                                <div key={task.id} className="p-5 space-y-4 active:bg-gray-50 dark:bg-muted/10 transition-colors">
                                     <div className="flex justify-between items-start gap-3">
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -411,18 +411,18 @@ const TasksPage = () => {
                                                     {task.priority}
                                                 </Badge>
                                             </div>
-                                            <h4 className="text-[13px] font-bold text-gray-900 uppercase tracking-tight italic line-clamp-2">{task.title}</h4>
-                                            <p className="text-[9px] font-mono font-bold text-gray-400 mt-1 uppercase tracking-wider">
+                                            <h4 className="text-[13px] font-bold text-gray-900 dark:text-foreground uppercase tracking-tight italic line-clamp-2">{task.title}</h4>
+                                            <p className="text-[9px] font-mono font-bold text-gray-400 dark:text-muted-foreground mt-1 uppercase tracking-wider">
                                                 {task.uid || `TSK-${task.id.slice(-6).toUpperCase()}`}
                                             </p>
                                         </div>
                                         <Dialog>
                                             <DialogTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-gray-50 text-gray-900 shadow-sm shrink-0" onClick={() => setSelectedTask(task)}>
+                                                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-muted/10 text-gray-900 dark:text-foreground shadow-sm shrink-0" onClick={() => setSelectedTask(task)}>
                                                     <ArrowUpRight className="h-4 w-4" />
                                                 </Button>
                                             </DialogTrigger>
-                                            <DialogContent className="w-[95%] max-w-2xl p-0 overflow-hidden border-none rounded-[2rem] shadow-2xl bg-white mx-auto">
+                                            <DialogContent className="w-[95%] max-w-2xl p-0 overflow-hidden border-none rounded-[2rem] shadow-2xl bg-white dark:bg-card mx-auto">
                                                 <TaskDetailsContent task={task} />
                                             </DialogContent>
                                         </Dialog>
@@ -430,22 +430,22 @@ const TasksPage = () => {
 
                                     <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-50/50">
                                         <div className="flex items-center gap-2.5 min-w-0">
-                                            <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
-                                                <User className="h-3.5 w-3.5 text-gray-400" />
+                                            <div className="h-8 w-8 rounded-lg bg-gray-50 dark:bg-muted/10 flex items-center justify-center shrink-0 border border-gray-100 dark:border-border">
+                                                <User className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
                                             </div>
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[10px] font-bold text-gray-900 truncate">{task.assignedTo?.name || 'UNASSIGNED'}</span>
-                                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest truncate">{task.assignedTo?.role || 'IDLE UNIT'}</span>
+                                                <span className="text-[10px] font-bold text-gray-900 dark:text-foreground truncate">{task.assignedTo?.name || 'UNASSIGNED'}</span>
+                                                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">{task.assignedTo?.role || 'IDLE UNIT'}</span>
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end justify-center min-w-0">
                                             <div className="flex items-center gap-1.5 min-w-0 text-right">
-                                                <Clock className={`h-2.5 w-2.5 ${new Date(task.dueDate) < new Date() && task.status !== 'COMPLETED' ? 'text-rose-500' : 'text-gray-400'}`} />
-                                                <span className={`text-[10px] font-black uppercase tracking-widest truncate ${new Date(task.dueDate) < new Date() && task.status !== 'COMPLETED' ? 'text-rose-500' : 'text-gray-400'}`}>
+                                                <Clock className={`h-2.5 w-2.5 ${new Date(task.dueDate) < new Date() && task.status !== 'COMPLETED' ? 'text-rose-500' : 'text-gray-400 dark:text-muted-foreground'}`} />
+                                                <span className={`text-[10px] font-black uppercase tracking-widest truncate ${new Date(task.dueDate) < new Date() && task.status !== 'COMPLETED' ? 'text-rose-500' : 'text-gray-400 dark:text-muted-foreground'}`}>
                                                     {task.dueDate ? format(new Date(task.dueDate), 'MMM dd') : 'No Date'}
                                                 </span>
                                             </div>
-                                            <span className="text-[8px] font-bold text-gray-400 uppercase tracking-[0.2em] mt-0.5 truncate">{task.category} MODULE</span>
+                                            <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em] mt-0.5 truncate">{task.category} MODULE</span>
                                         </div>
                                     </div>
                                 </div>
@@ -456,7 +456,7 @@ const TasksPage = () => {
                         <div className="hidden md:block overflow-x-auto">
                             <table className="w-full text-left min-w-[1200px]">
                                 <thead>
-                                    <tr className="bg-gray-50/70 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b">
+                                    <tr className="bg-gray-50 dark:bg-muted/10/70 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground border-b">
                                         <th className="px-8 py-5 italic">Task</th>
                                         <th className="px-8 py-5">Staff</th>
                                         <th className="px-8 py-5">Category</th>
@@ -467,16 +467,16 @@ const TasksPage = () => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {filteredTasks.map((task) => (
-                                        <tr key={task.id} className="group hover:bg-gray-50/50 transition-colors">
+                                        <tr key={task.id} className="group hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors">
                                             <td className="px-8 py-6">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[11px] font-bold text-gray-900 uppercase tracking-tight italic line-clamp-1">{task.title}</span>
+                                                    <span className="text-[11px] font-bold text-gray-900 dark:text-foreground uppercase tracking-tight italic line-clamp-1">{task.title}</span>
                                                     <div className="flex items-center gap-1.5 mt-1">
                                                         <span className="text-[8px] font-mono font-bold text-black bg-gray-100 px-2 py-0.5 rounded-md uppercase tracking-wider">
                                                             {task.uid || `TSK-${task.id.slice(-6).toUpperCase()}`}
                                                         </span>
                                                         {task.dueDate && (
-                                                            <span className={`text-[8px] font-black uppercase tracking-widest flex items-center gap-1 ${new Date(task.dueDate) < new Date() && task.status !== 'COMPLETED' ? 'text-rose-500' : 'text-gray-400'}`}>
+                                                            <span className={`text-[8px] font-black uppercase tracking-widest flex items-center gap-1 ${new Date(task.dueDate) < new Date() && task.status !== 'COMPLETED' ? 'text-rose-500' : 'text-gray-400 dark:text-muted-foreground'}`}>
                                                                 <Clock className="h-2 w-2" /> {format(new Date(task.dueDate), 'MMM dd')}
                                                             </span>
                                                         )}
@@ -485,19 +485,19 @@ const TasksPage = () => {
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-7 w-7 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 border border-gray-200">
-                                                        <User className="h-3.5 w-3.5 text-gray-400" />
+                                                    <div className="h-7 w-7 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 border border-gray-200 dark:border-border">
+                                                        <User className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-[11px] font-bold text-gray-900 uppercase tracking-tight italic">{task.assignedTo?.name || 'UNASSIGNED'}</span>
-                                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5">{task.assignedTo?.role || 'IDLE UNIT'}</span>
+                                                        <span className="text-[11px] font-bold text-gray-900 dark:text-foreground uppercase tracking-tight italic">{task.assignedTo?.name || 'UNASSIGNED'}</span>
+                                                        <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em] mt-0.5">{task.assignedTo?.role || 'IDLE UNIT'}</span>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
                                                 <div className="flex flex-col">
-                                                    <span className="text-[10px] font-bold text-gray-600 uppercase tracking-tight italic">{task.category} MODULE</span>
-                                                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-[0.2em] mt-0.5 italic">{task.hostel?.name} PROPERTY</span>
+                                                    <span className="text-[10px] font-bold text-gray-600 dark:text-muted-foreground uppercase tracking-tight italic">{task.category} MODULE</span>
+                                                    <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em] mt-0.5 italic">{task.hostel?.name} PROPERTY</span>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
@@ -517,7 +517,7 @@ const TasksPage = () => {
                                                             <ArrowUpRight className="h-4 w-4" />
                                                         </Button>
                                                     </DialogTrigger>
-                                                    <DialogContent className="max-w-2xl p-0 overflow-hidden border-none rounded-[2rem] shadow-2xl bg-white">
+                                                    <DialogContent className="max-w-2xl p-0 overflow-hidden border-none rounded-[2rem] shadow-2xl bg-white dark:bg-card">
                                                         <TaskDetailsContent task={task} />
                                                     </DialogContent>
                                                 </Dialog>
@@ -562,21 +562,21 @@ const TaskDetailsContent = ({ task }) => {
             case "COMPLETED": return "bg-emerald-50 text-emerald-700 border-emerald-100";
             case "CANCELLED": return "bg-rose-50 text-rose-700 border-rose-100";
             case "IN_PROGRESS": return "bg-amber-50 text-amber-700 border-amber-100";
-            case "PENDING": return "bg-gray-100 text-gray-700 border-gray-200";
-            default: return "bg-gray-50 text-gray-600 border-gray-100";
+            case "PENDING": return "bg-gray-100 text-gray-700 dark:text-foreground border-gray-200 dark:border-border";
+            default: return "bg-gray-50 dark:bg-muted/10 text-gray-600 dark:text-muted-foreground border-gray-100 dark:border-border";
         }
     };
 
     return (
-        <div className="bg-white">
-            <div className="p-6 md:p-8 border-b border-gray-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gray-50/20">
+        <div className="bg-white dark:bg-card">
+            <div className="p-6 md:p-8 border-b border-gray-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gray-50 dark:bg-muted/10/20">
                 <div className="flex items-center gap-4">
                     <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-black flex items-center justify-center text-white shadow-lg shadow-black/10 shrink-0">
                         <BarChart3 className="h-5 w-5 md:h-6 md:w-6" />
                     </div>
                     <div className="min-w-0">
-                        <h3 className="text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight italic truncate">Details</h3>
-                        <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1 italic truncate">{task.uid} Info</p>
+                        <h3 className="text-base md:text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight italic truncate">Details</h3>
+                        <p className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1 italic truncate">{task.uid} Info</p>
                     </div>
                 </div>
                 <Badge className={`${getStatusTheme(task.status)} px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm`}>{task.status}</Badge>
@@ -586,26 +586,26 @@ const TaskDetailsContent = ({ task }) => {
                 {/* Left Content */}
                 <div className="lg:col-span-3 space-y-6">
                     <div className="space-y-4">
-                        <div className="p-5 md:p-6 bg-gray-50 rounded-[1.5rem] md:rounded-[2rem] border border-gray-100 space-y-3 shadow-inner">
-                            <h4 className="text-[11px] md:text-xs font-black text-gray-900 uppercase tracking-widest italic leading-tight">{task.title}</h4>
-                            <p className="text-xs text-gray-500 font-medium leading-relaxed italic">"{task.description || 'No details.'}"</p>
+                        <div className="p-5 md:p-6 bg-gray-50 dark:bg-muted/10 rounded-[1.5rem] md:rounded-[2rem] border border-gray-100 dark:border-border space-y-3 shadow-inner">
+                            <h4 className="text-[11px] md:text-xs font-black text-gray-900 dark:text-foreground uppercase tracking-widest italic leading-tight">{task.title}</h4>
+                            <p className="text-xs text-gray-500 dark:text-muted-foreground font-medium leading-relaxed italic">"{task.description || 'No details.'}"</p>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="p-4 bg-white border border-gray-100 rounded-2xl flex flex-col gap-1 shadow-sm">
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Created</span>
-                                <span className="text-[10px] font-bold text-gray-900 uppercase italic">{format(new Date(task.createdAt), 'MMM dd, HH:mm')}</span>
+                            <div className="p-4 bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl flex flex-col gap-1 shadow-sm">
+                                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Created</span>
+                                <span className="text-[10px] font-bold text-gray-900 dark:text-foreground uppercase italic">{format(new Date(task.createdAt), 'MMM dd, HH:mm')}</span>
                             </div>
-                            <div className="p-4 bg-white border border-gray-100 rounded-2xl flex flex-col gap-1 shadow-sm">
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Target</span>
-                                <span className="text-[10px] font-bold text-gray-900 uppercase italic">{task.dueDate ? format(new Date(task.dueDate), 'MMM dd, HH:mm') : 'Open'}</span>
+                            <div className="p-4 bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl flex flex-col gap-1 shadow-sm">
+                                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Target</span>
+                                <span className="text-[10px] font-bold text-gray-900 dark:text-foreground uppercase italic">{task.dueDate ? format(new Date(task.dueDate), 'MMM dd, HH:mm') : 'Open'}</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Task Lifecycle Actions */}
                     <div className="space-y-3">
-                        <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 italic px-1">Actions</Label>
+                        <Label className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground italic px-1">Actions</Label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <Button
                                 variant="outline"
@@ -636,26 +636,26 @@ const TaskDetailsContent = ({ task }) => {
                 </div>
 
                 {/* Right Content: Comments/Audit Trail */}
-                <div className="lg:col-span-2 lg:border-l lg:border-gray-100 lg:pl-8 space-y-6 pt-6 lg:pt-0 border-t lg:border-t-0 border-gray-50">
+                <div className="lg:col-span-2 lg:border-l lg:border-gray-100 dark:border-border lg:pl-8 space-y-6 pt-6 lg:pt-0 border-t lg:border-t-0 border-gray-50">
                     <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-[10px] font-black text-gray-900 uppercase tracking-widest italic">Comments</h4>
+                        <h4 className="text-[10px] font-black text-gray-900 dark:text-foreground uppercase tracking-widest italic">Comments</h4>
                         <Badge variant="secondary" className="text-[8px] font-black bg-gray-100 px-2 py-0.5 rounded-md">{task.comments?.length || 0}</Badge>
                     </div>
 
                     <div className="space-y-4 max-h-[300px] md:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                         {task.comments?.map((comment) => (
-                            <div key={comment.id} className="flex flex-col gap-1.5 p-3.5 rounded-2xl bg-gray-50/50 border border-gray-100 shadow-sm">
+                            <div key={comment.id} className="flex flex-col gap-1.5 p-3.5 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border shadow-sm">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[9px] font-black text-gray-900 uppercase tracking-tight truncate max-w-[70%]">{comment.User.name}</span>
-                                    <span className="text-[8px] font-bold text-gray-400 shrink-0">{format(new Date(comment.createdAt), 'HH:mm')}</span>
+                                    <span className="text-[9px] font-black text-gray-900 dark:text-foreground uppercase tracking-tight truncate max-w-[70%]">{comment.User.name}</span>
+                                    <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground shrink-0">{format(new Date(comment.createdAt), 'HH:mm')}</span>
                                 </div>
-                                <p className="text-[11px] text-gray-600 font-medium leading-relaxed italic">"{comment.message}"</p>
+                                <p className="text-[11px] text-gray-600 dark:text-muted-foreground font-medium leading-relaxed italic">"{comment.message}"</p>
                             </div>
                         ))}
                         {(!task.comments || task.comments.length === 0) && (
                             <div className="py-12 text-center space-y-3 opacity-30">
-                                <div className="h-12 w-12 rounded-full bg-gray-50 flex items-center justify-center mx-auto">
-                                    <MessageSquare className="h-6 w-6 text-gray-400" />
+                                <div className="h-12 w-12 rounded-full bg-gray-50 dark:bg-muted/10 flex items-center justify-center mx-auto">
+                                    <MessageSquare className="h-6 w-6 text-gray-400 dark:text-muted-foreground" />
                                 </div>
                                 <p className="text-[9px] font-black uppercase tracking-widest">Empty</p>
                             </div>
@@ -665,7 +665,7 @@ const TaskDetailsContent = ({ task }) => {
                     <div className="relative mt-auto pt-4">
                         <Textarea
                             placeholder="Add a comment..."
-                            className="min-h-[90px] rounded-[1.5rem] border-gray-100 bg-gray-50/50 font-medium text-[11px] shadow-sm focus:ring-0 focus:bg-white transition-all pt-4 pb-12 resize-none"
+                            className="min-h-[90px] rounded-[1.5rem] border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-medium text-[11px] shadow-sm focus:ring-0 focus:bg-white dark:bg-card transition-all pt-4 pb-12 resize-none"
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
                             onKeyDown={(e) => {

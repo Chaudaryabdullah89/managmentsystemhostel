@@ -11,7 +11,7 @@ export async function POST(request) {
         const body = await request.json();
         const { hostelId, roomId, title, description, priority, status, userId, images } = body;
 
-        const record = await prisma.maintanance.create({
+        const record = await prisma.maintenance.create({
             data: {
                 hostelId,
                 roomId,
@@ -27,7 +27,7 @@ export async function POST(request) {
 
         // Generate and assign UID
         const uid = `MNT-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
-        const updatedRecord = await prisma.maintanance.update({
+        const updatedRecord = await prisma.maintenance.update({
             where: { id: record.id },
             data: { uid }
         });

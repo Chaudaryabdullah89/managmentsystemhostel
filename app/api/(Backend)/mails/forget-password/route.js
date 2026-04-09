@@ -1,5 +1,4 @@
-import { checkRole } from '@/lib/checkRole';
-import { isServiceEnabled } from '@/lib/permissions';
+import { isServiceEnabled, getBranding } from '@/lib/permissions';
 
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/utils/sendmail";
@@ -10,7 +9,10 @@ import { buildEmailTemplate } from "@/lib/utils/emailTemplates";
 
 export async function POST(req) {
   // Guard: Check if password reset emails are enabled globally
-  const emailsEnabled = await isServiceEnabled('enablePasswordResetEmails');
+  const [emailsEnabled, branding] = await Promise.all([
+    isServiceEnabled('enablePasswordResetEmails'),
+    getBranding()
+  ]);
   if (!emailsEnabled) {
     return NextResponse.json(
       { message: "Password reset emails are currently disabled by the administrator." },
@@ -52,7 +54,7 @@ export async function POST(req) {
             Hello <strong>${user.name || "User"}</strong>,
           </p>
           <p style="margin:0 0 16px; font-size:14px; color:#4b5563;">
-            We received a request to reset the password for your Mubarak Group of Hostels account.
+            We received a request to reset the password for your ${branding.companyName} account.
           </p>
           <p style="margin:0 0 24px; font-size:14px; color:#4b5563;">
             Click the button below to choose a new password. This link will be valid for <strong>1 hour</strong>.
@@ -70,8 +72,9 @@ export async function POST(req) {
 
     const html = buildEmailTemplate({
       title: "Reset your password",
-      subtitle: "Secure access to your Mubarak Group of Hostels account",
+      subtitle: `Secure access to your ${branding.companyName} account`,
       bodyHtml,
+      branding,
     });
 
     console.log(`[API] POST /api/mails/forget-password - Upserting reset token in database`);
@@ -92,7 +95,7 @@ export async function POST(req) {
 
 
     console.log(`[API] POST /api/mails/forget-password - Sending email to: ${email}`);
-    await sendEmail({ to: email, subject: "Password Reset - Mubarak Group of Hostels", html });
+    await sendEmail({ to: email, subject: `Password Reset - ${branding.companyName}`, html });
     console.log(`[API] POST /api/mails/forget-password - Email sent successfully`);
 
     return NextResponse.json({ message: "Email sent successfully" }, { status: 200 });

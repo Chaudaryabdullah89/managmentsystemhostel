@@ -55,7 +55,7 @@ import { toast } from "sonner";
 import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import Loader from "@/components/ui/Loader";
+import { ListPageSkeleton } from "@/components/ui/skeletons";
 import Link from "next/link";
 
 /**
@@ -368,7 +368,7 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
         toast.success("Copied from latest entry");
     };
 
-    if (expensesLoading) return <Loader label="Loading" subLabel={`Accessing ${category.label} ledger...`} icon={Receipt} fullScreen={false} />;
+    if (expensesLoading) return <ListPageSkeleton />;
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">

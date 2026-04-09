@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { sendEmail } from "@/lib/utils/sendmail";
 import { monthlyRentEmail } from "@/lib/utils/emailTemplates";
 import crypto from 'crypto';
+import { getBranding } from "@/lib/permissions";
 
 // GET /api/warden-salary
 export async function GET(request) {
@@ -137,9 +138,10 @@ export async function POST(request) {
             // Email Notification
             if (warden.email) {
                 const [mName, yName] = month.split(" ");
+                const branding = await getBranding();
                 sendEmail({
                     to: warden.email,
-                    subject: `Salary Disbursed — ${month} — Mubarak Group of Hostels`,
+                    subject: `Salary Disbursed — ${month} — ${branding.companyName}`,
                     html: monthlyRentEmail({
                         name: warden.name,
                         amount: totalAmount,
@@ -147,6 +149,7 @@ export async function POST(request) {
                         year: yName || new Date().getFullYear(),
                         hostelName: null,
                         type: "SALARY",
+                        branding,
                     }),
                 }).catch(err => console.error("[Email] Warden salary email failed:", err));
             }
@@ -208,9 +211,10 @@ export async function POST(request) {
 
             if (warden.email) {
                 const [mName, yName] = month.split(" ");
+                const branding = await getBranding();
                 sendEmail({
                     to: warden.email,
-                    subject: `Salary Disbursed — ${month} — Mubarak Group of Hostels`,
+                    subject: `Salary Disbursed — ${month} — ${branding.companyName}`,
                     html: monthlyRentEmail({
                         name: warden.name,
                         amount: totalAmount,
@@ -218,6 +222,7 @@ export async function POST(request) {
                         year: yName || new Date().getFullYear(),
                         hostelName: null,
                         type: "SALARY",
+                        branding,
                     }),
                 }).catch(err => console.error("[Email] Bulk Warden salary email failed:", err));
             }

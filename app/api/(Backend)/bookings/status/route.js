@@ -4,6 +4,7 @@ import { bookingStatusEmail } from "@/lib/utils/emailTemplates";
 import { prisma } from "@/lib/prisma";
 import { requireRoles } from "@/lib/apiAuth";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
+import { getBranding } from "@/lib/permissions";
 
 const bookingServices = new BookingServices();
 
@@ -58,9 +59,10 @@ export async function PUT(request) {
             });
 
             if (fullBooking?.User?.email) {
+                const branding = await getBranding();
                 sendEmail({
                     to: fullBooking.User.email,
-                    subject: `Booking ${status.charAt(0) + status.slice(1).toLowerCase()} — Mubarak Group of Hostels`,
+                    subject: `Booking ${status.charAt(0) + status.slice(1).toLowerCase()} — ${branding.companyName}`,
                     html: bookingStatusEmail({
                         name: fullBooking.User.name,
                         bookingId: fullBooking.uid || fullBooking.id,
@@ -68,6 +70,7 @@ export async function PUT(request) {
                         roomNumber: fullBooking.Room?.roomNumber,
                         hostelName: fullBooking.Room?.Hostel?.name,
                         notes: notes || null,
+                        branding,
                     }),
                 }).catch(err => console.error("[Email] Booking status email failed:", err));
             }

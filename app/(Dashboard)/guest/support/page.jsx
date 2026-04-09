@@ -64,7 +64,7 @@ const StatusBadge = ({ status }) => {
         case 'REJECTED':
             return <Badge className="bg-rose-50 text-rose-600 border-none text-[9px] uppercase font-bold tracking-wider px-2 py-0.5">Rejected</Badge>;
         default:
-            return <Badge className="bg-gray-50 text-gray-500 border-none text-[9px] uppercase font-bold tracking-wider px-2 py-0.5">{status}</Badge>;
+            return <Badge className="bg-gray-50 dark:bg-muted/10 text-gray-500 dark:text-muted-foreground border-none text-[9px] uppercase font-bold tracking-wider px-2 py-0.5">{status}</Badge>;
     }
 };
 
@@ -76,24 +76,24 @@ const PriorityBadge = ({ priority }) => {
         case 'medium':
             return <div className="flex items-center gap-1 text-[9px] font-bold uppercase text-amber-600 tracking-wider">Medium Priority</div>;
         default:
-            return <div className="flex items-center gap-1 text-[9px] font-bold uppercase text-gray-400 tracking-wider">Low Priority</div>;
+            return <div className="flex items-center gap-1 text-[9px] font-bold uppercase text-gray-400 dark:text-muted-foreground tracking-wider">Low Priority</div>;
     }
 };
 
 const ServiceCard = ({ icon: Icon, title, status, date, notes, color }) => (
-    <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex items-start gap-4">
+    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex items-start gap-4">
         <div className={`h-11 w-11 rounded-2xl ${color} flex items-center justify-center shrink-0`}>
             <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1 space-y-1">
             <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-gray-900 tracking-tight">{title}</h4>
+                <h4 className="text-sm font-bold text-gray-900 dark:text-foreground tracking-tight">{title}</h4>
                 <StatusBadge status={status} />
             </div>
-            <p className="text-[10px] text-gray-500 font-medium">{notes || 'Standard service cycle performed.'}</p>
+            <p className="text-[10px] text-gray-500 dark:text-muted-foreground font-medium">{notes || 'Standard service cycle performed.'}</p>
             <div className="flex items-center gap-2 pt-1">
                 <Clock className="h-3 w-3 text-gray-300" />
-                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{date ? format(new Date(date), 'MMM dd, yyyy • hh:mm a') : 'N/A'}</span>
+                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{date ? format(new Date(date), 'MMM dd, yyyy • hh:mm a') : 'N/A'}</span>
             </div>
         </div>
     </div>
@@ -196,19 +196,19 @@ const GuestSupportPage = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
                 <div className="flex flex-col items-center gap-4">
                     <Activity className="h-8 w-8 text-indigo-600 animate-spin" />
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Syncing Support Data...</p>
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">Syncing Support Data...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20">
             {/* Header */}
-            <header className="bg-white border-b sticky top-0 z-40 h-16 shadow-sm">
+            <header className="bg-white dark:bg-card border-b sticky top-0 z-40 h-16 shadow-sm">
                 <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
                     <div>
                         <h1 className="text-lg font-extrabold text-slate-900 tracking-tight uppercase">Services & Support</h1>
@@ -227,7 +227,7 @@ const GuestSupportPage = () => {
                             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                                 <DialogTrigger asChild>
                                     <Button
-                                        className={`h-10 px-6 rounded-2xl font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 shadow-lg ${isCheckedOut ? 'bg-gray-100 text-gray-400 cursor-not-allowed border' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'}`}
+                                        className={`h-10 px-6 rounded-2xl font-bold text-[10px] uppercase tracking-wider transition-all active:scale-95 shadow-lg ${isCheckedOut ? 'bg-gray-100 text-gray-400 dark:text-muted-foreground cursor-not-allowed border' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-200'}`}
                                         onClick={(e) => {
                                             if (isCheckedOut) {
                                                 e.preventDefault();
@@ -239,7 +239,7 @@ const GuestSupportPage = () => {
                                     </Button>
                                 </DialogTrigger>
 
-                                <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none p-0 overflow-hidden shadow-2xl bg-white">
+                                <DialogContent className="sm:max-w-[480px] rounded-[2.5rem] border-none p-0 overflow-hidden shadow-2xl bg-white dark:bg-card">
                                     <DialogHeader className="p-8 bg-slate-50 border-b border-slate-100 flex flex-row items-center gap-4">
                                         <div className="h-12 w-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100">
                                             <LifeBuoy className="h-6 w-6 text-white" />
@@ -319,7 +319,7 @@ const GuestSupportPage = () => {
             <main className="max-w-6xl mx-auto px-6 py-10 space-y-10">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <div className="flex items-center justify-between mb-8 overflow-x-auto pb-2">
-                        <TabsList className="bg-white border border-gray-100 p-1.5 rounded-2xl shadow-sm h-14 w-fit">
+                        <TabsList className="bg-white dark:bg-card border border-gray-100 dark:border-border p-1.5 rounded-2xl shadow-sm h-14 w-fit">
                             {(isComplaintsEnabled || isAdmin) && <TabsTrigger value="issues" className="rounded-xl px-8 data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-bold text-[10px] uppercase tracking-widest h-full transition-all">Support & Issues</TabsTrigger>}
                             {(isRoomServicesEnabled || isAdmin) && <TabsTrigger value="services" className="rounded-xl px-8 data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-bold text-[10px] uppercase tracking-widest h-full transition-all">Room Services</TabsTrigger>}
                         </TabsList>
@@ -329,7 +329,7 @@ const GuestSupportPage = () => {
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300" />
                                 <Input
                                     placeholder="Search History..."
-                                    className="h-12 pl-12 rounded-2xl bg-white border-none shadow-sm font-medium text-xs placeholder:text-slate-300 focus:ring-2 ring-indigo-500/10"
+                                    className="h-12 pl-12 rounded-2xl bg-white dark:bg-card border-none shadow-sm font-medium text-xs placeholder:text-slate-300 focus:ring-2 ring-indigo-500/10"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
@@ -340,7 +340,7 @@ const GuestSupportPage = () => {
                     <TabsContent value="issues" className="mt-0 focus-visible:outline-none">
                         <div className="grid grid-cols-1 gap-4">
                             {filteredIssues.length > 0 ? filteredIssues.map((issue) => (
-                                <div key={issue.id} onClick={() => setSelectedIssue(issue)} className="bg-white border border-gray-100 rounded-[2.5rem] p-8 shadow-sm hover:shadow-lg transition-all group cursor-pointer relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-8">
+                                <div key={issue.id} onClick={() => setSelectedIssue(issue)} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-[2.5rem] p-8 shadow-sm hover:shadow-lg transition-all group cursor-pointer relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-8">
                                     <div className="flex items-start gap-6 relative z-10">
                                         <div className={`h-14 w-14 rounded-[1.5rem] flex items-center justify-center shrink-0 border transition-all duration-500 ${issue.type === 'MAINTENANCE' ? 'bg-amber-50 border-amber-100 text-amber-600 group-hover:bg-amber-600 group-hover:text-white' : 'bg-indigo-50 border-indigo-100 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white'}`}>
                                             {issue.type === 'MAINTENANCE' ? <Wrench className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
@@ -371,7 +371,7 @@ const GuestSupportPage = () => {
                                     </div>
                                 </div>
                             )) : (
-                                <div className="text-center py-32 bg-white rounded-[3rem] border border-dashed border-slate-200">
+                                <div className="text-center py-32 bg-white dark:bg-card rounded-[3rem] border border-dashed border-slate-200">
                                     <div className="bg-slate-50 h-24 w-24 rounded-[2rem] flex items-center justify-center mx-auto mb-6 border border-slate-100">
                                         <ShieldCheck className="h-10 w-10 text-slate-300" />
                                     </div>
@@ -397,7 +397,7 @@ const GuestSupportPage = () => {
                                         <span className="text-[10px] font-bold uppercase tracking-widest">Fully Operational</span>
                                     </div>
                                 </div>
-                                <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 relative overflow-hidden shadow-sm group">
+                                <div className="bg-white dark:bg-card border border-slate-100 rounded-[2.5rem] p-8 relative overflow-hidden shadow-sm group">
                                     <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:rotate-12 transition-transform">
                                         <Calendar className="h-20 w-20" />
                                     </div>
@@ -407,7 +407,7 @@ const GuestSupportPage = () => {
                                     </h3>
                                     <span className="bg-emerald-50 text-emerald-600 px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest">Confirmed Done</span>
                                 </div>
-                                <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 relative overflow-hidden shadow-sm group">
+                                <div className="bg-white dark:bg-card border border-slate-100 rounded-[2.5rem] p-8 relative overflow-hidden shadow-sm group">
                                     <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-90 transition-transform">
                                         <Wind className="h-20 w-20" />
                                     </div>
@@ -471,7 +471,7 @@ const GuestSupportPage = () => {
 
             {/* Detailed Issue Modal (Same as existing complaint logic but updated style) */}
             <Dialog open={!!selectedIssue} onOpenChange={(open) => !open && setSelectedIssue(null)}>
-                <DialogContent className="max-w-xl p-0 overflow-hidden border-none rounded-[3rem] shadow-2xl bg-white">
+                <DialogContent className="max-w-xl p-0 overflow-hidden border-none rounded-[3rem] shadow-2xl bg-white dark:bg-card">
                     {selectedIssue && (
                         <div>
                             <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/20">

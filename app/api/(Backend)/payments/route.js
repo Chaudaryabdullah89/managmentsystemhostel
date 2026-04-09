@@ -5,6 +5,7 @@ import { monthlyRentEmail, buildEmailTemplate } from "@/lib/utils/emailTemplates
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/apiAuth";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
+import { getBranding } from "@/lib/permissions";
 
 const paymentServices = new PaymentServices();
 
@@ -143,10 +144,11 @@ export async function POST(request) {
                         const now = new Date();
                         const monthName = now.toLocaleString("en-PK", { month: "long" });
                         const year = now.getFullYear();
+                        const branding = await getBranding();
 
                         sendEmail({
                             to: user.email,
-                            subject: `Monthly Rent Due — ${monthName} ${year} — Mubarak Group of Hostels`,
+                            subject: `Monthly Rent Due — ${monthName} ${year} — ${branding.companyName}`,
                             html: monthlyRentEmail({
                                 name: user.name,
                                 amount: data.amount,
@@ -155,6 +157,7 @@ export async function POST(request) {
                                 dueDate: data.dueDate || null,
                                 hostelName: hostel?.name || null,
                                 type: "RENT",
+                                branding,
                             }),
                         }).catch(err => console.error("[Email] Monthly rent email failed:", err));
                     }

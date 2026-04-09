@@ -67,7 +67,7 @@ import { format, isValid } from "date-fns"
 import { toast } from "sonner"
 import { generateInvoice } from "@/lib/utils/invoice-generator"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import Loader from '../../../../../../../components/ui/Loader'
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 import {
     Dialog,
     DialogContent,
@@ -133,7 +133,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
             return "bg-yellow-50 text-yellow-700 border-yellow-100"
         if (s === 'CANCELLED' || s === 'OVERDUE' || s === 'REJECTED')
             return "bg-red-50 text-red-700 border-red-100"
-        return "bg-gray-50 text-gray-700 border-gray-100"
+        return "bg-gray-50 dark:bg-muted/10 text-gray-700 dark:text-foreground border-gray-100 dark:border-border"
     }
 
     const handleGenerateInvoice = async () => {
@@ -202,12 +202,12 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
         }
     }
 
-    if (isLoading) return <Loader label="Loading Resident Profile" subLabel="Fetching resident details..." icon={User} fullScreen={false} />;
+    if (isLoading) return <DetailPageSkeleton />;
 
     if (!resident) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-muted/10">
             <div className="text-center">
-                <h2 className="text-xl font-bold text-gray-900">Resident not found</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-foreground">Resident not found</h2>
                 <Button onClick={() => router.back()} className="mt-4">Back to List</Button>
             </div>
         </div>
@@ -217,17 +217,17 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
     const currentRoom = activeBooking?.room
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20">
             {/* Header */}
-            <header className="bg-white border-b sticky top-0 z-30 py-2 md:h-16">
+            <header className="bg-white dark:bg-card border-b sticky top-0 z-30 py-2 md:h-16">
                 <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl hover:bg-gray-100 shrink-0">
                             <ArrowLeft className="h-5 w-5" />
                         </Button>
                         <div className="flex flex-col min-w-0">
-                            <h1 className="text-sm md:text-lg font-black text-gray-900 leading-none truncate uppercase tracking-tight">{resident.name}</h1>
-                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Resident ID: {resident.id?.slice(-8).toUpperCase()}</p>
+                            <h1 className="text-sm md:text-lg font-black text-gray-900 dark:text-foreground leading-none truncate uppercase tracking-tight">{resident.name}</h1>
+                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">Resident ID: {resident.id?.slice(-8).toUpperCase()}</p>
                         </div>
                     </div>
 
@@ -236,10 +236,10 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                             variant="ghost"
                             size="icon"
                             onClick={() => refetch()}
-                            className="rounded-xl hover:bg-gray-50 h-9 w-9 shrink-0"
+                            className="rounded-xl hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 h-9 w-9 shrink-0"
                             disabled={isFetching}
                         >
-                            <RefreshCw className={`h-4 w-4 text-gray-400 ${isFetching ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`h-4 w-4 text-gray-400 dark:text-muted-foreground ${isFetching ? 'animate-spin' : ''}`} />
                         </Button>
                         <Button className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest shadow-sm gap-2 transition-all active:scale-95 whitespace-nowrap" onClick={() => router.push(`/admin/users/${residentId}`)}>
                             <Edit className="h-3.5 w-3.5" />
@@ -253,7 +253,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Left Column: Basic Info */}
                     <div className="lg:col-span-4 space-y-6">
-                        <Card className="overflow-hidden border border-gray-100 shadow-sm rounded-3xl">
+                        <Card className="overflow-hidden border border-gray-100 dark:border-border shadow-sm rounded-3xl">
                             <CardContent className="p-6 md:p-8 flex flex-col items-center text-center">
                                 <Avatar className="h-24 w-24 md:h-32 md:w-32 border-4 border-white shadow-md mb-6 ring-1 ring-gray-100">
                                     <AvatarImage src={resident.image} />
@@ -261,19 +261,19 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                         {resident.name?.split(' ').map(n => n[0]).join('')}
                                     </AvatarFallback>
                                 </Avatar>
-                                <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">{resident.name}</h2>
-                                <p className="text-xs font-black text-gray-400 uppercase tracking-widest mt-1 truncate w-full">{resident.email}</p>
+                                <h2 className="text-xl font-black text-gray-900 dark:text-foreground uppercase tracking-tight">{resident.name}</h2>
+                                <p className="text-xs font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1 truncate w-full">{resident.email}</p>
 
-                                <div className="w-full space-y-4 text-left mt-8 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                    <div className="flex items-center gap-3 text-xs font-black text-gray-600 uppercase tracking-tight">
+                                <div className="w-full space-y-4 text-left mt-8 p-4 bg-gray-50 dark:bg-muted/10 rounded-2xl border border-gray-100 dark:border-border">
+                                    <div className="flex items-center gap-3 text-xs font-black text-gray-600 dark:text-muted-foreground uppercase tracking-tight">
                                         <Phone className="h-3.5 w-3.5 text-indigo-400" />
                                         <span>{resident.phone || 'No phone provided'}</span>
                                     </div>
-                                    <div className="flex items-center gap-3 text-xs font-black text-gray-600 uppercase tracking-tight">
+                                    <div className="flex items-center gap-3 text-xs font-black text-gray-600 dark:text-muted-foreground uppercase tracking-tight">
                                         <MapPin className="h-3.5 w-3.5 text-indigo-400" />
                                         <span className="line-clamp-2">{resident.address || 'No address provided'}</span>
                                     </div>
-                                    <div className="flex items-center gap-3 text-xs font-black text-gray-600 uppercase tracking-tight">
+                                    <div className="flex items-center gap-3 text-xs font-black text-gray-600 dark:text-muted-foreground uppercase tracking-tight">
                                         <CreditCard className="h-3.5 w-3.5 text-indigo-400" />
                                         <span className="font-mono">ID: {resident.cnic || 'N/A'}</span>
                                     </div>
@@ -281,21 +281,21 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                             </CardContent>
                         </Card>
 
-                        <Card className="border border-gray-100 shadow-sm rounded-3xl">
+                        <Card className="border border-gray-100 dark:border-border shadow-sm rounded-3xl">
                             <CardHeader className="pb-2">
-                                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Registry Protocols</CardTitle>
+                                <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground">Registry Protocols</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
                                 <Button
                                     variant="outline"
-                                    className="w-full justify-start text-[10px] font-black uppercase tracking-widest h-11 px-4 rounded-xl border-gray-100 transition-all hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100"
+                                    className="w-full justify-start text-[10px] font-black uppercase tracking-widest h-11 px-4 rounded-xl border-gray-100 dark:border-border transition-all hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100"
                                     onClick={() => activeBooking ? router.push(`/admin/bookings/${activeBooking.id}/payments`) : toast.error("No active booking found")}
                                 >
                                     <DollarSign className="h-4 w-4 mr-2" /> Financial Audit
                                 </Button>
                                 <Button
                                     variant="outline"
-                                    className="w-full justify-start text-[10px] font-black uppercase tracking-widest h-11 px-4 rounded-xl border-gray-100 transition-all hover:bg-blue-50 hover:text-blue-600 hover:border-blue-100"
+                                    className="w-full justify-start text-[10px] font-black uppercase tracking-widest h-11 px-4 rounded-xl border-gray-100 dark:border-border transition-all hover:bg-blue-50 hover:text-blue-600 hover:border-blue-100"
                                     onClick={() => setIsInvoiceDialogOpen(true)}
                                 >
                                     <Receipt className="h-4 w-4 mr-2" />
@@ -305,7 +305,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                     <AlertDialogTrigger asChild>
                                         <Button
                                             variant="outline"
-                                            className="w-full justify-start text-[10px] font-black uppercase tracking-widest h-11 px-4 rounded-xl border-gray-100 text-rose-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all"
+                                            className="w-full justify-start text-[10px] font-black uppercase tracking-widest h-11 px-4 rounded-xl border-gray-100 dark:border-border text-rose-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all"
                                             disabled={isCheckingOut || !activeBooking}
                                         >
                                             {isCheckingOut ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <UserX className="h-4 w-4 mr-2" />}
@@ -314,14 +314,14 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                     </AlertDialogTrigger>
                                     <AlertDialogContent className="rounded-3xl border-none shadow-2xl overflow-hidden p-0 max-w-lg mx-4 sm:mx-0">
                                         <div className="bg-gray-950 p-8 text-white">
-                                            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center mb-4"><UserX size={20} className="text-rose-500" /></div>
+                                            <div className="h-10 w-10 rounded-xl bg-white dark:bg-card/10 flex items-center justify-center mb-4"><UserX size={20} className="text-rose-500" /></div>
                                             <AlertDialogTitle className="text-xl font-black tracking-tight mb-2 uppercase italic">Purge Occupancy Node?</AlertDialogTitle>
-                                            <AlertDialogDescription className="text-gray-400 font-black text-[10px] uppercase tracking-widest">
+                                            <AlertDialogDescription className="text-gray-400 dark:text-muted-foreground font-black text-[10px] uppercase tracking-widest">
                                                 Wiping <span className="text-white font-black">{resident.name}</span> from the active unit registry. This will vacate the node and terminate all sub-protocols.
                                             </AlertDialogDescription>
                                         </div>
-                                        <div className="p-6 flex items-center justify-end gap-3 bg-white">
-                                            <AlertDialogCancel className="rounded-xl border-gray-100 bg-gray-50 font-black px-6 h-11 uppercase tracking-widest text-[9px] text-gray-500">Abort</AlertDialogCancel>
+                                        <div className="p-6 flex items-center justify-end gap-3 bg-white dark:bg-card">
+                                            <AlertDialogCancel className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-black px-6 h-11 uppercase tracking-widest text-[9px] text-gray-500 dark:text-muted-foreground">Abort</AlertDialogCancel>
                                             <AlertDialogAction
                                                 className="bg-rose-600 hover:bg-rose-700 rounded-xl font-black px-6 h-11 uppercase tracking-widest text-[9px] shadow-sm"
                                                 onClick={() => {
@@ -342,39 +342,39 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                     <div className="lg:col-span-8 space-y-8">
                         {/* Stats Grid */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
-                            <Card className="border border-gray-100 shadow-sm py-1 group cursor-pointer hover:bg-white transition-all rounded-2xl active:scale-95" onClick={() => currentRoom?.id && router.push(`/admin/hostels/${hostelId}/room-details/room/${currentRoom.id}`)}>
+                            <Card className="border border-gray-100 dark:border-border shadow-sm py-1 group cursor-pointer hover:bg-white dark:bg-card transition-all rounded-2xl active:scale-95" onClick={() => currentRoom?.id && router.push(`/admin/hostels/${hostelId}/room-details/room/${currentRoom.id}`)}>
                                 <CardContent className="flex items-center gap-4 py-4 px-5">
                                     <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-600 transition-colors shrink-0">
                                         <Home className="h-5 w-5 text-indigo-600 group-hover:text-white transition-colors" />
                                     </div>
                                     <div className="flex flex-col min-w-0">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest truncate">Access node</p>
-                                        <p className="text-sm font-black text-gray-900 flex items-center gap-1.5 truncate">
+                                        <p className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">Access node</p>
+                                        <p className="text-sm font-black text-gray-900 dark:text-foreground flex items-center gap-1.5 truncate">
                                             {currentRoom?.roomNumber ? `UNIT_${currentRoom.roomNumber}` : 'UNALLOCATED'}
                                             <ArrowUpRight className="h-3 w-3 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </p>
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="border border-gray-100 shadow-sm py-1 rounded-2xl">
+                            <Card className="border border-gray-100 dark:border-border shadow-sm py-1 rounded-2xl">
                                 <CardContent className="flex items-center gap-4 py-4 px-5">
                                     <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
                                         <DollarSign className="h-5 w-5 text-emerald-600" />
                                     </div>
                                     <div className="flex flex-col min-w-0">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest truncate">Capital yield</p>
-                                        <p className="text-sm font-black text-gray-900 truncate">PKR {resident.payments?.reduce((acc, p) => acc + (p.status === 'PAID' ? p.amount : 0), 0).toLocaleString()}</p>
+                                        <p className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">Capital yield</p>
+                                        <p className="text-sm font-black text-gray-900 dark:text-foreground truncate">PKR {resident.payments?.reduce((acc, p) => acc + (p.status === 'PAID' ? p.amount : 0), 0).toLocaleString()}</p>
                                     </div>
                                 </CardContent>
                             </Card>
-                            <Card className="border border-gray-100 shadow-sm py-1 rounded-2xl">
+                            <Card className="border border-gray-100 dark:border-border shadow-sm py-1 rounded-2xl">
                                 <CardContent className="flex items-center gap-4 py-4 px-5">
                                     <div className="h-10 w-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
                                         <AlertCircle className="h-5 w-5 text-amber-600" />
                                     </div>
                                     <div className="flex flex-col min-w-0">
-                                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest truncate">System flags</p>
-                                        <p className="text-sm font-black text-gray-900 truncate">{resident.complaints?.filter(c => c.status !== 'RESOLVED').length || 0} ACTIVE_ISSUES</p>
+                                        <p className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">System flags</p>
+                                        <p className="text-sm font-black text-gray-900 dark:text-foreground truncate">{resident.complaints?.filter(c => c.status !== 'RESOLVED').length || 0} ACTIVE_ISSUES</p>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -382,23 +382,23 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
 
                         {/* Tabs content */}
                         <Tabs defaultValue="payments" className="w-full bg-transparent">
-                            <TabsList className="bg-white border p-1 rounded-xl h-12 w-full justify-start gap-2 mb-6 shadow-sm overflow-x-auto">
+                            <TabsList className="bg-white dark:bg-card border p-1 rounded-xl h-12 w-full justify-start gap-2 mb-6 shadow-sm overflow-x-auto">
                                 <TabsTrigger value="payments" className="rounded-lg px-6 font-bold text-xs uppercase tracking-wider">Payment History</TabsTrigger>
                                 <TabsTrigger value="complaints" className="rounded-lg px-6 font-bold text-xs uppercase tracking-wider">Maintenance & Complaints</TabsTrigger>
                                 <TabsTrigger value="profileplus" className="rounded-lg px-6 font-bold text-xs uppercase tracking-wider">Additional Profile</TabsTrigger>
                             </TabsList>
 
                             <TabsContent value="payments" className="mt-0">
-                                <Card className="border border-gray-100 shadow-sm overflow-hidden bg-white rounded-3xl">
+                                <Card className="border border-gray-100 dark:border-border shadow-sm overflow-hidden bg-white dark:bg-card rounded-3xl">
                                     <div className="p-5 md:p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between sm:items-center gap-4 sm:gap-0">
                                         <div>
-                                            <h3 className="font-black text-gray-900 uppercase tracking-tighter text-lg">Financial Ledger</h3>
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Transaction nodes active</p>
+                                            <h3 className="font-black text-gray-900 dark:text-foreground uppercase tracking-tighter text-lg">Financial Ledger</h3>
+                                            <p className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Transaction nodes active</p>
                                         </div>
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="rounded-xl border-gray-100 font-black text-[10px] uppercase tracking-widest h-10 px-4 transition-all hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2"
+                                            className="rounded-xl border-gray-100 dark:border-border font-black text-[10px] uppercase tracking-widest h-10 px-4 transition-all hover:bg-indigo-50 hover:text-indigo-600 flex items-center gap-2"
                                             onClick={() => activeBooking ? router.push(`/admin/bookings/${activeBooking.id}/payments`) : toast.error("No active booking found")}
                                         >
                                             <Plus className="h-3.5 w-3.5" /> Force Credit
@@ -408,24 +408,24 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                     {/* Desktop Table View */}
                                     <div className="hidden md:block overflow-x-auto">
                                         <Table>
-                                            <TableHeader className="bg-gray-50/50">
+                                            <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
                                                 <TableRow className="hover:bg-transparent border-gray-50">
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Date</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Type</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Value</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Protocol</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Node Status</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 text-right">Ops</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Date</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Type</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Value</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Protocol</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Node Status</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground text-right">Ops</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
                                                 {resident.payments?.length > 0 ? (
                                                     resident.payments.map((p) => (
-                                                        <TableRow key={p.id} className="hover:bg-gray-50/30 transition-colors group">
+                                                        <TableRow key={p.id} className="hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/30 transition-colors group">
                                                             <TableCell className="py-5 px-6">
                                                                 <div className="flex flex-col">
-                                                                    <span className="text-sm font-black text-gray-900 italic tracking-tight">{safeFormat(p.date, 'MMM dd, yyyy')}</span>
-                                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-tighter">{safeFormat(p.date, 'HH:mm:ss')}</span>
+                                                                    <span className="text-sm font-black text-gray-900 dark:text-foreground italic tracking-tight">{safeFormat(p.date, 'MMM dd, yyyy')}</span>
+                                                                    <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-tighter">{safeFormat(p.date, 'HH:mm:ss')}</span>
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6">
@@ -434,16 +434,16 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                                         <Receipt className="h-4 w-4 text-indigo-400" />
                                                                     </div>
                                                                     <div className="flex flex-col">
-                                                                        <span className="text-xs font-black text-gray-800 uppercase tracking-tight">{p.type}</span>
+                                                                        <span className="text-xs font-black text-gray-800 dark:text-foreground uppercase tracking-tight">{p.type}</span>
                                                                         <span className="text-[9px] font-mono font-black text-indigo-500 uppercase tracking-tighter cursor-pointer hover:underline">TX_{p.id.slice(-8).toUpperCase()}</span>
                                                                     </div>
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6">
-                                                                <span className="text-sm font-black text-gray-900">PKR {p.amount.toLocaleString()}</span>
+                                                                <span className="text-sm font-black text-gray-900 dark:text-foreground">PKR {p.amount.toLocaleString()}</span>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6">
-                                                                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest bg-gray-50/50 border-gray-100 px-2 py-0.5 rounded-md">
+                                                                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border px-2 py-0.5 rounded-md">
                                                                     {p.method}
                                                                 </Badge>
                                                             </TableCell>
@@ -457,7 +457,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
-                                                                        className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-indigo-600"
+                                                                        className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400 dark:text-muted-foreground hover:text-indigo-600"
                                                                         onClick={() => activeBooking && router.push(`/admin/bookings/${activeBooking.id}/payments`)}
                                                                     >
                                                                         <Eye className="h-4 w-4" />
@@ -465,7 +465,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
-                                                                        className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-emerald-600"
+                                                                        className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400 dark:text-muted-foreground hover:text-emerald-600"
                                                                         onClick={() => {
                                                                             if (!activeBooking) return toast.error("Booking context missing");
                                                                             generateInvoice(p, { ...activeBooking, User: resident });
@@ -493,7 +493,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                     </div>
 
                                     {/* Mobile Card View */}
-                                    <div className="md:hidden divide-y divide-gray-50">
+                                    <div className="md:hidden divide-y divide-gray-50 dark:divide-border/20">
                                         {resident.payments?.length > 0 ? (
                                             resident.payments.map((p) => (
                                                 <div key={p.id} className="p-5 space-y-4">
@@ -503,7 +503,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                                 <Receipt className="h-5 w-5 text-indigo-400" />
                                                             </div>
                                                             <div className="flex flex-col">
-                                                                <span className="text-xs font-black text-gray-900 uppercase">{p.type}</span>
+                                                                <span className="text-xs font-black text-gray-900 dark:text-foreground uppercase">{p.type}</span>
                                                                 <span className="text-[9px] font-mono font-black text-indigo-500 uppercase">TX_{p.id.slice(-8).toUpperCase()}</span>
                                                             </div>
                                                         </div>
@@ -512,17 +512,17 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                         </Badge>
                                                     </div>
                                                     <div className="grid grid-cols-2 gap-3">
-                                                        <div className="bg-gray-50/50 p-3 rounded-2xl border border-gray-100 flex flex-col gap-0.5">
-                                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Amount</span>
-                                                            <span className="text-xs font-black text-gray-900">PKR {p.amount.toLocaleString()}</span>
+                                                        <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-3 rounded-2xl border border-gray-100 dark:border-border flex flex-col gap-0.5">
+                                                            <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Amount</span>
+                                                            <span className="text-xs font-black text-gray-900 dark:text-foreground">PKR {p.amount.toLocaleString()}</span>
                                                         </div>
-                                                        <div className="bg-gray-50/50 p-3 rounded-2xl border border-gray-100 flex flex-col gap-0.5">
-                                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Protocol</span>
-                                                            <span className="text-[10px] font-black text-gray-600 uppercase">{p.method}</span>
+                                                        <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-3 rounded-2xl border border-gray-100 dark:border-border flex flex-col gap-0.5">
+                                                            <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Protocol</span>
+                                                            <span className="text-[10px] font-black text-gray-600 dark:text-muted-foreground uppercase">{p.method}</span>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-[9px] font-black text-gray-400 uppercase italic">{safeFormat(p.date, 'MMM dd, yyyy')}</span>
+                                                        <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase italic">{safeFormat(p.date, 'MMM dd, yyyy')}</span>
                                                         <div className="flex items-center gap-2">
                                                             <Button
                                                                 variant="ghost"
@@ -559,16 +559,16 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                             </TabsContent>
 
                             <TabsContent value="complaints" className="mt-0">
-                                <Card className="border border-gray-100 shadow-sm overflow-hidden bg-white rounded-3xl">
+                                <Card className="border border-gray-100 dark:border-border shadow-sm overflow-hidden bg-white dark:bg-card rounded-3xl">
                                     <div className="p-5 md:p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between sm:items-center gap-4 sm:gap-0">
                                         <div>
-                                            <h3 className="font-black text-gray-900 uppercase tracking-tighter text-lg">System Flag Logs</h3>
-                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Grievance nodes active</p>
+                                            <h3 className="font-black text-gray-900 dark:text-foreground uppercase tracking-tighter text-lg">System Flag Logs</h3>
+                                            <p className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Grievance nodes active</p>
                                         </div>
                                         <Button
                                             size="sm"
                                             variant="outline"
-                                            className="border-gray-100 font-black text-[10px] uppercase tracking-widest h-10 px-4 rounded-xl hover:bg-amber-50 hover:text-amber-600 hover:border-amber-100 transition-all flex items-center gap-2"
+                                            className="border-gray-100 dark:border-border font-black text-[10px] uppercase tracking-widest h-10 px-4 rounded-xl hover:bg-amber-50 hover:text-amber-600 hover:border-amber-100 transition-all flex items-center gap-2"
                                             onClick={() => setIsGrievanceDialogOpen(true)}
                                         >
                                             <Plus className="h-3.5 w-3.5" /> Flag Issue
@@ -578,37 +578,37 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                     {/* Desktop Table View */}
                                     <div className="hidden md:block overflow-x-auto">
                                         <Table>
-                                            <TableHeader className="bg-gray-50/50">
+                                            <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
                                                 <TableRow className="hover:bg-transparent border-gray-50">
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Issue Dossier</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Class</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Logged</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Priority</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400">Status</TableHead>
-                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 text-right">Ops</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Issue Dossier</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Class</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Logged</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Priority</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Status</TableHead>
+                                                    <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground text-right">Ops</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
                                                 {resident.complaints?.length > 0 ? (
                                                     resident.complaints.map((c) => (
-                                                        <TableRow key={c.id} className="hover:bg-gray-50/30 transition-colors group">
+                                                        <TableRow key={c.id} className="hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/30 transition-colors group">
                                                             <TableCell className="py-5 px-6">
                                                                 <div className="flex flex-col min-w-[200px]">
-                                                                    <p className="text-sm font-black text-gray-900 uppercase tracking-tight line-clamp-1 italic">{c.title || 'Untitled Issue'}</p>
-                                                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter line-clamp-1 mt-0.5">{c.description || 'No detailed dossier provided.'}</p>
+                                                                    <p className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tight line-clamp-1 italic">{c.title || 'Untitled Issue'}</p>
+                                                                    <p className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-tighter line-clamp-1 mt-0.5">{c.description || 'No detailed dossier provided.'}</p>
                                                                 </div>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6">
                                                                 <div className="flex items-center gap-2">
-                                                                    <div className="h-7 w-7 rounded-lg bg-gray-50 flex items-center justify-center border border-gray-100">
-                                                                        <Activity className="h-3.5 w-3.5 text-gray-400" />
+                                                                    <div className="h-7 w-7 rounded-lg bg-gray-50 dark:bg-muted/10 flex items-center justify-center border border-gray-100 dark:border-border">
+                                                                        <Activity className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
                                                                     </div>
-                                                                    <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
+                                                                    <span className="text-[10px] font-black text-gray-600 dark:text-muted-foreground uppercase tracking-widest">
                                                                         {c.category}
                                                                     </span>
                                                                 </div>
                                                             </TableCell>
-                                                            <TableCell className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase italic">
+                                                            <TableCell className="py-5 px-6 text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase italic">
                                                                 {safeFormat(c.createdAt, 'MMM dd, yyyy')}
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6">
@@ -629,7 +629,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                                 </Badge>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6 text-right">
-                                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-indigo-600" onClick={() => toast.info("Opening detailed dossier view...")}>
+                                                                <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400 dark:text-muted-foreground hover:text-indigo-600" onClick={() => toast.info("Opening detailed dossier view...")}>
                                                                     <ArrowUpRight className="h-4 w-4" />
                                                                 </Button>
                                                             </TableCell>
@@ -650,7 +650,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                     </div>
 
                                     {/* Mobile Card View */}
-                                    <div className="md:hidden divide-y divide-gray-50">
+                                    <div className="md:hidden divide-y divide-gray-50 dark:divide-border/20">
                                         {resident.complaints?.length > 0 ? (
                                             resident.complaints.map((c) => (
                                                 <div key={c.id} className="p-5 space-y-4">
@@ -660,8 +660,8 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                                 <Activity className="h-5 w-5 text-amber-500" />
                                                             </div>
                                                             <div className="flex flex-col min-w-0">
-                                                                <span className="text-xs font-black text-gray-900 uppercase truncate">{c.title}</span>
-                                                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{c.category}</span>
+                                                                <span className="text-xs font-black text-gray-900 dark:text-foreground uppercase truncate">{c.title}</span>
+                                                                <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{c.category}</span>
                                                             </div>
                                                         </div>
                                                         <Badge className={`${getStatusTheme(c.status)} border-none rounded-full px-2.5 py-0.5 text-[8px] font-black uppercase tracking-widest shrink-0`}>
@@ -669,8 +669,8 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                         </Badge>
                                                     </div>
 
-                                                    <div className="p-3 bg-gray-50/50 rounded-2xl border border-gray-100">
-                                                        <p className="text-[10px] font-black text-gray-500 uppercase leading-relaxed line-clamp-2">{c.description}</p>
+                                                    <div className="p-3 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl border border-gray-100 dark:border-border">
+                                                        <p className="text-[10px] font-black text-gray-500 dark:text-muted-foreground uppercase leading-relaxed line-clamp-2">{c.description}</p>
                                                     </div>
 
                                                     <div className="flex items-center justify-between">
@@ -681,7 +681,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                             </span>
                                                         </div>
                                                         <div className="flex items-center gap-3">
-                                                            <span className="text-[8px] font-black text-gray-400 uppercase italic">{safeFormat(c.createdAt, 'MMM dd, yyyy')}</span>
+                                                            <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase italic">{safeFormat(c.createdAt, 'MMM dd, yyyy')}</span>
                                                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-lg hover:bg-gray-100 text-indigo-400">
                                                                 <ArrowUpRight className="h-3.5 w-3.5" />
                                                             </Button>
@@ -702,43 +702,43 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                             <TabsContent value="profileplus" className="mt-0 space-y-4">
                                 <Card className="border-none shadow-sm">
                                     <CardHeader>
-                                        <CardTitle className="text-base font-bold text-gray-900">Personal Information</CardTitle>
+                                        <CardTitle className="text-base font-bold text-gray-900 dark:text-foreground">Personal Information</CardTitle>
                                     </CardHeader>
                                     <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8">
                                         <div className="space-y-1">
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Father's Name</p>
-                                            <p className="text-sm font-semibold text-gray-900">{resident.residentProfile?.guardianName || 'Not entered'}</p>
+                                            <p className="text-xs font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Father's Name</p>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-foreground">{resident.residentProfile?.guardianName || 'Not entered'}</p>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Date of Birth</p>
-                                            <p className="text-sm font-semibold text-gray-900">{safeFormat(resident.residentProfile?.dob, 'MMM dd, yyyy')}</p>
+                                            <p className="text-xs font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Date of Birth</p>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-foreground">{safeFormat(resident.residentProfile?.dob, 'MMM dd, yyyy')}</p>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Blood Group</p>
-                                            <p className="text-sm font-semibold text-gray-900">{resident.residentProfile?.bloodGroup || 'Not entered'}</p>
+                                            <p className="text-xs font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Blood Group</p>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-foreground">{resident.residentProfile?.bloodGroup || 'Not entered'}</p>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Emergency Contact</p>
-                                            <p className="text-sm font-semibold text-gray-900">{resident.residentProfile?.emergencyContact || 'Not entered'}</p>
+                                            <p className="text-xs font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Emergency Contact</p>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-foreground">{resident.residentProfile?.emergencyContact || 'Not entered'}</p>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Institution / Employer</p>
-                                            <p className="text-sm font-semibold text-gray-900">{resident.residentProfile?.institution || resident.residentProfile?.occupation || 'Not entered'}</p>
+                                            <p className="text-xs font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Institution / Employer</p>
+                                            <p className="text-sm font-semibold text-gray-900 dark:text-foreground">{resident.residentProfile?.institution || resident.residentProfile?.occupation || 'Not entered'}</p>
                                         </div>
                                     </CardContent>
                                 </Card>
 
                                 <Card className="border-none shadow-sm pb-4">
                                     <CardHeader>
-                                        <CardTitle className="text-base font-bold text-gray-900">Documents</CardTitle>
+                                        <CardTitle className="text-base font-bold text-gray-900 dark:text-foreground">Documents</CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-3">
                                         {resident.residentProfile?.documents && Object.keys(resident.residentProfile.documents).length > 0 ? (
                                             Object.entries(resident.residentProfile.documents).map(([key, value], idx) => (
-                                                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-muted/10 rounded-xl border border-gray-100 dark:border-border">
                                                     <div className="flex items-center gap-3">
-                                                        <FileText className="h-4 w-4 text-gray-400" />
-                                                        <span className="text-sm font-semibold text-gray-700">{key}</span>
+                                                        <FileText className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />
+                                                        <span className="text-sm font-semibold text-gray-700 dark:text-foreground">{key}</span>
                                                     </div>
                                                     <Button variant="ghost" size="sm" className="h-8 text-blue-600 hover:text-blue-700 font-bold text-xs uppercase" onClick={() => toast.info(`Viewing ${key}`)}>
                                                         View
@@ -746,7 +746,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                 </div>
                                             ))
                                         ) : (
-                                            <div className="py-6 text-center text-gray-400 text-sm italic">No documents uploaded</div>
+                                            <div className="py-6 text-center text-gray-400 dark:text-muted-foreground text-sm italic">No documents uploaded</div>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -760,24 +760,24 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                 <DialogContent className="sm:max-w-[425px] rounded-2xl">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-bold">Generate Invoice</DialogTitle>
-                        <DialogDescription className="text-xs uppercase tracking-widest font-bold text-gray-400">Administrative Billing Details</DialogDescription>
+                        <DialogDescription className="text-xs uppercase tracking-widest font-bold text-gray-400 dark:text-muted-foreground">Administrative Billing Details</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-6 py-4">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Invoice Amount (PKR)</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Invoice Amount (PKR)</Label>
                             <Input
                                 type="number"
                                 placeholder="0.00"
-                                className="h-11 rounded-xl bg-gray-50 border-gray-100 font-bold"
+                                className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border font-bold"
                                 value={invoiceForm.amount}
                                 onChange={(e) => setInvoiceForm({ ...invoiceForm, amount: e.target.value })}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Payment Type</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Payment Type</Label>
                                 <Select value={invoiceForm.type} onValueChange={(v) => setInvoiceForm({ ...invoiceForm, type: v })}>
-                                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-100 font-bold">
+                                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border font-bold">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl">
@@ -790,20 +790,20 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Due Date</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Due Date</Label>
                                 <Input
                                     type="date"
-                                    className="h-11 rounded-xl bg-gray-50 border-gray-100 font-bold"
+                                    className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border font-bold"
                                     value={invoiceForm.dueDate}
                                     onChange={(e) => setInvoiceForm({ ...invoiceForm, dueDate: e.target.value })}
                                 />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Notes</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Notes</Label>
                             <Textarea
                                 placeholder="Details for the resident..."
-                                className="min-h-[80px] rounded-xl bg-gray-50 border-gray-100 font-medium resize-none shadow-none focus:ring-1 focus:ring-black"
+                                className="min-h-[80px] rounded-xl bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border font-medium resize-none shadow-none focus:ring-1 focus:ring-black"
                                 value={invoiceForm.notes}
                                 onChange={(e) => setInvoiceForm({ ...invoiceForm, notes: e.target.value })}
                             />
@@ -827,23 +827,23 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                 <DialogContent className="sm:max-w-[425px] rounded-2xl">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-bold">Add Resident Complaint</DialogTitle>
-                        <DialogDescription className="text-xs uppercase tracking-widest font-bold text-gray-400">Complaint Details</DialogDescription>
+                        <DialogDescription className="text-xs uppercase tracking-widest font-bold text-gray-400 dark:text-muted-foreground">Complaint Details</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-6 py-4">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Subject</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Subject</Label>
                             <Input
                                 placeholder="Quick summary of the issue..."
-                                className="h-11 rounded-xl bg-gray-50 border-gray-100 font-bold"
+                                className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border font-bold"
                                 value={grievanceForm.title}
                                 onChange={(e) => setGrievanceForm({ ...grievanceForm, title: e.target.value })}
                             />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Category</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Category</Label>
                                 <Select value={grievanceForm.category} onValueChange={(v) => setGrievanceForm({ ...grievanceForm, category: v })}>
-                                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-100 font-bold">
+                                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border font-bold">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl">
@@ -857,9 +857,9 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Priority</Label>
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Priority</Label>
                                 <Select value={grievanceForm.priority} onValueChange={(v) => setGrievanceForm({ ...grievanceForm, priority: v })}>
-                                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 border-gray-100 font-bold">
+                                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border font-bold">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl">
@@ -872,10 +872,10 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Description</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Description</Label>
                             <Textarea
                                 placeholder="Comprehensive description of the grievance..."
-                                className="min-h-[100px] rounded-xl bg-gray-50 border-gray-100 font-medium resize-none shadow-none focus:ring-1 focus:ring-black"
+                                className="min-h-[100px] rounded-xl bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border font-medium resize-none shadow-none focus:ring-1 focus:ring-black"
                                 value={grievanceForm.description}
                                 onChange={(e) => setGrievanceForm({ ...grievanceForm, description: e.target.value })}
                             />

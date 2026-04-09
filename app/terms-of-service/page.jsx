@@ -1,6 +1,8 @@
 import React from "react";
+import { getBranding } from "@/lib/permissions";
 
-export default function TermsOfService() {
+export default async function TermsOfService() {
+    const branding = await getBranding();
     return (
         <main className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-200 text-slate-800">
 
@@ -11,7 +13,7 @@ export default function TermsOfService() {
                         Terms of Service
                     </h1>
                     <p className="text-slate-500 mt-1 text-sm">
-                        Mubarak Group of Hostels • Effective Date: March 4, 2026
+                        {branding.companyName} • Effective Date: March 4, 2026
                     </p>
                 </div>
             </div>
@@ -29,8 +31,8 @@ export default function TermsOfService() {
                         {/* Introduction */}
                         <section>
                             <p className="text-lg leading-relaxed text-slate-600">
-                                These Terms of Service govern the use of the
-                                Mubarak Group of Hostels Management System (HMS)
+                                These Terms of Service govern the use of the{" "}
+                                {branding.companyName} Management System (HMS)
                                 and hostel accommodation services. By registering,
                                 booking, or staying at our hostels, you agree to
                                 comply with these terms.
@@ -103,7 +105,7 @@ export default function TermsOfService() {
                                 title: "7. Limitation of Liability",
                                 content: (
                                     <p className="text-slate-600 leading-relaxed">
-                                        Mubarak Group of Hostels is not responsible
+                                        {branding.companyName} is not responsible
                                         for loss of personal belongings. Residents
                                         are advised to secure valuables properly.
                                     </p>
@@ -140,7 +142,7 @@ export default function TermsOfService() {
                             </h2>
                             <p className="text-slate-600 text-sm">
                                 For questions regarding these Terms of Service,
-                                please contact Mubarak Group of Hostels
+                                please contact {branding.companyName}{" "}
                                 administration through the official HMS portal.
                             </p>
                         </div>

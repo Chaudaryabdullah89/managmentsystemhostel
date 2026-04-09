@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   XCircle,
   ToggleLeft,
+  Building2,
 } from "lucide-react";
 
 // ─── Reusable toggle row ───────────────────────────────────────────────────
@@ -29,11 +30,15 @@ function ToggleRow({
     >
       <div className="max-w-[75%]">
         <p
-          className={`text-sm font-semibold ${danger ? "text-rose-700" : "text-gray-900"}`}
+          className={`text-sm font-semibold ${danger ? "text-rose-700" : "text-gray-900 dark:text-foreground"}`}
         >
           {label}
         </p>
-        {desc && <p className="text-xs text-gray-400 mt-0.5">{desc}</p>}
+        {desc && (
+          <p className="text-xs text-gray-400 dark:text-muted-foreground mt-0.5">
+            {desc}
+          </p>
+        )}
       </div>
       <button
         type="button"
@@ -43,7 +48,7 @@ function ToggleRow({
         }`}
       >
         <span
-          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+          className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white dark:bg-card rounded-full shadow transition-transform duration-200 ${
             value ? "translate-x-5" : "translate-x-0"
           }`}
         />
@@ -57,21 +62,25 @@ function SectionCard({
   title,
   subtitle,
   icon: Icon,
-  iconColor = "text-gray-500",
+  iconColor = "text-gray-500 dark:text-muted-foreground",
   children,
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-border shadow-sm overflow-hidden">
       <div className="px-6 py-5 border-b border-gray-50 flex items-center gap-3">
         <div
-          className={`w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center ${iconColor}`}
+          className={`w-8 h-8 rounded-lg bg-gray-50 dark:bg-muted/10 flex items-center justify-center ${iconColor}`}
         >
           <Icon className="w-4 h-4" />
         </div>
         <div>
-          <h3 className="text-sm font-bold text-gray-900">{title}</h3>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-foreground">
+            {title}
+          </h3>
           {subtitle && (
-            <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
+            <p className="text-xs text-gray-400 dark:text-muted-foreground mt-0.5">
+              {subtitle}
+            </p>
           )}
         </div>
       </div>
@@ -156,8 +165,14 @@ const PERMISSION_KEYS = [
     items: [
       { key: "access_warden_hostel", label: "Warden: Access 'My Hostel' Data" },
       { key: "access_warden_salary", label: "Warden: View Personal Salary" },
-      { key: "access_warden_audit", label: "Warden: Access Multi-Hostel Audit" },
-      { key: "access_staff_salary", label: "Staff: View Personal Salary History" },
+      {
+        key: "access_warden_audit",
+        label: "Warden: Access Multi-Hostel Audit",
+      },
+      {
+        key: "access_staff_salary",
+        label: "Staff: View Personal Salary History",
+      },
     ],
   },
   {
@@ -323,13 +338,14 @@ export default function SystemSettingsPage() {
   if (isLoading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-gray-400 dark:text-muted-foreground" />
       </div>
     );
   }
 
   const TABS = [
     { id: "globals", label: "App Services", icon: Wrench },
+    { id: "branding", label: "Branding", icon: Building2 },
     { id: "email", label: "Email Services", icon: Mail },
     { id: "roles", label: "Role Permissions", icon: KeyRound },
   ];
@@ -338,10 +354,10 @@ export default function SystemSettingsPage() {
     <div className="p-6 md:p-8 max-w-6xl mx-auto space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-gray-900 tracking-tight">
+        <h1 className="text-2xl font-black text-gray-900 dark:text-foreground tracking-tight">
           System Settings & Access Control
         </h1>
-        <p className="text-gray-500 mt-1 text-sm">
+        <p className="text-gray-500 dark:text-muted-foreground mt-1 text-sm">
           Control application services, email notifications, and granular
           role-based access for every user type.
         </p>
@@ -357,8 +373,8 @@ export default function SystemSettingsPage() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
                 activeTab === tab.id
-                  ? "bg-white text-blue-600 shadow-sm"
-                  : "text-gray-500 hover:text-gray-800"
+                  ? "bg-white dark:bg-card text-blue-600 shadow-sm"
+                  : "text-gray-500 dark:text-muted-foreground hover:text-gray-800 dark:text-foreground"
               }`}
             >
               <Icon className="w-4 h-4" />
@@ -376,7 +392,7 @@ export default function SystemSettingsPage() {
             className={`flex items-start justify-between p-5 rounded-2xl border-2 transition-colors ${
               settings.maintenanceMode
                 ? "bg-rose-50 border-rose-200"
-                : "bg-white border-gray-100"
+                : "bg-white dark:bg-card border-gray-100 dark:border-border"
             }`}
           >
             <div className="max-w-[70%]">
@@ -394,7 +410,7 @@ export default function SystemSettingsPage() {
                   placeholder="Custom message shown to users..."
                   value={settings.maintenanceMessage || ""}
                   onChange={(e) => set("maintenanceMessage", e.target.value)}
-                  className="mt-3 w-full h-10 px-3 text-sm rounded-xl border border-rose-200 bg-white focus:outline-none focus:ring-2 focus:ring-rose-400"
+                  className="mt-3 w-full h-10 px-3 text-sm rounded-xl border border-rose-200 bg-white dark:bg-card focus:outline-none focus:ring-2 focus:ring-rose-400"
                 />
               )}
             </div>
@@ -406,7 +422,7 @@ export default function SystemSettingsPage() {
               }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${settings.maintenanceMode ? "translate-x-6" : "translate-x-0"}`}
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white dark:bg-card rounded-full shadow transition-transform duration-200 ${settings.maintenanceMode ? "translate-x-6" : "translate-x-0"}`}
               />
             </button>
           </div>
@@ -522,6 +538,61 @@ export default function SystemSettingsPage() {
         </div>
       )}
 
+      {/* ── TAB 4: Branding ───────────────────────────────────────────── */}
+      {activeTab === "branding" && (
+        <div className="space-y-6 max-w-3xl">
+          <SectionCard
+            title="Branding & Identity"
+            subtitle="Customize the application name and short name used throughout the portal."
+            icon={Building2}
+            iconColor="text-blue-600"
+          >
+            <div className="space-y-4 py-4">
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">
+                  Full Company Name
+                </label>
+                <input
+                  type="text"
+                  value={settings.companyName || ""}
+                  onChange={(e) => set("companyName", e.target.value)}
+                  className="mt-1.5 w-full h-11 px-4 text-sm rounded-xl border border-gray-100 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                  placeholder="e.g. Hostel Management System"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-widest pl-1">
+                  Short Name / Initials
+                </label>
+                <input
+                  type="text"
+                  value={settings.companyShortName || ""}
+                  onChange={(e) => set("companyShortName", e.target.value)}
+                  className="mt-1.5 w-full h-11 px-4 text-sm rounded-xl border border-gray-100 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                  placeholder="e.g. HMS"
+                />
+              </div>
+            </div>
+          </SectionCard>
+
+          <button
+            onClick={saveSettings}
+            disabled={isSaving}
+            className="h-11 px-8 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all flex items-center gap-2 disabled:opacity-60"
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Saving...
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="w-4 h-4" /> Save Branding
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
       {/* ── TAB 2: Email Services ─────────────────────────────────────── */}
       {activeTab === "email" && (
         <div className="space-y-6 max-w-3xl">
@@ -530,15 +601,15 @@ export default function SystemSettingsPage() {
             className={`flex items-start justify-between p-5 rounded-2xl border-2 transition-colors ${
               !settings.enableEmailService
                 ? "bg-amber-50 border-amber-200"
-                : "bg-white border-gray-100"
+                : "bg-white dark:bg-card border-gray-100 dark:border-border"
             }`}
           >
             <div className="max-w-[75%]">
-              <p className="text-sm font-bold text-gray-900 flex items-center gap-2">
+              <p className="text-sm font-bold text-gray-900 dark:text-foreground flex items-center gap-2">
                 <Mail className="w-4 h-4 text-amber-500" /> Email Service
                 (Master Switch)
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-muted-foreground mt-1">
                 Disabling this will block ALL outgoing emails regardless of
                 individual settings below. Useful when rotating SMTP
                 credentials.
@@ -554,7 +625,7 @@ export default function SystemSettingsPage() {
               }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${settings.enableEmailService ? "translate-x-6" : "translate-x-0"}`}
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white dark:bg-card rounded-full shadow transition-transform duration-200 ${settings.enableEmailService ? "translate-x-6" : "translate-x-0"}`}
               />
             </button>
           </div>
@@ -659,7 +730,7 @@ export default function SystemSettingsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Role Picker */}
           <div className="lg:col-span-1 space-y-2">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest pl-1 mb-4">
+            <p className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest pl-1 mb-4">
               Select Role
             </p>
             {ROLES.map((r) => (
@@ -669,7 +740,7 @@ export default function SystemSettingsPage() {
                 className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold border transition-all ${
                   selectedRole === r
                     ? ROLE_COLORS[r]
-                    : "text-gray-500 border-transparent hover:bg-gray-50"
+                    : "text-gray-500 dark:text-muted-foreground border-transparent hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10"
                 }`}
               >
                 {r}
@@ -681,10 +752,10 @@ export default function SystemSettingsPage() {
           <div className="lg:col-span-3 space-y-5">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-black text-gray-900">
+                <h2 className="text-xl font-black text-gray-900 dark:text-foreground">
                   {selectedRole}
                 </h2>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-400 dark:text-muted-foreground mt-0.5">
                   {selectedRole === "ADMIN"
                     ? "Absolute control level. Permissions cannot be restricted."
                     : "Toggle individual capabilities for this role."}
@@ -728,21 +799,28 @@ export default function SystemSettingsPage() {
             )}
 
             {PERMISSION_KEYS.filter((group) => {
-              if (selectedRole === "ADMIN") return true; 
-              return group.items.some(p => DEFAULT_ROLE_PERMISSIONS[selectedRole]?.hasOwnProperty(p.key));
+              if (selectedRole === "ADMIN") return true;
+              return group.items.some((p) =>
+                DEFAULT_ROLE_PERMISSIONS[selectedRole]?.hasOwnProperty(p.key),
+              );
             }).map((group) => {
               const permObj = getPermObj();
-              const relevantItems = selectedRole === "ADMIN" 
-                ? group.items 
-                : group.items.filter(p => DEFAULT_ROLE_PERMISSIONS[selectedRole]?.hasOwnProperty(p.key));
+              const relevantItems =
+                selectedRole === "ADMIN"
+                  ? group.items
+                  : group.items.filter((p) =>
+                      DEFAULT_ROLE_PERMISSIONS[selectedRole]?.hasOwnProperty(
+                        p.key,
+                      ),
+                    );
 
               return (
                 <div
                   key={group.group}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+                  className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-border shadow-sm overflow-hidden"
                 >
-                  <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/50">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                  <div className="px-6 py-4 border-b border-gray-50 bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                    <p className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                       {group.group}
                     </p>
                   </div>
@@ -752,7 +830,9 @@ export default function SystemSettingsPage() {
                         key={p.key}
                         label={p.label}
                         disabled={selectedRole === "ADMIN"}
-                        value={selectedRole === "ADMIN" ? true : !!permObj[p.key]}
+                        value={
+                          selectedRole === "ADMIN" ? true : !!permObj[p.key]
+                        }
                         onChange={() => togglePerm(p.key)}
                       />
                     ))}

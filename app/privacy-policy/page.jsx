@@ -1,6 +1,8 @@
 import React from "react";
+import { getBranding } from "@/lib/permissions";
 
-export default function PrivacyPolicy() {
+export default async function PrivacyPolicy() {
+    const branding = await getBranding();
     return (
         <main className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-200 text-slate-800">
 
@@ -11,7 +13,7 @@ export default function PrivacyPolicy() {
                         Privacy Policy
                     </h1>
                     <p className="text-slate-500 mt-1 text-sm">
-                        Mubarak Group of Hostels • Last Updated: March 4, 2026
+                        {branding.companyName} • Last Updated: March 4, 2026
                     </p>
                 </div>
             </div>
@@ -29,7 +31,7 @@ export default function PrivacyPolicy() {
                         {/* Intro */}
                         <section>
                             <p className="text-lg leading-relaxed text-slate-600">
-                                Mubarak Group of Hostels is committed to protecting
+                                {branding.companyName} is committed to protecting
                                 the privacy of students, residents, and guardians.
                                 This policy explains how we collect, use, and secure
                                 your information within our hostel management system.
@@ -140,8 +142,8 @@ export default function PrivacyPolicy() {
                                 Contact Management
                             </h2>
                             <p className="text-slate-600 text-sm">
-                                For any privacy-related concerns, please contact
-                                Mubarak Group of Hostels administration directly
+                                For any privacy-related concerns, please contact{" "}
+                                {branding.companyName} administration directly
                                 through the official HMS portal.
                             </p>
                         </div>
@@ -153,3 +155,8 @@ export default function PrivacyPolicy() {
         </main>
     );
 }
+
+    return (
+        <main className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-200 text-slate-800">
+
+            {/* Top Portal Header */}

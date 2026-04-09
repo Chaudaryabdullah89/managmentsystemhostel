@@ -33,7 +33,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { format } from "date-fns";
-import Loader from "@/components/ui/Loader";
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 import { useEffect, useState } from "react";
 import { checkAuth } from "@/hooks/Authstate";
 import SalarySlip from "@/components/SalarySlip";
@@ -163,9 +163,7 @@ const WardenProfilePage = () => {
     //     checkAuth();
     // }, []);
 
-    if (isLoading) return (
-        <Loader label="Loading Warden Profile" subLabel="Fetching warden details..." icon={User} fullScreen={false} />
-    );
+    if (isLoading) return <DetailPageSkeleton />;
     if (isUserError || isPaymentsError) {
         return (
             <div className="max-w-[1200px] mx-auto px-6 py-8">
@@ -184,12 +182,12 @@ const WardenProfilePage = () => {
 
     if (error || !user) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50/50 gap-4 font-sans">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background gap-4 font-sans">
                 <div className="h-16 w-16 rounded-2xl bg-rose-50 flex items-center justify-center mb-2">
                     <User className="h-8 w-8 text-rose-400" />
                 </div>
-                <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight">Profile Not Found</h3>
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Could not load warden profile</p>
+                <h3 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Profile Not Found</h3>
+                <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Could not load warden profile</p>
                 <Link href="/admin/hostels">
                     <Button className="mt-4 h-10 px-8 rounded-xl bg-gray-900 hover:bg-gray-800 text-white font-bold text-[10px] uppercase tracking-widest">
                         Go Back
@@ -225,24 +223,24 @@ const WardenProfilePage = () => {
         switch (role) {
             case "ADMIN": return "bg-rose-50 text-rose-700 border-rose-100";
             case "WARDEN": return "bg-blue-50 text-blue-700 border-blue-100";
-            default: return "bg-gray-100 text-gray-700 border-gray-200";
+            default: return "bg-gray-100 text-gray-700 dark:text-foreground border-gray-200 dark:border-border";
         }
     };
 
     const InfoRow = ({ icon: Icon, label, value }) => (
         <div className="flex items-start gap-3">
-            <div className="h-8 w-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 mt-0.5">
-                <Icon className="h-3.5 w-3.5 text-gray-400" />
+            <div className="h-8 w-8 rounded-lg bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border flex items-center justify-center shrink-0 mt-0.5">
+                <Icon className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
             </div>
             <div className="flex flex-col min-w-0">
-                <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">{label}</span>
-                <span className="text-[12px] font-bold text-gray-900 mt-0.5 truncate">{value || "N/A"}</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">{label}</span>
+                <span className="text-[12px] font-bold text-gray-900 dark:text-foreground mt-0.5 truncate">{value || "N/A"}</span>
             </div>
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
 
             <PageHeader
                 title="Profile"
@@ -253,10 +251,10 @@ const WardenProfilePage = () => {
                 accentColorClass="bg-blue-600"
                 dotColorClass="bg-emerald-500"
                 subtitleEndClass={user.isActive ? "text-emerald-600 hidden sm:block" : "text-rose-500 hidden sm:block"}
-                stickyClassName="bg-white border-b sticky top-0 z-50 h-16"
+                stickyClassName="bg-white dark:bg-card border-b sticky top-0 z-50 h-16"
                 leftSlot={(
                     <Link href="/admin/hostels">
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-500 shrink-0">
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-500 dark:text-muted-foreground shrink-0">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                     </Link>
@@ -269,19 +267,19 @@ const WardenProfilePage = () => {
                                 <span>Pay</span>
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
+                        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-card">
                             <div className="bg-gray-900 p-8 text-white text-center relative overflow-hidden">
-                                <div className="absolute inset-0 bg-white/5 -skew-x-12 translate-x-20" />
-                                <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10">
+                                <div className="absolute inset-0 bg-white dark:bg-card/5 -skew-x-12 translate-x-20" />
+                                <div className="h-12 w-12 bg-white dark:bg-card/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10">
                                     <Wallet className="h-6 w-6" />
                                 </div>
                                 <h2 className="text-xl font-bold uppercase tracking-tight">Pay</h2>
-                                <p className="text-[9px] text-gray-400 font-bold tracking-widest mt-1 uppercase">Pay {user.name}</p>
+                                <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-bold tracking-widest mt-1 uppercase">Pay {user.name}</p>
                             </div>
                             <form onSubmit={handlePaySubmit} className="p-8 space-y-5">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1.5">
-                                        <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Basic Amount</Label>
+                                        <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Basic Amount</Label>
                                         <Input
                                             type="number"
                                             required
@@ -292,17 +290,17 @@ const WardenProfilePage = () => {
                                                 const total = Number(basic) + Number(formData.bonuses) - Number(formData.deductions);
                                                 setFormData({ ...formData, basicSalary: basic, amount: total.toString() });
                                             }}
-                                            className="h-10 rounded-xl border-gray-100 bg-gray-50 font-bold text-sm"
+                                            className="h-10 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-sm"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
-                                        <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Month</Label>
+                                        <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Month</Label>
                                         <Input
                                             required
                                             placeholder="January 2026"
                                             value={formData.month}
                                             onChange={e => setFormData({ ...formData, month: e.target.value })}
-                                            className="h-10 rounded-xl border-gray-100 bg-gray-50 font-bold text-sm"
+                                            className="h-10 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-sm"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
@@ -333,17 +331,17 @@ const WardenProfilePage = () => {
                                     </div>
                                 </div>
 
-                                <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                                <div className="bg-gray-50 dark:bg-muted/10 rounded-2xl p-4 border border-gray-100 dark:border-border">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total</span>
-                                        <span className="text-lg font-black text-gray-900 tracking-tight">PKR {Number(formData.amount || 0).toLocaleString()}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Total</span>
+                                        <span className="text-lg font-black text-gray-900 dark:text-foreground tracking-tight">PKR {Number(formData.amount || 0).toLocaleString()}</span>
                                     </div>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Payment Method</Label>
+                                    <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Payment Method</Label>
                                     <Select value={formData.paymentMethod} onValueChange={v => setFormData({ ...formData, paymentMethod: v })}>
-                                        <SelectTrigger className="h-10 rounded-xl border-gray-100 bg-gray-50 font-bold text-[10px] uppercase tracking-wider">
+                                        <SelectTrigger className="h-10 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-[10px] uppercase tracking-wider">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-2xl">
@@ -355,11 +353,11 @@ const WardenProfilePage = () => {
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400">Notes (Optional)</Label>
+                                    <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Notes (Optional)</Label>
                                     <Textarea
                                         value={formData.notes}
                                         onChange={e => setFormData({ ...formData, notes: e.target.value })}
-                                        className="rounded-xl border-gray-100 bg-gray-50 text-[11px] font-medium resize-none h-20"
+                                        className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 text-[11px] font-medium resize-none h-20"
                                         placeholder="Add any specific details..."
                                     />
                                 </div>
@@ -380,11 +378,11 @@ const WardenProfilePage = () => {
             <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8">
 
                 {/* Profile Hero Card */}
-                <div className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-sm">
+                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl md:rounded-3xl p-5 md:p-8 shadow-sm">
                     <div className="flex flex-col sm:flex-row items-start gap-5 md:gap-8">
 
                         {/* Avatar */}
-                        <div className="h-20 w-20 md:h-24 md:w-24 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
+                        <div className="h-20 w-20 md:h-24 md:w-24 rounded-2xl bg-gray-100 border border-gray-200 dark:border-border flex items-center justify-center overflow-hidden shrink-0">
                             {user.image ? (
                                 <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
                             ) : (
@@ -397,7 +395,7 @@ const WardenProfilePage = () => {
                         {/* Identity */}
                         <div className="flex flex-col flex-1 min-w-0 gap-2">
                             <div className="flex flex-wrap items-center gap-2">
-                                <h2 className="text-lg md:text-2xl font-black text-gray-900 uppercase tracking-tight">{user.name}</h2>
+                                <h2 className="text-lg md:text-2xl font-black text-gray-900 dark:text-foreground uppercase tracking-tight">{user.name}</h2>
                                 <Badge variant="outline" className={`${getRoleBadge(user.role)} text-[9px] font-black px-2.5 py-0.5 rounded-full border uppercase tracking-widest shrink-0`}>
                                     {user.role}
                                 </Badge>
@@ -406,24 +404,24 @@ const WardenProfilePage = () => {
                                 </Badge>
                             </div>
 
-                            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                            <p className="text-[11px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest">
                                 {user.designation || "Warden"}
                             </p>
 
                             <div className="flex flex-wrap gap-x-5 gap-y-2 mt-1">
                                 <div className="flex items-center gap-1.5">
-                                    <Hash className="h-3 w-3 text-gray-400" />
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest font-mono">{user.id?.slice(-10).toUpperCase()}</span>
+                                    <Hash className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
+                                    <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest font-mono">{user.id?.slice(-10).toUpperCase()}</span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                    <Calendar className="h-3 w-3 text-gray-400" />
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                    <Calendar className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
+                                    <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                                         Joined {user.createdAt ? new Date(user.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "N/A"}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-1.5">
-                                    <Clock className="h-3 w-3 text-gray-400" />
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                    <Clock className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
+                                    <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                                         Last Login: {user.lastLogin ? new Date(user.lastLogin).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : "Never"}
                                     </span>
                                 </div>
@@ -436,10 +434,10 @@ const WardenProfilePage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
 
                     {/* Personal Info */}
-                    <div className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm space-y-5">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm space-y-5">
                         <div className="flex items-center gap-3 pb-4 border-b border-gray-50">
                             <div className="h-8 w-1 bg-blue-600 rounded-full" />
-                            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900">Personal</h3>
+                            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground">Personal</h3>
                         </div>
                         <InfoRow icon={Mail} label="Email Address" value={user.email} />
                         <InfoRow icon={Phone} label="Phone Number" value={user.phone} />
@@ -449,10 +447,10 @@ const WardenProfilePage = () => {
                     </div>
 
                     {/* Location Info */}
-                    <div className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm space-y-5">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm space-y-5">
                         <div className="flex items-center gap-3 pb-4 border-b border-gray-50">
                             <div className="h-8 w-1 bg-blue-600 rounded-full" />
-                            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900">Address</h3>
+                            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground">Address</h3>
                         </div>
                         <InfoRow icon={MapPin} label="Address" value={user.address} />
                         <InfoRow icon={Building2} label="City" value={user.city} />
@@ -463,19 +461,19 @@ const WardenProfilePage = () => {
                     </div>
 
                     {/* Stats Card */}
-                    <div className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm space-y-5">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm space-y-5">
                         <div className="flex items-center gap-3 pb-4 border-b border-gray-50">
                             <div className="h-8 w-1 bg-emerald-600 rounded-full" />
-                            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900">Stats</h3>
+                            <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground">Stats</h3>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-gray-50/50 rounded-2xl p-4 border border-gray-100">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 block mb-1">Total Paid</span>
-                                <span className="text-sm font-black text-gray-900">PKR {(payments?.reduce((acc, p) => acc + p.amount, 0) || 0).toLocaleString()}</span>
+                            <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl p-4 border border-gray-100 dark:border-border">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground block mb-1">Total Paid</span>
+                                <span className="text-sm font-black text-gray-900 dark:text-foreground">PKR {(payments?.reduce((acc, p) => acc + p.amount, 0) || 0).toLocaleString()}</span>
                             </div>
-                            <div className="bg-gray-50/50 rounded-2xl p-4 border border-gray-100">
-                                <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 block mb-1">Last Pay</span>
-                                <span className="text-sm font-black text-gray-900">{payments?.[0] ? `PKR ${payments[0].amount.toLocaleString()}` : 'N/A'}</span>
+                            <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl p-4 border border-gray-100 dark:border-border">
+                                <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground block mb-1">Last Pay</span>
+                                <span className="text-sm font-black text-gray-900 dark:text-foreground">{payments?.[0] ? `PKR ${payments[0].amount.toLocaleString()}` : 'N/A'}</span>
                             </div>
                         </div>
                         <div className="flex items-center gap-2 py-2">
@@ -483,8 +481,8 @@ const WardenProfilePage = () => {
                                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-gray-900 uppercase">Verification Complete</span>
-                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Node status: active</span>
+                                <span className="text-[10px] font-bold text-gray-900 dark:text-foreground uppercase">Verification Complete</span>
+                                <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Node status: active</span>
                             </div>
                         </div>
                     </div>
@@ -498,7 +496,7 @@ const WardenProfilePage = () => {
                                 title="Hostel Insights"
                                 accentColorClass="bg-indigo-600"
                                 containerClassName="flex items-center gap-3"
-                                titleClassName="text-xs md:text-sm font-black uppercase tracking-widest text-gray-900"
+                                titleClassName="text-xs md:text-sm font-black uppercase tracking-widest text-gray-900 dark:text-foreground"
                             />
                             {reports && (
                                 <Link href={`/admin/reports?hostelId=${user.hostelId}`}>
@@ -512,9 +510,9 @@ const WardenProfilePage = () => {
                         {reportsLoading ? (
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                 {[1, 2, 3, 4].map(i => (
-                                    <div key={i} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm animate-pulse">
+                                    <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-6 shadow-sm animate-pulse">
                                         <div className="h-8 w-8 bg-gray-100 rounded-lg mb-4" />
-                                        <div className="h-2 w-12 bg-gray-50 rounded mb-2" />
+                                        <div className="h-2 w-12 bg-gray-50 dark:bg-muted/10 rounded mb-2" />
                                         <div className="h-4 w-20 bg-gray-100 rounded" />
                                     </div>
                                 ))}
@@ -556,7 +554,7 @@ const WardenProfilePage = () => {
                                             change: reports.overall?.occupancyChange
                                         },
                                     ].map((stat, i) => (
-                                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group">
+                                        <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group">
                                             <div className="flex items-center justify-between mb-3">
                                                 <div className={`h-8 w-8 rounded-lg ${stat.bg} ${stat.color} flex items-center justify-center`}>
                                                     <stat.icon className="h-4 w-4" />
@@ -568,8 +566,8 @@ const WardenProfilePage = () => {
                                                     </span>
                                                 )}
                                             </div>
-                                            <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest block">{stat.label}</span>
-                                            <span className="text-sm md:text-base font-black text-gray-900 tracking-tight mt-0.5 block">
+                                            <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest block">{stat.label}</span>
+                                            <span className="text-sm md:text-base font-black text-gray-900 dark:text-foreground tracking-tight mt-0.5 block">
                                                 {typeof stat.value === 'number' ? `PKR ${stat.value.toLocaleString()}` : stat.value}
                                             </span>
                                         </div>
@@ -577,17 +575,17 @@ const WardenProfilePage = () => {
                                 </div>
 
                                 {/* Mini Trend Chart */}
-                                <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+                                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-6 shadow-sm">
                                     <div className="flex items-center justify-between mb-6">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-900">6 Month Trend</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-900 dark:text-foreground">6 Month Trend</span>
                                         <div className="flex items-center gap-4">
                                             <div className="flex items-center gap-1.5">
                                                 <div className="h-1.5 w-1.5 rounded-full bg-indigo-500" />
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Revenue</span>
+                                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-tight">Revenue</span>
                                             </div>
                                             <div className="flex items-center gap-1.5">
                                                 <div className="h-1.5 w-1.5 rounded-full bg-rose-400" />
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">Expenses</span>
+                                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-tight">Expenses</span>
                                             </div>
                                         </div>
                                     </div>
@@ -602,7 +600,7 @@ const WardenProfilePage = () => {
                                                         <div className="flex-1 bg-indigo-500/80 rounded-t-sm group-hover:bg-indigo-600 transition-colors" style={{ height: `${Math.max(revH, 2)}%` }} />
                                                         <div className="flex-1 bg-rose-400/80 rounded-t-sm group-hover:bg-rose-500 transition-colors" style={{ height: `${Math.max(expH, 2)}%` }} />
                                                     </div>
-                                                    <span className="text-[7px] font-black text-gray-400 uppercase tracking-widest">{d.month}</span>
+                                                    <span className="text-[7px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{d.month}</span>
                                                 </div>
                                             );
                                         })}
@@ -610,8 +608,8 @@ const WardenProfilePage = () => {
                                 </div>
                             </>
                         ) : (
-                            <div className="py-10 text-center bg-white border border-dashed border-gray-200 rounded-2xl">
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No detailed reports available for this hostel yet</p>
+                            <div className="py-10 text-center bg-white dark:bg-card border border-dashed border-gray-200 dark:border-border rounded-2xl">
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">No detailed reports available for this hostel yet</p>
                             </div>
                         )}
                     </div>
@@ -619,13 +617,13 @@ const WardenProfilePage = () => {
 
                 {/* ── Expense Permissions Card ── */}
                 {perms && (
-                    <div className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl md:rounded-3xl p-5 md:p-6 shadow-sm">
                         <div className="flex items-center justify-between pb-4 border-b border-gray-50 mb-5">
                             <div className="flex items-center gap-3">
                                 <div className="h-8 w-1 bg-indigo-600 rounded-full" />
                                 <div>
-                                    <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900">Expense Access</h3>
-                                    <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">What this warden can add / view</p>
+                                    <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground">Expense Access</h3>
+                                    <p className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">What this warden can add / view</p>
                                 </div>
                             </div>
                             {updatePerms.isPending && (
@@ -634,16 +632,16 @@ const WardenProfilePage = () => {
                         </div>
 
                         {/* Master toggle */}
-                        <div className={`flex items-center justify-between p-4 rounded-2xl mb-3 border transition-all ${perms.canManageExpenses ? 'bg-indigo-50 border-indigo-100' : 'bg-gray-50 border-gray-100'
+                        <div className={`flex items-center justify-between p-4 rounded-2xl mb-3 border transition-all ${perms.canManageExpenses ? 'bg-indigo-50 border-indigo-100' : 'bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border'
                             }`}>
                             <div className="flex items-center gap-3">
-                                <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${perms.canManageExpenses ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-400'
+                                <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${perms.canManageExpenses ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-400 dark:text-muted-foreground'
                                     }`}>
                                     <Wallet className="h-4 w-4" />
                                 </div>
                                 <div>
-                                    <span className="text-[11px] font-black text-gray-900 uppercase tracking-tight block">All Expenses</span>
-                                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">
+                                    <span className="text-[11px] font-black text-gray-900 dark:text-foreground uppercase tracking-tight block">All Expenses</span>
+                                    <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                                         {perms.canManageExpenses ? 'Warden can manage all expenses' : 'Warden cannot manage expenses'}
                                     </span>
                                 </div>
@@ -654,7 +652,7 @@ const WardenProfilePage = () => {
                                 className={`relative h-6 w-11 rounded-full transition-colors duration-200 focus:outline-none disabled:opacity-50 ${perms.canManageExpenses ? 'bg-indigo-600' : 'bg-gray-200'
                                     }`}
                             >
-                                <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ${perms.canManageExpenses ? 'translate-x-5' : 'translate-x-0'
+                                <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white dark:bg-card shadow transition-transform duration-200 ${perms.canManageExpenses ? 'translate-x-5' : 'translate-x-0'
                                     }`} />
                             </button>
                         </div>
@@ -678,12 +676,12 @@ const WardenProfilePage = () => {
                             ].map(({ key, label, desc }) => (
                                 <div
                                     key={key}
-                                    className={`flex items-center justify-between p-3 rounded-xl border transition-all ${perms[key] ? 'bg-emerald-50 border-emerald-100' : 'bg-gray-50 border-gray-100'
+                                    className={`flex items-center justify-between p-3 rounded-xl border transition-all ${perms[key] ? 'bg-emerald-50 border-emerald-100' : 'bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border'
                                         }`}
                                 >
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-gray-800 uppercase tracking-tight">{label}</span>
-                                        <span className="text-[8px] font-bold text-gray-400">{desc}</span>
+                                        <span className="text-[10px] font-black text-gray-800 dark:text-foreground uppercase tracking-tight">{label}</span>
+                                        <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground">{desc}</span>
                                     </div>
                                     <button
                                         onClick={() => handlePermToggle(key)}
@@ -691,7 +689,7 @@ const WardenProfilePage = () => {
                                         className={`relative h-5 w-9 rounded-full transition-colors duration-200 focus:outline-none disabled:opacity-50 shrink-0 ${perms[key] ? 'bg-emerald-500' : 'bg-gray-200'
                                             }`}
                                     >
-                                        <span className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${perms[key] ? 'translate-x-4' : 'translate-x-0'
+                                        <span className={`absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white dark:bg-card shadow transition-transform duration-200 ${perms[key] ? 'translate-x-4' : 'translate-x-0'
                                             }`} />
                                     </button>
                                 </div>
@@ -706,7 +704,7 @@ const WardenProfilePage = () => {
                         title="History"
                         accentColorClass="bg-gray-900"
                         containerClassName="flex items-center gap-3 px-2"
-                        titleClassName="text-xs md:text-sm font-black uppercase tracking-widest text-gray-900"
+                        titleClassName="text-xs md:text-sm font-black uppercase tracking-widest text-gray-900 dark:text-foreground"
                     />
 
                     {paymentsLoading ? (
@@ -716,27 +714,27 @@ const WardenProfilePage = () => {
                     ) : payments?.length > 0 ? (
                         <div className="grid grid-cols-1 gap-4">
                             {payments.map((payment) => (
-                                <div key={payment.id} className="bg-white border border-gray-100 rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                                <div key={payment.id} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl md:rounded-3xl p-4 md:p-6 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
                                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                         <div className="flex items-center gap-4 flex-1">
-                                            <div className="h-12 w-12 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-gray-900 group-hover:text-white transition-colors duration-300">
+                                            <div className="h-12 w-12 rounded-2xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border flex items-center justify-center shrink-0 group-hover:bg-gray-900 group-hover:text-white transition-colors duration-300">
                                                 <History className="h-5 w-5" />
                                             </div>
                                             <div className="flex flex-col min-w-0">
                                                 <div className="flex items-center gap-2 mb-1">
-                                                    <span className="text-[11px] font-black uppercase tracking-widest text-gray-900">{payment.month}</span>
+                                                    <span className="text-[11px] font-black uppercase tracking-widest text-gray-900 dark:text-foreground">{payment.month}</span>
                                                     <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest">
                                                         Paid
                                                     </Badge>
                                                 </div>
                                                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                                                     <div className="flex items-center gap-1.5">
-                                                        <CreditCard className="h-3 w-3 text-gray-400" />
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">{payment.paymentMethod.replace('_', ' ')}</span>
+                                                        <CreditCard className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
+                                                        <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-tight">{payment.paymentMethod.replace('_', ' ')}</span>
                                                     </div>
                                                     <div className="flex items-center gap-1.5">
-                                                        <Calendar className="h-3 w-3 text-gray-400" />
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight">
+                                                        <Calendar className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
+                                                        <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-tight">
                                                             {format(new Date(payment.paymentDate), 'PPP')}
                                                         </span>
                                                     </div>
@@ -744,18 +742,18 @@ const WardenProfilePage = () => {
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-4 px-6 border-l border-gray-100 md:h-12">
+                                        <div className="flex items-center gap-4 px-6 border-l border-gray-100 dark:border-border md:h-12">
                                             <div className="text-right">
-                                                <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 block mb-0.5">Base + Bonus</span>
-                                                <p className="text-[11px] font-bold text-gray-900">PKR {(payment.basicSalary + payment.bonuses).toLocaleString()}</p>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground block mb-0.5">Base + Bonus</span>
+                                                <p className="text-[11px] font-bold text-gray-900 dark:text-foreground">PKR {(payment.basicSalary + payment.bonuses).toLocaleString()}</p>
                                             </div>
                                             <div className="text-right">
                                                 <span className="text-[8px] font-black uppercase tracking-widest text-rose-400 block mb-0.5">Deductions</span>
                                                 <p className="text-[11px] font-bold text-rose-600">PKR {payment.deductions.toLocaleString()}</p>
                                             </div>
                                             <div className="text-right min-w-[100px]">
-                                                <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 block mb-0.5">Total</span>
-                                                <p className="text-lg font-black text-gray-900 tracking-tight">PKR {payment.amount.toLocaleString()}</p>
+                                                <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground block mb-0.5">Total</span>
+                                                <p className="text-lg font-black text-gray-900 dark:text-foreground tracking-tight">PKR {payment.amount.toLocaleString()}</p>
                                             </div>
                                             <Button
                                                 variant="ghost"
@@ -764,7 +762,7 @@ const WardenProfilePage = () => {
                                                     setSelectedPayment(payment);
                                                     setIsSlipDialogOpen(true);
                                                 }}
-                                                className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400 hover:text-indigo-600 group/btn"
+                                                className="h-9 w-9 rounded-xl hover:bg-gray-100 text-gray-400 dark:text-muted-foreground hover:text-indigo-600 group/btn"
                                                 title="View Salary Slip"
                                             >
                                                 <Eye className="h-4.5 w-4.5" />
@@ -773,19 +771,19 @@ const WardenProfilePage = () => {
                                     </div>
                                     {payment.notes && (
                                         <div className="mt-4 pt-4 border-t border-gray-50">
-                                            <p className="text-[10px] font-medium text-gray-500 italic uppercase">Notes: {payment.notes}</p>
+                                            <p className="text-[10px] font-medium text-gray-500 dark:text-muted-foreground italic uppercase">Notes: {payment.notes}</p>
                                         </div>
                                     )}
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="py-20 flex flex-col items-center justify-center bg-white border border-dashed border-gray-200 rounded-[2rem] text-center px-6">
-                            <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-6">
+                        <div className="py-20 flex flex-col items-center justify-center bg-white dark:bg-card border border-dashed border-gray-200 dark:border-border rounded-[2rem] text-center px-6">
+                            <div className="h-16 w-16 rounded-2xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center mb-6">
                                 <AlertCircle className="h-8 w-8 text-gray-200" />
                             </div>
-                            <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight">No Payment History</h3>
-                            <p className="text-gray-400 font-bold uppercase tracking-widest text-[9px] mt-2 max-w-xs mx-auto">This warden has not received any salary disbursements through the node yet.</p>
+                            <h3 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">No Payment History</h3>
+                            <p className="text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-widest text-[9px] mt-2 max-w-xs mx-auto">This warden has not received any salary disbursements through the node yet.</p>
                         </div>
                     )}
                 </div>

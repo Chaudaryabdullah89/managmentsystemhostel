@@ -62,12 +62,13 @@ import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
 import { QueryKeys } from '@/lib/queryclient'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
-import Loader from '@/components/ui/Loader'
+import { GridPageSkeleton } from "@/components/ui/skeletons";
 import useAuthStore from '@/hooks/Authstate'
 import PageHeader from "@/components/Dashboard/PageHeader"
 import FilterToolbar from "@/components/Dashboard/FilterToolbar"
 import EmptyState from "@/components/ui/states/EmptyState"
 import ErrorState from "@/components/ui/states/ErrorState"
+import { exportToExcel } from "@/lib/utils/exportToExcel"
 
 const useUpdateLogs = () => {
     const queryClient = useQueryClient();
@@ -131,6 +132,27 @@ const RoomsContent = ({ params: paramsPromise }) => {
         toast.success("Refreshed");
     };
 
+    const handleExportExcel = () => {
+        if (!filteredRooms.length) {
+            toast.error("No rooms to export");
+            return;
+        }
+
+        const rows = filteredRooms.map(r => ({
+            "Room ID": r.uid || r.id,
+            "Room Number": r.roomNumber,
+            "Floor": r.floor,
+            "Type": r.type,
+            "Capacity": r.capacity,
+            "Occupancy": r.Booking?.length || 0,
+            "Status": r.status,
+            "Monthly Rent": r.monthlyrent || r.montlyrent || r.price || 0,
+            "Amenities": (r.amenities || []).join(", ")
+        }));
+
+        exportToExcel(rows, `Rooms_Export_${format(new Date(), 'yyyy-MM-dd')}`, "Rooms");
+    };
+
     const handleDeleteRoom = async (roomId) => {
         setIsDeleting(roomId);
         try {
@@ -158,11 +180,11 @@ const RoomsContent = ({ params: paramsPromise }) => {
             case "OCCUPIED": return "bg-blue-50 text-blue-700 border-blue-100";
             case "MAINTENANCE": return "bg-amber-50 text-amber-700 border-amber-100";
             case "CLEANING": return "bg-purple-50 text-purple-700 border-purple-100";
-            default: return "bg-gray-50 text-gray-700 border-gray-100";
+            default: return "bg-gray-50 dark:bg-muted/10 text-gray-700 dark:text-foreground border-gray-100 dark:border-border";
         }
     };
 
-    if (roomsLoading || hostelLoading) return <Loader label="Loading" subLabel="Getting records..." icon={Building2} fullScreen={false} />;
+    if (roomsLoading || hostelLoading) return <GridPageSkeleton />;
     if (isRoomsError || isHostelError) {
         return (
             <div className="max-w-[1600px] mx-auto px-6 py-8">
@@ -180,7 +202,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans">
             <PageHeader
                 title={hostel?.name || 'Rooms'}
                 subtitleStart="Rooms"
@@ -188,7 +210,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
                 maxWidthClass="max-w-[1600px]"
                 accentColorClass="bg-gray-200"
                 dotColorClass="bg-emerald-500"
-                subtitleEndClass="text-gray-400"
+                subtitleEndClass="text-gray-400 dark:text-muted-foreground"
                 leftSlot={(
                     <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9 shrink-0" onClick={() => router.back()}>
                         <ChevronLeft className="h-4 w-4" />
@@ -203,7 +225,16 @@ const RoomsContent = ({ params: paramsPromise }) => {
                             onClick={handleRefresh}
                             disabled={isFetchingRooms}
                         >
-                            <RefreshCw className={`h-4 w-4 text-gray-400 ${isFetchingRooms ? 'animate-spin' : ''}`} />
+                            <RefreshCw className={`h-4 w-4 text-gray-400 dark:text-muted-foreground ${isFetchingRooms ? 'animate-spin' : ''}`} />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="rounded-xl hover:bg-gray-100 h-9 w-9 shrink-0"
+                            onClick={handleExportExcel}
+                        >
+                            <span className="sr-only">Excel</span>
+                            <Download className="h-4 w-4 text-emerald-600" />
                         </Button>
                         <Link href={`/warden/rooms/create`}>
                             <Button className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 px-4 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-widest shadow-sm flex items-center gap-2 transition-all active:scale-95 whitespace-nowrap">
@@ -224,13 +255,13 @@ const RoomsContent = ({ params: paramsPromise }) => {
                         { label: 'All Rooms Rent', value: `PKR ${rooms.reduce((acc, r) => acc + (r.monthlyrent || r.montlyrent || r.price || 0), 0).toLocaleString()}`, icon: Coins, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                         { label: 'Status', value: 'Active', icon: ShieldCheck, color: 'text-amber-600', bg: 'bg-amber-50' },
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
+                        <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
                             <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform shrink-0`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
-                                <span className="text-sm md:text-xl font-black text-gray-900 tracking-tight uppercase truncate">{stat.value}</span>
+                                <span className="text-[8px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">{stat.label}</span>
+                                <span className="text-sm md:text-xl font-black text-gray-900 dark:text-foreground tracking-tight uppercase truncate">{stat.value}</span>
                             </div>
                         </div>
                     ))}
@@ -238,10 +269,10 @@ const RoomsContent = ({ params: paramsPromise }) => {
 
                 {/* Operations Bar */}
                 <FilterToolbar
-                    containerClassName="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col sm:flex-row items-center gap-4 shadow-sm"
+                    containerClassName="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-2 flex flex-col sm:flex-row items-center gap-4 shadow-sm"
                     searchSlot={(
                     <div className="flex-1 relative w-full group px-2 min-w-0">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-indigo-600 transition-colors" />
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-muted-foreground group-focus-within:text-indigo-600 transition-colors" />
                         <Input
                             placeholder="Search..."
                             className="w-full h-12 pl-10 bg-transparent border-none shadow-none font-black text-[11px] md:text-sm focus-visible:ring-0 placeholder:text-gray-300 min-w-0"
@@ -252,12 +283,12 @@ const RoomsContent = ({ params: paramsPromise }) => {
                     )}
                     dividerClassName="hidden sm:block h-8 w-px bg-gray-100"
                     filtersSlot={(
-                    <div className="flex items-center gap-1.5 p-1 bg-gray-50 rounded-xl w-full sm:w-auto overflow-x-auto scrollbar-hide">
+                    <div className="flex items-center gap-1.5 p-1 bg-gray-50 dark:bg-muted/10 rounded-xl w-full sm:w-auto overflow-x-auto scrollbar-hide">
                         {['All', 'Available', 'Occupied', 'Maintenance'].map((s) => (
                             <button
                                 key={s}
                                 onClick={() => setStatusFilter(s)}
-                                className={`flex-1 sm:flex-none whitespace-nowrap px-4 md:px-6 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === s ? 'bg-white text-indigo-600 shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}
+                                className={`flex-1 sm:flex-none whitespace-nowrap px-4 md:px-6 py-2 rounded-lg text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all ${statusFilter === s ? 'bg-white dark:bg-card text-indigo-600 shadow-sm border border-gray-100 dark:border-border' : 'text-gray-400 dark:text-muted-foreground hover:text-gray-600 dark:text-muted-foreground'}`}
                             >
                                 {s}
                             </button>
@@ -270,25 +301,25 @@ const RoomsContent = ({ params: paramsPromise }) => {
                 <div className="space-y-3">
                     {filteredRooms.length > 0 ? (
                         filteredRooms.map((room, index) => (
-                            <div key={room.id || index} className="bg-white border border-gray-100 rounded-2xl flex flex-col items-stretch shadow-sm hover:shadow-md transition-shadow relative group">
+                            <div key={room.id || index} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl flex flex-col items-stretch shadow-sm hover:shadow-md transition-shadow relative group">
                                 <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${room.status === 'AVAILABLE' ? 'bg-emerald-500' : room.status === 'OCCUPIED' ? 'bg-blue-600' : 'bg-amber-500'} opacity-70`} />
 
                                 <div className="flex flex-col xl:flex-row xl:flex-wrap items-stretch xl:items-center p-5 md:p-6 gap-6 md:gap-8 w-full">
                                     {/* Section 1: Visual Identity */}
                                     <div className="flex items-center gap-5 min-w-0 flex-1">
-                                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border border-gray-100 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 ${room.status === 'AVAILABLE' ? 'bg-emerald-50/50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'}`}>
+                                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 border border-gray-100 dark:border-border group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 ${room.status === 'AVAILABLE' ? 'bg-emerald-50/50 text-emerald-600' : 'bg-indigo-50 text-indigo-600'}`}>
                                             <BedDouble className="h-6 w-6" />
                                         </div>
                                         <div className="flex flex-col min-w-0">
                                             <div className="flex items-center gap-3">
-                                                <h3 className="text-sm md:text-base font-black text-gray-900 uppercase tracking-tight truncate">Room_{room.roomNumber}</h3>
+                                                <h3 className="text-sm md:text-base font-black text-gray-900 dark:text-foreground uppercase tracking-tight truncate">Room_{room.roomNumber}</h3>
                                                 <Badge variant="outline" className={`${getStatusTheme(room.status)} text-[8px] font-black px-2 py-0.5 rounded-full border shadow-sm shrink-0 whitespace-nowrap`}>
                                                     {room.status}
                                                 </Badge>
                                             </div>
                                             <div className="flex items-center gap-1.5 mt-0.5">
-                                                <Layers className="h-3 w-3 text-gray-400" />
-                                                <span className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest truncate">FLOOR {room.floor} • {room.type} TYPE</span>
+                                                <Layers className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
+                                                <span className="text-[9px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">FLOOR {room.floor} • {room.type} TYPE</span>
                                             </div>
                                         </div>
                                     </div>
@@ -296,14 +327,14 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                     {/* Section 2: Infrastructure */}
                                     <div className="flex items-center gap-8 min-w-0 border-t border-gray-50 pt-4 xl:pt-0 xl:border-t-0">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Type</span>
-                                            <span className="text-[10px] font-black text-gray-700 uppercase">{room.type} SEATER</span>
+                                            <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Type</span>
+                                            <span className="text-[10px] font-black text-gray-700 dark:text-foreground uppercase">{room.type} SEATER</span>
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Capacity</span>
+                                            <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Capacity</span>
                                             <div className="flex items-center gap-1.5 mt-1">
-                                                <Users className="h-3 w-3 text-gray-400" />
-                                                <span className="text-[10px] font-black text-gray-900 uppercase">{room.capacity} BEDS</span>
+                                                <Users className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
+                                                <span className="text-[10px] font-black text-gray-900 dark:text-foreground uppercase">{room.capacity} BEDS</span>
                                             </div>
                                         </div>
                                     </div>
@@ -312,14 +343,14 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                     <div className="flex-1 flex flex-col xl:flex-row xl:items-center gap-4 min-w-0 border-t border-gray-50 xl:border-t-0 pt-4 xl:pt-0">
                                         <div className="h-4 w-px bg-gray-100 hidden xl:block" />
                                         <div className="flex flex-col flex-1 min-w-0">
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+                                            <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
                                                 <UserCircle2 className="h-3 w-3" />
                                                 Occupants
                                             </span>
                                             <div className="mt-2 flex flex-wrap gap-1.5">
                                                 {room.Booking?.length > 0 ? (
                                                     room.Booking.map((b) => (
-                                                        <Badge key={b.id} variant="secondary" className="bg-gray-100 text-gray-700 border-none text-[8px] md:text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-tighter">
+                                                        <Badge key={b.id} variant="secondary" className="bg-gray-100 text-gray-700 dark:text-foreground border-none text-[8px] md:text-[9px] font-black px-2.5 py-1 rounded-md uppercase tracking-tighter">
                                                             {b.User?.name}
                                                         </Badge>
                                                     ))
@@ -333,11 +364,11 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                     {/* Section 4: Commercial */}
                                     <div className="flex items-center gap-8 md:gap-10 min-w-0 border-t border-gray-50 xl:border-t-0 pt-4 xl:pt-0">
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Price</span>
-                                            <span className="text-[11px] font-black text-gray-900 italic tracking-tight">PKR {room.price?.toLocaleString()}</span>
+                                            <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Price</span>
+                                            <span className="text-[11px] font-black text-gray-900 dark:text-foreground italic tracking-tight">PKR {room.price?.toLocaleString()}</span>
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Income</span>
+                                            <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Income</span>
                                             <span className="text-[11px] font-black text-indigo-600 italic">PKR {(room.monthlyrent || room.montlyrent || room.price || 0).toLocaleString()}/MO</span>
                                         </div>
                                     </div>
@@ -346,15 +377,15 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                     <div className="flex items-center gap-2 xl:ml-auto border-t border-gray-50 xl:border-t-0 pt-4 xl:pt-0 justify-start flex-wrap w-full xl:w-auto">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10 rounded-xl hover:bg-gray-100 text-gray-400 transition-all">
+                                                <Button variant="ghost" size="icon" className="h-9 w-9 md:h-10 md:w-10 rounded-xl hover:bg-gray-100 text-gray-400 dark:text-muted-foreground transition-all">
                                                     <MoreVertical className="h-4 w-4" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="w-56 p-1 rounded-xl border-gray-100 shadow-xl">
-                                                <DropdownMenuItem className="p-2.5 gap-2.5 rounded-lg font-black text-[10px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/warden/rooms/${room.id}?tab=edit`)}>
+                                            <DropdownMenuContent align="end" className="w-56 p-1 rounded-xl border-gray-100 dark:border-border shadow-xl">
+                                                <DropdownMenuItem className="p-2.5 gap-2.5 rounded-lg font-black text-[10px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground cursor-pointer" onClick={() => router.push(`/warden/rooms/${room.id}?tab=edit`)}>
                                                     <Edit className="h-3.5 w-3.5" /> Edit
                                                 </DropdownMenuItem>
-                                                <DropdownMenuItem className="p-2.5 gap-2.5 rounded-lg font-black text-[10px] uppercase tracking-wider text-gray-600 cursor-pointer" onClick={() => router.push(`/warden/rooms/${room.id}/maintenance`)}>
+                                                <DropdownMenuItem className="p-2.5 gap-2.5 rounded-lg font-black text-[10px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground cursor-pointer" onClick={() => router.push(`/warden/rooms/${room.id}/maintenance`)}>
                                                     <Wrench className="h-3.5 w-3.5" /> Maintenance
                                                 </DropdownMenuItem>
                                                 <DropdownMenuSeparator />
@@ -365,14 +396,14 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                                         </AlertDialogTrigger>
                                                         <AlertDialogContent className="rounded-3xl border-0 shadow-2xl overflow-hidden p-0 max-w-lg mx-4 sm:mx-0">
                                                             <div className="bg-gray-950 p-8 text-white relative">
-                                                                <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center mb-4"><Trash size={20} className="text-rose-500" /></div>
+                                                                <div className="h-10 w-10 rounded-xl bg-white dark:bg-card/10 flex items-center justify-center mb-4"><Trash size={20} className="text-rose-500" /></div>
                                                                 <AlertDialogTitle className="text-xl font-black tracking-tight mb-2 uppercase">Delete?</AlertDialogTitle>
-                                                                <AlertDialogDescription className="text-gray-400 font-black text-[10px] uppercase tracking-widest">
+                                                                <AlertDialogDescription className="text-gray-400 dark:text-muted-foreground font-black text-[10px] uppercase tracking-widest">
                                                                     Remove this room?
                                                                 </AlertDialogDescription>
                                                             </div>
-                                                            <div className="p-6 flex items-center justify-end gap-3 bg-white">
-                                                                <AlertDialogCancel className="rounded-xl border-gray-100 bg-gray-50 font-black px-6 h-11 uppercase tracking-widest text-[9px] text-gray-500">Cancel</AlertDialogCancel>
+                                                            <div className="p-6 flex items-center justify-end gap-3 bg-white dark:bg-card">
+                                                                <AlertDialogCancel className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-black px-6 h-11 uppercase tracking-widest text-[9px] text-gray-500 dark:text-muted-foreground">Cancel</AlertDialogCancel>
                                                                 <AlertDialogAction className="bg-rose-600 hover:bg-rose-700 rounded-xl font-black px-6 h-11 uppercase tracking-widest text-[9px] shadow-sm" onClick={() => handleDeleteRoom(room.id)}>Delete</AlertDialogAction>
                                                             </div>
                                                         </AlertDialogContent>
@@ -392,14 +423,14 @@ const RoomsContent = ({ params: paramsPromise }) => {
                                 </div>
 
                                 {/* Service Shelf */}
-                                <div className="bg-gray-50/30 border-t border-gray-100 px-5 md:px-6 py-3 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+                                <div className="bg-gray-50 dark:bg-muted/10/30 border-t border-gray-100 dark:border-border px-5 md:px-6 py-3 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
                                     <div className="flex items-center gap-2 shrink-0">
                                         <Sparkle className="h-3 w-3 text-indigo-400" />
-                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Included</span>
+                                        <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Included</span>
                                     </div>
                                     <div className="flex flex-wrap gap-2">
                                         {(room.amenities || []).slice(0, 6).map((amenity, i) => (
-                                            <span key={i} className="text-[9px] font-black text-gray-600 uppercase tracking-tighter bg-white border border-gray-100 px-2.5 py-1 rounded-md shadow-sm">
+                                            <span key={i} className="text-[9px] font-black text-gray-600 dark:text-muted-foreground uppercase tracking-tighter bg-white dark:bg-card border border-gray-100 dark:border-border px-2.5 py-1 rounded-md shadow-sm">
                                                 {amenity}
                                             </span>
                                         ))}
@@ -415,13 +446,13 @@ const RoomsContent = ({ params: paramsPromise }) => {
                             icon={Layers}
                             title="Empty"
                             description="Try changing your filters."
-                            containerClassName="py-20 flex flex-col items-center justify-center bg-white border border-gray-100 rounded-3xl shadow-sm border-dashed mx-4"
+                            containerClassName="py-20 flex flex-col items-center justify-center bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-sm border-dashed mx-4"
                             iconWrapperClassName="bg-transparent border-transparent mb-0"
                             iconClassName="text-gray-200"
                             actionSlot={(
                                 <Button
                                     variant="outline"
-                                    className="rounded-xl border-gray-100 uppercase tracking-widest text-[9px] font-black h-11 px-8 hover:bg-gray-50 transition-all text-gray-400 hover:text-indigo-600 shadow-sm"
+                                    className="rounded-xl border-gray-100 dark:border-border uppercase tracking-widest text-[9px] font-black h-11 px-8 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 transition-all text-gray-400 dark:text-muted-foreground hover:text-indigo-600 shadow-sm"
                                     onClick={() => { setSearchQuery(''); setStatusFilter('All'); }}
                                 >
                                     Reset
@@ -440,10 +471,10 @@ const RoomsContent = ({ params: paramsPromise }) => {
 export default function RoomsPage(props) {
     return (
         <Suspense fallback={
-            <div className="flex h-screen items-center justify-center bg-white font-sans">
+            <div className="flex h-screen items-center justify-center bg-white dark:bg-card font-sans">
                 <div className="flex flex-col items-center gap-6">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-black rounded-full animate-spin" />
-                    <p className="text-lg font-bold text-gray-900 tracking-tight">Loading</p>
+                    <div className="h-20 w-20 border-[3px] border-gray-100 dark:border-border border-t-black rounded-full animate-spin" />
+                    <p className="text-lg font-bold text-gray-900 dark:text-foreground tracking-tight">Loading</p>
                 </div>
             </div>
         }>

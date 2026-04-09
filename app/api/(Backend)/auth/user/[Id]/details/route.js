@@ -94,7 +94,7 @@ export async function GET(req, { params }) {
                         updatedAt: true,
                     }
                 },
-                maintanance_maintanance_userIdToUser: {
+                Maintenance_userIdToUser: {
                     select: {
                         id: true,
                         hostelId: true,
@@ -233,7 +233,7 @@ export async function GET(req, { params }) {
             staffProfile: user.StaffProfile,
             salaries: user.StaffProfile?.Salary,
             complaints: user.Complaint_Complaint_userIdToUser,
-            maintenanceTasks: user.maintanance_maintanance_userIdToUser,
+            maintenanceTasks: user.Maintenance_userIdToUser,
             managedHostels: user.Hostel_Hostel_managerIdToUser,
             handledComplaints: user.Complaint_Complaint_assignedToIdToUser,
             createdExpenses: user.Expense_Expense_submittedByIdToUser,
@@ -251,7 +251,7 @@ export async function GET(req, { params }) {
         delete formattedUser.ResidentProfile;
         delete formattedUser.StaffProfile;
         delete formattedUser.Complaint_Complaint_userIdToUser;
-        delete formattedUser.maintanance_maintanance_userIdToUser;
+        delete formattedUser.Maintenance_userIdToUser;
         delete formattedUser.Hostel_Hostel_managerIdToUser;
         delete formattedUser.Complaint_Complaint_assignedToIdToUser;
         delete formattedUser.Expense_Expense_submittedByIdToUser;

@@ -4,17 +4,18 @@ import Link from "next/link";
 import {
     Download, TrendingUp, TrendingDown, Users, Home, Calendar,
     Activity, Building2, CreditCard, ArrowUpRight, Zap, Wallet,
-    BarChart3, Receipt, PieChart as PieChartIcon, DollarSign
+    BarChart3, Receipt, PieChart as PieChartIcon, DollarSign, FileSpreadsheet
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import Loader from "../../../../components/ui/Loader";
+import { ReportSkeleton } from "@/components/ui/skeletons";
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { useReports } from "@/hooks/useReports";
 import { format } from "date-fns";
+import { exportToExcel } from "@/lib/utils/exportToExcel";
 
 // ─── Donut Chart ─────────────────────────────────────────────────────────────
 const DonutChart = ({ data = [], colors = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#a855f7", "#3b82f6"] }) => {
@@ -68,9 +69,9 @@ const DonutChart = ({ data = [], colors = ["#6366f1", "#10b981", "#f59e0b", "#ef
                     <div key={i} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
-                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-tight truncate max-w-[110px]">{s.name}</span>
+                            <span className="text-[9px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-tight truncate max-w-[110px]">{s.name}</span>
                         </div>
-                        <span className="text-[9px] font-black text-gray-900">PKR {(s.value || 0).toLocaleString()}</span>
+                        <span className="text-[9px] font-black text-gray-900 dark:text-foreground">PKR {(s.value || 0).toLocaleString()}</span>
                     </div>
                 ))}
             </div>
@@ -105,7 +106,7 @@ const TrendBars = ({ data = [] }) => {
                                 style={{ height: `${expH}%` }}
                             />
                         </div>
-                        <span className="mt-2 text-[8px] font-black text-gray-400 uppercase tracking-widest">{d.month}</span>
+                        <span className="mt-2 text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{d.month}</span>
                     </div>
                 );
             })}
@@ -124,7 +125,7 @@ const SparkBar = ({ value = 0, color = "bg-indigo-500" }) => (
 const MetricCard = ({ label, value, change, icon: Icon, color, subValue = null, subLabel = null }) => {
     const isPositive = Number(change) >= 0;
     return (
-        <div className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col gap-4 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
+        <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-5 flex flex-col gap-4 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 group">
             <div className="flex items-center justify-between">
                 <div className={`h-10 w-10 rounded-xl ${color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
                     <Icon className="h-5 w-5" />
@@ -134,11 +135,11 @@ const MetricCard = ({ label, value, change, icon: Icon, color, subValue = null, 
                 </Badge>
             </div>
             <div className="flex flex-col">
-                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">{label}</span>
-                <span className="text-xl font-black text-gray-900 tracking-tight leading-none">PKR {(value || 0).toLocaleString()}</span>
+                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">{label}</span>
+                <span className="text-xl font-black text-gray-900 dark:text-foreground tracking-tight leading-none">PKR {(value || 0).toLocaleString()}</span>
                 {subValue !== null && (
-                    <span className="text-[9px] font-bold text-gray-400 mt-2">
-                        {subLabel}: <span className="text-gray-600 font-black">PKR {(subValue || 0).toLocaleString()}</span>
+                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground mt-2">
+                        {subLabel}: <span className="text-gray-600 dark:text-muted-foreground font-black">PKR {(subValue || 0).toLocaleString()}</span>
                     </span>
                 )}
             </div>
@@ -151,7 +152,7 @@ const ReportsPage = () => {
     const [selectedPeriod, setSelectedPeriod] = useState("month");
     const { data, isLoading } = useReports(selectedPeriod);
 
-    if (isLoading) return <Loader label="Loading" subLabel="Crunching numbers..." icon={Activity} fullScreen={false} />;
+    if (isLoading) return <ReportSkeleton />;
 
     const stats = data?.overall || {
         totalRevenue: 0, revenueChange: 0,
@@ -178,16 +179,30 @@ const ReportsPage = () => {
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
     };
 
+    const handleExportExcel = () => {
+        if (!performance.length) return;
+        const rows = performance.map(h => ({
+            "Hostel": h.name,
+            "Total Rooms": h.rooms,
+            "Occupied": h.occupied,
+            "Occupancy %": h.occupancy,
+            "Revenue (PKR)": h.revenue,
+            "Expenses (PKR)": h.expenses,
+            "Net Profit (PKR)": h.profit,
+        }));
+        exportToExcel(rows, `report_${selectedPeriod}_${format(new Date(), 'yyyy-MM-dd')}`, "Hostel Performance");
+    };
+
     return (
         <div className="min-h-screen bg-[#f5f5f7] pb-24 font-sans">
 
             {/* ── Header ── */}
-            <header className="bg-white/90 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+            <header className="bg-white dark:bg-card/90 backdrop-blur-md border-b border-gray-100 dark:border-border sticky top-0 z-50">
                 <div className="max-w-[1600px] mx-auto px-6 h-14 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="h-6 w-1.5 bg-indigo-600 rounded-full" />
                         <div>
-                            <h1 className="text-sm font-black text-gray-900 uppercase tracking-widest leading-none">Hostel Reports</h1>
+                            <h1 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-widest leading-none">Hostel Reports</h1>
                             <div className="flex items-center gap-1.5 mt-0.5">
                                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                 <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">Live Data</span>
@@ -196,10 +211,10 @@ const ReportsPage = () => {
                     </div>
                     <div className="flex items-center gap-3">
                         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                            <SelectTrigger className="h-9 w-36 rounded-xl border-gray-100 bg-gray-50 text-[10px] font-black uppercase tracking-wider text-gray-600 shadow-none focus:ring-0">
+                            <SelectTrigger className="h-9 w-36 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 text-[10px] font-black uppercase tracking-wider text-gray-600 dark:text-muted-foreground shadow-none focus:ring-0">
                                 <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                            <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl">
                                 {[
                                     { value: "week", label: "This Week" },
                                     { value: "month", label: "This Month" },
@@ -212,10 +227,18 @@ const ReportsPage = () => {
                         </Select>
                         <Button
                             onClick={handleExport}
-                            className="h-9 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-wider shadow-md shadow-indigo-200 active:scale-95 transition-all flex items-center gap-2"
+                            variant="outline"
+                            className="h-9 px-5 rounded-xl border-gray-200 dark:border-border text-gray-600 dark:text-muted-foreground text-[10px] font-black uppercase tracking-wider active:scale-95 transition-all flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10"
                         >
                             <Download className="h-3.5 w-3.5" />
-                            Export CSV
+                            CSV
+                        </Button>
+                        <Button
+                            onClick={handleExportExcel}
+                            className="h-9 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider shadow-md shadow-emerald-200 active:scale-95 transition-all flex items-center gap-2"
+                        >
+                            <FileSpreadsheet className="h-3.5 w-3.5" />
+                            Excel
                         </Button>
                     </div>
                 </div>
@@ -237,7 +260,7 @@ const ReportsPage = () => {
                                 <span className="text-4xl font-black tracking-tighter leading-none">
                                     PKR {(stats.totalRevenue || 0).toLocaleString()}
                                 </span>
-                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${Number(stats.revenueChange) >= 0 ? 'bg-white/20' : 'bg-rose-400/30'}`}>
+                                <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg ${Number(stats.revenueChange) >= 0 ? 'bg-white dark:bg-card/20' : 'bg-rose-400/30'}`}>
                                     {Number(stats.revenueChange) >= 0 ? '+' : ''}{stats.revenueChange}%
                                 </span>
                             </div>
@@ -270,7 +293,7 @@ const ReportsPage = () => {
                             icon={TrendingUp}
                             color="bg-emerald-50 text-emerald-600"
                         />
-                        <div className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col gap-4 shadow-sm hover:shadow-lg transition-all duration-300 group">
+                        <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-5 flex flex-col gap-4 shadow-sm hover:shadow-lg transition-all duration-300 group">
                             <div className="flex items-center justify-between">
                                 <div className="h-10 w-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                     <Home className="h-5 w-5" />
@@ -280,8 +303,8 @@ const ReportsPage = () => {
                                 </Badge>
                             </div>
                             <div className="flex flex-col gap-1">
-                                <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Occupancy Rate</span>
-                                <span className="text-2xl font-black text-gray-900 tracking-tight leading-none">{stats.occupancyRate}%</span>
+                                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Occupancy Rate</span>
+                                <span className="text-2xl font-black text-gray-900 dark:text-foreground tracking-tight leading-none">{stats.occupancyRate}%</span>
                                 <SparkBar value={stats.occupancyRate} color="bg-amber-500" />
                             </div>
                         </div>
@@ -289,20 +312,20 @@ const ReportsPage = () => {
                 </div>
 
                 {/* ── Hostel Performance Table ── */}
-                <Card className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
-                    <div className="px-8 py-6 border-b border-gray-50 flex items-center gap-4 bg-gray-50/30">
+                <Card className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-sm overflow-hidden">
+                    <div className="px-8 py-6 border-b border-gray-50 flex items-center gap-4 bg-gray-50 dark:bg-muted/10/30">
                         <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md shadow-indigo-200">
                             <Building2 className="h-4.5 w-4.5" />
                         </div>
                         <div>
-                            <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest">Hostel Insights</h2>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Money and occupancy by hostel</p>
+                            <h2 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-widest">Hostel Insights</h2>
+                            <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">Money and occupancy by hostel</p>
                         </div>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left min-w-[900px]">
                             <thead>
-                                <tr className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-gray-50">
+                                <tr className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground border-b border-gray-50">
                                     <th className="px-8 py-4">Hostel Name</th>
                                     <th className="px-8 py-4">Room Status</th>
                                     <th className="px-8 py-4 text-right">Revenue</th>
@@ -311,15 +334,15 @@ const ReportsPage = () => {
                                     <th className="px-8 py-4 text-center">Open</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody className="divide-y divide-gray-50 dark:divide-border/20">
                                 {performance.length === 0 ? (
                                     <tr><td colSpan={6} className="px-8 py-12 text-center text-[10px] font-bold text-gray-300 uppercase tracking-widest">No hostel data</td></tr>
                                 ) : performance.map((h) => (
                                     <tr key={h.id} className="hover:bg-indigo-50/30 transition-colors group">
                                         <td className="px-8 py-5">
                                             <div className="flex flex-col">
-                                                <span className="text-xs font-black text-gray-900 uppercase tracking-tight">{h.name}</span>
-                                                <span className="text-[8px] font-bold text-gray-400 mt-0.5">{h.occupied} / {h.rooms} rooms occupied</span>
+                                                <span className="text-xs font-black text-gray-900 dark:text-foreground uppercase tracking-tight">{h.name}</span>
+                                                <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground mt-0.5">{h.occupied} / {h.rooms} rooms occupied</span>
                                             </div>
                                         </td>
                                         <td className="px-8 py-5">
@@ -327,10 +350,10 @@ const ReportsPage = () => {
                                                 <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                                     <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${h.occupancy}%` }} />
                                                 </div>
-                                                <span className="text-[9px] font-black text-gray-700">{h.occupancy}%</span>
+                                                <span className="text-[9px] font-black text-gray-700 dark:text-foreground">{h.occupancy}%</span>
                                             </div>
                                         </td>
-                                        <td className="px-8 py-5 text-right text-xs font-black text-gray-900">PKR {h.revenue.toLocaleString()}</td>
+                                        <td className="px-8 py-5 text-right text-xs font-black text-gray-900 dark:text-foreground">PKR {h.revenue.toLocaleString()}</td>
                                         <td className="px-8 py-5 text-right text-xs font-black text-rose-500">PKR {h.expenses.toLocaleString()}</td>
                                         <td className="px-8 py-5 text-right">
                                             <span className={`text-sm font-black ${h.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
@@ -355,25 +378,25 @@ const ReportsPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
                     {/* Trend Chart */}
-                    <Card className="lg:col-span-8 bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
-                        <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
+                    <Card className="lg:col-span-8 bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-sm overflow-hidden">
+                        <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-gray-50 dark:bg-muted/10/30">
                             <div className="flex items-center gap-4">
                                 <div className="h-9 w-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-200">
                                     <BarChart3 className="h-4 w-4" />
                                 </div>
                                 <div>
-                                    <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest">6-Month Trend</h2>
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Revenue vs Expenses</p>
+                                    <h2 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-widest">6-Month Trend</h2>
+                                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">Revenue vs Expenses</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-5">
                                 <div className="flex items-center gap-2">
                                     <div className="h-2.5 w-2.5 rounded-sm bg-indigo-500" />
-                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Revenue</span>
+                                    <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Revenue</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className="h-2.5 w-2.5 rounded-sm bg-rose-400" />
-                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Expenses</span>
+                                    <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Expenses</span>
                                 </div>
                             </div>
                         </div>
@@ -384,20 +407,20 @@ const ReportsPage = () => {
                             <div className="border-t border-gray-50">
                                 <table className="w-full text-left">
                                     <thead>
-                                        <tr className="bg-gray-50/50 text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">
+                                        <tr className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground">
                                             <th className="px-8 py-4">Period</th>
                                             <th className="px-8 py-4 text-right">Revenue</th>
                                             <th className="px-8 py-4 text-right">Expenses</th>
                                             <th className="px-8 py-4 text-right">Net Profit</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-50">
+                                    <tbody className="divide-y divide-gray-50 dark:divide-border/20">
                                         {trends.slice().reverse().map((d, i) => (
-                                            <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                                                <td className="px-8 py-3.5 text-xs font-black text-gray-700 uppercase">{d.month}</td>
+                                            <tr key={i} className="hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors">
+                                                <td className="px-8 py-3.5 text-xs font-black text-gray-700 dark:text-foreground uppercase">{d.month}</td>
                                                 <td className="px-8 py-3.5 text-right text-xs font-bold text-indigo-600">PKR {d.revenue?.toLocaleString()}</td>
                                                 <td className="px-8 py-3.5 text-right text-xs font-bold text-rose-500">PKR {d.expenses?.toLocaleString()}</td>
-                                                <td className="px-8 py-3.5 text-right text-sm font-black text-gray-900">PKR {d.profit?.toLocaleString()}</td>
+                                                <td className="px-8 py-3.5 text-right text-sm font-black text-gray-900 dark:text-foreground">PKR {d.profit?.toLocaleString()}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -408,11 +431,11 @@ const ReportsPage = () => {
 
                     {/* Distribution Charts */}
                     <div className="lg:col-span-4 flex flex-col gap-6">
-                        <Card className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden flex-1">
-                            <div className="px-6 py-5 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
+                        <Card className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-sm overflow-hidden flex-1">
+                            <div className="px-6 py-5 border-b border-gray-50 bg-gray-50 dark:bg-muted/10/30 flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Expense Breakdown</h3>
-                                    <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">By Category</p>
+                                    <h3 className="text-[10px] font-black text-gray-900 dark:text-foreground uppercase tracking-widest">Expense Breakdown</h3>
+                                    <p className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase mt-0.5">By Category</p>
                                 </div>
                                 <PieChartIcon className="h-4 w-4 text-indigo-400" />
                             </div>
@@ -421,11 +444,11 @@ const ReportsPage = () => {
                             </div>
                         </Card>
 
-                        <Card className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden flex-1">
-                            <div className="px-6 py-5 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
+                        <Card className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-sm overflow-hidden flex-1">
+                            <div className="px-6 py-5 border-b border-gray-50 bg-gray-50 dark:bg-muted/10/30 flex items-center justify-between">
                                 <div>
-                                    <h3 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Revenue Sources</h3>
-                                    <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">By Payment Type</p>
+                                    <h3 className="text-[10px] font-black text-gray-900 dark:text-foreground uppercase tracking-widest">Revenue Sources</h3>
+                                    <p className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase mt-0.5">By Payment Type</p>
                                 </div>
                                 <DollarSign className="h-4 w-4 text-emerald-500" />
                             </div>
@@ -440,14 +463,14 @@ const ReportsPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
                     {/* Utilities vs Maintenance */}
-                    <Card className="lg:col-span-8 bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
-                        <div className="px-8 py-6 border-b border-gray-50 flex items-center gap-4 bg-gray-50/30">
+                    <Card className="lg:col-span-8 bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-sm overflow-hidden">
+                        <div className="px-8 py-6 border-b border-gray-50 flex items-center gap-4 bg-gray-50 dark:bg-muted/10/30">
                             <div className="h-9 w-9 rounded-xl bg-amber-500 flex items-center justify-center text-white">
                                 <Zap className="h-4 w-4" />
                             </div>
                             <div>
-                                <h2 className="text-sm font-black text-gray-900 uppercase tracking-widest">Electricity & Maintenance</h2>
-                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Bills and repair costs</p>
+                                <h2 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-widest">Electricity & Maintenance</h2>
+                                <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">Bills and repair costs</p>
                             </div>
                         </div>
                         <div className="p-8">
@@ -456,11 +479,11 @@ const ReportsPage = () => {
                                     <div className="flex items-center gap-5 mb-6">
                                         <div className="flex items-center gap-2">
                                             <div className="h-2.5 w-2.5 rounded-sm bg-amber-400" />
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Utilities</span>
+                                            <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Utilities</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <div className="h-2.5 w-2.5 rounded-sm bg-gray-700" />
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Maintenance</span>
+                                            <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Maintenance</span>
                                         </div>
                                     </div>
                                     <div className="h-40 flex items-end gap-2">
@@ -474,7 +497,7 @@ const ReportsPage = () => {
                                                         <div className="flex-1 bg-amber-400 rounded-t-md hover:bg-amber-500 transition-colors" style={{ height: `${uH}%` }} />
                                                         <div className="flex-1 bg-gray-700 rounded-t-md hover:bg-gray-800 transition-colors" style={{ height: `${mH}%` }} />
                                                     </div>
-                                                    <span className="mt-2 text-[8px] font-black text-gray-400 uppercase">{d.month}</span>
+                                                    <span className="mt-2 text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase">{d.month}</span>
                                                 </div>
                                             );
                                         })}
@@ -482,13 +505,13 @@ const ReportsPage = () => {
                                     <div className="mt-6 grid grid-cols-2 gap-4">
                                         <div className="bg-amber-50 rounded-2xl p-4 border border-amber-100/50">
                                             <span className="text-[8px] font-black text-amber-500 uppercase tracking-widest block">Total Utilities (6mo)</span>
-                                            <span className="text-lg font-black text-gray-900 mt-1 block">
+                                            <span className="text-lg font-black text-gray-900 dark:text-foreground mt-1 block">
                                                 PKR {utilityData.reduce((s, d) => s + d.utilities, 0).toLocaleString()}
                                             </span>
                                         </div>
-                                        <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                                            <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block">Total Maintenance (6mo)</span>
-                                            <span className="text-lg font-black text-gray-900 mt-1 block">
+                                        <div className="bg-gray-50 dark:bg-muted/10 rounded-2xl p-4 border border-gray-100 dark:border-border">
+                                            <span className="text-[8px] font-black text-gray-500 dark:text-muted-foreground uppercase tracking-widest block">Total Maintenance (6mo)</span>
+                                            <span className="text-lg font-black text-gray-900 dark:text-foreground mt-1 block">
                                                 PKR {utilityData.reduce((s, d) => s + d.maintenance, 0).toLocaleString()}
                                             </span>
                                         </div>
@@ -504,10 +527,10 @@ const ReportsPage = () => {
                     </Card>
 
                     {/* Quick Actions */}
-                    <Card className="lg:col-span-4 bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
-                        <div className="px-6 py-5 border-b border-gray-50 bg-gray-50/30">
-                            <h3 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Go to section</h3>
-                            <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">Quick links</p>
+                    <Card className="lg:col-span-4 bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-sm overflow-hidden">
+                        <div className="px-6 py-5 border-b border-gray-50 bg-gray-50 dark:bg-muted/10/30">
+                            <h3 className="text-[10px] font-black text-gray-900 dark:text-foreground uppercase tracking-widest">Go to section</h3>
+                            <p className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase mt-0.5">Quick links</p>
                         </div>
                         <div className="p-6 flex flex-col gap-3">
                             {[
@@ -523,7 +546,7 @@ const ReportsPage = () => {
                                         <div className={`h-8 w-8 rounded-lg ${color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
                                             <Icon className="h-3.5 w-3.5" />
                                         </div>
-                                        <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest group-hover:text-indigo-700 transition-colors">{label}</span>
+                                        <span className="text-[10px] font-black text-gray-700 dark:text-foreground uppercase tracking-widest group-hover:text-indigo-700 transition-colors">{label}</span>
                                         <ArrowUpRight className="h-3 w-3 text-gray-300 ml-auto group-hover:text-indigo-500 transition-colors" />
                                     </div>
                                 </Link>

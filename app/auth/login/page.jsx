@@ -22,6 +22,16 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+  const [branding, setBranding] = useState({ companyName: "Hostel Management", companyShortName: "HMS" });
+
+  React.useEffect(() => {
+    fetch("/api/settings/public")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setBranding(data.data);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -72,9 +82,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-white font-sans antialiased text-slate-900 relative overflow-hidden">
+    <div className="min-h-screen flex bg-white dark:bg-background font-sans antialiased text-slate-900 dark:text-foreground relative overflow-hidden">
       {/* Subtle Grid Background */}
-      <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px] opacity-40 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:32px_32px] opacity-40 pointer-events-none" />
 
       {/* LEFT SIDE — Structured Visual */}
       <div className="hidden lg:flex w-1/2 relative items-center justify-center overflow-hidden">
@@ -84,11 +94,9 @@ export default function LoginPage() {
 
         {/* Floating Glass Panels */}
         <div className="relative w-[420px] h-[420px]">
-          <div className="absolute top-0 left-0 w-64 h-40 bg-white/70 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-xl" />
-
-          <div className="absolute bottom-10 right-0 w-72 h-44 bg-white/70 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-xl" />
-
-          <div className="absolute top-32 left-24 w-80 h-52 bg-slate-900 rounded-3xl shadow-2xl flex items-center justify-center">
+          <div className="absolute top-0 left-0 w-64 h-40 bg-white/70 dark:bg-card/40 backdrop-blur-xl border border-slate-200 dark:border-border rounded-2xl shadow-xl" />
+          <div className="absolute bottom-10 right-0 w-72 h-44 bg-white/70 dark:bg-card/40 backdrop-blur-xl border border-slate-200 dark:border-border rounded-2xl shadow-xl" />
+          <div className="absolute top-32 left-24 w-80 h-52 bg-slate-900 dark:bg-card rounded-3xl shadow-2xl flex items-center justify-center">
             <Building2 className="h-10 w-10 text-white opacity-90" />
           </div>
         </div>
@@ -96,33 +104,33 @@ export default function LoginPage() {
 
       {/* RIGHT SIDE — LOGIN */}
       <div className="flex w-full lg:w-1/2 items-center justify-center p-6 lg:p-16 relative z-10">
-        <div className="w-full max-w-md bg-white border border-slate-200 rounded-3xl p-10 shadow-[0_30px_80px_rgba(0,0,0,0.04)]">
+        <div className="w-full max-w-md bg-white dark:bg-card border border-slate-200 dark:border-border rounded-3xl p-10 shadow-[0_30px_80px_rgba(0,0,0,0.04)]">
           {/* Brand */}
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-12 h-12 bg-slate-950 rounded-2xl flex items-center justify-center">
-              <Building2 className="h-5 w-5 text-white" />
+            <div className="w-12 h-12 bg-slate-950 dark:bg-white rounded-2xl flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-white dark:text-slate-950" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight">
-                Hostel Management System
+              <h1 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+                {branding.companyShortName} Portal
               </h1>
               <p className="text-[10px] uppercase tracking-widest text-slate-400">
-                Mubarak Group of Hostels
+                {branding.companyName}
               </p>
             </div>
           </div>
 
           <div className="mb-8">
-            <h2 className="text-xl font-semibold">Sign In</h2>
-            <p className="text-sm text-slate-500 mt-1">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Sign In</h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
               Enter your credentials to continue
             </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3 animate-in fade-in">
+            <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 flex items-start gap-3 animate-in fade-in">
               <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-              <p className="text-sm text-red-900">{error}</p>
+              <p className="text-sm text-red-900 dark:text-red-200">{error}</p>
             </div>
           )}
 
@@ -141,7 +149,7 @@ export default function LoginPage() {
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, email: e.target.value }))
                   }
-                  className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 dark:bg-muted/30 border border-slate-200 dark:border-border text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
             </div>
@@ -169,7 +177,7 @@ export default function LoginPage() {
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, password: e.target.value }))
                   }
-                  className="w-full h-12 pl-12 pr-12 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full h-12 pl-12 pr-12 rounded-xl bg-slate-50 dark:bg-muted/30 border border-slate-200 dark:border-border text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
                 <button
                   type="button"
@@ -189,7 +197,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 mt-4 rounded-xl bg-slate-950 text-white text-sm font-semibold hover:bg-slate-800 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
+              className="w-full h-12 mt-4 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

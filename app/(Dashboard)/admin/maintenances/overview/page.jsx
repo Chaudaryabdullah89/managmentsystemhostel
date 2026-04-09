@@ -23,7 +23,7 @@ export default function MaintenanceOverviewPage() {
     };
 
     if (isLoading) {
-        return <p className="p-8 text-center text-gray-500">Loading maintenance records…</p>;
+        return <p className="p-8 text-center text-gray-500 dark:text-muted-foreground">Loading maintenance records…</p>;
     }
     if (error) {
         return <p className="p-8 text-center text-red-500">Failed to load maintenance records.</p>;
@@ -33,29 +33,29 @@ export default function MaintenanceOverviewPage() {
         <div className="p-8 max-w-6xl mx-auto space-y-8">
             <SectionHeader title="Hostel Maintenance Overview" backHref="/admin/users-records" />
             <MaintenanceFilter onFilter={handleFilter} />
-            <Card className="shadow-sm border border-gray-100 rounded-[2rem]">
-                <CardHeader className="bg-gray-50 rounded-t-[2rem] p-6">
+            <Card className="shadow-sm border border-gray-100 dark:border-border rounded-[2rem]">
+                <CardHeader className="bg-gray-50 dark:bg-muted/10 rounded-t-[2rem] p-6">
                     <CardTitle className="text-xl font-bold">Maintenance Tasks</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>
-                        <TableHeader className="bg-gray-50">
+                        <TableHeader className="bg-gray-50 dark:bg-muted/10">
                             <TableRow>
-                                <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">Date</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">Hostel</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">Room</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">Title</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">Status</TableHead>
-                                <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">Action</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-muted-foreground uppercase">Date</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-muted-foreground uppercase">Hostel</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-muted-foreground uppercase">Room</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-muted-foreground uppercase">Title</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-muted-foreground uppercase">Status</TableHead>
+                                <TableHead className="px-6 py-3 text-xs font-medium text-gray-500 dark:text-muted-foreground uppercase">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {maintenances.map((m) => (
-                                <TableRow key={m.id} className="hover:bg-gray-50 transition-colors">
-                                    <TableCell className="px-6 py-4 text-sm text-gray-700">{format(new Date(m.createdAt), 'PPP')}</TableCell>
-                                    <TableCell className="px-6 py-4 text-sm text-gray-700">{m.Hostel?.name || 'N/A'}</TableCell>
-                                    <TableCell className="px-6 py-4 text-sm text-gray-700">{m.Room?.roomNumber || 'N/A'}</TableCell>
-                                    <TableCell className="px-6 py-4 text-sm font-medium text-gray-900">{m.title}</TableCell>
+                                <TableRow key={m.id} className="hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 transition-colors">
+                                    <TableCell className="px-6 py-4 text-sm text-gray-700 dark:text-foreground">{format(new Date(m.createdAt), 'PPP')}</TableCell>
+                                    <TableCell className="px-6 py-4 text-sm text-gray-700 dark:text-foreground">{m.Hostel?.name || 'N/A'}</TableCell>
+                                    <TableCell className="px-6 py-4 text-sm text-gray-700 dark:text-foreground">{m.Room?.roomNumber || 'N/A'}</TableCell>
+                                    <TableCell className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-foreground">{m.title}</TableCell>
                                     <TableCell className="px-6 py-4">
                                         <Badge variant={m.status === 'COMPLETED' ? 'default' : 'secondary'} className="uppercase text-xs">
                                             {m.status}
@@ -70,7 +70,7 @@ export default function MaintenanceOverviewPage() {
                             ))}
                             {maintenances.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={6} className="p-6 text-center text-gray-400">
+                                    <TableCell colSpan={6} className="p-6 text-center text-gray-400 dark:text-muted-foreground">
                                         No maintenance records match the current filters.
                                     </TableCell>
                                 </TableRow>

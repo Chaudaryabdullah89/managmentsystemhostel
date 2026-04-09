@@ -819,7 +819,7 @@ export async function POST(req: Request) {
 
             const contextStr = `
                 User Name: ${user.name}
-                Hostel Name: ${hostel?.name || 'Mubarak Group of Hostels'}
+                Hostel Name: ${hostel?.name || 'Our Hostel'}
                 Room: ${activeBooking?.Room?.roomNumber || 'Not assigned'}
                 Manager: ${hostel?.User_Hostel_managerIdToUser?.name || 'Hostel Staff'}
                 

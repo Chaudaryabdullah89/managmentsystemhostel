@@ -50,6 +50,7 @@ import { useHostel } from "@/hooks/usehostel";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
+import { ListPageSkeleton } from "@/components/ui/skeletons";
 
 const PaymentApprovalPage = () => {
     const user = useAuthStore((state) => state.user);
@@ -114,29 +115,16 @@ const PaymentApprovalPage = () => {
             case "PAID": return "bg-emerald-50 text-emerald-700 border-emerald-100";
             case "PENDING": return "bg-blue-50 text-blue-700 border-blue-100";
             case "PARTIAL": return "bg-amber-50 text-amber-700 border-amber-100";
-            default: return "bg-gray-50 text-gray-600 border-gray-100";
+            default: return "bg-gray-50 dark:bg-muted/10 text-gray-600 dark:text-muted-foreground border-gray-100 dark:border-border";
         }
     };
 
-    if (paymentsLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
-                    <ShieldCheck className="h-8 w-8 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 tracking-tight uppercase">Loading</p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-2">Getting records...</p>
-                </div>
-            </div>
-        </div>
-    );
+    if (paymentsLoading) return <ListPageSkeleton />;
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-32 font-sans tracking-tight text-slate-900">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-32 font-sans tracking-tight text-slate-900">
             {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16 shadow-sm shadow-black/5">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16 shadow-sm shadow-black/5">
                 <div className="max-w-[1600px] mx-auto px-8 h-full flex items-center justify-between">
                     <div className="flex items-center gap-5">
                         <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9" onClick={() => router.back()}>
@@ -146,7 +134,7 @@ const PaymentApprovalPage = () => {
                         <div className="flex items-center gap-3">
                             <div className="h-2 w-2 rounded-full bg-indigo-600" />
                             <div className="flex flex-col">
-                                <h1 className="text-base font-bold text-gray-900 tracking-tight uppercase">Payment Approvals</h1>
+                                <h1 className="text-base font-bold text-gray-900 dark:text-foreground tracking-tight uppercase">Payment Approvals</h1>
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pending</span>
                                     <Badge variant="secondary" className="bg-amber-50 text-amber-600 border-amber-100 text-[9px] px-2 py-0">
@@ -157,7 +145,7 @@ const PaymentApprovalPage = () => {
                         </div>
                     </div>
 
-                    <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="h-9 px-4 rounded-xl border-slate-200 bg-white font-bold text-[10px] uppercase tracking-wider text-slate-600 hover:bg-gray-50 group">
+                    <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="h-9 px-4 rounded-xl border-slate-200 bg-white dark:bg-card font-bold text-[10px] uppercase tracking-wider text-slate-600 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 group">
                         <RefreshCw className="h-3.5 w-3.5 mr-2 text-slate-400 group-hover:rotate-180 transition-transform duration-500" /> Refresh
                     </Button>
                 </div>
@@ -172,7 +160,7 @@ const PaymentApprovalPage = () => {
                         { label: 'Hostels', value: hostelsData?.hostels?.length || 0, icon: Building2, color: 'text-slate-900', bg: 'bg-slate-100' },
                         { label: 'Status', value: 'Live', icon: Activity, color: 'text-emerald-600', bg: 'bg-emerald-50' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-slate-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div key={i} className="bg-white dark:bg-card border border-slate-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
@@ -186,7 +174,7 @@ const PaymentApprovalPage = () => {
 
                 {/* Filters */}
                 {isAdmin && (
-                    <div className="bg-white border border-slate-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm">
+                    <div className="bg-white dark:bg-card border border-slate-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-4 shadow-sm">
                         <div className="flex-1 relative w-full group px-2">
                             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
                             <Input
@@ -216,7 +204,7 @@ const PaymentApprovalPage = () => {
                     </div>
                 )}
                 {!isAdmin && (
-                    <div className="bg-white border border-slate-100 rounded-2xl p-2 flex items-center gap-4 shadow-sm">
+                    <div className="bg-white dark:bg-card border border-slate-100 rounded-2xl p-2 flex items-center gap-4 shadow-sm">
                         <div className="flex-1 relative w-full group px-2">
                             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 group-focus-within:text-indigo-600 transition-colors" />
                             <Input
@@ -233,7 +221,7 @@ const PaymentApprovalPage = () => {
                 <div className="space-y-4">
                     {filteredPayments.length > 0 ? (
                         filteredPayments.map((payment) => (
-                            <div key={payment.id} className="bg-white border border-slate-100 rounded-2xl p-5 flex flex-col lg:flex-row items-center justify-between gap-6 hover:shadow-md transition-all group relative overflow-hidden">
+                            <div key={payment.id} className="bg-white dark:bg-card border border-slate-100 rounded-2xl p-5 flex flex-col lg:flex-row items-center justify-between gap-6 hover:shadow-md transition-all group relative overflow-hidden">
                                 <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-500 opacity-60" />
 
                                 <div className="flex items-center gap-6 flex-1 min-w-0">
@@ -279,7 +267,7 @@ const PaymentApprovalPage = () => {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="h-10 px-4 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 border-rose-100 bg-white font-bold text-[10px] uppercase tracking-widest"
+                                            className="h-10 px-4 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 border-rose-100 bg-white dark:bg-card font-bold text-[10px] uppercase tracking-widest"
                                             onClick={() => { setSelectedPaymentId(payment.id); setIsRejectDialogOpen(true); }}
                                         >
                                             Reject
@@ -303,7 +291,7 @@ const PaymentApprovalPage = () => {
                             </div>
                         ))
                     ) : (
-                        <div className="bg-white border border-slate-100 rounded-3xl py-24 text-center border-dashed shadow-sm">
+                        <div className="bg-white dark:bg-card border border-slate-100 rounded-3xl py-24 text-center border-dashed shadow-sm">
                             <div className="h-16 w-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-emerald-100">
                                 <CheckCircle className="h-8 w-8 text-emerald-500" />
                             </div>
@@ -316,9 +304,9 @@ const PaymentApprovalPage = () => {
                 {/* Footer Banner */}
                 <div className="pt-10">
                     <div className="bg-indigo-600 text-white rounded-[2.5rem] p-6 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl shadow-indigo-600/20 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-80 h-full bg-white/5 skew-x-12 translate-x-20" />
+                        <div className="absolute top-0 right-0 w-80 h-full bg-white dark:bg-card/5 skew-x-12 translate-x-20" />
                         <div className="flex items-center gap-6 relative z-10 px-4">
-                            <div className="h-11 w-11 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-xl border border-white/10">
+                            <div className="h-11 w-11 rounded-2xl bg-white dark:bg-card/10 flex items-center justify-center backdrop-blur-xl border border-white/10">
                                 <ShieldCheck className="h-5 w-5 text-white" />
                             </div>
                             <div className="flex flex-col">
@@ -327,7 +315,7 @@ const PaymentApprovalPage = () => {
                             </div>
                         </div>
 
-                        <div className="h-8 w-px bg-white/10 hidden md:block" />
+                        <div className="h-8 w-px bg-white dark:bg-card/10 hidden md:block" />
 
                         <div className="flex-1 flex items-center gap-16 px-8">
                             <div className="flex flex-col">
@@ -350,9 +338,9 @@ const PaymentApprovalPage = () => {
 
             {/* Rejection Dialog */}
             <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white ring-1 ring-slate-100">
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-card ring-1 ring-slate-100">
                     <div className="bg-rose-600 p-10 text-white text-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
                         <div className="h-16 w-16 bg-black/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
                             <XCircle className="h-8 w-8" />
                         </div>
@@ -385,10 +373,10 @@ const PaymentApprovalPage = () => {
 
             {/* Proof Modal */}
             <Dialog open={isReceiptDialogOpen} onOpenChange={setIsReceiptDialogOpen}>
-                <DialogContent className="max-w-3xl bg-white p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
+                <DialogContent className="max-w-3xl bg-white dark:bg-card p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl">
                     <div className="bg-indigo-600 p-6 text-white flex items-center justify-between border-b border-white/10">
                         <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
+                            <div className="h-10 w-10 rounded-xl bg-white dark:bg-card/10 flex items-center justify-center">
                                 <Scan className="h-5 w-5" />
                             </div>
                             <div>
@@ -396,7 +384,7 @@ const PaymentApprovalPage = () => {
                                 <p className="text-[9px] text-indigo-100 font-bold uppercase tracking-widest">Verify payment proof</p>
                             </div>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => setIsReceiptDialogOpen(false)} className="rounded-xl hover:bg-white/10 text-white">
+                        <Button variant="ghost" size="icon" onClick={() => setIsReceiptDialogOpen(false)} className="rounded-xl hover:bg-white dark:bg-card/10 text-white">
                             <X className="h-5 w-5" />
                         </Button>
                     </div>
@@ -410,7 +398,7 @@ const PaymentApprovalPage = () => {
                             </div>
                         )}
                     </div>
-                    <div className="p-6 border-t border-slate-100 flex justify-between items-center bg-white">
+                    <div className="p-6 border-t border-slate-100 flex justify-between items-center bg-white dark:bg-card">
                         <div className="flex flex-col">
                             <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Status</span>
                             <span className="text-[10px] font-bold text-indigo-600 uppercase">Verifying</span>

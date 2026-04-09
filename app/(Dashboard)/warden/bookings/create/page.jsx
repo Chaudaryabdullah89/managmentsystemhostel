@@ -285,24 +285,24 @@ const CreateBookingForm = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/30 pb-20">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/30 pb-20">
             {/* Slim Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1200px] mx-auto px-4 md:px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-2 md:gap-4">
-                        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-8 w-8 md:h-9 md:w-9" onClick={() => router.back()}>
+                        <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 dark:bg-muted/20 h-8 w-8 md:h-9 md:w-9" onClick={() => router.back()}>
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <div className="flex flex-col">
-                            <h1 className="text-sm md:text-lg font-bold text-gray-900 tracking-tight leading-none uppercase md:normal-case">Create Booking</h1>
-                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">New Booking Entry</p>
+                            <h1 className="text-sm md:text-lg font-bold text-gray-900 dark:text-foreground tracking-tight leading-none uppercase md:normal-case">Create Booking</h1>
+                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">New Booking Entry</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
                         <div className="flex items-center -space-x-1 md:-space-x-2">
                             {[1, 2, 3, 4].map(s => (
-                                <div key={s} className={`h-6 w-6 md:h-7 md:w-7 rounded-full border-2 border-white flex items-center justify-center text-[8px] md:text-[9px] font-bold transition-all ${step >= s ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-100 text-gray-400'}`}>
+                                <div key={s} className={`h-6 w-6 md:h-7 md:w-7 rounded-full border-2 border-white flex items-center justify-center text-[8px] md:text-[9px] font-bold transition-all ${step >= s ? 'bg-indigo-600 text-white shadow-lg' : 'bg-gray-100 dark:bg-muted/20 text-gray-400 dark:text-muted-foreground'}`}>
                                     {s}
                                 </div>
                             ))}
@@ -312,9 +312,9 @@ const CreateBookingForm = () => {
             </div>
 
             <div className="max-w-[1000px] mx-auto px-4 md:px-6 py-6 md:py-8 min-w-0">
-                <div className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl shadow-black/5 overflow-hidden min-w-0">
+                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-[2rem] md:rounded-[2.5rem] shadow-2xl shadow-black/5 overflow-hidden min-w-0">
                     {/* Progress Bar */}
-                    <div className="h-1 bg-gray-100 w-full">
+                    <div className="h-1 bg-gray-100 dark:bg-muted/20 w-full">
                         <div className="h-full bg-indigo-600 transition-all duration-700 ease-out" style={{ width: `${(step / 4) * 100}%` }} />
                     </div>
 
@@ -324,36 +324,36 @@ const CreateBookingForm = () => {
                             <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 <div className="flex flex-col gap-1 md:gap-2">
                                     <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Guest Profile</h2>
-                                    <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-widest">Enter guest details</p>
+                                    <p className="text-[10px] md:text-sm font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Enter guest details</p>
                                 </div>
 
                                 <div className="space-y-8">
                                     {!selectedGuest ? (
                                         <div className="relative">
-                                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                            <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-muted-foreground" />
                                             <Input
                                                 placeholder="Search by Name, Email, or CNIC..."
-                                                className="h-14 md:h-16 pl-12 md:pl-14 pr-6 rounded-2xl border-gray-100 bg-gray-50/50 font-bold focus:bg-white focus:border-indigo-600 transition-all text-sm"
+                                                className="h-14 md:h-16 pl-12 md:pl-14 pr-6 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-bold focus:bg-white dark:bg-card focus:border-indigo-600 transition-all text-sm"
                                                 value={existingGuestQuery}
                                                 onChange={(e) => setExistingGuestQuery(e.target.value)}
                                             />
-                                            {isSearching && <div className="absolute right-6 top-1/2 -translate-y-1/2"><Clock className="h-4 w-4 animate-spin text-gray-400" /></div>}
+                                            {isSearching && <div className="absolute right-6 top-1/2 -translate-y-1/2"><Clock className="h-4 w-4 animate-spin text-gray-400 dark:text-muted-foreground" /></div>}
 
                                             {searchResults.length > 0 && (
-                                                <div className="absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-50">
+                                                <div className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl shadow-2xl p-2 z-50">
                                                     {searchResults.map(user => (
                                                         <div
                                                             key={user.id}
-                                                            className="p-4 hover:bg-gray-50 rounded-xl cursor-pointer flex items-center justify-between group transition-colors"
+                                                            className="p-4 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 rounded-xl cursor-pointer flex items-center justify-between group transition-colors"
                                                             onClick={() => handleSelectGuest(user)}
                                                         >
                                                             <div className="flex items-center gap-4">
-                                                                <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                                                <div className="h-10 w-10 rounded-lg bg-gray-100 dark:bg-muted/20 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                                                                     <User className="h-5 w-5" />
                                                                 </div>
                                                                 <div>
                                                                     <p className="font-bold text-sm">{user.name}</p>
-                                                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">{user.email} • {user.cnic || 'NO-CNIC'}</p>
+                                                                    <p className="text-[10px] text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-tight">{user.email} • {user.cnic || 'NO-CNIC'}</p>
                                                                 </div>
                                                             </div>
                                                             <UserCheck className="h-4 w-4 text-emerald-500 opacity-0 group-hover:opacity-100 mr-4" />
@@ -363,17 +363,17 @@ const CreateBookingForm = () => {
                                             )}
                                         </div>
                                     ) : (
-                                        <div className="bg-emerald-50 border border-emerald-100 rounded-[2rem] p-8 flex items-center justify-between group">
+                                        <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-[2rem] p-8 flex items-center justify-between group">
                                             <div className="flex items-center gap-6">
                                                 <div className="h-16 w-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-xl shadow-emerald-500/20">
                                                     <UserCheck className="h-8 w-8" />
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-lg md:text-xl font-bold text-emerald-900 leading-none">{selectedGuest.name}</h3>
-                                                    <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-[0.2em] mt-2">Verified Guest</p>
+                                                    <h3 className="text-lg md:text-xl font-bold text-emerald-900 dark:text-emerald-400 leading-none">{selectedGuest.name}</h3>
+                                                    <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em] mt-2">Verified Guest</p>
                                                 </div>
                                             </div>
-                                            <Button variant="ghost" size="icon" className="rounded-xl text-emerald-600 hover:bg-emerald-100" onClick={resetGuest}>
+                                            <Button variant="ghost" size="icon" className="rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100" onClick={resetGuest}>
                                                 <X className="h-5 w-5" />
                                             </Button>
                                         </div>
@@ -382,74 +382,74 @@ const CreateBookingForm = () => {
                                     {!selectedGuest && (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-2.5">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Legal Name</Label>
-                                                <Input name="guestName" value={formData.guestName} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-bold text-sm" placeholder="First & Last Name" />
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Legal Name</Label>
+                                                <Input name="guestName" value={formData.guestName} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 dark:border-border font-bold text-sm" placeholder="First & Last Name" />
                                             </div>
                                             <div className="space-y-2.5">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Email Address</Label>
-                                                <Input name="guestEmail" value={formData.guestEmail} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-bold text-sm" placeholder="address@domain.com" />
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Email Address</Label>
+                                                <Input name="guestEmail" value={formData.guestEmail} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 dark:border-border font-bold text-sm" placeholder="address@domain.com" />
                                             </div>
                                             <div className="space-y-2.5">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Phone Number</Label>
-                                                <Input name="guestPhone" value={formData.guestPhone} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-bold text-sm" placeholder="03XX-XXXXXXX" />
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Phone Number</Label>
+                                                <Input name="guestPhone" value={formData.guestPhone} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 dark:border-border font-bold text-sm" placeholder="03XX-XXXXXXX" />
                                             </div>
                                             <div className="space-y-2.5">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">CNIC Number</Label>
-                                                <Input name="cnic" value={formData.cnic} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-bold text-sm" placeholder="XXXXX-XXXXXXX-X" />
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">CNIC Number</Label>
+                                                <Input name="cnic" value={formData.cnic} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 dark:border-border font-bold text-sm" placeholder="XXXXX-XXXXXXX-X" />
                                             </div>
 
                                             {/* Expanded Profile Fields */}
                                             <div className="space-y-2.5">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Guardian Name</Label>
-                                                <Input name="guardianName" value={formData.guardianName} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="Parent/Guardian Name" />
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Guardian Name</Label>
+                                                <Input name="guardianName" value={formData.guardianName} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 dark:border-border font-bold" placeholder="Parent/Guardian Name" />
                                             </div>
                                             <div className="space-y-2.5">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Guardian Phone</Label>
-                                                <Input name="guardianPhone" value={formData.guardianPhone} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="03XX-XXXXXXX" />
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Guardian Phone</Label>
+                                                <Input name="guardianPhone" value={formData.guardianPhone} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 dark:border-border font-bold" placeholder="03XX-XXXXXXX" />
                                             </div>
                                             <div className="space-y-2.5">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Emergency Number</Label>
-                                                <Input name="emergencyContact" value={formData.emergencyContact} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="Emergency Contact #" />
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Emergency Number</Label>
+                                                <Input name="emergencyContact" value={formData.emergencyContact} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 dark:border-border font-bold" placeholder="Emergency Contact #" />
                                             </div>
                                             <div className="space-y-2.5">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">City</Label>
-                                                <Input name="city" value={formData.city} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="City of Residence" />
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">City</Label>
+                                                <Input name="city" value={formData.city} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 dark:border-border font-bold" placeholder="City of Residence" />
                                             </div>
                                             <div className="space-y-2.5 md:col-span-2">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Current Residence</Label>
-                                                <Input name="currentResidence" value={formData.currentResidence} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="Current residence / where currently staying" />
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Current Residence</Label>
+                                                <Input name="currentResidence" value={formData.currentResidence} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 dark:border-border font-bold" placeholder="Current residence / where currently staying" />
                                             </div>
                                             <div className="space-y-2.5 md:col-span-2">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Residential Address</Label>
-                                                <Textarea name="address" value={formData.address} onChange={handleInputChange} className="min-h-[100px] rounded-xl border-gray-100 font-bold resize-none pt-4" placeholder="Full permanent address..." />
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Residential Address</Label>
+                                                <Textarea name="address" value={formData.address} onChange={handleInputChange} className="min-h-[100px] rounded-xl border-gray-100 dark:border-border font-bold resize-none pt-4" placeholder="Full permanent address..." />
                                             </div>
                                         </div>
                                     )}
                                     {selectedGuest && (
                                         <div className="space-y-2.5">
-                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Current Residence</Label>
-                                            <Input name="currentResidence" value={formData.currentResidence} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 font-bold" placeholder="Current residence / where currently staying" />
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Current Residence</Label>
+                                            <Input name="currentResidence" value={formData.currentResidence} onChange={handleInputChange} className="h-14 rounded-xl border-gray-100 dark:border-border font-bold" placeholder="Current residence / where currently staying" />
                                         </div>
                                     )}
 
                                     <div className="space-y-3 pt-2">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
                                             Additional Images (CNIC, profile, docs)
                                         </Label>
                                         <div className="flex items-center gap-3">
-                                            <label className="h-11 px-4 rounded-xl border border-gray-100 bg-gray-50 font-bold text-xs uppercase tracking-widest text-gray-600 hover:bg-white cursor-pointer inline-flex items-center gap-2">
+                                            <label className="h-11 px-4 rounded-xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-xs uppercase tracking-widest text-gray-600 dark:text-muted-foreground hover:bg-white dark:bg-card cursor-pointer inline-flex items-center gap-2">
                                                 <Upload className="h-4 w-4" />
                                                 {uploadingImages ? "Uploading..." : "Upload Images"}
                                                 <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageUpload} />
                                             </label>
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                            <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                                                 Max 8
                                             </span>
                                         </div>
                                         {(formData.otherImages || []).length > 0 && (
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                                 {formData.otherImages.map((src, i) => (
-                                                    <div key={`${src}-${i}`} className="relative border border-gray-100 rounded-xl overflow-hidden bg-white">
+                                                    <div key={`${src}-${i}`} className="relative border border-gray-100 dark:border-border rounded-xl overflow-hidden bg-white dark:bg-card">
                                                         <img src={src} alt={`uploaded-${i}`} className="h-24 w-full object-cover" />
                                                         <button
                                                             type="button"
@@ -472,23 +472,23 @@ const CreateBookingForm = () => {
                             <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div className="flex flex-col gap-2">
                                     <h2 className="text-3xl font-bold tracking-tight">Assign Room</h2>
-                                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Select hostel and room</p>
+                                    <p className="text-sm font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Select hostel and room</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     <div className="space-y-2.5">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Hostel</Label>
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Hostel</Label>
                                         <Select
                                             value={formData.hostelId}
                                             onValueChange={(v) => { setFormData(p => ({ ...p, hostelId: v, roomId: "" })); }}
                                             disabled={user?.role === 'WARDEN'}
                                         >
-                                            <SelectTrigger className="h-14 rounded-xl border-gray-100 font-bold">
+                                            <SelectTrigger className="h-14 rounded-xl border-gray-100 dark:border-border font-bold">
                                                 <SelectValue placeholder="Select Hostel" />
                                             </SelectTrigger>
-                                            <SelectContent className="rounded-2xl border-gray-100 shadow-2xl p-2 pb-4">
-                                                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 p-4">Hostels</div>
-                                                <div className="h-px bg-gray-50 mb-2 mx-2" />
+                                            <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl p-2 pb-4">
+                                                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground p-4">Hostels</div>
+                                                <div className="h-px bg-gray-50 dark:bg-muted/10 mb-2 mx-2" />
                                                 {hostelsLoading ? (
                                                     <div className="p-4 space-y-2">
                                                         <Skeleton className="h-4 w-full" />
@@ -501,21 +501,21 @@ const CreateBookingForm = () => {
                                                         </SelectItem>
                                                     ))
                                                 ) : (
-                                                    <div className="p-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No Hostels Found</div>
+                                                    <div className="p-4 text-center text-xs font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">No Hostels Found</div>
                                                 )}
                                             </SelectContent>
                                         </Select>
                                     </div>
 
                                     <div className="space-y-2.5">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Room</Label>
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Room</Label>
                                         <Select value={formData.roomId} onValueChange={(v) => setFormData(p => ({ ...p, roomId: v }))} disabled={!formData.hostelId}>
-                                            <SelectTrigger className="h-14 rounded-xl border-gray-100 font-bold">
+                                            <SelectTrigger className="h-14 rounded-xl border-gray-100 dark:border-border font-bold">
                                                 <SelectValue placeholder={formData.hostelId ? "Select Room" : "Choose a hostel first..."} />
                                             </SelectTrigger>
-                                            <SelectContent className="rounded-2xl border-gray-100 shadow-2xl p-2 pb-4">
-                                                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 p-4">Rooms</div>
-                                                <div className="h-px bg-gray-50 mb-2 mx-2" />
+                                            <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl p-2 pb-4">
+                                                <div className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground p-4">Rooms</div>
+                                                <div className="h-px bg-gray-50 dark:bg-muted/10 mb-2 mx-2" />
                                                 {roomsLoading ? (
                                                     <div className="p-4 space-y-2">
                                                         <Skeleton className="h-4 w-full" />
@@ -528,7 +528,7 @@ const CreateBookingForm = () => {
                                                         </SelectItem>
                                                     ))
                                                 ) : (
-                                                    <div className="p-4 text-center text-xs font-bold text-gray-400 uppercase tracking-widest">No Rooms Available</div>
+                                                    <div className="p-4 text-center text-xs font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">No Rooms Available</div>
                                                 )}
                                             </SelectContent>
                                         </Select>
@@ -536,22 +536,22 @@ const CreateBookingForm = () => {
                                 </div>
 
                                 {selectedRoom && (
-                                    <div className="bg-indigo-50/50 border border-indigo-100 rounded-[2rem] p-8 grid grid-cols-2 md:grid-cols-4 gap-8">
+                                    <div className="bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-950/30 rounded-[2rem] p-8 grid grid-cols-2 md:grid-cols-4 gap-8">
                                         <div>
                                             <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Room Type</p>
-                                            <p className="font-bold text-gray-900">{selectedRoom.type}</p>
+                                            <p className="font-bold text-gray-900 dark:text-foreground">{selectedRoom.type}</p>
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Capacity</p>
-                                            <p className="font-bold text-gray-900">{selectedRoom.capacity} Beds</p>
+                                            <p className="font-bold text-gray-900 dark:text-foreground">{selectedRoom.capacity} Beds</p>
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Floor</p>
-                                            <p className="font-bold text-gray-900">Level {selectedRoom.floor}</p>
+                                            <p className="font-bold text-gray-900 dark:text-foreground">Level {selectedRoom.floor}</p>
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Rent</p>
-                                            <p className="font-bold text-gray-900">PKR {selectedRoom.monthlyrent}</p>
+                                            <p className="font-bold text-gray-900 dark:text-foreground">PKR {selectedRoom.monthlyrent}</p>
                                         </div>
                                     </div>
                                 )}
@@ -563,56 +563,56 @@ const CreateBookingForm = () => {
                             <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div className="flex flex-col gap-1 md:gap-2">
                                     <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Payment Details</h2>
-                                    <p className="text-[10px] md:text-sm font-bold text-gray-400 uppercase tracking-widest">Set payment and dates</p>
+                                    <p className="text-[10px] md:text-sm font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Set payment and dates</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                     <div className="space-y-8">
                                         <div className="space-y-2.5">
-                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Check-in Date</Label>
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Check-in Date</Label>
                                             <div className="relative">
-                                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                                <Input type="date" name="checkIn" value={formData.checkIn} onChange={handleInputChange} className="h-14 pl-12 rounded-xl border-gray-100 font-bold" />
+                                                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
+                                                <Input type="date" name="checkIn" value={formData.checkIn} onChange={handleInputChange} className="h-14 pl-12 rounded-xl border-gray-100 dark:border-border font-bold" />
                                             </div>
                                         </div>
                                         <div className="space-y-2.5">
-                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Check-out Date (Optional)</Label>
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Check-out Date (Optional)</Label>
                                             <div className="relative">
-                                                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                                                <Input type="date" name="checkOut" value={formData.checkOut} onChange={handleInputChange} className="h-14 pl-12 rounded-xl border-gray-100 font-bold" />
+                                                <Clock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
+                                                <Input type="date" name="checkOut" value={formData.checkOut} onChange={handleInputChange} className="h-14 pl-12 rounded-xl border-gray-100 dark:border-border font-bold" />
                                             </div>
                                         </div>
                                         <div className="space-y-2.5">
-                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Rent Paid Upfront (Months)</Label>
+                                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Rent Paid Upfront (Months)</Label>
                                             <Select value={formData.advanceMonths.toString()} onValueChange={(v) => setFormData(p => ({ ...p, advanceMonths: parseInt(v) }))}>
-                                                <SelectTrigger className="h-14 rounded-xl border-gray-100 font-bold">
+                                                <SelectTrigger className="h-14 rounded-xl border-gray-100 dark:border-border font-bold">
                                                     <SelectValue />
                                                 </SelectTrigger>
-                                                <SelectContent className="rounded-xl border-gray-100">
+                                                <SelectContent className="rounded-xl border-gray-100 dark:border-border">
                                                     {[1, 2, 3, 6, 12].map(m => <SelectItem key={m} value={m.toString()}>{m} Month{m > 1 ? 's' : ''}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2.5">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Booking Status</Label>
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Booking Status</Label>
                                                 <Select value={formData.status} onValueChange={(v) => setFormData(p => ({ ...p, status: v }))}>
-                                                    <SelectTrigger className="h-14 rounded-xl border-gray-100 font-bold">
+                                                    <SelectTrigger className="h-14 rounded-xl border-gray-100 dark:border-border font-bold">
                                                         <SelectValue />
                                                     </SelectTrigger>
-                                                    <SelectContent className="rounded-xl border-gray-100">
+                                                    <SelectContent className="rounded-xl border-gray-100 dark:border-border">
                                                         <SelectItem value="PENDING">Pending</SelectItem>
                                                         <SelectItem value="CONFIRMED">Confirmed</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </div>
                                             <div className="space-y-2.5">
-                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Payment Status</Label>
+                                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Payment Status</Label>
                                                 <Select value={formData.paymentStatus} onValueChange={(v) => setFormData(p => ({ ...p, paymentStatus: v }))}>
-                                                    <SelectTrigger className="h-14 rounded-xl border-gray-100 font-bold">
+                                                    <SelectTrigger className="h-14 rounded-xl border-gray-100 dark:border-border font-bold">
                                                         <SelectValue />
                                                     </SelectTrigger>
-                                                    <SelectContent className="rounded-xl border-gray-100">
+                                                    <SelectContent className="rounded-xl border-gray-100 dark:border-border">
                                                         <SelectItem value="PENDING">Pending</SelectItem>
                                                         <SelectItem value="PAID">Paid</SelectItem>
                                                     </SelectContent>
@@ -623,7 +623,7 @@ const CreateBookingForm = () => {
 
                                     <div className="bg-indigo-600 text-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 space-y-6 md:space-y-8 shadow-2xl shadow-indigo-600/20">
                                         <div className="flex items-center gap-4">
-                                            <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md">
+                                            <div className="h-10 w-10 rounded-xl bg-white dark:bg-card/10 flex items-center justify-center backdrop-blur-md">
                                                 <ShieldCheck className="h-5 w-5 text-emerald-400" />
                                             </div>
                                             <h4 className="text-[10px] font-bold uppercase tracking-widest">Summary</h4>
@@ -631,41 +631,41 @@ const CreateBookingForm = () => {
 
                                         <div className="space-y-4">
                                             <div className="flex flex-col gap-1">
-                                                <div className="flex justify-between items-center text-gray-400">
+                                                <div className="flex justify-between items-center text-gray-400 dark:text-muted-foreground">
                                                     <span className="text-[10px] font-bold uppercase tracking-widest">Monthly Rent (Edit)</span>
                                                 </div>
                                                 <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">PKR</span>
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-muted-foreground font-bold text-xs">PKR</span>
                                                     <Input
                                                         type="number"
                                                         name="monthlyRent"
                                                         value={formData.monthlyRent}
                                                         onChange={handleInputChange}
-                                                        className="h-10 pl-10 bg-white/10 border-white/20 text-white font-bold rounded-xl"
+                                                        className="h-10 pl-10 bg-white dark:bg-card/10 border-white/20 text-white font-bold rounded-xl"
                                                     />
                                                 </div>
                                             </div>
 
                                             <div className="flex flex-col gap-1">
-                                                <div className="flex justify-between items-center text-gray-400">
+                                                <div className="flex justify-between items-center text-gray-400 dark:text-muted-foreground">
                                                     <span className="text-[10px] font-bold uppercase tracking-widest">Security Deposit (Edit)</span>
                                                 </div>
                                                 <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">PKR</span>
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-muted-foreground font-bold text-xs">PKR</span>
                                                     <Input
                                                         type="number"
                                                         name="securityDeposit"
                                                         value={formData.securityDeposit}
                                                         onChange={handleInputChange}
-                                                        className="h-10 pl-10 bg-white/10 border-white/20 text-white font-bold rounded-xl"
+                                                        className="h-10 pl-10 bg-white dark:bg-card/10 border-white/20 text-white font-bold rounded-xl"
                                                     />
                                                 </div>
                                             </div>
-                                            <div className="flex justify-between items-center text-gray-400">
+                                            <div className="flex justify-between items-center text-gray-400 dark:text-muted-foreground">
                                                 <span className="text-[10px] font-bold uppercase tracking-widest">Rent ({formData.advanceMonths} Months)</span>
                                                 <span className="font-bold text-white">PKR {(parseFloat(formData.monthlyRent) || 0) * formData.advanceMonths}</span>
                                             </div>
-                                            <div className="h-px bg-white/10 my-4" />
+                                            <div className="h-px bg-white dark:bg-card/10 my-4" />
                                             <div className="flex justify-between items-end gap-4">
                                                 <div className="flex-1">
                                                     <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] mb-1">Total Override</p>
@@ -676,7 +676,7 @@ const CreateBookingForm = () => {
                                                             name="totalAmount"
                                                             value={formData.totalAmount}
                                                             onChange={handleInputChange}
-                                                            className="h-12 md:h-14 pl-12 md:pl-14 bg-white/20 border-white/30 text-white font-bold text-xl md:text-2xl tracking-tighter rounded-2xl"
+                                                            className="h-12 md:h-14 pl-12 md:pl-14 bg-white dark:bg-card/20 border-white/30 text-white font-bold text-xl md:text-2xl tracking-tighter rounded-2xl"
                                                         />
                                                     </div>
                                                 </div>
@@ -693,40 +693,40 @@ const CreateBookingForm = () => {
                             <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div className="flex flex-col gap-2">
                                     <h2 className="text-3xl font-bold tracking-tight">Review Booking</h2>
-                                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Check all details before saving</p>
+                                    <p className="text-sm font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Check all details before saving</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                                    <div className="bg-gray-50/50 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 flex items-start gap-4 md:gap-6">
-                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
-                                            <User className="h-5 w-5 md:h-6 md:w-6 text-gray-400" />
+                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6">
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm shrink-0">
+                                            <User className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground" />
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Guest</p>
-                                            <h4 className="text-base md:text-lg font-bold text-gray-900 truncate">{formData.guestName}</h4>
-                                            <p className="text-[10px] md:text-xs font-bold text-gray-500 mt-1 truncate">{formData.guestEmail}</p>
+                                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Guest</p>
+                                            <h4 className="text-base md:text-lg font-bold text-gray-900 dark:text-foreground truncate">{formData.guestName}</h4>
+                                            <p className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-muted-foreground mt-1 truncate">{formData.guestEmail}</p>
                                         </div>
                                     </div>
 
-                                    <div className="bg-gray-50/50 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 flex items-start gap-4 md:gap-6">
-                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
-                                            <Building2 className="h-5 w-5 md:h-6 md:w-6 text-gray-400" />
+                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6">
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm shrink-0">
+                                            <Building2 className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground" />
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Room</p>
-                                            <h4 className="text-base md:text-lg font-bold text-gray-900 truncate">Room {selectedRoom?.roomNumber}</h4>
-                                            <p className="text-[10px] md:text-xs font-bold text-gray-500 mt-1 truncate">{hostels.find(h => h.id === formData.hostelId)?.name}</p>
+                                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Room</p>
+                                            <h4 className="text-base md:text-lg font-bold text-gray-900 dark:text-foreground truncate">Room {selectedRoom?.roomNumber}</h4>
+                                            <p className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-muted-foreground mt-1 truncate">{hostels.find(h => h.id === formData.hostelId)?.name}</p>
                                         </div>
                                     </div>
 
-                                    <div className="bg-gray-50/50 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 flex items-start gap-4 md:gap-6">
-                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
-                                            <Calendar className="h-5 w-5 md:h-6 md:w-6 text-gray-400" />
+                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6">
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm shrink-0">
+                                            <Calendar className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground" />
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Timeline</p>
-                                            <h4 className="text-base md:text-lg font-bold text-gray-900">Starts {formData.checkIn}</h4>
-                                            <p className="text-[10px] md:text-xs font-bold text-gray-500 mt-1">{formData.checkOut ? `Ends ${formData.checkOut}` : 'Continuous Stay'}</p>
+                                            <p className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Timeline</p>
+                                            <h4 className="text-base md:text-lg font-bold text-gray-900 dark:text-foreground">Starts {formData.checkIn}</h4>
+                                            <p className="text-[10px] md:text-xs font-bold text-gray-500 dark:text-muted-foreground mt-1">{formData.checkOut ? `Ends ${formData.checkOut}` : 'Continuous Stay'}</p>
                                         </div>
                                     </div>
 
@@ -739,15 +739,15 @@ const CreateBookingForm = () => {
                                                 <p className="text-[9px] md:text-[10px] font-bold text-white/80 uppercase tracking-widest">+ Security Deposit: PKR {formData.securityDeposit}</p>
                                             </div>
                                         </div>
-                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white/20 flex items-center justify-center backdrop-blur-md">
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card/20 flex items-center justify-center backdrop-blur-md">
                                             <ShieldCheck className="h-5 w-5 md:h-6 md:w-6 text-white" />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-4 p-6 bg-amber-50 rounded-2xl border border-amber-100">
+                                <div className="flex items-center gap-4 p-6 bg-amber-50 dark:bg-amber-950/20 rounded-2xl border border-amber-100 dark:border-amber-900/30">
                                     <AlertCircle className="h-5 w-5 text-amber-500" />
-                                    <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest leading-loose">
+                                    <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-widest leading-loose">
                                         BY PROCEEDING, YOU CONFIRM THAT THE ABOVE DATA IS CORRECT. CONFIRMATION EMAILS WILL BE SENT AUTOMATICALLY.
                                     </p>
                                 </div>
@@ -756,10 +756,10 @@ const CreateBookingForm = () => {
                     </div>
 
                     {/* Footer Actions */}
-                    <div className="bg-gray-50/50 border-t p-4 md:p-8 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
+                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-t p-4 md:p-8 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
                         <Button
                             variant="outline"
-                            className="h-12 md:h-14 px-8 md:px-10 w-full sm:w-auto rounded-2xl border-gray-200 bg-white font-bold text-xs uppercase tracking-widest hover:bg-gray-100 disabled:opacity-30"
+                            className="h-12 md:h-14 px-8 md:px-10 w-full sm:w-auto rounded-2xl border-gray-200 dark:border-border bg-white dark:bg-card font-bold text-xs uppercase tracking-widest hover:bg-gray-100 dark:bg-muted/20 disabled:opacity-30"
                             onClick={handleBack}
                             disabled={step === 1}
                         >
@@ -797,10 +797,10 @@ const CreateBookingForm = () => {
 export default function CreateBookingPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-gray-50/30 flex items-center justify-center">
+            <div className="min-h-screen bg-gray-50 dark:bg-muted/10/30 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="h-10 w-10 border-[3px] border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Booking System...</p>
+                    <div className="h-10 w-10 border-[3px] border-gray-200 dark:border-border border-t-indigo-600 rounded-full animate-spin" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Loading Booking System...</p>
                 </div>
             </div>
         }>

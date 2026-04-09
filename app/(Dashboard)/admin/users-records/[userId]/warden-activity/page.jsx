@@ -67,7 +67,7 @@ export default function WardenRecordsPage({ params }) {
         <div className="p-6 max-w-4xl mx-auto space-y-6">
             <SectionHeader title="Operational Log" backHref={`/admin/users-records/${userId}`} />
             <Card className="rounded-lg shadow-sm border">
-                <CardHeader className="border-b bg-gray-50/50 py-4">
+                <CardHeader className="border-b bg-gray-50 dark:bg-muted/10/50 dark:bg-background py-4">
                     <CardTitle className="text-base font-semibold">Activity Ledger</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">

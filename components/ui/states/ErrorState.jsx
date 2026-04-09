@@ -9,12 +9,12 @@ const ErrorState = ({
     retryLabel = "Retry",
 }) => {
     return (
-        <div className="bg-white border border-rose-100 rounded-3xl p-12 text-center shadow-sm">
-            <div className="h-14 w-14 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center mx-auto mb-5">
+        <div className="bg-white dark:bg-card border border-rose-100 dark:border-rose-900/30 rounded-3xl p-12 text-center shadow-sm">
+            <div className="h-14 w-14 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 flex items-center justify-center mx-auto mb-5">
                 <AlertCircle className="h-7 w-7 text-rose-500" />
             </div>
-            <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight">{title}</h3>
-            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1 max-w-[340px] mx-auto leading-relaxed">
+            <h3 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">{title}</h3>
+            <p className="text-gray-400 dark:text-muted-foreground font-bold text-[10px] uppercase tracking-widest mt-1 max-w-[340px] mx-auto leading-relaxed">
                 {description}
             </p>
             {onRetry && (

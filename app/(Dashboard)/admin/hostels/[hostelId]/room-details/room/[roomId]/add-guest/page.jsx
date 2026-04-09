@@ -49,7 +49,7 @@ import {
 import { useCreateBooking } from "@/hooks/useBooking";
 import { useSingleRoomByHostelId } from "@/hooks/useRoom";
 import { toast } from "sonner";
-import Loader from "@/components/ui/Loader";
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 
 const AddGuestPage = () => {
     const params = useParams();
@@ -216,11 +216,11 @@ const AddGuestPage = () => {
         router.push(`/admin/hostels/${hostelId}/room-details/room/${roomId}`);
     };
 
-    if (roomLoading) return <Loader label="Loading Room Details" subLabel="Fetching room and availability info..." icon={UserPlus} fullScreen={false} />;
+    if (roomLoading) return <DetailPageSkeleton />;
 
     return (
-        <div className="min-h-screen bg-gray-50/30 pb-20 font-sans">
-            <header className="bg-white border-b sticky top-0 z-40 py-2 md:h-16">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/30 pb-20 font-sans">
+            <header className="bg-white dark:bg-card border-b sticky top-0 z-40 py-2 md:h-16">
                 <div className="max-w-[1200px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl hover:bg-gray-100 h-9 w-9 shrink-0">
@@ -228,8 +228,8 @@ const AddGuestPage = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-100 hidden md:block" />
                         <div className="flex flex-col min-w-0">
-                            <h1 className="text-sm md:text-lg font-black text-gray-900 tracking-tight leading-none truncate uppercase">Guest Deployment</h1>
-                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1 truncate">
+                            <h1 className="text-sm md:text-lg font-black text-gray-900 dark:text-foreground tracking-tight leading-none truncate uppercase">Guest Deployment</h1>
+                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1 truncate">
                                 Unit {room?.roomNumber} • <span className="text-indigo-500">Occupancy Protocol</span>
                             </p>
                         </div>
@@ -238,7 +238,7 @@ const AddGuestPage = () => {
                     <div className="flex items-center gap-2">
                         <div className="flex items-center -space-x-1.5 md:-space-x-2">
                             {[1, 2, 3, 4].map(s => (
-                                <div key={s} className={`h-6 w-6 md:h-8 md:w-8 rounded-full border-2 border-white flex items-center justify-center text-[8px] md:text-[10px] font-black transition-all ${step >= s ? 'bg-black text-white shadow-lg' : 'bg-gray-100 text-gray-400'}`}>
+                                <div key={s} className={`h-6 w-6 md:h-8 md:w-8 rounded-full border-2 border-white flex items-center justify-center text-[8px] md:text-[10px] font-black transition-all ${step >= s ? 'bg-black text-white shadow-lg' : 'bg-gray-100 text-gray-400 dark:text-muted-foreground'}`}>
                                     {s}
                                 </div>
                             ))}
@@ -248,7 +248,7 @@ const AddGuestPage = () => {
             </header>
 
             <div className="max-w-[1000px] mx-auto px-4 md:px-6 py-8">
-                <div className="bg-white border border-gray-100 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl shadow-black/5 overflow-hidden">
+                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-[2rem] md:rounded-[2.5rem] shadow-2xl shadow-black/5 overflow-hidden">
                     {/* Progress Bar */}
                     <div className="h-1 bg-gray-100 w-full">
                         <div className="h-full bg-indigo-600 transition-all duration-700 ease-out" style={{ width: `${(step / 4) * 100}%` }} />
@@ -260,27 +260,27 @@ const AddGuestPage = () => {
                             <div className="space-y-8 md:space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 <div className="flex flex-col gap-2">
                                     <h2 className="text-2xl md:text-4xl font-black tracking-tight uppercase italic">Guest Intelligence</h2>
-                                    <p className="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Identify or construct the resident identity</p>
+                                    <p className="text-[10px] md:text-xs font-black text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">Identify or construct the resident identity</p>
                                 </div>
 
                                 <div className="space-y-6 md:space-y-8">
                                     {!selectedGuest ? (
                                         <div className="relative">
-                                            <Search className="absolute left-5 md:left-6 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400" />
+                                            <Search className="absolute left-5 md:left-6 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400 dark:text-muted-foreground" />
                                             <Input
                                                 placeholder="Search registry by Name, Email, or CNIC..."
-                                                className="h-14 md:h-16 pl-12 md:pl-14 pr-6 rounded-xl md:rounded-2xl border-gray-100 bg-gray-50/50 font-black text-xs md:text-sm focus:bg-white focus:border-indigo-600 transition-all uppercase placeholder:normal-case"
+                                                className="h-14 md:h-16 pl-12 md:pl-14 pr-6 rounded-xl md:rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-black text-xs md:text-sm focus:bg-white dark:bg-card focus:border-indigo-600 transition-all uppercase placeholder:normal-case"
                                                 value={existingGuestQuery}
                                                 onChange={(e) => setExistingGuestQuery(e.target.value)}
                                             />
-                                            {isSearching && <div className="absolute right-6 top-1/2 -translate-y-1/2"><Loader2 className="h-4 w-4 animate-spin text-gray-400" /></div>}
+                                            {isSearching && <div className="absolute right-6 top-1/2 -translate-y-1/2"><Loader2 className="h-4 w-4 animate-spin text-gray-400 dark:text-muted-foreground" /></div>}
 
                                             {searchResults.length > 0 && (
-                                                <div className="absolute top-full left-0 w-full mt-2 bg-white border border-gray-100 rounded-2xl shadow-2xl p-2 z-50 overflow-hidden">
+                                                <div className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl shadow-2xl p-2 z-50 overflow-hidden">
                                                     {searchResults.map(user => (
                                                         <div
                                                             key={user.id}
-                                                            className="p-4 hover:bg-gray-50 rounded-xl cursor-pointer flex items-center justify-between group transition-colors"
+                                                            className="p-4 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 rounded-xl cursor-pointer flex items-center justify-between group transition-colors"
                                                             onClick={() => handleSelectGuest(user)}
                                                         >
                                                             <div className="flex items-center gap-4">
@@ -289,7 +289,7 @@ const AddGuestPage = () => {
                                                                 </div>
                                                                 <div>
                                                                     <p className="font-black text-sm uppercase">{user.name}</p>
-                                                                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-tight italic">{user.email}</p>
+                                                                    <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-black uppercase tracking-tight italic">{user.email}</p>
                                                                 </div>
                                                             </div>
                                                             <UserCheck className="h-4 w-4 text-emerald-500 opacity-0 group-hover:opacity-100 mr-2" />
@@ -317,40 +317,40 @@ const AddGuestPage = () => {
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Legal Name</Label>
-                                            <Input disabled={!!selectedGuest} name="guestName" value={formData.guestName} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-black text-xs md:text-sm uppercase bg-gray-50/30 focus:bg-white" placeholder="First & Last Name" />
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Legal Name</Label>
+                                            <Input disabled={!!selectedGuest} name="guestName" value={formData.guestName} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 dark:border-border font-black text-xs md:text-sm uppercase bg-gray-50 dark:bg-muted/10/30 focus:bg-white dark:bg-card" placeholder="First & Last Name" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Email Terminal</Label>
-                                            <Input disabled={!!selectedGuest} name="guestEmail" value={formData.guestEmail} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-black text-xs md:text-sm uppercase bg-gray-50/30 focus:bg-white" placeholder="address@domain.com" />
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Email Terminal</Label>
+                                            <Input disabled={!!selectedGuest} name="guestEmail" value={formData.guestEmail} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 dark:border-border font-black text-xs md:text-sm uppercase bg-gray-50 dark:bg-muted/10/30 focus:bg-white dark:bg-card" placeholder="address@domain.com" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Phone Vector</Label>
-                                            <Input name="guestPhone" value={formData.guestPhone} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-black text-xs md:text-sm uppercase bg-gray-50/30 focus:bg-white" placeholder="03XX-XXXXXXX" />
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Phone Vector</Label>
+                                            <Input name="guestPhone" value={formData.guestPhone} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 dark:border-border font-black text-xs md:text-sm uppercase bg-gray-50 dark:bg-muted/10/30 focus:bg-white dark:bg-card" placeholder="03XX-XXXXXXX" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">CNIC Registry</Label>
-                                            <Input name="cnic" value={formData.cnic} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-black text-xs md:text-sm uppercase bg-gray-50/30 focus:bg-white" placeholder="XXXXX-XXXXXXX-X" />
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">CNIC Registry</Label>
+                                            <Input name="cnic" value={formData.cnic} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 dark:border-border font-black text-xs md:text-sm uppercase bg-gray-50 dark:bg-muted/10/30 focus:bg-white dark:bg-card" placeholder="XXXXX-XXXXXXX-X" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Guardian Name</Label>
-                                            <Input name="guardianName" value={formData.guardianName} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-black text-xs md:text-sm uppercase bg-gray-50/30 focus:bg-white" placeholder="Guardian Full Name" />
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Guardian Name</Label>
+                                            <Input name="guardianName" value={formData.guardianName} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 dark:border-border font-black text-xs md:text-sm uppercase bg-gray-50 dark:bg-muted/10/30 focus:bg-white dark:bg-card" placeholder="Guardian Full Name" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Guardian Phone</Label>
-                                            <Input name="guardianPhone" value={formData.guardianPhone} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-black text-xs md:text-sm uppercase bg-gray-50/30 focus:bg-white" placeholder="03XX-XXXXXXX" />
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Guardian Phone</Label>
+                                            <Input name="guardianPhone" value={formData.guardianPhone} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 dark:border-border font-black text-xs md:text-sm uppercase bg-gray-50 dark:bg-muted/10/30 focus:bg-white dark:bg-card" placeholder="03XX-XXXXXXX" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Emergency Vector</Label>
-                                            <Input name="emergencyContact" value={formData.emergencyContact} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-black text-xs md:text-sm uppercase bg-gray-50/30 focus:bg-white" placeholder="Emergency Phone" />
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Emergency Vector</Label>
+                                            <Input name="emergencyContact" value={formData.emergencyContact} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 dark:border-border font-black text-xs md:text-sm uppercase bg-gray-50 dark:bg-muted/10/30 focus:bg-white dark:bg-card" placeholder="Emergency Phone" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">City Node</Label>
-                                            <Input name="city" value={formData.city} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 font-black text-xs md:text-sm uppercase bg-gray-50/30 focus:bg-white" placeholder="City" />
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">City Node</Label>
+                                            <Input name="city" value={formData.city} onChange={handleInputChange} className="h-12 md:h-14 rounded-xl border-gray-100 dark:border-border font-black text-xs md:text-sm uppercase bg-gray-50 dark:bg-muted/10/30 focus:bg-white dark:bg-card" placeholder="City" />
                                         </div>
                                         <div className="space-y-2 md:col-span-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Permanent Residential Address</Label>
-                                            <Textarea name="address" value={formData.address} onChange={handleInputChange} className="min-h-[100px] rounded-xl border-gray-100 font-bold resize-none pt-4 bg-gray-50/30 focus:bg-white" placeholder="Full permanent address..." />
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Permanent Residential Address</Label>
+                                            <Textarea name="address" value={formData.address} onChange={handleInputChange} className="min-h-[100px] rounded-xl border-gray-100 dark:border-border font-bold resize-none pt-4 bg-gray-50 dark:bg-muted/10/30 focus:bg-white dark:bg-card" placeholder="Full permanent address..." />
                                         </div>
                                     </div>
                                 </div>
@@ -362,36 +362,36 @@ const AddGuestPage = () => {
                             <div className="space-y-8 md:space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div className="flex flex-col gap-2">
                                     <h2 className="text-2xl md:text-4xl font-black tracking-tight uppercase italic">Identification Vault</h2>
-                                    <p className="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Verify the resident through state ID documentation</p>
+                                    <p className="text-[10px] md:text-xs font-black text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">Verify the resident through state ID documentation</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1 flex justify-between">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1 flex justify-between">
                                             CNIC Front Fragment {documents.cnicFront && <Badge className="bg-emerald-500 text-white border-none py-0.5 text-[8px]">VERIFIED</Badge>}
                                         </Label>
-                                        <div className="relative h-40 md:h-48 border-2 border-dashed border-gray-100 rounded-2xl md:rounded-[2rem] flex flex-col items-center justify-center bg-gray-50/50 hover:bg-white hover:border-indigo-600 transition-all cursor-pointer group overflow-hidden">
+                                        <div className="relative h-40 md:h-48 border-2 border-dashed border-gray-100 dark:border-border rounded-2xl md:rounded-[2rem] flex flex-col items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background hover:bg-white dark:bg-card hover:border-indigo-600 transition-all cursor-pointer group overflow-hidden">
                                             <input type="file" accept="image/*,.pdf" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={(e) => handleFileChange(e, 'cnicFront')} />
                                             <div className="flex flex-col items-center gap-3">
-                                                <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl ${documents.cnicFront ? 'bg-emerald-500 text-white' : 'bg-white text-gray-300'} flex items-center justify-center shadow-lg transition-colors`}>
+                                                <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl ${documents.cnicFront ? 'bg-emerald-500 text-white' : 'bg-white dark:bg-card text-gray-300'} flex items-center justify-center shadow-lg transition-colors`}>
                                                     {documents.cnicFront ? <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6" /> : <Upload className="h-5 w-5 md:h-6 md:w-6" />}
                                                 </div>
-                                                <span className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Capture Front Surface</span>
+                                                <span className="text-[9px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Capture Front Surface</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1 flex justify-between">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1 flex justify-between">
                                             CNIC Back Fragment {documents.cnicBack && <Badge className="bg-emerald-500 text-white border-none py-0.5 text-[8px]">VERIFIED</Badge>}
                                         </Label>
-                                        <div className="relative h-40 md:h-48 border-2 border-dashed border-gray-100 rounded-2xl md:rounded-[2rem] flex flex-col items-center justify-center bg-gray-50/50 hover:bg-white hover:border-indigo-600 transition-all cursor-pointer group overflow-hidden">
+                                        <div className="relative h-40 md:h-48 border-2 border-dashed border-gray-100 dark:border-border rounded-2xl md:rounded-[2rem] flex flex-col items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background hover:bg-white dark:bg-card hover:border-indigo-600 transition-all cursor-pointer group overflow-hidden">
                                             <input type="file" accept="image/*,.pdf" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={(e) => handleFileChange(e, 'cnicBack')} />
                                             <div className="flex flex-col items-center gap-3">
-                                                <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl ${documents.cnicBack ? 'bg-emerald-500 text-white' : 'bg-white text-gray-300'} flex items-center justify-center shadow-lg transition-colors`}>
+                                                <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl ${documents.cnicBack ? 'bg-emerald-500 text-white' : 'bg-white dark:bg-card text-gray-300'} flex items-center justify-center shadow-lg transition-colors`}>
                                                     {documents.cnicBack ? <CheckCircle2 className="h-5 w-5 md:h-6 md:w-6" /> : <Upload className="h-5 w-5 md:h-6 md:w-6" />}
                                                 </div>
-                                                <span className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest">Capture Reverse Surface</span>
+                                                <span className="text-[9px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Capture Reverse Surface</span>
                                             </div>
                                         </div>
                                     </div>
@@ -414,32 +414,32 @@ const AddGuestPage = () => {
                             <div className="space-y-8 md:space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div className="flex flex-col gap-2">
                                     <h2 className="text-2xl md:text-4xl font-black tracking-tight uppercase italic">Fiscal Synthesis</h2>
-                                    <p className="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Construct the commercial contract parameters</p>
+                                    <p className="text-[10px] md:text-xs font-black text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">Construct the commercial contract parameters</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                                     <div className="space-y-6 md:space-y-8">
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Deployment Date</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Deployment Date</Label>
                                             <div className="relative">
-                                                <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400" />
-                                                <Input type="date" name="checkIn" value={formData.checkIn} onChange={handleInputChange} className="h-14 md:h-16 pl-12 md:pl-14 rounded-xl md:rounded-2xl border-gray-100 font-black bg-gray-50/50 focus:bg-white transition-all text-xs md:text-sm" />
+                                                <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400 dark:text-muted-foreground" />
+                                                <Input type="date" name="checkIn" value={formData.checkIn} onChange={handleInputChange} className="h-14 md:h-16 pl-12 md:pl-14 rounded-xl md:rounded-2xl border-gray-100 dark:border-border font-black bg-gray-50 dark:bg-muted/10/50 dark:bg-background focus:bg-white dark:bg-card transition-all text-xs md:text-sm" />
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Monthly Tariff (Rs.)</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Monthly Tariff (Rs.)</Label>
                                             <div className="relative">
-                                                <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400" />
-                                                <Input type="number" name="totalAmount" value={formData.totalAmount} onChange={handleInputChange} className="h-14 md:h-16 pl-12 md:pl-14 rounded-xl md:rounded-2xl border-gray-100 font-black text-xs md:text-sm italic" />
+                                                <DollarSign className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400 dark:text-muted-foreground" />
+                                                <Input type="number" name="totalAmount" value={formData.totalAmount} onChange={handleInputChange} className="h-14 md:h-16 pl-12 md:pl-14 rounded-xl md:rounded-2xl border-gray-100 dark:border-border font-black text-xs md:text-sm italic" />
                                             </div>
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Security Commitment (Rs.)</Label>
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Security Commitment (Rs.)</Label>
                                             <div className="relative">
-                                                <ShieldCheck className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400" />
-                                                <Input type="number" name="securityDeposit" value={formData.securityDeposit} onChange={handleInputChange} className="h-14 md:h-16 pl-12 md:pl-14 rounded-xl md:rounded-2xl border-gray-100 font-black text-xs md:text-sm italic" />
+                                                <ShieldCheck className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400 dark:text-muted-foreground" />
+                                                <Input type="number" name="securityDeposit" value={formData.securityDeposit} onChange={handleInputChange} className="h-14 md:h-16 pl-12 md:pl-14 rounded-xl md:rounded-2xl border-gray-100 dark:border-border font-black text-xs md:text-sm italic" />
                                             </div>
                                         </div>
                                     </div>
@@ -447,22 +447,22 @@ const AddGuestPage = () => {
                                     <div className="bg-gray-950 text-white rounded-[1.5rem] md:rounded-[2.5rem] p-8 md:p-10 space-y-6 md:space-y-8 shadow-2xl shadow-black/20 relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-10 -mt-10 blur-3xl group-hover:bg-indigo-500/20 transition-all" />
                                         <div className="flex items-center gap-4 relative z-10">
-                                            <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white/5 flex items-center justify-center backdrop-blur-md border border-white/10">
+                                            <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-white dark:bg-card/5 flex items-center justify-center backdrop-blur-md border border-white/10">
                                                 <Receipt className="h-5 w-5 md:h-6 md:w-6 text-emerald-400" />
                                             </div>
                                             <h4 className="text-[9px] md:text-xs font-black uppercase tracking-[0.2em]">Financial Ledger Preview</h4>
                                         </div>
 
                                         <div className="space-y-4 pt-4 relative z-10">
-                                            <div className="flex justify-between items-center text-gray-400">
+                                            <div className="flex justify-between items-center text-gray-400 dark:text-muted-foreground">
                                                 <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">Unit Rent</span>
                                                 <span className="font-black text-white italic text-xs md:text-sm">PKR {Number(formData.totalAmount).toLocaleString()}</span>
                                             </div>
-                                            <div className="flex justify-between items-center text-gray-400">
+                                            <div className="flex justify-between items-center text-gray-400 dark:text-muted-foreground">
                                                 <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest">Security Deposit</span>
                                                 <span className="font-black text-white italic text-xs md:text-sm">PKR {Number(formData.securityDeposit).toLocaleString()}</span>
                                             </div>
-                                            <div className="h-px bg-white/5 my-6" />
+                                            <div className="h-px bg-white dark:bg-card/5 my-6" />
                                             <div className="flex justify-between items-end">
                                                 <div>
                                                     <p className="text-[9px] md:text-[10px] font-black text-emerald-400 uppercase tracking-[0.2em] mb-1">Total Initial Liability</p>
@@ -481,40 +481,40 @@ const AddGuestPage = () => {
                             <div className="space-y-8 md:space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
                                 <div className="flex flex-col gap-2">
                                     <h2 className="text-2xl md:text-4xl font-black tracking-tight uppercase italic">Review Deck</h2>
-                                    <p className="text-[10px] md:text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Final audit of the occupancy contract</p>
+                                    <p className="text-[10px] md:text-xs font-black text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">Final audit of the occupancy contract</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                                    <div className="bg-gray-50/50 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 flex items-start gap-4 md:gap-6 transition-all hover:bg-white hover:shadow-md">
-                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
-                                            <User className="h-5 w-5 md:h-6 md:w-6 text-gray-400" />
+                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6 transition-all hover:bg-white dark:bg-card hover:shadow-md">
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm shrink-0">
+                                            <User className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground" />
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Resident Entity</p>
-                                            <h4 className="text-base md:text-lg font-black text-gray-900 uppercase truncate">{formData.guestName}</h4>
-                                            <p className="text-[10px] font-black text-gray-500 mt-1 uppercase truncate italic tracking-tight">{formData.guestEmail}</p>
+                                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Resident Entity</p>
+                                            <h4 className="text-base md:text-lg font-black text-gray-900 dark:text-foreground uppercase truncate">{formData.guestName}</h4>
+                                            <p className="text-[10px] font-black text-gray-500 dark:text-muted-foreground mt-1 uppercase truncate italic tracking-tight">{formData.guestEmail}</p>
                                         </div>
                                     </div>
 
-                                    <div className="bg-gray-50/50 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 flex items-start gap-4 md:gap-6 transition-all hover:bg-white hover:shadow-md">
-                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
-                                            <Building2 className="h-5 w-5 md:h-6 md:w-6 text-gray-400" />
+                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6 transition-all hover:bg-white dark:bg-card hover:shadow-md">
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm shrink-0">
+                                            <Building2 className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground" />
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Assigned Unit</p>
-                                            <h4 className="text-base md:text-lg font-black text-gray-900 uppercase">Unit {room?.roomNumber}</h4>
-                                            <p className="text-[10px] font-black text-gray-500 mt-1 uppercase truncate italic tracking-tight">{room?.Hostel?.name}</p>
+                                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Assigned Unit</p>
+                                            <h4 className="text-base md:text-lg font-black text-gray-900 dark:text-foreground uppercase">Unit {room?.roomNumber}</h4>
+                                            <p className="text-[10px] font-black text-gray-500 dark:text-muted-foreground mt-1 uppercase truncate italic tracking-tight">{room?.Hostel?.name}</p>
                                         </div>
                                     </div>
 
-                                    <div className="bg-gray-50/50 rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 flex items-start gap-4 md:gap-6 transition-all hover:bg-white hover:shadow-md">
-                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm shrink-0">
-                                            <Calendar className="h-5 w-5 md:h-6 md:w-6 text-gray-400" />
+                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6 transition-all hover:bg-white dark:bg-card hover:shadow-md">
+                                        <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm shrink-0">
+                                            <Calendar className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground" />
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Timeline</p>
-                                            <h4 className="text-base md:text-lg font-black text-gray-900 uppercase">Deployed {formData.checkIn}</h4>
-                                            <p className="text-[10px] font-black text-gray-500 mt-1 uppercase italic tracking-tight">Status: {formData.status}</p>
+                                            <p className="text-[9px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Timeline</p>
+                                            <h4 className="text-base md:text-lg font-black text-gray-900 dark:text-foreground uppercase">Deployed {formData.checkIn}</h4>
+                                            <p className="text-[10px] font-black text-gray-500 dark:text-muted-foreground mt-1 uppercase italic tracking-tight">Status: {formData.status}</p>
                                         </div>
                                     </div>
 
@@ -533,7 +533,7 @@ const AddGuestPage = () => {
                                         <AlertCircle className="h-20 w-20" />
                                     </div>
                                     <AlertCircle className="h-6 w-6 text-amber-500 shrink-0" />
-                                    <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest leading-loose text-gray-400 relative z-10">
+                                    <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest leading-loose text-gray-400 dark:text-muted-foreground relative z-10">
                                         BY AUTHORIZING, YOU COMMITT TO THE REGISTRATION OF THIS GUEST. A DEFAULT PASSWORD <span className="text-white font-black italic">"password123"</span> WILL BE GENERATED FOR NEW USERS. DATA INTEGRITY IS CONTINUOUSLY MONITORED.
                                     </p>
                                 </div>
@@ -542,10 +542,10 @@ const AddGuestPage = () => {
                     </div>
 
                     {/* Footer Actions */}
-                    <div className="bg-gray-50/50 border-t p-6 md:p-8 flex items-center justify-between">
+                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-t p-6 md:p-8 flex items-center justify-between">
                         <Button
                             variant="ghost"
-                            className="h-12 md:h-14 px-6 md:px-10 rounded-xl md:rounded-2xl border-none bg-transparent font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-gray-100 disabled:opacity-30 transition-all text-gray-500"
+                            className="h-12 md:h-14 px-6 md:px-10 rounded-xl md:rounded-2xl border-none bg-transparent font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-gray-100 disabled:opacity-30 transition-all text-gray-500 dark:text-muted-foreground"
                             onClick={handleBack}
                             disabled={step === 1}
                         >
@@ -583,22 +583,22 @@ const AddGuestPage = () => {
                             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                             <span className="text-[9px] font-black tracking-[0.2em] uppercase text-emerald-400 shrink-0 italic">Core Registry</span>
                         </div>
-                        <div className="h-4 w-px bg-white/10 hidden md:block"></div>
+                        <div className="h-4 w-px bg-white dark:bg-card/10 hidden md:block"></div>
                         <div className="flex items-center gap-2">
                             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            <span className="text-[9px] font-black uppercase text-gray-400 tracking-widest">Active deployment</span>
+                            <span className="text-[9px] font-black uppercase text-gray-400 dark:text-muted-foreground tracking-widest">Active deployment</span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-4 text-[9px] font-black tracking-widest uppercase text-gray-500">
+                    <div className="flex items-center gap-4 text-[9px] font-black tracking-widest uppercase text-gray-500 dark:text-muted-foreground">
                         <span className="hidden sm:block">Artifact: DEPL_{roomId?.slice(-6).toUpperCase()}</span>
-                        <div className="h-1.5 w-1.5 rounded-full bg-white/10 animate-pulse" />
+                        <div className="h-1.5 w-1.5 rounded-full bg-white dark:bg-card/10 animate-pulse" />
                     </div>
                 </div>
             </div>
 
             {/* Success Dialog with Credentials */}
             <Dialog open={showCredentials} onOpenChange={setShowCredentials}>
-                <DialogContent className="max-w-md bg-white rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden outline-none">
+                <DialogContent className="max-w-md bg-white dark:bg-card rounded-[2.5rem] border-none shadow-2xl p-0 overflow-hidden outline-none">
                     <div className="bg-gray-950 p-10 text-center space-y-4 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full -mr-16 -mt-16 blur-3xl" />
                         <div className="h-20 w-20 rounded-3xl bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-2xl shadow-emerald-500/40 rotate-12 scale-110 relative z-10 transition-transform hover:rotate-0 duration-500">
@@ -610,16 +610,16 @@ const AddGuestPage = () => {
 
                     <div className="p-8 md:p-10 space-y-8">
                         {!selectedGuest && (
-                            <div className="bg-gray-50 rounded-[2rem] p-6 md:p-8 space-y-6 border border-gray-100">
+                            <div className="bg-gray-50 dark:bg-muted/10 rounded-[2rem] p-6 md:p-8 space-y-6 border border-gray-100 dark:border-border">
                                 <div className="space-y-3">
-                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Transient Resident Access Identifiers</p>
+                                    <p className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center">Transient Resident Access Identifiers</p>
                                     <div className="space-y-2">
-                                        <div className="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between group transition-all hover:border-indigo-200">
-                                            <span className="text-[10px] font-black text-gray-400 uppercase italic">User Node</span>
-                                            <span className="text-xs font-black text-gray-900 lowercase tracking-tight">{formData.guestEmail}</span>
+                                        <div className="bg-white dark:bg-card p-4 rounded-xl border border-gray-100 dark:border-border flex items-center justify-between group transition-all hover:border-indigo-200">
+                                            <span className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase italic">User Node</span>
+                                            <span className="text-xs font-black text-gray-900 dark:text-foreground lowercase tracking-tight">{formData.guestEmail}</span>
                                         </div>
-                                        <div className="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between group transition-all hover:border-indigo-200">
-                                            <span className="text-[10px] font-black text-gray-400 uppercase italic">Secure Key</span>
+                                        <div className="bg-white dark:bg-card p-4 rounded-xl border border-gray-100 dark:border-border flex items-center justify-between group transition-all hover:border-indigo-200">
+                                            <span className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase italic">Secure Key</span>
                                             <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-100 italic">password123</span>
                                         </div>
                                     </div>

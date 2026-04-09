@@ -22,7 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminDueServices } from "@/hooks/useWarden";
 import { useSyncAutomation, useCreateCleaningLog, useCreateLaundryLog } from "@/hooks/useRoom";
 import { format } from "date-fns";
-import Loader from "@/components/ui/Loader";
+import { GridPageSkeleton } from "@/components/ui/skeletons";
 import { toast } from "sonner";
 
 const AdminServiceOversight = () => {
@@ -38,7 +38,7 @@ const AdminServiceOversight = () => {
         syncAutomation.mutate();
     }, []);
 
-    if (isLoading) return <Loader label="Loading" subLabel="Fetching status across all hostels..." icon={Activity} fullScreen={false} />;
+    if (isLoading) return <GridPageSkeleton />;
 
     const hostels = Object.entries(dueServices || {}).map(([id, data]) => ({
         id,
@@ -92,16 +92,16 @@ const AdminServiceOversight = () => {
     return (
         <div className="min-h-screen bg-transparent pb-20 font-sans tracking-tight">
             {/* Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-9 w-9 bg-gray-900 rounded-xl flex items-center justify-center text-white shadow-lg shadow-gray-200">
                             <Activity size={20} />
                         </div>
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-black text-gray-900 uppercase tracking-widest leading-none">Services</h1>
+                            <h1 className="text-lg font-black text-gray-900 dark:text-foreground uppercase tracking-widest leading-none">Services</h1>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Admin Dashboard</span>
+                                <span className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Admin Dashboard</span>
                                 <div className="h-1 w-1 bg-gray-400 rounded-full" />
                                 <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Sync Active</span>
                             </div>
@@ -112,7 +112,7 @@ const AdminServiceOversight = () => {
                         <Button
                             variant="outline"
                             size="icon"
-                            className="h-10 w-10 rounded-xl border-gray-100 bg-gray-50 text-gray-400 hover:bg-black hover:text-white transition-all shadow-sm"
+                            className="h-10 w-10 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 text-gray-400 dark:text-muted-foreground hover:bg-black hover:text-white transition-all shadow-sm"
                             onClick={handleSync}
                             disabled={syncAutomation.isPending}
                         >
@@ -120,10 +120,10 @@ const AdminServiceOversight = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-100" />
                         <div className="relative group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 group-focus-within:text-black transition-colors" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground group-focus-within:text-black transition-colors" />
                             <Input
                                 placeholder="Search hostels..."
-                                className="h-10 pl-10 w-64 bg-gray-50 border-none rounded-xl text-[10px] font-black uppercase tracking-widest focus-visible:ring-1 focus-visible:ring-gray-100 placeholder:text-gray-300"
+                                className="h-10 pl-10 w-64 bg-gray-50 dark:bg-muted/10 border-none rounded-xl text-[10px] font-black uppercase tracking-widest focus-visible:ring-1 focus-visible:ring-gray-100 placeholder:text-gray-300"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -135,7 +135,7 @@ const AdminServiceOversight = () => {
             <main className="max-w-[1600px] mx-auto px-6 py-8 space-y-8">
                 {/* Stats Matrix */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="bg-white border-none shadow-sm rounded-3xl p-6 relative overflow-hidden group hover:shadow-md transition-all">
+                    <Card className="bg-white dark:bg-card border-none shadow-sm rounded-3xl p-6 relative overflow-hidden group hover:shadow-md transition-all">
                         <div className="absolute -right-4 -top-4 text-gray-50 group-hover:text-gray-100 transition-colors duration-500">
                             <Sparkles size={120} />
                         </div>
@@ -144,32 +144,32 @@ const AdminServiceOversight = () => {
                                 <Activity size={20} />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Pending Tasks</span>
-                                <span className="text-3xl font-black text-gray-900 tracking-tighter leading-none">{totalCleaningDue + totalLaundryDue}</span>
+                                <span className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">Pending Tasks</span>
+                                <span className="text-3xl font-black text-gray-900 dark:text-foreground tracking-tighter leading-none">{totalCleaningDue + totalLaundryDue}</span>
                             </div>
                         </div>
                     </Card>
 
-                    <Card className="bg-white border-none shadow-sm rounded-3xl p-6 relative overflow-hidden group hover:shadow-md transition-all">
+                    <Card className="bg-white dark:bg-card border-none shadow-sm rounded-3xl p-6 relative overflow-hidden group hover:shadow-md transition-all">
                         <div className="relative z-10 space-y-4">
                             <div className="h-11 w-11 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
                                 <Sparkles size={20} />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Cleaning</span>
-                                <span className="text-3xl font-black text-gray-900 tracking-tighter leading-none">{totalCleaningDue} <span className="text-sm font-bold text-gray-300 italic">DUE</span></span>
+                                <span className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">Cleaning</span>
+                                <span className="text-3xl font-black text-gray-900 dark:text-foreground tracking-tighter leading-none">{totalCleaningDue} <span className="text-sm font-bold text-gray-300 italic">DUE</span></span>
                             </div>
                         </div>
                     </Card>
 
-                    <Card className="bg-white border-none shadow-sm rounded-3xl p-6 relative overflow-hidden group hover:shadow-md transition-all">
+                    <Card className="bg-white dark:bg-card border-none shadow-sm rounded-3xl p-6 relative overflow-hidden group hover:shadow-md transition-all">
                         <div className="relative z-10 space-y-4">
                             <div className="h-11 w-11 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
                                 <ClipboardList size={20} />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Laundry</span>
-                                <span className="text-3xl font-black text-gray-900 tracking-tighter leading-none">{totalLaundryDue} <span className="text-sm font-bold text-gray-300 italic">DUE</span></span>
+                                <span className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">Laundry</span>
+                                <span className="text-3xl font-black text-gray-900 dark:text-foreground tracking-tighter leading-none">{totalLaundryDue} <span className="text-sm font-bold text-gray-300 italic">DUE</span></span>
                             </div>
                         </div>
                     </Card>
@@ -178,7 +178,7 @@ const AdminServiceOversight = () => {
                 {/* Operations Feed */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
                     <div className="flex items-center justify-between px-2">
-                        <TabsList className="bg-white border border-gray-100 p-1 rounded-2xl h-12 shadow-sm font-black text-[10px] uppercase tracking-widest">
+                        <TabsList className="bg-white dark:bg-card border border-gray-100 dark:border-border p-1 rounded-2xl h-12 shadow-sm font-black text-[10px] uppercase tracking-widest">
                             <TabsTrigger value="cleaning" className="rounded-xl px-8 focus:bg-black focus:text-white data-[state=active]:bg-black data-[state=active]:text-white">
                                 Cleaning
                             </TabsTrigger>
@@ -192,27 +192,27 @@ const AdminServiceOversight = () => {
                         {hostels.filter(h => h.dueCleaning.length > 0).map((hostel) => (
                             <div key={hostel.id} className="space-y-4">
                                 <div className="flex items-center gap-3 px-2">
-                                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400">{hostel.hostelName}</h3>
+                                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground">{hostel.hostelName}</h3>
                                     <Badge className="bg-red-50 text-red-600 border-none font-black text-[9px] px-2.5 rounded-lg">{hostel.dueCleaning.length} PENDING</Badge>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                     {hostel.dueCleaning.map((room) => (
-                                        <Card key={room.id} className="bg-white border-gray-100 rounded-2xl p-5 shadow-sm hover:border-black transition-all group">
+                                        <Card key={room.id} className="bg-white dark:bg-card border-gray-100 dark:border-border rounded-2xl p-5 shadow-sm hover:border-black transition-all group">
                                             <div className="flex flex-col gap-4">
                                                 <div className="flex items-start justify-between">
                                                     <div className="flex flex-col">
-                                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Room</span>
-                                                        <span className="text-xl font-black text-gray-900 tracking-tighter uppercase">R-{room.roomNumber}</span>
+                                                        <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none mb-1">Room</span>
+                                                        <span className="text-xl font-black text-gray-900 dark:text-foreground tracking-tighter uppercase">R-{room.roomNumber}</span>
                                                     </div>
                                                     <Badge variant="outline" className="border-red-100 bg-red-50 text-red-600 text-[8px] font-black tracking-widest px-2 py-0.5 rounded-lg">
                                                         -{room.overdueHours}H
                                                     </Badge>
                                                 </div>
 
-                                                <div className="h-px bg-gray-50" />
+                                                <div className="h-px bg-gray-50 dark:bg-muted/10" />
 
                                                 <Button
-                                                    className="w-full h-10 bg-gray-50 text-gray-900 hover:bg-black hover:text-white font-black text-[9px] uppercase tracking-widest rounded-xl transition-all border border-gray-100 hover:border-black"
+                                                    className="w-full h-10 bg-gray-50 dark:bg-muted/10 text-gray-900 dark:text-foreground hover:bg-black hover:text-white font-black text-[9px] uppercase tracking-widest rounded-xl transition-all border border-gray-100 dark:border-border hover:border-black"
                                                     onClick={() => handleMarkCleaning(room, hostel.id)}
                                                     disabled={createCleaning.isPending}
                                                 >
@@ -225,10 +225,10 @@ const AdminServiceOversight = () => {
                             </div>
                         ))}
                         {hostels.every(h => h.dueCleaning.length === 0) && (
-                            <div className="py-20 flex flex-col items-center justify-center bg-white border border-dashed border-gray-100 rounded-[3rem]">
+                            <div className="py-20 flex flex-col items-center justify-center bg-white dark:bg-card border border-dashed border-gray-100 dark:border-border rounded-[3rem]">
                                 <CheckCircle2 className="h-12 w-12 text-emerald-100 mb-4" />
-                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">All Clean!</h3>
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">Every room is currently clean</p>
+                                <h3 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-[0.2em]">All Clean!</h3>
+                                <p className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-2">Every room is currently clean</p>
                             </div>
                         )}
                     </TabsContent>
@@ -237,27 +237,27 @@ const AdminServiceOversight = () => {
                         {hostels.filter(h => h.dueLaundry.length > 0).map((hostel) => (
                             <div key={hostel.id} className="space-y-4">
                                 <div className="flex items-center gap-3 px-2">
-                                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400">{hostel.hostelName}</h3>
+                                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground">{hostel.hostelName}</h3>
                                     <Badge className="bg-blue-50 text-blue-600 border-none font-black text-[9px] px-2.5 rounded-lg">{hostel.dueLaundry.length} PENDING</Badge>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                     {hostel.dueLaundry.map((room) => (
-                                        <Card key={room.id} className="bg-white border-gray-100 rounded-2xl p-5 shadow-sm hover:border-black transition-all group">
+                                        <Card key={room.id} className="bg-white dark:bg-card border-gray-100 dark:border-border rounded-2xl p-5 shadow-sm hover:border-black transition-all group">
                                             <div className="flex flex-col gap-4">
                                                 <div className="flex items-start justify-between">
                                                     <div className="flex flex-col">
-                                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Room</span>
-                                                        <span className="text-xl font-black text-gray-900 tracking-tighter uppercase">R-{room.roomNumber}</span>
+                                                        <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none mb-1">Room</span>
+                                                        <span className="text-xl font-black text-gray-900 dark:text-foreground tracking-tighter uppercase">R-{room.roomNumber}</span>
                                                     </div>
                                                     <Badge variant="outline" className="border-blue-100 bg-blue-50 text-blue-600 text-[8px] font-black tracking-widest px-2 py-0.5 rounded-lg">
                                                         -{room.overdueHours}H
                                                     </Badge>
                                                 </div>
 
-                                                <div className="h-px bg-gray-50" />
+                                                <div className="h-px bg-gray-50 dark:bg-muted/10" />
 
                                                 <Button
-                                                    className="w-full h-10 bg-gray-50 text-gray-900 hover:bg-black hover:text-white font-black text-[9px] uppercase tracking-widest rounded-xl transition-all border border-gray-100 hover:border-black"
+                                                    className="w-full h-10 bg-gray-50 dark:bg-muted/10 text-gray-900 dark:text-foreground hover:bg-black hover:text-white font-black text-[9px] uppercase tracking-widest rounded-xl transition-all border border-gray-100 dark:border-border hover:border-black"
                                                     onClick={() => handleMarkLaundry(room, hostel.id)}
                                                     disabled={createLaundry.isPending}
                                                 >
@@ -270,10 +270,10 @@ const AdminServiceOversight = () => {
                             </div>
                         ))}
                         {hostels.every(h => h.dueLaundry.length === 0) && (
-                            <div className="py-20 flex flex-col items-center justify-center bg-white border border-dashed border-gray-100 rounded-[3rem]">
+                            <div className="py-20 flex flex-col items-center justify-center bg-white dark:bg-card border border-dashed border-gray-100 dark:border-border rounded-[3rem]">
                                 <CheckCircle2 className="h-12 w-12 text-emerald-100 mb-4" />
-                                <h3 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">All Complete!</h3>
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">No pending laundry items found across any hostel</p>
+                                <h3 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-[0.2em]">All Complete!</h3>
+                                <p className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-2">No pending laundry items found across any hostel</p>
                             </div>
                         )}
                     </TabsContent>

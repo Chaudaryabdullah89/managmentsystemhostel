@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useSingleRoomByHostelId } from "@/hooks/useRoom";
 import { format } from "date-fns";
-import Loader from "@/components/ui/Loader";
+import { RoomDetailSkeleton } from "@/components/ui/skeletons";
 
 const RoomDetailsContent = () => {
     const params = useParams();
@@ -37,20 +37,13 @@ const RoomDetailsContent = () => {
     const { data: roomResponse, isLoading } = useSingleRoomByHostelId(hostelId, roomId);
     const room = roomResponse?.data;
 
-    if (isLoading) return (
-        <Loader
-            label="Loading Room Details"
-            subLabel="Fetching information..."
-            icon={BedDouble}
-            fullScreen={false}
-        />
-    );
+    if (isLoading) return <RoomDetailSkeleton />;
 
     if (!room) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
             <div className="text-center space-y-4">
                 <Info className="h-10 w-10 text-gray-300 mx-auto" />
-                <h2 className="text-xl font-bold text-gray-900 uppercase">Room Not Found</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-foreground uppercase">Room Not Found</h2>
                 <Button onClick={() => router.back()} variant="outline" className="rounded-xl">Back to Rooms</Button>
             </div>
         </div>
@@ -61,14 +54,14 @@ const RoomDetailsContent = () => {
             case "AVAILABLE": return "bg-emerald-50 text-emerald-700 border-emerald-100";
             case "OCCUPIED": return "bg-blue-50 text-blue-700 border-blue-100";
             case "MAINTENANCE": return "bg-amber-50 text-amber-700 border-amber-100";
-            default: return "bg-gray-50 text-gray-700 border-gray-100";
+            default: return "bg-gray-50 dark:bg-muted/10 text-gray-700 dark:text-foreground border-gray-100 dark:border-border";
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans">
             {/* Minimal Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9" onClick={() => router.back()}>
@@ -76,8 +69,8 @@ const RoomDetailsContent = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight tracking-widest">Room {room.roomNumber}</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                            <h1 className="text-lg font-bold text-gray-900 dark:text-foreground tracking-tight tracking-widest">Room {room.roomNumber}</h1>
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                                 <span className="h-1 w-1 rounded-full bg-indigo-500 animate-pulse" />
                                 {room.Hostel?.name} • Admin Panel
                             </p>
@@ -101,13 +94,13 @@ const RoomDetailsContent = () => {
                         { label: 'Room Type', value: room.type, icon: DoorOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
                         { label: 'Safety Check', value: 'Verified', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default">
+                        <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
-                                <span className="text-xl font-bold text-gray-900 tracking-tight">{stat.value}</span>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{stat.label}</span>
+                                <span className="text-xl font-bold text-gray-900 dark:text-foreground tracking-tight">{stat.value}</span>
                             </div>
                         </div>
                     ))}
@@ -117,18 +110,18 @@ const RoomDetailsContent = () => {
                     {/* Left Column: Occupants & Specs */}
                     <div className="lg:col-span-2 space-y-8">
                         {/* Occupant Identity Feed */}
-                        <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
+                        <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-8 shadow-sm">
                             <div className="flex items-center justify-between mb-8">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 text-indigo-600">
+                                    <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center border border-gray-100 dark:border-border text-indigo-600">
                                         <Users className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <h2 className="text-base font-bold text-gray-900 uppercase">Active Residents</h2>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Current occupants in this room</p>
+                                        <h2 className="text-base font-bold text-gray-900 dark:text-foreground uppercase">Active Residents</h2>
+                                        <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Current occupants in this room</p>
                                     </div>
                                 </div>
-                                <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest border-gray-100 text-gray-400 px-3 py-1">
+                                <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest border-gray-100 dark:border-border text-gray-400 dark:text-muted-foreground px-3 py-1">
                                     {room.currentGuests?.length || 0} Occupants
                                 </Badge>
                             </div>
@@ -136,25 +129,25 @@ const RoomDetailsContent = () => {
                             <div className="space-y-3">
                                 {room.currentGuests?.length > 0 ? (
                                     room.currentGuests.map((guest) => (
-                                        <div key={guest.bookingId} className="bg-gray-50/50 border border-gray-100 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-white hover:shadow-md transition-all group relative overflow-hidden cursor-pointer" onClick={() => router.push(`/admin/users-records/${guest.id}`)}>
+                                        <div key={guest.bookingId} className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-white dark:bg-card hover:shadow-md transition-all group relative overflow-hidden cursor-pointer" onClick={() => router.push(`/admin/users-records/${guest.id}`)}>
                                             <div className={`absolute left-0 top-0 bottom-0 w-1 ${guest.rentStatus === 'Paid' ? 'bg-emerald-500' : 'bg-amber-500'} opacity-70`} />
                                             <div className="flex items-center gap-4 flex-1">
-                                                <div className="h-10 w-10 rounded-lg bg-white flex items-center justify-center border border-gray-100 text-gray-400 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                                <div className="h-10 w-10 rounded-lg bg-white dark:bg-card flex items-center justify-center border border-gray-100 dark:border-border text-gray-400 dark:text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                                                     <User className="h-5 w-5" />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-tight truncate">{guest.name}</h4>
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{guest.contact || 'No Contact Info'}</p>
+                                                    <h4 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-tight truncate">{guest.name}</h4>
+                                                    <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">{guest.contact || 'No Contact Info'}</p>
                                                 </div>
                                             </div>
 
                                             <div className="flex items-center gap-10">
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Enrolled</span>
-                                                    <span className="text-[11px] font-bold text-gray-700">{guest.checkInDate}</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Enrolled</span>
+                                                    <span className="text-[11px] font-bold text-gray-700 dark:text-foreground">{guest.checkInDate}</span>
                                                 </div>
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Payment</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Payment</span>
                                                     <Badge variant="outline" className={`mt-0.5 h-5 text-[8px] font-bold px-2 py-0 border-px ${guest.rentStatus === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-amber-50 text-amber-700 border-amber-100'}`}>
                                                         {guest.rentStatus?.toUpperCase()}
                                                     </Badge>
@@ -170,9 +163,9 @@ const RoomDetailsContent = () => {
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="py-12 flex flex-col items-center justify-center border border-dashed border-gray-100 rounded-xl bg-gray-50/30">
+                                    <div className="py-12 flex flex-col items-center justify-center border border-dashed border-gray-100 dark:border-border rounded-xl bg-gray-50 dark:bg-muted/10/30">
                                         <Users className="h-8 w-8 text-gray-200 mb-3" />
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No residents in this room</p>
+                                        <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">No residents in this room</p>
                                     </div>
                                 )}
                             </div>
@@ -180,8 +173,8 @@ const RoomDetailsContent = () => {
 
                         {/* Specs & Configuration */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
-                                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2 text-indigo-600">
+                            <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-8 shadow-sm">
+                                <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest mb-6 flex items-center gap-2 text-indigo-600">
                                     <Info className="h-3.5 w-3.5" />
                                     Room Details
                                 </h3>
@@ -191,16 +184,16 @@ const RoomDetailsContent = () => {
                                         { label: 'Room Type', value: room.type, icon: BedDouble },
                                         { label: 'Bed Capacity', value: `${room.capacity}`, icon: Users }
                                     ].map((spec, i) => (
-                                        <div key={i} className="flex justify-between items-center bg-gray-50/30 p-4 rounded-xl border border-gray-100">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{spec.label}</span>
-                                            <span className="text-xs font-bold text-gray-900 uppercase">{spec.value}</span>
+                                        <div key={i} className="flex justify-between items-center bg-gray-50 dark:bg-muted/10/30 p-4 rounded-xl border border-gray-100 dark:border-border">
+                                            <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{spec.label}</span>
+                                            <span className="text-xs font-bold text-gray-900 dark:text-foreground uppercase">{spec.value}</span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="bg-white border border-gray-100 rounded-2xl p-8 shadow-sm">
-                                <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-6 flex items-center gap-2 text-blue-500">
+                            <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-8 shadow-sm">
+                                <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest mb-6 flex items-center gap-2 text-blue-500">
                                     <Sparkle className="h-3.5 w-3.5" />
                                     Amenities
                                 </h3>
@@ -254,15 +247,15 @@ const RoomDetailsContent = () => {
                                 <Link
                                     key={i}
                                     href={service.link}
-                                    className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all relative overflow-hidden"
+                                    className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-5 flex items-center justify-between group hover:border-indigo-100 hover:shadow-md transition-all relative overflow-hidden"
                                 >
                                     <div className="flex items-center gap-4">
                                         <div className={`h-11 w-11 rounded-xl ${service.bg} flex items-center justify-center border border-transparent group-hover:scale-105 transition-transform`}>
                                             <service.icon className={`h-5 w-5 ${service.color}`} />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-gray-900 uppercase tracking-tight group-hover:text-indigo-600 transition-colors">{service.title}</p>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{service.sub}</p>
+                                            <p className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-tight group-hover:text-indigo-600 transition-colors">{service.title}</p>
+                                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">{service.sub}</p>
                                         </div>
                                     </div>
                                     <ChevronRight className="h-4 w-4 text-gray-200 group-hover:text-indigo-600 transition-colors" />
@@ -302,14 +295,7 @@ const RoomDetailsContent = () => {
 
 export default function RoomDetailsPage() {
     return (
-        <Suspense fallback={
-            <Loader
-                label="Loading..."
-                subLabel="Loading room"
-                icon={BedDouble}
-                fullScreen={false}
-            />
-        }>
+        <Suspense fallback={<RoomDetailSkeleton />}>
             <RoomDetailsContent />
         </Suspense>
     );

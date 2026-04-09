@@ -17,8 +17,8 @@ export default function BookingHistoryPage({ params }) {
         date: new Date(b.createdAt),
         status: b.status,
         icon: b.status === 'ACTIVE' ? CheckCircle2 : Clock,
-        color: b.status === 'ACTIVE' ? 'text-emerald-600' : 'text-gray-500',
-        bgColor: b.status === 'ACTIVE' ? 'bg-emerald-50' : 'bg-gray-50'
+        color: b.status === 'ACTIVE' ? 'text-emerald-600' : 'text-gray-500 dark:text-muted-foreground',
+        bgColor: b.status === 'ACTIVE' ? 'bg-emerald-50' : 'bg-gray-50 dark:bg-muted/10'
     }));
 
     if (isLoading) {
@@ -38,7 +38,7 @@ export default function BookingHistoryPage({ params }) {
         <div className="p-6 max-w-4xl mx-auto space-y-6">
             <SectionHeader title="Stay Cycle History" backHref={`/admin/users-records/${userId}`} />
             <Card className="rounded-lg shadow-sm border">
-                <CardHeader className="border-b bg-gray-50/50 py-4">
+                <CardHeader className="border-b bg-gray-50 dark:bg-muted/10/50 dark:bg-background py-4">
                     <CardTitle className="text-base font-semibold">Booking Timeline</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">

@@ -9,6 +9,7 @@ import { logAuditEvent } from "@/lib/auditLogger";
 import { createInAppNotification } from "@/lib/inAppNotifications";
 import { logNotificationDelivery } from "@/lib/notificationTelemetry";
 import { isValidPaymentTransition, normalizePaymentStatusInput } from "@/lib/statusTransitions";
+import { getBranding } from "@/lib/permissions";
 
 const paymentServices = new PaymentServices();
 
@@ -117,7 +118,8 @@ export async function PATCH(request, { params }) {
         const payment = await paymentServices.updatePayment(paymentId, updateData);
         const hostelName = payment.Booking?.Room?.Hostel?.name
             || payment.User?.Hostel_User_hostelIdToHostel?.name
-            || "Mubarak Group of Hostels";
+            || "Hostel";
+        const branding = await getBranding();
 
         // ── APPROVED: Email the resident ─────────────────────────────────
         if (normalizedStatus === "PAID") {
@@ -125,7 +127,7 @@ export async function PATCH(request, { params }) {
                 try {
                     await sendEmail({
                         to: payment.User.email,
-                        subject: "Payment Approved ✅ — Mubarak Group of Hostels",
+                        subject: `Payment Approved ✅ — ${branding.companyName}`,
                         html: paymentApprovedEmail({
                             name: payment.User.name,
                             paymentId: payment.uid || paymentId,
@@ -134,6 +136,7 @@ export async function PATCH(request, { params }) {
                             method: payment.method || method,
                             hostelName,
                             date: payment.updatedAt,
+                            branding,
                         }),
                     });
                     await logNotificationDelivery({
@@ -165,7 +168,7 @@ export async function PATCH(request, { params }) {
                 try {
                     await sendEmail({
                         to: payment.User.email,
-                        subject: "Payment Rejected ❌ — Mubarak Group of Hostels",
+                        subject: `Payment Rejected ❌ — ${branding.companyName}`,
                         html: buildEmailTemplate({
                             title: "Payment Not Approved",
                             subtitle: `Hello ${payment.User.name}, your payment submission was reviewed and could not be approved at this time.`,
@@ -181,6 +184,7 @@ export async function PATCH(request, { params }) {
                             </div>` : ''}
                             <p style="margin-top:16px;font-size:12px;color:#6b7280;">Please resubmit with a correct payment receipt or contact your hostel management office for assistance.</p>
                         `,
+                            branding,
                         }),
                     });
                     await logNotificationDelivery({

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useExpenseStats, useExpenses } from "@/hooks/useExpenses";
-import Loader from "@/components/ui/Loader";
+import { CategoryPageSkeleton } from "@/components/ui/skeletons";
 import useAuthStore from "@/hooks/Authstate";
 import PageHeader from "@/components/Dashboard/PageHeader";
 import SectionTitle from "@/components/Dashboard/SectionTitle";
@@ -105,12 +105,12 @@ const ExpensesPage = () => {
         return filtered;
     }, [isWarden, user]);
 
-    if (statsLoading || expensesLoading) return <Loader label="Loading" subLabel="Getting expense data..." icon={Receipt} fullScreen={false} />;
+    if (statsLoading || expensesLoading) return <CategoryPageSkeleton />;
 
     const stats = statsData?.summary || { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalCount: 0 };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
             <PageHeader
                 title="Expenses"
                 subtitleStart="Overview"
@@ -131,13 +131,13 @@ const ExpensesPage = () => {
                         { label: 'Pending', value: `PKR ${(stats.pendingAmount / 1000).toFixed(1)}k`, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
                         { label: 'Records', value: stats.totalCount || 0, icon: BarChart3, color: 'text-purple-600', bg: 'bg-purple-50' },
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default min-w-0">
+                        <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default min-w-0">
                             <div className={`h-9 w-9 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
                             </div>
                             <div className="flex flex-col min-w-0">
-                                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">{stat.label}</span>
-                                <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate">{stat.value}</span>
+                                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">{stat.label}</span>
+                                <span className="text-sm md:text-xl font-bold text-gray-900 dark:text-foreground tracking-tight truncate">{stat.value}</span>
                             </div>
                         </div>
                     ))}
@@ -149,8 +149,8 @@ const ExpensesPage = () => {
                     rightText="Select to manage"
                     accentColorClass="bg-blue-600"
                     containerClassName="flex items-center gap-3 px-1"
-                    titleClassName="text-sm font-bold uppercase tracking-widest text-gray-900"
-                    rightTextClassName="text-[9px] font-black text-gray-400 uppercase tracking-widest ml-auto"
+                    titleClassName="text-sm font-bold uppercase tracking-widest text-gray-900 dark:text-foreground"
+                    rightTextClassName="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-auto"
                 />
 
                 {/* Category cards — same grid density/pattern as Quick Actions but with more substance */}
@@ -165,10 +165,10 @@ const ExpensesPage = () => {
                             <Link
                                 key={cat.key}
                                 href={cat.key === 'SALARY' ? '/admin/salaries' : `/admin/expenses/${cat.slug}`}
-                                className="bg-white border border-gray-100 rounded-[2rem] p-5 flex flex-col gap-4 shadow-sm hover:shadow-md hover:border-gray-200 transition-all group relative overflow-hidden"
+                                className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-[2rem] p-5 flex flex-col gap-4 shadow-sm hover:shadow-md hover:border-gray-200 dark:border-border transition-all group relative overflow-hidden"
                             >
                                 {/* Subtle bg accent — same as dashboard stat cards */}
-                                <div className="absolute top-0 right-0 w-20 h-full bg-gray-50/50 skew-x-12 translate-x-8 group-hover:translate-x-6 transition-transform hidden md:block" />
+                                <div className="absolute top-0 right-0 w-20 h-full bg-gray-50 dark:bg-muted/10/50 dark:bg-background skew-x-12 translate-x-8 group-hover:translate-x-6 transition-transform hidden md:block" />
 
                                 {/* Icon — same size/style as dashboard action icons */}
                                 <div className={`relative z-10 h-10 w-10 md:h-11 md:w-11 rounded-xl ${cat.bg} ${cat.color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>
@@ -178,20 +178,20 @@ const ExpensesPage = () => {
                                 {/* Label & description */}
                                 <div className="relative z-10 flex flex-col min-w-0">
                                     <h3 className={`text-[11px] md:text-[13px] font-bold uppercase tracking-tight ${cat.color}`}>{cat.label}</h3>
-                                    <p className="text-[9px] font-bold text-gray-400 leading-relaxed mt-0.5">{cat.description}</p>
+                                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground leading-relaxed mt-0.5">{cat.description}</p>
                                 </div>
 
                                 {/* Mini stats */}
                                 <div className="relative z-10 flex flex-col gap-1.5 pt-2 border-t border-gray-50">
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest">Spent</span>
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Spent</span>
                                         <span className={`text-[11px] md:text-[13px] font-bold tracking-tight ${cat.color}`}>
                                             PKR {(catTotal / 1000).toFixed(1)}k
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest">Records</span>
-                                        <Badge variant="outline" className="text-[8px] md:text-[9px] font-black rounded-full px-2 py-0.5 border-gray-100 bg-white shadow-sm">
+                                        <span className="text-[8px] md:text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Records</span>
+                                        <Badge variant="outline" className="text-[8px] md:text-[9px] font-black rounded-full px-2 py-0.5 border-gray-100 dark:border-border bg-white dark:bg-card shadow-sm">
                                             {catCount}
                                         </Badge>
                                     </div>

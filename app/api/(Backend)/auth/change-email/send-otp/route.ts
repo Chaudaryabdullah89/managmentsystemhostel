@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { sendEmail } from "@/lib/utils/sendmail";
 import { buildEmailTemplate } from "@/lib/utils/emailTemplates";
+import { getBranding } from "@/lib/permissions";
 
 export async function POST(req: Request) {
     try {
@@ -32,9 +33,10 @@ export async function POST(req: Request) {
         });
 
         // Send Email
+    const branding = await getBranding();
     const bodyHtml = `
           <p style="margin:0 0 16px; font-size:14px; color:#4b5563; text-align:left;">
-            You requested to update the email address associated with your Mubarak Group of Hostels account.
+            You requested to update the email address associated with your ${branding.companyName} account.
           </p>
           <p style="margin:0 0 12px; font-size:14px; color:#4b5563; text-align:left;">
             Use the verification code below to confirm this change:
@@ -66,10 +68,11 @@ export async function POST(req: Request) {
       title: "Confirm your new email",
       subtitle: "Security verification for your account",
       bodyHtml,
+      branding,
     });
 
         // console.log(`[API] POST /api/auth/change-email/send-otp - Sending email`);
-        await sendEmail({ to: email, subject: "Verify your new email - Mubarak Group of Hostels", html });
+        await sendEmail({ to: email, subject: `Verify your new email - ${branding.companyName}`, html });
         // console.log(`[API] POST /api/auth/change-email/send-otp - OTP sent successfully`);
 
         return NextResponse.json({ message: "OTP sent successfully" });

@@ -10,7 +10,7 @@ import {
     Users, ArrowUpDown, SortAsc, SortDesc, Download, Eye
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Loader from "@/components/ui/Loader";
+import { ListPageSkeleton } from "@/components/ui/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,7 @@ import { format } from "date-fns";
 import useAuthStore from "@/hooks/Authstate";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { exportToExcel } from "@/lib/utils/exportToExcel";
 
 const ROLES = ["all", "ADMIN", "WARDEN", "STAFF", "RESIDENT"];
 
@@ -43,7 +44,7 @@ const ROLE_CONFIG = {
     RESIDENT: { color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-100", icon: User, dot: "bg-emerald-500" },
     GUEST: { color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-100", icon: User, dot: "bg-purple-500" },
 };
-const getRoleConfig = (role) => ROLE_CONFIG[role] || { color: "text-gray-600", bg: "bg-gray-50", border: "border-gray-100", icon: User, dot: "bg-gray-400" };
+const getRoleConfig = (role) => ROLE_CONFIG[role] || { color: "text-gray-600 dark:text-muted-foreground", bg: "bg-gray-50 dark:bg-muted/10", border: "border-gray-100 dark:border-border", icon: User, dot: "bg-gray-400" };
 
 const UserRecordPage = () => {
     const router = useRouter();
@@ -124,22 +125,19 @@ const UserRecordPage = () => {
 
     const handleExport = () => {
         if (!filteredUsers.length) return toast.error("No users to export");
-        const headers = ["Reg #", "Name", "Email", "Phone", "CNIC", "Role", "Hostel", "Status", "UID", "Joined"];
-        const rows = filteredUsers.map(u => [
-            u.regNumber || '—',
-            u.name, u.email, u.phone || '', u.cnic || '', u.role,
-            u.Hostel_User_hostelIdToHostel?.name || 'Global',
-            u.isActive ? 'Active' : 'Inactive',
-            u.uid || u.id?.slice(-8).toUpperCase(),
-            u.createdAt ? format(new Date(u.createdAt), 'yyyy-MM-dd') : ''
-        ]);
-        const csv = [headers, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `Users_Directory_${format(new Date(), 'yyyyMMdd')}.csv`;
-        link.click();
-        toast.success("Directory exported (CSV)");
+        const rows = filteredUsers.map(u => ({
+            "Reg #": u.regNumber || '—',
+            "Name": u.name,
+            "Email": u.email,
+            "Phone": u.phone || '',
+            "CNIC": u.cnic || '',
+            "Role": u.role,
+            "Hostel": u.Hostel_User_hostelIdToHostel?.name || 'Global',
+            "Status": u.isActive ? 'Active' : 'Inactive',
+            "Joined": u.createdAt ? format(new Date(u.createdAt), 'yyyy-MM-dd') : '',
+            "System ID": u.uid || u.id
+        }));
+        exportToExcel(rows, `Users_Directory_${format(new Date(), 'yyyyMMdd')}`, "Users");
     };
 
     const handleExportPDF = () => {
@@ -238,27 +236,27 @@ const UserRecordPage = () => {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl hover:bg-gray-100 shrink-0">
-                    <MoreVertical className="h-4 w-4 text-gray-400" />
+                    <MoreVertical className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52 rounded-2xl p-2 shadow-2xl border-gray-100">
+            <DropdownMenuContent align="end" className="w-52 rounded-2xl p-2 shadow-2xl border-gray-100 dark:border-border">
                 <DropdownMenuItem onClick={() => router.push(user.role === 'WARDEN' ? `/admin/wardens/${user.id}` : `/admin/users-records/${user.id}`)}
                     className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2">
-                    <Eye className="h-4 w-4 text-gray-400" /> View
+                    <Eye className="h-4 w-4 text-gray-400 dark:text-muted-foreground" /> View
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { setSelectedUser({ ...user }); setIsEditDialogOpen(true); }}
                     className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2">
-                    <Settings2 className="h-4 w-4 text-gray-400" /> Edit
+                    <Settings2 className="h-4 w-4 text-gray-400 dark:text-muted-foreground" /> Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { setSelectedUser({ ...user }); setIsRoleDialogOpen(true); }}
                     className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-gray-400" /> Role
+                    <Shield className="h-4 w-4 text-gray-400 dark:text-muted-foreground" /> Role
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { setSelectedUser(user); setIsAccessDialogOpen(true); }}
                     className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer text-blue-600 flex items-center gap-2">
                     <Zap className="h-4 w-4" /> Reset
                 </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-gray-50 mx-2 my-1" />
+                <DropdownMenuSeparator className="bg-gray-50 dark:bg-muted/10 mx-2 my-1" />
                 <DropdownMenuItem onClick={() => handleDelete(user.id)}
                     className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer text-rose-600 hover:bg-rose-50 flex items-center gap-2">
                     <Trash2 className="h-4 w-4" /> Delete
@@ -268,34 +266,34 @@ const UserRecordPage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50/30 pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/30 pb-20 font-sans">
             {/* Header */}
-            <header className="bg-white border-b sticky top-0 z-50 h-16">
+            <header className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-4 md:px-8 h-full flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1.5 bg-blue-600 rounded-full shrink-0" />
                         <div>
-                            <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight">Users</h1>
+                            <h1 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Users</h1>
                             <p className="text-[9px] font-bold text-blue-600 uppercase tracking-widest">{stats.total || 0} Total</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-9 px-4 rounded-xl border border-gray-100 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:bg-gray-50 flex items-center gap-2">
+                                <Button variant="ghost" className="h-9 px-4 rounded-xl border border-gray-100 dark:border-border text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 flex items-center gap-2">
                                     <Download className="h-3.5 w-3.5" /> Export
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-40 rounded-xl p-2 shadow-xl border-gray-100">
+                            <DropdownMenuContent align="end" className="w-40 rounded-xl p-2 shadow-xl border-gray-100 dark:border-border">
                                 <DropdownMenuItem onClick={handleExport} className="h-10 rounded-lg font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2">
-                                    <FileText className="h-4 w-4 text-gray-400" /> CSV Directory
+                                    <FileText className="h-4 w-4 text-emerald-500" /> Excel Directory
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={handleExportPDF} className="h-10 rounded-lg font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2">
                                     <Download className="h-4 w-4 text-emerald-500" /> PDF Report
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
-                        <Button variant="outline" onClick={() => setIsCreateDialogOpen(true)} className="h-9 px-4 rounded-xl border-gray-200 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
+                        <Button variant="outline" onClick={() => setIsCreateDialogOpen(true)} className="h-9 px-4 rounded-xl border-gray-200 dark:border-border text-[10px] font-bold uppercase tracking-widest flex items-center gap-2">
                             <Plus className="h-3.5 w-3.5" /> New
                         </Button>
                         <Button onClick={() => router.push('/admin/users-records/register')} className="h-9 px-5 rounded-xl bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-widest shadow-lg shadow-indigo-200 flex items-center gap-2">
@@ -325,7 +323,7 @@ const UserRecordPage = () => {
                 </div>
 
                 {/* Search & Filter Bar */}
-                <div className="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 shadow-sm">
+                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 shadow-sm">
                     <div className="flex-1 relative w-full">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
                         <Input
@@ -336,39 +334,39 @@ const UserRecordPage = () => {
                         />
                     </div>
                     <div className="h-8 w-px bg-gray-100 hidden md:block" />
-                    <div className="flex items-center gap-1 p-1 bg-gray-50 rounded-xl overflow-x-auto w-full md:w-auto scrollbar-hide">
+                    <div className="flex items-center gap-1 p-1 bg-gray-50 dark:bg-muted/10 rounded-xl overflow-x-auto w-full md:w-auto scrollbar-hide">
                         {ROLES.map(r => (
                             <button key={r} onClick={() => setFilterRole(r)}
-                                className={`h-9 px-4 rounded-lg font-bold text-[9px] uppercase tracking-widest shrink-0 transition-all ${filterRole === r ? 'bg-white text-indigo-600 shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
+                                className={`h-9 px-4 rounded-lg font-bold text-[9px] uppercase tracking-widest shrink-0 transition-all ${filterRole === r ? 'bg-white dark:bg-card text-indigo-600 shadow-sm border border-gray-100 dark:border-border' : 'text-gray-400 dark:text-muted-foreground hover:text-gray-600 dark:text-muted-foreground'}`}>
                                 {r === 'all' ? 'Type' : r === 'RESIDENT' ? 'STUDENT' : r}
                             </button>
                         ))}
                     </div>
-                    <div className="items-center gap-1 border-l border-gray-100 pl-2 hidden md:flex">
-                        <Button variant="ghost" size="icon" onClick={() => setViewMode('table')} className={`h-9 w-9 rounded-xl ${viewMode === 'table' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400'}`}>
+                    <div className="items-center gap-1 border-l border-gray-100 dark:border-border pl-2 hidden md:flex">
+                        <Button variant="ghost" size="icon" onClick={() => setViewMode('table')} className={`h-9 w-9 rounded-xl ${viewMode === 'table' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400 dark:text-muted-foreground'}`}>
                             <LayoutList className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setViewMode('grid')} className={`h-9 w-9 rounded-xl ${viewMode === 'grid' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400'}`}>
+                        <Button variant="ghost" size="icon" onClick={() => setViewMode('grid')} className={`h-9 w-9 rounded-xl ${viewMode === 'grid' ? 'bg-indigo-50 text-indigo-600' : 'text-gray-400 dark:text-muted-foreground'}`}>
                             <LayoutGrid className="h-4 w-4" />
                         </Button>
                     </div>
                 </div>
 
                 {isLoading ? (
-                    <Loader label="Updates" subLabel="Updates..." icon={Fingerprint} fullScreen={false} />
+                    <ListPageSkeleton />
                 ) : filteredUsers.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-dashed border-gray-200">
+                    <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-card rounded-3xl border border-dashed border-gray-200 dark:border-border">
                         <Fingerprint className="h-12 w-12 text-gray-200 mb-4" />
-                        <h3 className="text-base font-bold text-gray-900 uppercase">Clear</h3>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Clear</p>
+                        <h3 className="text-base font-bold text-gray-900 dark:text-foreground uppercase">Clear</h3>
+                        <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-2">Clear</p>
                     </div>
                 ) : viewMode === 'table' ? (
                     /* ─── TABLE VIEW ─── */
-                    <div className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
                                 <thead>
-                                    <tr className="bg-gray-50 border-b border-gray-100">
+                                    <tr className="bg-gray-50 dark:bg-muted/10 border-b border-gray-100 dark:border-border">
                                         {[
                                             { label: 'Name', field: 'name' },
                                             { label: 'Info', field: 'email' },
@@ -379,7 +377,7 @@ const UserRecordPage = () => {
                                             { label: '', field: null },
                                         ].map((col, i) => (
                                             <th key={i}
-                                                className={`px-6 py-4 text-[9px] font-black uppercase tracking-widest text-gray-400 ${col.field ? 'cursor-pointer hover:text-gray-700' : ''}`}
+                                                className={`px-6 py-4 text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ${col.field ? 'cursor-pointer hover:text-gray-700 dark:text-foreground' : ''}`}
                                                 onClick={() => col.field && handleSort(col.field)}>
                                                 <div className="flex items-center gap-2">
                                                     {col.label}
@@ -389,29 +387,29 @@ const UserRecordPage = () => {
                                         ))}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-50">
+                                <tbody className="divide-y divide-gray-50 dark:divide-border/20">
                                     {filteredUsers.map(user => {
                                         const rc = getRoleConfig(user.role);
                                         return (
-                                            <tr key={user.id} className="hover:bg-gray-50/50 transition-colors group">
+                                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors group">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className={`h-9 w-9 rounded-xl ${rc.bg} flex items-center justify-center text-xs font-black ${rc.color} shrink-0`}>
                                                             {user.name?.charAt(0)?.toUpperCase()}
                                                         </div>
                                                         <div>
-                                                            <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">{user.name}</p>
+                                                            <p className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">{user.name}</p>
                                                             <div className="flex items-center gap-2">
                                                                 {user.regNumber && <p className="text-[9px] font-black text-blue-600 bg-blue-50 px-1 rounded uppercase tracking-widest">{user.regNumber}</p>}
-                                                                {user.uid && <p className="text-[8px] font-mono text-gray-400">{user.uid}</p>}
+                                                                {user.uid && <p className="text-[8px] font-mono text-gray-400 dark:text-muted-foreground">{user.uid}</p>}
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="space-y-0.5">
-                                                        <p className="text-[11px] font-bold text-gray-600 truncate max-w-[200px]">{user.email}</p>
-                                                        <p className="text-[10px] font-bold text-gray-400">{user.phone || '—'}</p>
+                                                        <p className="text-[11px] font-bold text-gray-600 dark:text-muted-foreground truncate max-w-[200px]">{user.email}</p>
+                                                        <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground">{user.phone || '—'}</p>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -420,19 +418,19 @@ const UserRecordPage = () => {
                                                     </Badge>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <p className="text-[11px] font-bold text-gray-600 truncate max-w-[140px]">
+                                                    <p className="text-[11px] font-bold text-gray-600 dark:text-muted-foreground truncate max-w-[140px]">
                                                         {user.Hostel_User_hostelIdToHostel?.name || <span className="text-gray-300 italic">Hostel</span>}
                                                     </p>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <p className="text-[11px] font-bold text-gray-500">
+                                                    <p className="text-[11px] font-bold text-gray-500 dark:text-muted-foreground">
                                                         {user.createdAt && !isNaN(new Date(user.createdAt).getTime()) ? format(new Date(user.createdAt), 'MMM dd, yyyy') : '—'}
                                                     </p>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className={`flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full ${user.isActive ? 'bg-emerald-50' : 'bg-gray-50'}`}>
+                                                    <div className={`flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full ${user.isActive ? 'bg-emerald-50' : 'bg-gray-50 dark:bg-muted/10'}`}>
                                                         <div className={`h-1.5 w-1.5 rounded-full ${user.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
-                                                        <span className={`text-[9px] font-bold uppercase tracking-widest ${user.isActive ? 'text-emerald-600' : 'text-gray-400'}`}>
+                                                        <span className={`text-[9px] font-bold uppercase tracking-widest ${user.isActive ? 'text-emerald-600' : 'text-gray-400 dark:text-muted-foreground'}`}>
                                                             {user.isActive ? 'Active' : 'Inactive'}
                                                         </span>
                                                     </div>
@@ -454,7 +452,7 @@ const UserRecordPage = () => {
                             </table>
                         </div>
                         <div className="px-6 py-4 border-t border-gray-50 flex items-center justify-between">
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                            <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                                 Showing {filteredUsers.length} of {users?.length || 0} users
                             </p>
                         </div>
@@ -465,7 +463,7 @@ const UserRecordPage = () => {
                         {filteredUsers.map(user => {
                             const rc = getRoleConfig(user.role);
                             return (
-                                <div key={user.id} className="bg-white border border-gray-100 rounded-4xl p-6 hover:shadow-xl hover:shadow-indigo-100/50 transition-all group relative overflow-hidden flex flex-col">
+                                <div key={user.id} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-4xl p-6 hover:shadow-xl hover:shadow-indigo-100/50 transition-all group relative overflow-hidden flex flex-col">
                                     <div className={`absolute top-0 right-0 w-32 h-32 ${rc.bg} rounded-bl-full opacity-10 -mr-12 -mt-12`} />
                                     <div className="flex items-start justify-between mb-5 relative">
                                         <div className={`h-12 w-12 rounded-2xl ${rc.bg} ${rc.color} flex items-center justify-center border ${rc.border} text-xl font-black`}>
@@ -475,22 +473,22 @@ const UserRecordPage = () => {
                                     </div>
                                     <div className="space-y-3 flex-1">
                                         <div>
-                                            <h3 className="text-base font-black text-gray-900 uppercase tracking-tight">{user.name}</h3>
+                                            <h3 className="text-base font-black text-gray-900 dark:text-foreground uppercase tracking-tight">{user.name}</h3>
                                             <div className="flex items-center gap-2 mt-1 flex-wrap">
                                                 <Badge className={`${rc.bg} ${rc.color} border-none text-[8px] font-bold uppercase px-2 py-0.5`}>{user.role === 'RESIDENT' ? 'STUDENT' : user.role}</Badge>
-                                                <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${user.isActive ? 'bg-emerald-50' : 'bg-gray-50'}`}>
+                                                <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${user.isActive ? 'bg-emerald-50' : 'bg-gray-50 dark:bg-muted/10'}`}>
                                                     <div className={`h-1.5 w-1.5 rounded-full ${user.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300'}`} />
-                                                    <span className={`text-[8px] font-bold uppercase ${user.isActive ? 'text-emerald-600' : 'text-gray-400'}`}>{user.isActive ? 'Active' : 'Inactive'}</span>
+                                                    <span className={`text-[8px] font-bold uppercase ${user.isActive ? 'text-emerald-600' : 'text-gray-400 dark:text-muted-foreground'}`}>{user.isActive ? 'Active' : 'Inactive'}</span>
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="space-y-1.5 text-[11px]">
-                                            <div className="flex items-center gap-2 text-gray-500"><Mail className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{user.email}</span></div>
-                                            <div className="flex items-center gap-2 text-gray-500"><Phone className="h-3.5 w-3.5 shrink-0" /><span>{user.phone || '—'}</span></div>
-                                            <div className="flex items-center gap-2 text-gray-500"><Building2 className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{user.Hostel_User_hostelIdToHostel?.name || 'Hostel'}</span></div>
+                                            <div className="flex items-center gap-2 text-gray-500 dark:text-muted-foreground"><Mail className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{user.email}</span></div>
+                                            <div className="flex items-center gap-2 text-gray-500 dark:text-muted-foreground"><Phone className="h-3.5 w-3.5 shrink-0" /><span>{user.phone || '—'}</span></div>
+                                            <div className="flex items-center gap-2 text-gray-500 dark:text-muted-foreground"><Building2 className="h-3.5 w-3.5 shrink-0" /><span className="truncate">{user.Hostel_User_hostelIdToHostel?.name || 'Hostel'}</span></div>
                                         </div>
                                     </div>
-                                    <Separator className="bg-gray-50 my-4" />
+                                    <Separator className="bg-gray-50 dark:bg-muted/10 my-4" />
                                     <div className="flex items-center justify-between">
                                         <div className="flex flex-col">
                                             {user.regNumber && <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">REG: {user.regNumber}</span>}
@@ -511,9 +509,9 @@ const UserRecordPage = () => {
 
             {/* Edit Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="max-w-xl p-0 overflow-hidden rounded-4xl border-none shadow-2xl bg-white flex flex-col max-h-[90vh]">
+                <DialogContent className="max-w-xl p-0 overflow-hidden rounded-4xl border-none shadow-2xl bg-white dark:bg-card flex flex-col max-h-[90vh]">
                     <div className="bg-blue-600 px-8 py-6 flex items-center gap-4 shrink-0">
-                        <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center"><Settings2 className="h-6 w-6 text-white" /></div>
+                        <div className="h-12 w-12 rounded-2xl bg-white dark:bg-card/15 flex items-center justify-center"><Settings2 className="h-6 w-6 text-white" /></div>
                         <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Edit</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">Details</p></div>
                     </div>
                     <div className="p-8 overflow-y-auto space-y-5">
@@ -523,17 +521,17 @@ const UserRecordPage = () => {
                                 { label: 'Phone', field: 'phone' }, { label: 'CNIC', field: 'cnic' },
                             ].map(({ label, field }) => (
                                 <div key={field} className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{label}</Label>
-                                    <Input className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-sm"
+                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">{label}</Label>
+                                    <Input className="h-11 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-sm"
                                         value={selectedUser?.[field] || ''} onChange={e => setSelectedUser({ ...selectedUser, [field]: e.target.value })} />
                                 </div>
                             ))}
                         </div>
                         {selectedUser?.role === 'WARDEN' && (
                             <div className="space-y-4 pt-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Expense Permissions</Label>
-                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Expense Permissions</Label>
+                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-muted/10 rounded-xl border border-gray-100 dark:border-border">
+                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200 dark:border-border">
                                         <input
                                             type="checkbox"
                                             id="edit-manage-expenses"
@@ -541,7 +539,7 @@ const UserRecordPage = () => {
                                             checked={selectedUser.canManageExpenses || false}
                                             onChange={(e) => setSelectedUser({ ...selectedUser, canManageExpenses: e.target.checked })}
                                         />
-                                        <Label htmlFor="edit-manage-expenses" className="text-[11px] font-bold text-gray-700 cursor-pointer uppercase">Master Access (All)</Label>
+                                        <Label htmlFor="edit-manage-expenses" className="text-[11px] font-bold text-gray-700 dark:text-foreground cursor-pointer uppercase">Master Access (All)</Label>
                                     </div>
                                     {[
                                         { id: 'canManageMess', label: 'Mess' },
@@ -559,7 +557,7 @@ const UserRecordPage = () => {
                                                 checked={selectedUser.canManageExpenses || selectedUser[p.id] || false}
                                                 onChange={(e) => setSelectedUser({ ...selectedUser, [p.id]: e.target.checked })}
                                             />
-                                            <Label htmlFor={`edit-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${selectedUser.canManageExpenses ? 'text-gray-300' : 'text-gray-600'}`}>{p.label}</Label>
+                                            <Label htmlFor={`edit-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${selectedUser.canManageExpenses ? 'text-gray-300' : 'text-gray-600 dark:text-muted-foreground'}`}>{p.label}</Label>
                                         </div>
                                     ))}
                                 </div>
@@ -577,17 +575,17 @@ const UserRecordPage = () => {
 
             {/* Password Reset Dialog */}
             <Dialog open={isAccessDialogOpen} onOpenChange={setIsAccessDialogOpen}>
-                <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white">
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-card">
                     <div className="bg-indigo-600 px-8 py-6 flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center"><ShieldCheck className="h-6 w-6 text-white" /></div>
+                        <div className="h-12 w-12 rounded-2xl bg-white dark:bg-card/15 flex items-center justify-center"><ShieldCheck className="h-6 w-6 text-white" /></div>
                         <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Reset</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">For {selectedUser?.name}</p></div>
                     </div>
                     <div className="p-8 space-y-6">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">New Password</Label>
-                            <Input type="text" className="h-14 rounded-xl border-gray-100 bg-gray-50 text-center font-black tracking-widest text-lg"
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">New Password</Label>
+                            <Input type="text" className="h-14 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 text-center font-black tracking-widest text-lg"
                                 value={newPassword} onChange={e => setNewPassword(e.target.value)} />
-                            <p className="text-[9px] text-gray-400 text-center italic">Details</p>
+                            <p className="text-[9px] text-gray-400 dark:text-muted-foreground text-center italic">Details</p>
                         </div>
                         <Button className="w-full h-12 bg-indigo-600 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl" onClick={handleResetPassword} disabled={resetPassword.isPending}>
                             {resetPassword.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Reset'}
@@ -598,15 +596,15 @@ const UserRecordPage = () => {
 
             {/* Role Change Dialog */}
             <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
-                <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white">
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-card">
                     <div className="bg-amber-500 px-8 py-6 flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center"><UserCog className="h-6 w-6 text-white" /></div>
+                        <div className="h-12 w-12 rounded-2xl bg-white dark:bg-card/15 flex items-center justify-center"><UserCog className="h-6 w-6 text-white" /></div>
                         <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Role</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">For {selectedUser?.name}</p></div>
                     </div>
                     <div className="p-8 space-y-6">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">New Role</Label>
-                            <select className="w-full h-12 rounded-xl border border-gray-100 bg-gray-50 px-4 font-bold text-sm uppercase outline-none focus:ring-2 focus:ring-amber-500/20"
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">New Role</Label>
+                            <select className="w-full h-12 rounded-xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 px-4 font-bold text-sm uppercase outline-none focus:ring-2 focus:ring-amber-500/20"
                                 value={selectedUser?.role || ''} onChange={e => setSelectedUser({ ...selectedUser, role: e.target.value })}>
                                 <option value="ADMIN">Administrator</option>
                                 <option value="WARDEN">Hostel Warden</option>
@@ -616,9 +614,9 @@ const UserRecordPage = () => {
                         </div>
                         {selectedUser?.role === 'WARDEN' && (
                             <div className="space-y-4 pt-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Expense Permissions</Label>
-                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Expense Permissions</Label>
+                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-muted/10 rounded-xl border border-gray-100 dark:border-border">
+                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200 dark:border-border">
                                         <input
                                             type="checkbox"
                                             id="role-manage-expenses"
@@ -626,7 +624,7 @@ const UserRecordPage = () => {
                                             checked={selectedUser.canManageExpenses || false}
                                             onChange={(e) => setSelectedUser({ ...selectedUser, canManageExpenses: e.target.checked })}
                                         />
-                                        <Label htmlFor="role-manage-expenses" className="text-[11px] font-bold text-gray-700 cursor-pointer uppercase">Master Access (All)</Label>
+                                        <Label htmlFor="role-manage-expenses" className="text-[11px] font-bold text-gray-700 dark:text-foreground cursor-pointer uppercase">Master Access (All)</Label>
                                     </div>
                                     {[
                                         { id: 'canManageMess', label: 'Mess' },
@@ -644,7 +642,7 @@ const UserRecordPage = () => {
                                                 checked={selectedUser.canManageExpenses || selectedUser[p.id] || false}
                                                 onChange={(e) => setSelectedUser({ ...selectedUser, [p.id]: e.target.checked })}
                                             />
-                                            <Label htmlFor={`role-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${selectedUser.canManageExpenses ? 'text-gray-300' : 'text-gray-600'}`}>{p.label}</Label>
+                                            <Label htmlFor={`role-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${selectedUser.canManageExpenses ? 'text-gray-300' : 'text-gray-600 dark:text-muted-foreground'}`}>{p.label}</Label>
                                         </div>
                                     ))}
                                 </div>
@@ -659,9 +657,9 @@ const UserRecordPage = () => {
 
             {/* Create User Dialog */}
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white flex flex-col max-h-[90vh]">
+                <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-card flex flex-col max-h-[90vh]">
                     <div className="bg-indigo-600 px-8 py-6 flex items-center gap-4 shrink-0">
-                        <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center"><Plus className="h-6 w-6 text-white" /></div>
+                        <div className="h-12 w-12 rounded-2xl bg-white dark:bg-card/15 flex items-center justify-center"><Plus className="h-6 w-6 text-white" /></div>
                         <div><h2 className="text-lg font-black text-white uppercase tracking-tight">Add</h2><p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">Add new user.</p></div>
                     </div>
                     <div className="p-8 overflow-y-auto space-y-6">
@@ -673,16 +671,16 @@ const UserRecordPage = () => {
                                 { label: 'CNIC', field: 'cnic', placeholder: 'XXXXX-XXXXXXX-X' },
                             ].map(({ label, field, placeholder }) => (
                                 <div key={field} className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">{label}</Label>
-                                    <Input placeholder={placeholder} className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-sm"
+                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">{label}</Label>
+                                    <Input placeholder={placeholder} className="h-11 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-sm"
                                         value={formData[field]} onChange={e => setFormData({ ...formData, [field]: e.target.value })} />
                                 </div>
                             ))}
                         </div>
                         <div className="grid grid-cols-2 gap-5">
                             <div className="space-y-1.5">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Type</Label>
-                                <select className="w-full h-11 rounded-xl border border-gray-100 bg-gray-50 px-4 font-bold text-sm uppercase outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Type</Label>
+                                <select className="w-full h-11 rounded-xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 px-4 font-bold text-sm uppercase outline-none focus:ring-2 focus:ring-indigo-500/20"
                                     value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
                                     <option value="ADMIN">Admin</option>
                                     <option value="WARDEN">Hostel Warden</option>
@@ -691,8 +689,8 @@ const UserRecordPage = () => {
                                 </select>
                             </div>
                             <div className="space-y-1.5">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Hostel</Label>
-                                <select className="w-full h-11 rounded-xl border border-gray-100 bg-gray-50 px-4 font-bold text-sm uppercase outline-none focus:ring-2 focus:ring-indigo-500/20"
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Hostel</Label>
+                                <select className="w-full h-11 rounded-xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 px-4 font-bold text-sm uppercase outline-none focus:ring-2 focus:ring-indigo-500/20"
                                     value={formData.hostelId} onChange={e => setFormData({ ...formData, hostelId: e.target.value })}>
                                     <option value="">None</option>
                                     {hostels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
@@ -700,24 +698,24 @@ const UserRecordPage = () => {
                             </div>
                         </div>
                         {(formData.role === 'STAFF' || formData.role === 'WARDEN') && (
-                            <div className="grid grid-cols-2 gap-5 p-5 bg-gray-50 rounded-2xl animate-in fade-in duration-300">
+                            <div className="grid grid-cols-2 gap-5 p-5 bg-gray-50 dark:bg-muted/10 rounded-2xl animate-in fade-in duration-300">
                                 <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Title</Label>
-                                    <Input placeholder="e.g. Senior Manager" className="h-11 rounded-xl border-gray-100 bg-white font-bold text-sm"
+                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Title</Label>
+                                    <Input placeholder="e.g. Senior Manager" className="h-11 rounded-xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-sm"
                                         value={formData.designation} onChange={e => setFormData({ ...formData, designation: e.target.value })} />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Salary</Label>
-                                    <Input type="number" placeholder="45000" className="h-11 rounded-xl border-gray-100 bg-white font-bold text-sm"
+                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Salary</Label>
+                                    <Input type="number" placeholder="45000" className="h-11 rounded-xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-sm"
                                         value={formData.basicSalary} onChange={e => setFormData({ ...formData, basicSalary: Number(e.target.value) })} />
                                 </div>
                             </div>
                         )}
                         {formData.role === 'WARDEN' && (
                             <div className="space-y-4 pt-2">
-                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Expense Permissions</Label>
-                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200">
+                                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Expense Permissions</Label>
+                                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 dark:bg-muted/10 rounded-xl border border-gray-100 dark:border-border">
+                                    <div className="flex items-center gap-3 col-span-2 pb-2 border-b border-gray-200 dark:border-border">
                                         <input
                                             type="checkbox"
                                             id="create-manage-expenses"
@@ -725,7 +723,7 @@ const UserRecordPage = () => {
                                             checked={formData.canManageExpenses || false}
                                             onChange={(e) => setFormData({ ...formData, canManageExpenses: e.target.checked })}
                                         />
-                                        <Label htmlFor="create-manage-expenses" className="text-[11px] font-bold text-gray-700 cursor-pointer uppercase">Master Access (All)</Label>
+                                        <Label htmlFor="create-manage-expenses" className="text-[11px] font-bold text-gray-700 dark:text-foreground cursor-pointer uppercase">Master Access (All)</Label>
                                     </div>
                                     {[
                                         { id: 'canManageMess', label: 'Mess' },
@@ -743,7 +741,7 @@ const UserRecordPage = () => {
                                                 checked={formData.canManageExpenses || formData[p.id] || false}
                                                 onChange={(e) => setFormData({ ...formData, [p.id]: e.target.checked })}
                                             />
-                                            <Label htmlFor={`create-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${formData.canManageExpenses ? 'text-gray-300' : 'text-gray-600'}`}>{p.label}</Label>
+                                            <Label htmlFor={`create-${p.id}`} className={`text-[10px] font-bold uppercase cursor-pointer ${formData.canManageExpenses ? 'text-gray-300' : 'text-gray-600 dark:text-muted-foreground'}`}>{p.label}</Label>
                                         </div>
                                     ))}
                                 </div>

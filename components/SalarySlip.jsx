@@ -15,9 +15,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import { useBranding } from '@/hooks/useBranding';
 
-const SalarySlip = ({ salary }) => {
+const SalarySlip = ({ salary, branding = { companyName: "Hostel Management", companyShortName: "HMS" } }) => {
     if (!salary) return null;
+    const { companyName, companyShortName } = useBranding();
 
     const handlePrint = () => {
         window.print();
@@ -181,7 +183,7 @@ const SalarySlip = ({ salary }) => {
             {/* Printable Content (Hidden on screen) */}
             <div className="hidden print:block bg-white text-black p-10 font-sans print-slip-content">
                 <div className="text-center border-b-2 border-black pb-8 mb-8">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">MGH - Mubarak Group Of Hostels</p>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">{companyShortName} - {companyName}</p>
                     <h1 className="text-2xl font-black uppercase">Official Pay Slip</h1>
                     <p className="text-xs font-mono font-bold mt-2">#{salary.id?.toUpperCase()}</p>
                 </div>

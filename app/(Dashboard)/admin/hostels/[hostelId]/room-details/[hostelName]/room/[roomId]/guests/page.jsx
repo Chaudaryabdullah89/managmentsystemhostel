@@ -121,11 +121,11 @@ const RoomGuestsContent = () => {
             case "Active":
                 return "bg-green-100 text-green-700 border-green-200";
             case "Inactive":
-                return "bg-gray-100 text-gray-700 border-gray-200";
+                return "bg-gray-100 text-gray-700 dark:text-foreground border-gray-200 dark:border-border";
             case "Left":
                 return "bg-red-100 text-red-700 border-red-200";
             default:
-                return "bg-gray-100 text-gray-700 border-gray-200";
+                return "bg-gray-100 text-gray-700 dark:text-foreground border-gray-200 dark:border-border";
         }
     };
 
@@ -138,7 +138,7 @@ const RoomGuestsContent = () => {
             case "Overdue":
                 return "bg-red-100 text-red-700 border-red-200";
             default:
-                return "bg-gray-100 text-gray-700 border-gray-200";
+                return "bg-gray-100 text-gray-700 dark:text-foreground border-gray-200 dark:border-border";
         }
     };
 
@@ -225,27 +225,27 @@ const RoomGuestsContent = () => {
                     <CardContent className="pt-6">
                         <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
                             <div>
-                                <p className="text-sm text-gray-500">Room Number</p>
+                                <p className="text-sm text-gray-500 dark:text-muted-foreground">Room Number</p>
                                 <p className="font-semibold text-lg">{roomInfo.name}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Type</p>
+                                <p className="text-sm text-gray-500 dark:text-muted-foreground">Type</p>
                                 <p className="font-semibold">{roomInfo.type}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Floor</p>
+                                <p className="text-sm text-gray-500 dark:text-muted-foreground">Floor</p>
                                 <p className="font-semibold">Floor {roomInfo.floor}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Capacity</p>
+                                <p className="text-sm text-gray-500 dark:text-muted-foreground">Capacity</p>
                                 <p className="font-semibold">{roomInfo.capacity} persons</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Current Occupancy</p>
+                                <p className="text-sm text-gray-500 dark:text-muted-foreground">Current Occupancy</p>
                                 <p className="font-semibold">{roomInfo.currentOccupancy}/{roomInfo.capacity}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-gray-500">Rent/Month</p>
+                                <p className="text-sm text-gray-500 dark:text-muted-foreground">Rent/Month</p>
                                 <p className="font-semibold">PKR {roomInfo.rentPerMonth.toLocaleString()}</p>
                             </div>
                         </div>
@@ -262,7 +262,7 @@ const RoomGuestsContent = () => {
                             containerClassName="grid grid-cols-1 md:grid-cols-3 gap-4 items-center"
                             searchSlot={(
                                 <div className="md:col-span-2 relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-muted-foreground" />
                                     <Input
                                         placeholder="Search by name, email, phone, or CNIC..."
                                         value={searchQuery}
@@ -301,12 +301,12 @@ const RoomGuestsContent = () => {
                     <CardContent>
                         <div className="space-y-4">
                             {filteredGuests.map((guest) => (
-                                <div key={guest.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                                <div key={guest.id} className="border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 transition-colors">
                                     {/* Guest Header */}
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-3 mb-2">
-                                                <h3 className="text-lg font-semibold text-gray-900">
+                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground">
                                                     {guest.fullName}
                                                 </h3>
                                                 <Badge className={`${getStatusColor(guest.status)} border flex items-center gap-1`}>
@@ -318,7 +318,7 @@ const RoomGuestsContent = () => {
                                                     {guest.paymentStatus}
                                                 </Badge>
                                             </div>
-                                            <p className="text-sm text-gray-500">
+                                            <p className="text-sm text-gray-500 dark:text-muted-foreground">
                                                 Check-in: {guest.checkInDate} • Booking ID: {guest.bookingId}
                                             </p>
                                         </div>
@@ -342,18 +342,18 @@ const RoomGuestsContent = () => {
                                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                                         {/* Contact */}
                                         <div className="flex items-start gap-2">
-                                            <Phone className="w-4 h-4 text-gray-400 mt-1" />
+                                            <Phone className="w-4 h-4 text-gray-400 dark:text-muted-foreground mt-1" />
                                             <div>
-                                                <p className="text-xs text-gray-500">Phone</p>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground">Phone</p>
                                                 <p className="text-sm font-medium">{guest.phone}</p>
                                             </div>
                                         </div>
 
                                         {/* Email */}
                                         <div className="flex items-start gap-2">
-                                            <Mail className="w-4 h-4 text-gray-400 mt-1" />
+                                            <Mail className="w-4 h-4 text-gray-400 dark:text-muted-foreground mt-1" />
                                             <div>
-                                                <p className="text-xs text-gray-500">Email</p>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground">Email</p>
                                                 <p className="text-sm font-medium truncate" title={guest.email}>
                                                     {guest.email}
                                                 </p>
@@ -362,18 +362,18 @@ const RoomGuestsContent = () => {
 
                                         {/* CNIC */}
                                         <div className="flex items-start gap-2">
-                                            <User className="w-4 h-4 text-gray-400 mt-1" />
+                                            <User className="w-4 h-4 text-gray-400 dark:text-muted-foreground mt-1" />
                                             <div>
-                                                <p className="text-xs text-gray-500">CNIC</p>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground">CNIC</p>
                                                 <p className="text-sm font-medium">{guest.cnic}</p>
                                             </div>
                                         </div>
 
                                         {/* Rent */}
                                         <div className="flex items-start gap-2">
-                                            <DollarSign className="w-4 h-4 text-gray-400 mt-1" />
+                                            <DollarSign className="w-4 h-4 text-gray-400 dark:text-muted-foreground mt-1" />
                                             <div>
-                                                <p className="text-xs text-gray-500">Monthly Rent</p>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground">Monthly Rent</p>
                                                 <p className="text-sm font-medium text-green-600">
                                                     PKR {guest.rentPerMonth.toLocaleString()}
                                                 </p>
@@ -382,9 +382,9 @@ const RoomGuestsContent = () => {
 
                                         {/* Next Payment */}
                                         <div className="flex items-start gap-2">
-                                            <Calendar className="w-4 h-4 text-gray-400 mt-1" />
+                                            <Calendar className="w-4 h-4 text-gray-400 dark:text-muted-foreground mt-1" />
                                             <div>
-                                                <p className="text-xs text-gray-500">Next Payment Due</p>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground">Next Payment Due</p>
                                                 <p className="text-sm font-medium">{guest.nextPaymentDue}</p>
                                             </div>
                                         </div>
@@ -394,21 +394,21 @@ const RoomGuestsContent = () => {
                                     <div className="mt-4 pt-4 border-t">
                                         <div className="flex items-center gap-6">
                                             <div>
-                                                <p className="text-xs text-gray-500">Emergency Contact</p>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground">Emergency Contact</p>
                                                 <p className="text-sm font-medium">
                                                     {guest.emergencyContact.name} ({guest.emergencyContact.relation})
                                                 </p>
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500">Emergency Phone</p>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground">Emergency Phone</p>
                                                 <p className="text-sm font-medium">{guest.emergencyContact.phone}</p>
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500">Occupation</p>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground">Occupation</p>
                                                 <p className="text-sm font-medium">{guest.occupation}</p>
                                             </div>
                                             <div>
-                                                <p className="text-xs text-gray-500">City</p>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground">City</p>
                                                 <p className="text-sm font-medium">{guest.city}</p>
                                             </div>
                                         </div>
@@ -417,8 +417,8 @@ const RoomGuestsContent = () => {
                             ))}
 
                             {filteredGuests.length === 0 && (
-                                <div className="text-center py-12 text-gray-500">
-                                    <User className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                                <div className="text-center py-12 text-gray-500 dark:text-muted-foreground">
+                                    <User className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-muted-foreground" />
                                     <p className="text-lg font-medium">No guests found</p>
                                     <p className="text-sm">Try adjusting your search or filters</p>
                                 </div>
@@ -434,11 +434,11 @@ const RoomGuestsContent = () => {
 export default function RoomGuestsPage() {
     return (
         <Suspense fallback={
-            <div className="flex h-screen items-center justify-center bg-white font-sans">
+            <div className="flex h-screen items-center justify-center bg-white dark:bg-card font-sans">
                 <div className="flex flex-col items-center gap-6">
-                    <div className="h-10 w-10 border-[3px] border-gray-200 border-t-black rounded-full animate-spin" />
+                    <div className="h-10 w-10 border-[3px] border-gray-200 dark:border-border border-t-black rounded-full animate-spin" />
                     <User className="h-8 w-8 text-black absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                    <p className="text-lg font-bold text-gray-900 tracking-tight">Accessing Guest Registry...</p>
+                    <p className="text-lg font-bold text-gray-900 dark:text-foreground tracking-tight">Accessing Guest Registry...</p>
                 </div>
             </div>
         }>

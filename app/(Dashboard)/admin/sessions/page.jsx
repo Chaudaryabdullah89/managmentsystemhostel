@@ -59,9 +59,9 @@ export default function SessionsPage() {
     const inactiveSessions = sessions.filter(s => !s.isActive);
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
             {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16 shadow-sm shadow-black/5">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16 shadow-sm shadow-black/5">
                 <div className="max-w-4xl mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 h-9 w-9" onClick={() => router.back()}>
@@ -73,8 +73,8 @@ export default function SessionsPage() {
                                 <Shield className="h-4 w-4 text-indigo-600" />
                             </div>
                             <div>
-                                <h1 className="text-sm font-black text-gray-900 uppercase tracking-tight">Devices</h1>
-                                <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Devices</p>
+                                <h1 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tight">Devices</h1>
+                                <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Devices</p>
                             </div>
                         </div>
                     </div>
@@ -82,7 +82,7 @@ export default function SessionsPage() {
                         <Button
                             variant="outline"
                             size="sm"
-                            className="h-9 rounded-xl text-[9px] font-black uppercase tracking-widest border-gray-100"
+                            className="h-9 rounded-xl text-[9px] font-black uppercase tracking-widest border-gray-100 dark:border-border"
                             onClick={() => refetch()}
                         >
                             <RefreshCw className="h-3.5 w-3.5 mr-2" /> Refresh
@@ -103,13 +103,13 @@ export default function SessionsPage() {
 
             <main className="max-w-4xl mx-auto px-6 py-8 space-y-8">
                 {/* Security Status Banner */}
-                <div className="bg-white border border-gray-100 rounded-[2rem] p-6 shadow-sm flex items-center justify-between">
+                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-[2rem] p-6 shadow-sm flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-2xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-600/20">
                             <Lock className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                            <h2 className="text-sm font-black text-gray-900 uppercase tracking-tight">Status</h2>
+                            <h2 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tight">Status</h2>
                             {sessions.length} Total · {activeSessions.length} Live
                         </div>
                     </div>
@@ -122,7 +122,7 @@ export default function SessionsPage() {
                 {isLoading ? (
                     <div className="space-y-4">
                         {[1, 2, 3].map(i => (
-                            <div key={i} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm animate-pulse">
+                            <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-6 shadow-sm animate-pulse">
                                 <div className="flex items-center gap-4">
                                     <div className="h-12 w-12 rounded-2xl bg-gray-100" />
                                     <div className="space-y-2 flex-1">
@@ -134,12 +134,12 @@ export default function SessionsPage() {
                         ))}
                     </div>
                 ) : sessions.length === 0 ? (
-                    <div className="bg-white border border-gray-100 rounded-[2rem] p-16 text-center shadow-sm">
-                        <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-4">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-[2rem] p-16 text-center shadow-sm">
+                        <div className="h-16 w-16 rounded-2xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center mx-auto mb-4">
                             <Activity className="h-8 w-8 text-gray-300" />
                         </div>
-                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">Empty</h3>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-2">Clear</p>
+                        <h3 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tight">Empty</h3>
+                        <p className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-2">Clear</p>
                     </div>
                 ) : (
                     <>
@@ -148,7 +148,7 @@ export default function SessionsPage() {
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
                                     <div className="h-5 w-1 bg-emerald-500 rounded-full" />
-                                    <h3 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Live</h3>
+                                    <h3 className="text-[11px] font-black text-gray-900 dark:text-foreground uppercase tracking-widest">Live</h3>
                                     <Badge className="bg-emerald-100 text-emerald-700 border-none text-[8px] font-black rounded-full px-2">
                                         {activeSessions.length}
                                     </Badge>
@@ -159,16 +159,16 @@ export default function SessionsPage() {
                                     return (
                                         <div
                                             key={session.id}
-                                            className={`bg-white border rounded-2xl p-5 shadow-sm transition-all ${isCurrentSession ? 'border-indigo-200 bg-indigo-50/20' : 'border-gray-100'}`}
+                                            className={`bg-white dark:bg-card border rounded-2xl p-5 shadow-sm transition-all ${isCurrentSession ? 'border-indigo-200 bg-indigo-50/20' : 'border-gray-100 dark:border-border'}`}
                                         >
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex items-start gap-4">
-                                                    <div className={`h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 ${isCurrentSession ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                                    <div className={`h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 ${isCurrentSession ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-500 dark:text-muted-foreground'}`}>
                                                         <DeviceIcon className="h-5 w-5" />
                                                     </div>
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-[12px] font-black text-gray-900 uppercase tracking-tight">
+                                                            <span className="text-[12px] font-black text-gray-900 dark:text-foreground uppercase tracking-tight">
                                                                 {getDeviceLabel(session.device)}
                                                             </span>
                                                             {isCurrentSession && (
@@ -177,7 +177,7 @@ export default function SessionsPage() {
                                                                 </Badge>
                                                             )}
                                                         </div>
-                                                        <div className="flex items-center gap-3 text-[9px] font-black text-gray-400 uppercase tracking-widest">
+                                                        <div className="flex items-center gap-3 text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                                                             <span className="flex items-center gap-1">
                                                                 <MapPin className="h-3 w-3" />
                                                                 {session.ipAddress || 'Unknown IP'}
@@ -215,30 +215,30 @@ export default function SessionsPage() {
                             <div className="space-y-4">
                                 <div className="flex items-center gap-3">
                                     <div className="h-5 w-1 bg-gray-300 rounded-full" />
-                                    <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Past</h3>
-                                    <Badge variant="outline" className="border-gray-200 text-gray-400 text-[8px] font-black rounded-full px-2">
+                                    <h3 className="text-[11px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Past</h3>
+                                    <Badge variant="outline" className="border-gray-200 dark:border-border text-gray-400 dark:text-muted-foreground text-[8px] font-black rounded-full px-2">
                                         {inactiveSessions.length}
                                     </Badge>
                                 </div>
                                 {inactiveSessions.slice(0, 5).map((session) => {
                                     const DeviceIcon = getDeviceIcon(session.device);
                                     return (
-                                        <div key={session.id} className="bg-white border border-gray-100 rounded-2xl p-5 shadow-sm opacity-60 hover:opacity-100 transition-opacity">
+                                        <div key={session.id} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-5 shadow-sm opacity-60 hover:opacity-100 transition-opacity">
                                             <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 text-gray-400">
+                                                <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 text-gray-400 dark:text-muted-foreground">
                                                     <DeviceIcon className="h-4 w-4" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <span className="text-[11px] font-black text-gray-600 uppercase tracking-tight block truncate">
+                                                    <span className="text-[11px] font-black text-gray-600 dark:text-muted-foreground uppercase tracking-tight block truncate">
                                                         {getDeviceLabel(session.device)}
                                                     </span>
-                                                    <div className="flex items-center gap-3 text-[9px] font-black text-gray-400 uppercase tracking-widest mt-0.5">
+                                                    <div className="flex items-center gap-3 text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">
                                                         <span>{session.ipAddress || 'Unknown'}</span>
                                                         <span>·</span>
                                                         <span>Expired {session.lastActive ? formatDistanceToNow(new Date(session.lastActive), { addSuffix: true }) : ''}</span>
                                                     </div>
                                                 </div>
-                                                <Badge variant="outline" className="border-gray-100 text-gray-400 text-[8px] font-black rounded-full px-2 shrink-0">
+                                                <Badge variant="outline" className="border-gray-100 dark:border-border text-gray-400 dark:text-muted-foreground text-[8px] font-black rounded-full px-2 shrink-0">
                                                     Inactive
                                                 </Badge>
                                             </div>

@@ -18,7 +18,7 @@ export async function PUT(request) {
             data.resolvedAt = new Date();
         }
 
-        const record = await prisma.maintanance.update({
+        const record = await prisma.maintenance.update({
             where: { id },
             data
         });

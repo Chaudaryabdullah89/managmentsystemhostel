@@ -1,72 +1,103 @@
-import { requireAuth } from '@/lib/apiAuth';
-import { errorResponse } from '@/lib/apiResponse';
-import { chat } from '@/lib/ollama';
-import { getRelevantContext, DEFAULT_SYSTEM_PROMPT } from '@/lib/ragContext';
-import { NextResponse } from 'next/server';
+export const dynamic = "force-dynamic";
+import { requireAuth } from "@/lib/apiAuth";
+import { errorResponse } from "@/lib/apiResponse";
+import { getRelevantContext, DEFAULT_SYSTEM_PROMPT } from "@/lib/ragContext";
+import { NextResponse } from "next/server";
 
 /**
  * POST /api/ai/chat
  *
- * Connect Next.js to local Ollama model.
- * Body: { message: string, useRag?: boolean, systemPrompt?: string, context?: object }
- *
- * - message: user question
- * - useRag: if true (default), detect intent and fetch only relevant DB data, then send as context
- * - systemPrompt: optional override for system instructions
- * - context: optional pre-built context (if not using RAG)
- *
- * Returns: { success, reply, context? }
+ * Uses Gemini (primary) → Groq (fallback). Ollama removed — not available on Vercel.
+ * Body: { message: string, useRag?: boolean, systemPrompt?: string }
  */
 export async function POST(request) {
   const auth = await requireAuth();
-  if (!auth.success) {
-    return errorResponse(auth.error, auth.status);
-  }
+  if (!auth.success) return errorResponse(auth.error, auth.status);
 
   try {
     const body = await request.json();
     const message = body.message?.trim();
+
     if (!message) {
       return NextResponse.json(
-        { success: false, message: 'Missing or empty message' },
+        { success: false, message: "Missing or empty message" },
         { status: 400 }
       );
     }
 
-    const useRag = body.useRag !== false;
+    const userId = auth.user?.userId || auth.user?.id;
+    const userRole = auth.user?.role ?? "RESIDENT";
     const systemPrompt = body.systemPrompt ?? DEFAULT_SYSTEM_PROMPT;
-    let context = body.context ?? null;
+    const useRag = body.useRag !== false;
 
-    if (useRag && auth.user?.id) {
-      context = await getRelevantContext(
-        auth.user.id,
-        auth.user.role ?? 'RESIDENT',
-        message
-      );
+    // Build RAG context from DB
+    let context = body.context ?? null;
+    if (useRag && userId) {
+      try {
+        context = await getRelevantContext(userId, userRole, message);
+      } catch (ragErr) {
+        console.warn("RAG context fetch failed:", ragErr.message);
+      }
     }
 
-    const reply = await chat(message, {
-      systemPrompt,
-      context: context || undefined,
-      stream: false,
-    });
+    const contextStr = context ? JSON.stringify(context, null, 2) : "";
+    const prompt = `${systemPrompt}\n\nHostel Context:\n${contextStr}\n\nUser Question: "${message}"\n\nGive a direct, friendly, concise response. Use emojis where appropriate.`;
 
-    const res = { success: true, reply };
-    if (body.includeContext && context) res.context = context;
-    return NextResponse.json(res);
-  } catch (error) {
-    const isOllamaDown =
-      error.message?.includes('fetch') ||
-      error.message?.includes('Ollama request failed') ||
-      error.cause?.code === 'ECONNREFUSED';
+    // Primary: Gemini
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey && !geminiKey.includes("PASTE")) {
+      const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-lite:generateContent?key=${geminiKey}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (reply) {
+          const result = { success: true, reply };
+          if (body.includeContext && context) result.context = context;
+          return NextResponse.json(result);
+        }
+      }
+    }
+
+    // Fallback: Groq
+    const groqKey = process.env.GROQ_API_KEY;
+    if (groqKey && !groqKey.includes("PASTE")) {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${groqKey}` },
+        body: JSON.stringify({
+          model: "llama-3.1-8b-instant",
+          messages: [{ role: "user", content: prompt }],
+          max_tokens: 200,
+          temperature: 0.7,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const reply = data?.choices?.[0]?.message?.content;
+        if (reply) {
+          const result = { success: true, reply };
+          if (body.includeContext && context) result.context = context;
+          return NextResponse.json(result);
+        }
+      }
+    }
+
     return NextResponse.json(
-      {
-        success: false,
-        message: isOllamaDown
-          ? 'AI service unavailable. Ensure Ollama is running (e.g. ollama run mistral).'
-          : error.message,
-      },
-      { status: isOllamaDown ? 503 : 500 }
+      { success: false, message: "AI service temporarily unavailable. Please try again shortly." },
+      { status: 503 }
+    );
+  } catch (error) {
+    console.error("AI Chat Error:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to process your request." },
+      { status: 500 }
     );
   }
 }

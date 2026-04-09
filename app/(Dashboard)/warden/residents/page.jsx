@@ -43,7 +43,7 @@ import {
   Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Loader from "@/components/ui/Loader";
+import { ListPageSkeleton } from "@/components/ui/skeletons";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,6 +83,7 @@ import { format } from "date-fns";
 import useAuthStore from "@/hooks/Authstate";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { exportToExcel } from "@/lib/utils/exportToExcel";
 import PageHeader from "@/components/Dashboard/PageHeader";
 import FilterToolbar from "@/components/Dashboard/FilterToolbar";
 import EmptyState from "@/components/ui/states/EmptyState";
@@ -132,9 +133,9 @@ const ROLE_CONFIG = {
 };
 const getRoleConfig = (role) =>
   ROLE_CONFIG[role] || {
-    color: "text-gray-600",
-    bg: "bg-gray-50",
-    border: "border-gray-100",
+    color: "text-gray-600 dark:text-muted-foreground",
+    bg: "bg-gray-50 dark:bg-muted/10",
+    border: "border-gray-100 dark:border-border",
     icon: User,
     dot: "bg-gray-400",
   };
@@ -241,39 +242,20 @@ const WardenUserRecordPage = () => {
 
   const handleExport = () => {
     if (!filteredUsers.length) return toast.error("No users to export");
-    const headers = [
-      "Reg #",
-      "Name",
-      "Email",
-      "Phone",
-      "CNIC",
-      "Role",
-      "Hostel",
-      "Status",
-      "UID",
-      "Joined",
-    ];
-    const rows = filteredUsers.map((u) => [
-      u.regNumber || "—",
-      u.name,
-      u.email,
-      u.phone || "",
-      u.cnic || "",
-      u.role,
-      u.Hostel_User_hostelIdToHostel?.name || "Assigned",
-      u.isActive ? "Active" : "Inactive",
-      u.uid || u.id?.slice(-8).toUpperCase(),
-      u.createdAt ? format(new Date(u.createdAt), "yyyy-MM-dd") : "",
-    ]);
-    const csv = [headers, ...rows]
-      .map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(","))
-      .join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = `Users_Directory_${format(new Date(), "yyyyMMdd")}.csv`;
-    link.click();
-    toast.success("Directory exported (CSV)");
+    const rows = filteredUsers.map((u) => ({
+      "Reg #": u.regNumber || "—",
+      "Name": u.name,
+      "Email": u.email,
+      "Phone": u.phone || "",
+      "CNIC": u.cnic || "",
+      "Role": u.role === "RESIDENT" ? "STUDENT" : u.role,
+      "Hostel": u.Hostel_User_hostelIdToHostel?.name || "Assigned",
+      "Status": u.isActive ? "Active" : "Inactive",
+      "System ID": u.uid || u.id,
+      "Room": u.Room_User_idToRoom?.roomNumber || "N/A",
+      "Joined": u.createdAt ? format(new Date(u.createdAt), "yyyy-MM-dd") : "",
+    }));
+    exportToExcel(rows, `Residents_Directory_${format(new Date(), "yyyyMMdd")}`, "Residents");
   };
 
   const handleExportPDF = () => {
@@ -413,18 +395,18 @@ const WardenUserRecordPage = () => {
           size="icon"
           className="h-8 w-8 rounded-xl hover:bg-gray-100 shrink-0"
         >
-          <MoreVertical className="h-4 w-4 text-gray-400" />
+          <MoreVertical className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-52 rounded-2xl p-2 shadow-2xl border-gray-100"
+        className="w-52 rounded-2xl p-2 shadow-2xl border-gray-100 dark:border-border"
       >
         <DropdownMenuItem
           onClick={() => router.push(`/warden/residents/${itemUser.id}`)}
           className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2"
         >
-          <Eye className="h-4 w-4 text-gray-400" /> View
+          <Eye className="h-4 w-4 text-gray-400 dark:text-muted-foreground" /> View
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
@@ -433,7 +415,7 @@ const WardenUserRecordPage = () => {
           }}
           className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2"
         >
-          <Settings2 className="h-4 w-4 text-gray-400" /> Edit
+          <Settings2 className="h-4 w-4 text-gray-400 dark:text-muted-foreground" /> Edit
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
@@ -444,7 +426,7 @@ const WardenUserRecordPage = () => {
         >
           <Zap className="h-4 w-4" /> Reset
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-gray-50 mx-2 my-1" />
+        <DropdownMenuSeparator className="bg-gray-50 dark:bg-muted/10 mx-2 my-1" />
         <DropdownMenuItem
           onClick={() => handleDelete(itemUser.id)}
           className="h-10 rounded-xl font-bold text-[10px] uppercase tracking-widest cursor-pointer text-rose-600 hover:bg-rose-50 flex items-center gap-2"
@@ -456,7 +438,7 @@ const WardenUserRecordPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50/30 pb-20 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted/10/30 pb-20 font-sans">
       <PageHeader
         title="Records"
         subtitleStart={`${stats.total || 0} Total People`}
@@ -464,27 +446,27 @@ const WardenUserRecordPage = () => {
         maxWidthClass="max-w-[1600px]"
         accentColorClass="bg-indigo-600"
         dotColorClass="bg-gray-200"
-        subtitleEndClass="text-gray-400"
+        subtitleEndClass="text-gray-400 dark:text-muted-foreground"
         rightSlot={(
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="h-9 px-4 rounded-xl border border-gray-100 text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:bg-gray-50 flex items-center gap-2"
+                  className="h-9 px-4 rounded-xl border border-gray-100 dark:border-border text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 flex items-center gap-2"
                 >
                   <Download className="h-3.5 w-3.5" /> Export
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-40 rounded-xl p-2 shadow-xl border-gray-100"
+                className="w-40 rounded-xl p-2 shadow-xl border-gray-100 dark:border-border"
               >
                 <DropdownMenuItem
                   onClick={handleExport}
                   className="h-10 rounded-lg font-bold text-[10px] uppercase tracking-widest cursor-pointer flex items-center gap-2"
                 >
-                  <FileText className="h-4 w-4 text-gray-400" /> CSV Directory
+                  <FileText className="h-4 w-4 text-emerald-500" /> Excel Directory
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleExportPDF}
@@ -497,7 +479,7 @@ const WardenUserRecordPage = () => {
             <Button
               variant="outline"
               onClick={() => setIsCreateDialogOpen(true)}
-              className="h-9 px-4 rounded-xl border-gray-200 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
+              className="h-9 px-4 rounded-xl border-gray-200 dark:border-border text-[10px] font-bold uppercase tracking-widest flex items-center gap-2"
             >
               <Plus className="h-3.5 w-3.5" /> New
             </Button>
@@ -552,7 +534,7 @@ const WardenUserRecordPage = () => {
         </div>
 
         <FilterToolbar
-          containerClassName="bg-white border border-gray-100 rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 shadow-sm"
+          containerClassName="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 shadow-sm"
           searchSlot={(
           <div className="flex-1 relative w-full">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
@@ -566,12 +548,12 @@ const WardenUserRecordPage = () => {
           )}
           dividerClassName="h-8 w-px bg-gray-100 hidden md:block"
           filtersSlot={(
-          <div className="flex items-center gap-1 p-1 bg-gray-50 rounded-xl overflow-x-auto w-full md:w-auto scrollbar-hide">
+          <div className="flex items-center gap-1 p-1 bg-gray-50 dark:bg-muted/10 rounded-xl overflow-x-auto w-full md:w-auto scrollbar-hide">
             {GET_ROLES_FOR_USER(user?.role).map((r) => (
               <button
                 key={r}
                 onClick={() => setFilterRole(r)}
-                className={`h-9 px-4 rounded-lg font-bold text-[9px] uppercase tracking-widest shrink-0 transition-all ${filterRole === r ? "bg-white text-indigo-600 shadow-sm border border-gray-100" : "text-gray-400 hover:text-gray-600"}`}
+                className={`h-9 px-4 rounded-lg font-bold text-[9px] uppercase tracking-widest shrink-0 transition-all ${filterRole === r ? "bg-white dark:bg-card text-indigo-600 shadow-sm border border-gray-100 dark:border-border" : "text-gray-400 dark:text-muted-foreground hover:text-gray-600 dark:text-muted-foreground"}`}
               >
                 {r === "all" ? "Type" : r === "RESIDENT" ? "STUDENT" : r}
               </button>
@@ -579,12 +561,12 @@ const WardenUserRecordPage = () => {
           </div>
           )}
           rightSlot={(
-          <div className="flex items-center gap-1 border-l border-gray-100 pl-2 hidden md:flex">
+          <div className="flex items-center gap-1 border-l border-gray-100 dark:border-border pl-2 hidden md:flex">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setViewMode("table")}
-              className={`h-9 w-9 rounded-xl ${viewMode === "table" ? "bg-indigo-50 text-indigo-600" : "text-gray-400"}`}
+              className={`h-9 w-9 rounded-xl ${viewMode === "table" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 dark:text-muted-foreground"}`}
             >
               <LayoutList className="h-4 w-4" />
             </Button>
@@ -592,7 +574,7 @@ const WardenUserRecordPage = () => {
               variant="ghost"
               size="icon"
               onClick={() => setViewMode("grid")}
-              className={`h-9 w-9 rounded-xl ${viewMode === "grid" ? "bg-indigo-50 text-indigo-600" : "text-gray-400"}`}
+              className={`h-9 w-9 rounded-xl ${viewMode === "grid" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 dark:text-muted-foreground"}`}
             >
               <LayoutGrid className="h-4 w-4" />
             </Button>
@@ -601,28 +583,23 @@ const WardenUserRecordPage = () => {
         />
 
         {isLoading ? (
-          <Loader
-            label="Fetching Records"
-            subLabel="Accessing database..."
-            icon={Fingerprint}
-            fullScreen={false}
-          />
+          <ListPageSkeleton />
         ) : filteredUsers.length === 0 ? (
           <EmptyState
             icon={Fingerprint}
             title="Clear"
             description="No users found in this hostel."
-            containerClassName="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-dashed border-gray-200"
+            containerClassName="flex flex-col items-center justify-center py-24 bg-white dark:bg-card rounded-3xl border border-dashed border-gray-200 dark:border-border"
             iconWrapperClassName="bg-transparent border-transparent mb-0"
             iconClassName="text-gray-200"
           />
         ) : viewMode === "table" ? (
           /* ─── TABLE VIEW ─── */
-          <div className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden">
+          <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
+                  <tr className="bg-gray-50 dark:bg-muted/10 border-b border-gray-100 dark:border-border">
                     {[
                       { label: "Resident", field: "name" },
                       { label: "Info", field: "email" },
@@ -634,7 +611,7 @@ const WardenUserRecordPage = () => {
                     ].map((col, i) => (
                       <th
                         key={i}
-                        className={`px-6 py-4 text-[9px] font-black uppercase tracking-widest text-gray-400 ${col.field ? "cursor-pointer hover:text-gray-700" : ""}`}
+                        className={`px-6 py-4 text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ${col.field ? "cursor-pointer hover:text-gray-700 dark:text-foreground" : ""}`}
                         onClick={() => col.field && handleSort(col.field)}
                       >
                         <div className="flex items-center gap-2">
@@ -645,13 +622,13 @@ const WardenUserRecordPage = () => {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-gray-50 dark:divide-border/20">
                   {filteredUsers.map((u) => {
                     const rc = getRoleConfig(u.role);
                     return (
                       <tr
                         key={u.id}
-                        className="hover:bg-gray-50/50 transition-colors group"
+                        className="hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors group"
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
@@ -661,7 +638,7 @@ const WardenUserRecordPage = () => {
                               {u.name?.charAt(0)?.toUpperCase()}
                             </div>
                             <div>
-                              <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">
+                              <p className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">
                                 {u.name}
                               </p>
                               <div className="flex items-center gap-2">
@@ -671,7 +648,7 @@ const WardenUserRecordPage = () => {
                                   </p>
                                 )}
                                 {u.uid && (
-                                  <p className="text-[8px] font-mono text-gray-400">
+                                  <p className="text-[8px] font-mono text-gray-400 dark:text-muted-foreground">
                                     {u.uid}
                                   </p>
                                 )}
@@ -681,10 +658,10 @@ const WardenUserRecordPage = () => {
                         </td>
                         <td className="px-6 py-4">
                           <div className="space-y-0.5">
-                            <p className="text-[11px] font-bold text-gray-600 truncate max-w-[200px]">
+                            <p className="text-[11px] font-bold text-gray-600 dark:text-muted-foreground truncate max-w-[200px]">
                               {u.email}
                             </p>
-                            <p className="text-[10px] font-bold text-gray-400">
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground">
                               {u.phone || "—"}
                             </p>
                           </div>
@@ -697,7 +674,7 @@ const WardenUserRecordPage = () => {
                           </Badge>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-[11px] font-bold text-gray-600 truncate max-w-[140px]">
+                          <p className="text-[11px] font-bold text-gray-600 dark:text-muted-foreground truncate max-w-[140px]">
                             {u.Room_User_idToRoom?.roomNumber ? (
                               `ROOM ${u.Room_User_idToRoom.roomNumber}`
                             ) : (
@@ -708,7 +685,7 @@ const WardenUserRecordPage = () => {
                           </p>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-[11px] font-bold text-gray-500">
+                          <p className="text-[11px] font-bold text-gray-500 dark:text-muted-foreground">
                             {u.createdAt &&
                             !isNaN(new Date(u.createdAt).getTime())
                               ? format(new Date(u.createdAt), "MMM dd, yyyy")
@@ -717,13 +694,13 @@ const WardenUserRecordPage = () => {
                         </td>
                         <td className="px-6 py-4">
                           <div
-                            className={`flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full ${u.isActive ? "bg-emerald-50" : "bg-gray-50"}`}
+                            className={`flex items-center gap-1.5 w-fit px-2.5 py-1 rounded-full ${u.isActive ? "bg-emerald-50" : "bg-gray-50 dark:bg-muted/10"}`}
                           >
                             <div
                               className={`h-1.5 w-1.5 rounded-full ${u.isActive ? "bg-emerald-500 animate-pulse" : "bg-gray-300"}`}
                             />
                             <span
-                              className={`text-[9px] font-bold uppercase tracking-widest ${u.isActive ? "text-emerald-600" : "text-gray-400"}`}
+                              className={`text-[9px] font-bold uppercase tracking-widest ${u.isActive ? "text-emerald-600" : "text-gray-400 dark:text-muted-foreground"}`}
                             >
                               {u.isActive ? "Active" : "Inactive"}
                             </span>
@@ -758,7 +735,7 @@ const WardenUserRecordPage = () => {
               return (
                 <div
                   key={u.id}
-                  className="bg-white border border-gray-100 rounded-[2rem] p-6 hover:shadow-xl hover:shadow-indigo-100/50 transition-all group relative overflow-hidden flex flex-col"
+                  className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-[2rem] p-6 hover:shadow-xl hover:shadow-indigo-100/50 transition-all group relative overflow-hidden flex flex-col"
                 >
                   <div
                     className={`absolute top-0 right-0 w-32 h-32 ${rc.bg} rounded-bl-full opacity-10 -mr-12 -mt-12`}
@@ -773,7 +750,7 @@ const WardenUserRecordPage = () => {
                   </div>
                   <div className="space-y-3 flex-1">
                     <div>
-                      <h3 className="text-base font-black text-gray-900 uppercase tracking-tight">
+                      <h3 className="text-base font-black text-gray-900 dark:text-foreground uppercase tracking-tight">
                         {u.name}
                       </h3>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -783,13 +760,13 @@ const WardenUserRecordPage = () => {
                           {u.role === "RESIDENT" ? "STUDENT" : u.role}
                         </Badge>
                         <div
-                          className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${u.isActive ? "bg-emerald-50" : "bg-gray-50"}`}
+                          className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${u.isActive ? "bg-emerald-50" : "bg-gray-50 dark:bg-muted/10"}`}
                         >
                           <div
                             className={`h-1.5 w-1.5 rounded-full ${u.isActive ? "bg-emerald-500 animate-pulse" : "bg-gray-300"}`}
                           />
                           <span
-                            className={`text-[8px] font-bold uppercase ${u.isActive ? "text-emerald-600" : "text-gray-400"}`}
+                            className={`text-[8px] font-bold uppercase ${u.isActive ? "text-emerald-600" : "text-gray-400 dark:text-muted-foreground"}`}
                           >
                             {u.isActive ? "Active" : "Inactive"}
                           </span>
@@ -797,15 +774,15 @@ const WardenUserRecordPage = () => {
                       </div>
                     </div>
                     <div className="space-y-1.5 text-[11px]">
-                      <div className="flex items-center gap-2 text-gray-500">
+                      <div className="flex items-center gap-2 text-gray-500 dark:text-muted-foreground">
                         <Mail className="h-3.5 w-3.5 shrink-0" />
                         <span className="truncate">{u.email}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-gray-500">
+                      <div className="flex items-center gap-2 text-gray-500 dark:text-muted-foreground">
                         <Phone className="h-3.5 w-3.5 shrink-0" />
                         <span>{u.phone || "—"}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-gray-500">
+                      <div className="flex items-center gap-2 text-gray-500 dark:text-muted-foreground">
                         <Building2 className="h-3.5 w-3.5 shrink-0" />
                         <span className="truncate">
                           {u.Room_User_idToRoom?.roomNumber
@@ -815,7 +792,7 @@ const WardenUserRecordPage = () => {
                       </div>
                     </div>
                   </div>
-                  <Separator className="bg-gray-50 my-4" />
+                  <Separator className="bg-gray-50 dark:bg-muted/10 my-4" />
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
                       {u.regNumber && (
@@ -845,9 +822,9 @@ const WardenUserRecordPage = () => {
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-xl p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white flex flex-col max-h-[90vh]">
+        <DialogContent className="max-w-xl p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-card flex flex-col max-h-[90vh]">
           <div className="bg-indigo-600 px-8 py-6 flex items-center gap-4 shrink-0">
-            <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-2xl bg-white dark:bg-card/15 flex items-center justify-center">
               <Settings2 className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -868,11 +845,11 @@ const WardenUserRecordPage = () => {
                 { label: "CNIC", field: "cnic" },
               ].map(({ label, field }) => (
                 <div key={field} className="space-y-1.5">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                     {label}
                   </Label>
                   <Input
-                    className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-sm"
+                    className="h-11 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-sm"
                     value={selectedUser?.[field] || ""}
                     onChange={(e) =>
                       setSelectedUser({
@@ -911,9 +888,9 @@ const WardenUserRecordPage = () => {
 
       {/* Password Reset Dialog */}
       <Dialog open={isAccessDialogOpen} onOpenChange={setIsAccessDialogOpen}>
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white">
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-card">
           <div className="bg-indigo-600 px-8 py-6 flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-2xl bg-white dark:bg-card/15 flex items-center justify-center">
               <ShieldCheck className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -927,16 +904,16 @@ const WardenUserRecordPage = () => {
           </div>
           <div className="p-8 space-y-6">
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                 New Secure Password
               </Label>
               <Input
                 type="text"
-                className="h-14 rounded-xl border-gray-100 bg-gray-50 text-center font-black tracking-widest text-lg"
+                className="h-14 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 text-center font-black tracking-widest text-lg"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
-              <p className="text-[9px] text-gray-400 text-center italic">
+              <p className="text-[9px] text-gray-400 dark:text-muted-foreground text-center italic">
                 User will be able to login with this password immediately.
               </p>
             </div>
@@ -957,9 +934,9 @@ const WardenUserRecordPage = () => {
 
       {/* Create User Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white flex flex-col max-h-[90vh]">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-card flex flex-col max-h-[90vh]">
           <div className="bg-indigo-600 px-8 py-6 flex items-center gap-4 shrink-0">
-            <div className="h-12 w-12 rounded-2xl bg-white/15 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-2xl bg-white dark:bg-card/15 flex items-center justify-center">
               <Plus className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -988,12 +965,12 @@ const WardenUserRecordPage = () => {
                 },
               ].map(({ label, field, placeholder }) => (
                 <div key={field} className="space-y-1.5">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                     {label}
                   </Label>
                   <Input
                     placeholder={placeholder}
-                    className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-sm"
+                    className="h-11 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-sm"
                     value={formData[field]}
                     onChange={(e) =>
                       setFormData({ ...formData, [field]: e.target.value })
@@ -1004,11 +981,11 @@ const WardenUserRecordPage = () => {
             </div>
             <div className="grid grid-cols-2 gap-5">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                   Account Type
                 </Label>
                 <select
-                  className="w-full h-11 rounded-xl border border-gray-100 bg-gray-50 px-4 font-bold text-sm uppercase outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full h-11 rounded-xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 px-4 font-bold text-sm uppercase outline-none focus:ring-2 focus:ring-indigo-500/20"
                   value={formData.role}
                   onChange={(e) =>
                     setFormData({ ...formData, role: e.target.value })
@@ -1024,23 +1001,23 @@ const WardenUserRecordPage = () => {
                 </select>
               </div>
               <div className="space-y-1.5 opacity-50">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                   Hostel Allocation
                 </Label>
-                <div className="h-11 rounded-xl border border-gray-100 bg-gray-50 px-4 flex items-center font-bold text-xs uppercase text-gray-500">
+                <div className="h-11 rounded-xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 px-4 flex items-center font-bold text-xs uppercase text-gray-500 dark:text-muted-foreground">
                   {isWarden ? "Your Managed Hostel" : "Global Assignment"}
                 </div>
               </div>
             </div>
             {(formData.role === "STAFF" || formData.role === "WARDEN") && (
-              <div className="grid grid-cols-2 gap-5 p-5 bg-gray-50 rounded-2xl animate-in fade-in duration-300 border border-gray-100 ">
+              <div className="grid grid-cols-2 gap-5 p-5 bg-gray-50 dark:bg-muted/10 rounded-2xl animate-in fade-in duration-300 border border-gray-100 dark:border-border ">
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                     Designation / Title
                   </Label>
                   <Input
                     placeholder="e.g. Caretaker"
-                    className="h-11 rounded-xl border-gray-100 bg-white font-bold text-sm"
+                    className="h-11 rounded-xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-sm"
                     value={formData.designation}
                     onChange={(e) =>
                       setFormData({ ...formData, designation: e.target.value })
@@ -1048,13 +1025,13 @@ const WardenUserRecordPage = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                     Basic Monthly salary
                   </Label>
                   <Input
                     type="number"
                     placeholder="Enter Amount"
-                    className="h-11 rounded-xl border-gray-100 bg-white font-bold text-sm"
+                    className="h-11 rounded-xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-sm"
                     value={formData.basicSalary}
                     onChange={(e) =>
                       setFormData({

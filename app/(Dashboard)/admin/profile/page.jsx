@@ -57,7 +57,7 @@ import { useUserById, useUserUpdate, useSessions, useTerminateSessions, useTermi
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import Loader from "@/components/ui/Loader";
+import { ProfileSkeleton } from "@/components/ui/skeletons";
 
 const ProfilePage = () => {
     const authUser = useAuthStore((state) => state.user)
@@ -191,18 +191,18 @@ const ProfilePage = () => {
 
     const getDeviceIcon = (device) => {
         const lower = device?.toLowerCase() || "";
-        if (lower.includes("mobile") || lower.includes("iphone")) return <Smartphone className="w-5 h-5 text-gray-400" />;
-        if (lower.includes("laptop")) return <Laptop className="w-5 h-5 text-gray-400" />;
-        return <Monitor className="w-5 h-5 text-gray-400" />;
+        if (lower.includes("mobile") || lower.includes("iphone")) return <Smartphone className="w-5 h-5 text-gray-400 dark:text-muted-foreground" />;
+        if (lower.includes("laptop")) return <Laptop className="w-5 h-5 text-gray-400 dark:text-muted-foreground" />;
+        return <Monitor className="w-5 h-5 text-gray-400 dark:text-muted-foreground" />;
     };
 
-    if (isLoading) return <Loader label="Loading" subLabel="Updates..." icon={User} fullScreen={false} />;
+    if (isLoading) return <ProfileSkeleton />;
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
-                    <h1 className="text-lg font-bold text-gray-900 uppercase">Admin Profile</h1>
+                    <h1 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase">Admin Profile</h1>
                     <div className="flex items-center gap-2">
                         {!isEditing ? (
                             <Button onClick={handleEdit} className="h-9 px-5 rounded-xl bg-black text-white text-[10px] uppercase">
@@ -223,40 +223,40 @@ const ProfilePage = () => {
             </div>
 
             <main className="max-w-5xl mx-auto px-6 py-8 space-y-6">
-                <Card className="bg-white border border-gray-100 rounded-2xl shadow-sm">
+                <Card className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl shadow-sm">
                     <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Name</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Name</Label>
                             {isEditing ? <Input value={editedData.name || ""} onChange={e => setEditedData({ ...editedData, name: e.target.value })} /> : <p className="font-bold">{user.name || "—"}</p>}
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Email</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Email</Label>
                             <p className="font-bold">{user.email || "—"}</p>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Phone</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Phone</Label>
                             {isEditing ? <Input value={editedData.phone || ""} onChange={e => setEditedData({ ...editedData, phone: e.target.value })} /> : <p className="font-bold">{user.phone || "—"}</p>}
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">CNIC</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">CNIC</Label>
                             {isEditing ? <Input value={editedData.cnic || ""} onChange={e => setEditedData({ ...editedData, cnic: e.target.value })} /> : <p className="font-bold">{user.cnic || "—"}</p>}
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Address</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Address</Label>
                             {isEditing ? <Textarea value={editedData.address || ""} onChange={e => setEditedData({ ...editedData, address: e.target.value })} /> : <p className="font-bold">{user.address || "—"}</p>}
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">City</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">City</Label>
                             {isEditing ? <Input value={editedData.city || ""} onChange={e => setEditedData({ ...editedData, city: e.target.value })} /> : <p className="font-bold">{user.city || "—"}</p>}
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Role / Status</Label>
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Role / Status</Label>
                             <p className="font-bold">{user.role || "ADMIN"} / {user.isActive ? "Active" : "Inactive"}</p>
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white border border-gray-100 rounded-2xl shadow-sm">
+                <Card className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl shadow-sm">
                     <CardContent className="p-6 flex flex-wrap gap-3">
                         <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
                             <DialogTrigger asChild>

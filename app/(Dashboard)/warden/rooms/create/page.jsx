@@ -95,25 +95,25 @@ const CreateRoomForm = () => {
     };
 
     if (hostelsLoading) return (
-        <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex flex-col items-center justify-center font-sans tracking-tight">
             <Loader2 className="h-10 w-10 text-black animate-spin mb-4" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading...</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Loading...</p>
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-gray-50/50 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-sans tracking-tight">
             {/* Synced Header */}
-            <div className="bg-white border-b sticky top-0 z-40 h-16">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-40 h-16">
                 <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full hover:bg-gray-100">
+                        <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full hover:bg-gray-100 dark:bg-muted/20">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight leading-none uppercase">Add New Room</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mt-1">{wardenHostel?.name || 'Rooms'}</p>
+                            <h1 className="text-lg font-bold text-gray-900 dark:text-foreground tracking-tight leading-none uppercase">Add New Room</h1>
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none mt-1">{wardenHostel?.name || 'Rooms'}</p>
                         </div>
                     </div>
                     <Button
@@ -132,10 +132,10 @@ const CreateRoomForm = () => {
                     {/* Primary Form Area */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Property Badge (Replacement for Selection) */}
-                        <Card className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white overflow-hidden">
-                            <div className="bg-emerald-50 px-8 py-4 flex items-center justify-between border-b border-emerald-100/50">
+                        <Card className="border border-gray-100 dark:border-border shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white dark:bg-card overflow-hidden">
+                            <div className="bg-emerald-50 dark:bg-emerald-950/20 px-8 py-4 flex items-center justify-between border-b border-emerald-100 dark:border-emerald-900/30/50">
                                 <div className="flex items-center gap-3">
-                                    <Building2 className="h-4 w-4 text-emerald-600" />
+                                    <Building2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                                     <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-[0.2em]">Assigned Hostel</span>
                                 </div>
                                 <span className="text-[10px] font-black text-emerald-800 uppercase tracking-tight">{wardenHostel?.name}</span>
@@ -143,9 +143,9 @@ const CreateRoomForm = () => {
                         </Card>
 
                         {/* Unit Identity */}
-                        <Card className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white">
+                        <Card className="border border-gray-100 dark:border-border shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white dark:bg-card">
                             <CardHeader className="px-8 pt-8 pb-4">
-                                <CardTitle className="text-[11px] font-bold flex items-center gap-2 uppercase tracking-widest text-gray-400">
+                                <CardTitle className="text-[11px] font-bold flex items-center gap-2 uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                                     <LayoutGrid className="h-4 w-4 text-purple-500" />
                                     Room Details
                                 </CardTitle>
@@ -153,20 +153,20 @@ const CreateRoomForm = () => {
                             <CardContent className="px-8 pb-8 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Room Number *</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider ml-0.5">Room Number *</Label>
                                         <Input
                                             placeholder="e.g. B-102"
-                                            className="h-11 bg-white border-gray-100 rounded-xl font-bold text-gray-900 placeholder:text-gray-200 focus:ring-1 focus:ring-black"
+                                            className="h-11 bg-white dark:bg-card border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground placeholder:text-gray-200 focus:ring-1 focus:ring-black"
                                             value={roomNumber}
                                             onChange={(e) => setRoomNumber(e.target.value)}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Floor Level *</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider ml-0.5">Floor Level *</Label>
                                         <Input
                                             type="number"
                                             placeholder="0"
-                                            className="h-11 bg-white border-gray-100 rounded-xl font-bold text-gray-900 focus:ring-1 focus:ring-black"
+                                            className="h-11 bg-white dark:bg-card border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground focus:ring-1 focus:ring-black"
                                             value={floor}
                                             onChange={(e) => setFloor(e.target.value)}
                                         />
@@ -174,15 +174,15 @@ const CreateRoomForm = () => {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Room Type *</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider ml-0.5">Room Type *</Label>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 bg-white font-bold text-gray-900">
+                                                <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-gray-900 dark:text-foreground">
                                                     <span className="uppercase tracking-wide">{type}</span>
                                                     <ChevronDown className="h-4 w-4 opacity-40" />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent className="w-[300px] rounded-2xl border-gray-100 shadow-xl p-2">
+                                            <DropdownMenuContent className="w-[300px] rounded-2xl border-gray-100 dark:border-border shadow-xl p-2">
                                                 {['SINGLE', 'DOUBLE', 'TRIPLE', 'DORMITORY'].map(t => (
                                                     <DropdownMenuItem key={t} onClick={() => setType(t)} className="p-3 font-bold text-[10px] uppercase tracking-wider rounded-xl cursor-pointer">{t}</DropdownMenuItem>
                                                 ))}
@@ -190,20 +190,20 @@ const CreateRoomForm = () => {
                                         </DropdownMenu>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Capacity (Beds) *</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider ml-0.5">Capacity (Beds) *</Label>
                                         <Input
                                             type="number"
-                                            className="h-11 bg-white border-gray-100 rounded-xl font-bold text-gray-900 focus:ring-1 focus:ring-black"
+                                            className="h-11 bg-white dark:bg-card border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground focus:ring-1 focus:ring-black"
                                             value={capacity}
                                             onChange={(e) => setCapacity(e.target.value)}
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-2 pt-4 border-t border-gray-50">
-                                    <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Status *</Label>
+                                <div className="space-y-2 pt-4 border-t border-gray-50 dark:border-border/50">
+                                    <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider ml-0.5">Status *</Label>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 bg-white font-bold text-gray-900 transition-colors hover:bg-gray-50 uppercase tracking-wider">
+                                            <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-gray-900 dark:text-foreground transition-colors hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 uppercase tracking-wider">
                                                 <span className="flex items-center gap-2">
                                                     <div className={`h-1.5 w-1.5 rounded-full ${status === 'AVAILABLE' ? 'bg-emerald-500' : 'bg-blue-500'}`} />
                                                     {status}
@@ -211,7 +211,7 @@ const CreateRoomForm = () => {
                                                 <ChevronDown className="h-4 w-4 opacity-40" />
                                             </Button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="w-[400px] rounded-2xl border-gray-100 shadow-xl p-2">
+                                        <DropdownMenuContent className="w-[400px] rounded-2xl border-gray-100 dark:border-border shadow-xl p-2">
                                             {['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'CLEANING'].map(s => (
                                                 <DropdownMenuItem key={s} onClick={() => setStatus(s)} className="p-3 font-bold text-[10px] uppercase tracking-wider rounded-xl cursor-pointer">{s}</DropdownMenuItem>
                                             ))}
@@ -222,9 +222,9 @@ const CreateRoomForm = () => {
                         </Card>
 
                         {/* Service Schedule */}
-                        <Card className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white font-sans tracking-tight">
+                        <Card className="border border-gray-100 dark:border-border shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white dark:bg-card font-sans tracking-tight">
                             <CardHeader className="px-8 pt-8 pb-4">
-                                <CardTitle className="text-[11px] font-bold flex items-center gap-2 uppercase tracking-widest text-gray-400">
+                                <CardTitle className="text-[11px] font-bold flex items-center gap-2 uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                                     <Sparkle className="h-4 w-4 text-emerald-500" />
                                     Cleaning & Laundry Plan
                                 </CardTitle>
@@ -232,26 +232,26 @@ const CreateRoomForm = () => {
                             <CardContent className="px-8 pb-8 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Cleaning Interval (Hours)</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider ml-0.5">Cleaning Interval (Hours)</Label>
                                         <Input
                                             type="number"
                                             placeholder="24"
-                                            className="h-11 bg-white border-gray-100 rounded-xl font-bold text-gray-900 focus:ring-1 focus:ring-black"
+                                            className="h-11 bg-white dark:bg-card border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground focus:ring-1 focus:ring-black"
                                             value={cleaningInterval}
                                             onChange={(e) => setCleaningInterval(e.target.value)}
                                         />
-                                        <p className="text-[9px] text-gray-400 font-medium italic">New log entry every {cleaningInterval} hours</p>
+                                        <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-medium italic">New log entry every {cleaningInterval} hours</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider ml-0.5">Laundry Interval (Hours)</Label>
+                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider ml-0.5">Laundry Interval (Hours)</Label>
                                         <Input
                                             type="number"
                                             placeholder="48"
-                                            className="h-11 bg-white border-gray-100 rounded-xl font-bold text-gray-900 focus:ring-1 focus:ring-black"
+                                            className="h-11 bg-white dark:bg-card border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground focus:ring-1 focus:ring-black"
                                             value={laundryInterval}
                                             onChange={(e) => setLaundryInterval(e.target.value)}
                                         />
-                                        <p className="text-[9px] text-gray-400 font-medium italic">New log entry every {laundryInterval} hours</p>
+                                        <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-medium italic">New log entry every {laundryInterval} hours</p>
                                     </div>
                                 </div>
                             </CardContent>
@@ -261,48 +261,48 @@ const CreateRoomForm = () => {
                     {/* Sidebar Configuration */}
                     <div className="space-y-6">
                         {/* Financial Ledger */}
-                        <Card className="border border-gray-100 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] bg-white overflow-hidden">
-                            <CardHeader className="bg-gray-50/50 border-b border-gray-100 px-6 py-5 text-center">
-                                <CardTitle className="text-[10px] font-black text-gray-900 tracking-widest uppercase">Pricing</CardTitle>
+                        <Card className="border border-gray-100 dark:border-border shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] bg-white dark:bg-card overflow-hidden">
+                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-100 dark:border-border px-6 py-5 text-center">
+                                <CardTitle className="text-[10px] font-black text-gray-900 dark:text-foreground tracking-widest uppercase">Pricing</CardTitle>
                             </CardHeader>
                             <div className="p-6 space-y-5">
                                 <div className="space-y-1.5 flex flex-col">
-                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Price *</Label>
+                                    <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center">Price *</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-gray-300">PKR</span>
-                                        <Input type="number" className="pl-14 h-11 bg-gray-50/50 border-gray-100 rounded-2xl font-black text-lg text-center focus:bg-white transition-all shadow-none" value={price} onChange={(e) => setPrice(e.target.value)} />
+                                        <Input type="number" className="pl-14 h-11 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border rounded-2xl font-black text-lg text-center focus:bg-white dark:bg-card transition-all shadow-none" value={price} onChange={(e) => setPrice(e.target.value)} />
                                     </div>
                                 </div>
                                 <div className="space-y-1.5 flex flex-col">
-                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Monthly Rent *</Label>
+                                    <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center">Monthly Rent *</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-300">PKR</span>
-                                        <Input type="number" className="pl-14 h-11 bg-emerald-50/30 border-emerald-100/30 rounded-2xl font-black text-lg text-center text-emerald-700 focus:bg-white transition-all shadow-none" value={monthlyrent} onChange={(e) => setMonthlyrent(e.target.value)} />
+                                        <Input type="number" className="pl-14 h-11 bg-emerald-50/30 border-emerald-100 dark:border-emerald-900/30/30 rounded-2xl font-black text-lg text-center text-emerald-700 focus:bg-white dark:bg-card transition-all shadow-none" value={monthlyrent} onChange={(e) => setMonthlyrent(e.target.value)} />
                                     </div>
                                 </div>
                                 <div className="space-y-1.5 flex flex-col">
-                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Price Per Night *</Label>
+                                    <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center">Price Per Night *</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-blue-300">PKR</span>
-                                        <Input type="number" className="pl-14 h-11 bg-blue-50/30 border-blue-100/30 rounded-2xl font-black text-lg text-center text-blue-700 focus:bg-white transition-all shadow-none" value={pricepernight} onChange={(e) => setPricepernight(e.target.value)} />
+                                        <Input type="number" className="pl-14 h-11 bg-blue-50/30 border-blue-100/30 rounded-2xl font-black text-lg text-center text-blue-700 focus:bg-white dark:bg-card transition-all shadow-none" value={pricepernight} onChange={(e) => setPricepernight(e.target.value)} />
                                     </div>
                                 </div>
                             </div>
                         </Card>
 
                         {/* Extended Details */}
-                        <Card className="border border-gray-100 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white overflow-hidden rounded-[2rem]">
+                        <Card className="border border-gray-100 dark:border-border shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white dark:bg-card overflow-hidden rounded-[2rem]">
                             <CardHeader className="px-8 pt-8 pb-4">
-                                <CardTitle className="text-[10px] font-bold flex items-center gap-2 uppercase tracking-[0.2em] text-gray-400">
+                                <CardTitle className="text-[10px] font-bold flex items-center gap-2 uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground">
                                     <Info className="h-4 w-4 text-indigo-500" />
                                     More Details
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="px-8 pb-8 space-y-6">
                                 <div className="space-y-2.5">
-                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Notes</Label>
+                                    <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">Notes</Label>
                                     <Textarea
-                                        className="bg-gray-50/50 border-gray-100 text-gray-900 text-[11px] font-medium min-h-[120px] rounded-xl focus:bg-white focus:ring-1 focus:ring-indigo-500/20 transition-all resize-none pt-4 placeholder:text-gray-300"
+                                        className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border text-gray-900 dark:text-foreground text-[11px] font-medium min-h-[120px] rounded-xl focus:bg-white dark:bg-card focus:ring-1 focus:ring-indigo-500/20 transition-all resize-none pt-4 placeholder:text-gray-300"
                                         placeholder="Add any specific notes about this unit..."
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
@@ -310,9 +310,9 @@ const CreateRoomForm = () => {
                                 </div>
 
                                 <div className="space-y-2.5">
-                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Amenities (Comma Separated)</Label>
+                                    <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">Amenities (Comma Separated)</Label>
                                     <Input
-                                        className="h-11 bg-gray-50/50 border-gray-100 rounded-xl font-bold text-gray-900 focus:bg-white transition-all placeholder:text-gray-200"
+                                        className="h-11 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all placeholder:text-gray-200"
                                         placeholder="WiFi, AC, Attached Bath..."
                                         value={amenities}
                                         onChange={(e) => setAmenities(e.target.value)}
@@ -320,11 +320,11 @@ const CreateRoomForm = () => {
                                 </div>
 
                                 <div className="space-y-2.5">
-                                    <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Image Link</Label>
+                                    <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">Image Link</Label>
                                     <div className="relative">
                                         <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
                                         <Input
-                                            className="h-11 pl-12 bg-gray-50/50 border-gray-100 rounded-xl font-medium text-[11px] text-gray-600 focus:bg-white transition-all"
+                                            className="h-11 pl-12 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-medium text-[11px] text-gray-600 dark:text-muted-foreground focus:bg-white dark:bg-card transition-all"
                                             placeholder="Paste image URL here..."
                                             value={imageUrl}
                                             onChange={(e) => setImageUrl(e.target.value)}
@@ -343,9 +343,9 @@ const CreateRoomForm = () => {
 export default function WardenCreateRoomPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center font-sans tracking-tight">
+            <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex flex-col items-center justify-center font-sans tracking-tight">
                 <Loader2 className="h-10 w-10 text-black animate-spin mb-4" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading...</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Loading...</p>
             </div>
         }>
             <CreateRoomForm />

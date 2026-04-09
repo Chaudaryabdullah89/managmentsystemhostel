@@ -19,6 +19,13 @@ export default function ForgotPasswordPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [branding, setBranding] = React.useState({ companyName: "HMS", companyShortName: "HMS" });
+
+  React.useEffect(() => {
+    fetch("/api/settings/public").then(r => r.json()).then(d => {
+      if (d.settings) setBranding({ companyName: d.settings.companyName, companyShortName: d.settings.companyShortName });
+    }).catch(() => {});
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -83,9 +90,9 @@ export default function ForgotPasswordPage() {
               <Home className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight">MGH</h1>
+              <h1 className="text-lg font-bold tracking-tight">{branding.companyShortName}</h1>
               <p className="text-[10px] uppercase tracking-widest text-slate-400">
-                Mubarak Group of Hostels
+                {branding.companyName}
               </p>
             </div>
           </div>

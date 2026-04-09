@@ -1,5 +1,6 @@
 "use client"
 import React, { useState, useMemo, useEffect } from "react";
+import { ListPageSkeleton } from "@/components/ui/skeletons";
 import {
     Calendar,
     DollarSign,
@@ -58,9 +59,9 @@ const BookingStatusBadge = ({ status }) => {
             case "PENDING": return "bg-amber-50 text-amber-700 border-amber-100";
             case "CHECKED_IN":
             case "Active": return "bg-emerald-50 text-emerald-700 border-emerald-100";
-            case "CHECKED_OUT": return "bg-gray-100 text-gray-700 border-gray-200";
+            case "CHECKED_OUT": return "bg-gray-100 text-gray-700 dark:text-foreground border-gray-200 dark:border-border";
             case "CANCELLED": return "bg-rose-50 text-rose-700 border-rose-100";
-            default: return "bg-gray-50 text-gray-600 border-gray-100";
+            default: return "bg-gray-50 dark:bg-muted/10 text-gray-600 dark:text-muted-foreground border-gray-100 dark:border-border";
         }
     };
 
@@ -97,24 +98,24 @@ const BookingDetailCard = ({ booking }) => {
     };
 
     return (
-        <div className="bg-white border border-gray-100 rounded-2xl p-5 pb-14 flex flex-col hover:shadow-md transition-shadow group relative overflow-hidden">
+        <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-5 pb-14 flex flex-col hover:shadow-md transition-shadow group relative overflow-hidden">
             <div className={`absolute top-0 left-0 w-1.5 h-full ${getRibbonColor(booking.status)} opacity-70`} />
 
             <div className="flex flex-col lg:flex-row items-center justify-between gap-6 relative z-10">
                 {/* 1. Hostel Details */}
                 <div className="flex items-center gap-5 flex-1 min-w-0">
-                    <div className="h-14 w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm shrink-0 group-hover:bg-indigo-600 transition-colors">
-                        <Building2 className="h-6 w-6 text-gray-400 group-hover:text-white transition-colors" />
+                    <div className="h-14 w-14 rounded-xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center border border-gray-100 dark:border-border shadow-sm shrink-0 group-hover:bg-indigo-600 transition-colors">
+                        <Building2 className="h-6 w-6 text-gray-400 dark:text-muted-foreground group-hover:text-white transition-colors" />
                     </div>
                     <div className="flex flex-col min-w-0 text-left">
-                        <h4 className="text-base font-bold text-gray-900 uppercase tracking-tight truncate">{booking.Room?.Hostel?.name}</h4>
+                        <h4 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight truncate">{booking.Room?.Hostel?.name}</h4>
                         <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">UNIT {booking.Room?.roomNumber}</span>
+                            <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">UNIT {booking.Room?.roomNumber}</span>
                             <span className="h-1 w-1 rounded-full bg-gray-200" />
                             {booking.uid ? (
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">ID: {booking.uid}</span>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none">ID: {booking.uid}</span>
                             ) : (
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">ID: {booking.id.slice(0, 8).toUpperCase()}</span>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none">ID: {booking.id.slice(0, 8).toUpperCase()}</span>
                             )}
                         </div>
                     </div>
@@ -123,13 +124,13 @@ const BookingDetailCard = ({ booking }) => {
                 {/* Booking Dates */}
                 <div className="hidden xl:flex items-center gap-8 min-w-[280px]">
                     <div className="flex flex-col gap-0.5">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Check-in</span>
-                        <span className="text-xs font-bold text-gray-900 uppercase">{format(new Date(booking.checkIn), 'MMM dd, yyyy')}</span>
+                        <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">Check-in</span>
+                        <span className="text-xs font-bold text-gray-900 dark:text-foreground uppercase">{format(new Date(booking.checkIn), 'MMM dd, yyyy')}</span>
                     </div>
                     <div className="h-4 w-px bg-gray-100" />
                     <div className="flex flex-col gap-0.5">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Check-out</span>
-                        <span className="text-xs font-bold text-gray-900 uppercase">{booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'Ongoing'}</span>
+                        <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">Check-out</span>
+                        <span className="text-xs font-bold text-gray-900 dark:text-foreground uppercase">{booking.checkOut ? format(new Date(booking.checkOut), 'MMM dd, yyyy') : 'Ongoing'}</span>
                     </div>
                 </div>
 
@@ -141,7 +142,7 @@ const BookingDetailCard = ({ booking }) => {
                 {/* 4. Actions */}
                 <div className="flex items-center gap-2 lg:ml-auto">
                     <UnifiedReceipt data={booking} type="booking">
-                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-gray-50 text-gray-400 transition-colors">
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 text-gray-400 dark:text-muted-foreground transition-colors">
                             <Printer className="h-4 w-4" />
                         </Button>
                     </UnifiedReceipt>
@@ -167,23 +168,23 @@ const BookingDetailCard = ({ booking }) => {
             </div>
 
             {/* Bottom Bar: Payment Summary */}
-            <div className="absolute bottom-0 left-0 w-full h-[38px] bg-gray-50/80 backdrop-blur-sm border-t border-gray-100 flex items-center justify-between px-6 group-hover:bg-white transition-colors duration-300">
+            <div className="absolute bottom-0 left-0 w-full h-[38px] bg-gray-50 dark:bg-muted/10/80 backdrop-blur-sm border-t border-gray-100 dark:border-border flex items-center justify-between px-6 group-hover:bg-white dark:bg-card transition-colors duration-300">
                 <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1.5">
-                        <CreditCard className="h-3 w-3 text-gray-400" />
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Payment Summary</span>
+                        <CreditCard className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
+                        <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Payment Summary</span>
                     </div>
                     <div className="h-3 w-px bg-gray-200" />
                     <div className="flex items-center gap-2">
                         <span className="text-[10px] font-bold text-rose-500 uppercase tracking-tight">Unpaid Balance</span>
-                        <span className="text-[10px] font-bold text-gray-900 tracking-tighter">PKR {financialData.balance.toLocaleString()}</span>
+                        <span className="text-[10px] font-bold text-gray-900 dark:text-foreground tracking-tighter">PKR {financialData.balance.toLocaleString()}</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="w-24 h-1 bg-gray-200 rounded-full overflow-hidden hidden md:block">
                         <div className="h-full bg-emerald-500" style={{ width: `${financialData.progress}%` }} />
                     </div>
-                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
+                    <span className="text-[9px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest">
                         {financialData.progress}% Paid
                     </span>
                 </div>
@@ -191,15 +192,15 @@ const BookingDetailCard = ({ booking }) => {
 
             {/* Expanded Content */}
             {isExpanded && (
-                <div className="mt-8 pt-8 border-t border-gray-100 space-y-8 animate-in slide-in-from-top-4 relative z-10">
+                <div className="mt-8 pt-8 border-t border-gray-100 dark:border-border space-y-8 animate-in slide-in-from-top-4 relative z-10">
                     <Tabs defaultValue="operations" className="w-full">
-                        <TabsList className="bg-gray-50/50 p-1 rounded-xl h-11 w-fit mb-8 border border-gray-100">
+                        <TabsList className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-1 rounded-xl h-11 w-fit mb-8 border border-gray-100 dark:border-border">
                             {[
                                 { id: 'operations', label: 'Room Services', icon: Blocks },
                                 { id: 'finance', label: 'Payments', icon: CreditCard },
                                 { id: 'identity', label: 'My Profile', icon: UserCheck }
                             ].map(tab => (
-                                <TabsTrigger key={tab.id} value={tab.id} className="rounded-lg px-6 font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all h-full">
+                                <TabsTrigger key={tab.id} value={tab.id} className="rounded-lg px-6 font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-white dark:bg-card data-[state=active]:text-indigo-600 data-[state=active]:shadow-sm transition-all h-full">
                                     <tab.icon className="h-3.5 w-3.5 mr-2" /> {tab.label}
                                 </TabsTrigger>
                             ))}
@@ -211,13 +212,13 @@ const BookingDetailCard = ({ booking }) => {
                                 { l: 'Laundry', v: booking.Room?.LaundryLog?.[0]?.status || 'READY', i: Layers, c: 'text-purple-600', bg: 'bg-purple-50' },
                                 { l: 'Repairs', v: booking.Room?.maintanance?.[0]?.status || 'NONE', i: ShieldCheck, c: 'text-amber-600', bg: 'bg-amber-50' }
                             ].map((op, i) => (
-                                <div key={i} className="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-4 hover:border-indigo-600 transition-colors">
+                                <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-xl p-4 flex items-center gap-4 hover:border-indigo-600 transition-colors">
                                     <div className={`h-10 w-10 rounded-lg ${op.bg} ${op.c} flex items-center justify-center shrink-0`}>
                                         <op.i className="h-4 w-4" />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{op.l}</span>
-                                        <span className="text-xs font-bold text-gray-900 uppercase">{op.v}</span>
+                                        <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{op.l}</span>
+                                        <span className="text-xs font-bold text-gray-900 dark:text-foreground uppercase">{op.v}</span>
                                     </div>
                                 </div>
                             ))}
@@ -225,38 +226,38 @@ const BookingDetailCard = ({ booking }) => {
 
                         <TabsContent value="finance" className="mt-0 grid grid-cols-1 md:grid-cols-2 gap-10 pb-6">
                             <div className="space-y-4">
-                                <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-l-2 border-indigo-600 pl-3 mb-4">Payment History</h5>
+                                <h5 className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest border-l-2 border-indigo-600 pl-3 mb-4">Payment History</h5>
                                 <div className="space-y-2">
                                     {booking.Payment?.slice(0, 5).map((p) => (
-                                        <div key={p.id} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                                        <div key={p.id} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-xl p-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 transition-colors">
                                             <div className="flex items-center gap-4">
                                                 <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${p.status === 'PAID' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
                                                     <CreditCard className="h-4 w-4" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-[10px] font-bold text-gray-900 uppercase">{p.notes || 'RENT_SETTLEMENT'}</p>
-                                                    <p className="text-[8px] font-medium text-gray-400 uppercase tracking-widest mt-0.5">{format(new Date(p.date), 'MMM dd, yyyy')}</p>
+                                                    <p className="text-[10px] font-bold text-gray-900 dark:text-foreground uppercase">{p.notes || 'RENT_SETTLEMENT'}</p>
+                                                    <p className="text-[8px] font-medium text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">{format(new Date(p.date), 'MMM dd, yyyy')}</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-[10px] font-bold text-gray-900">PKR {p.amount.toLocaleString()}</p>
+                                                <p className="text-[10px] font-bold text-gray-900 dark:text-foreground">PKR {p.amount.toLocaleString()}</p>
                                                 <span className={`text-[7px] font-bold uppercase tracking-tighter ${p.status === 'PAID' ? 'text-emerald-500' : 'text-amber-500'}`}>{p.status}</span>
                                             </div>
                                         </div>
                                     ))}
                                     {(!booking.Payment || booking.Payment.length === 0) && (
-                                        <div className="p-12 border-2 border-dashed border-gray-100 rounded-2xl text-center">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No payments yet</p>
+                                        <div className="p-12 border-2 border-dashed border-gray-100 dark:border-border rounded-2xl text-center">
+                                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">No payments yet</p>
                                         </div>
                                     )}
                                 </div>
                             </div>
-                            <div className="bg-gray-50/50 rounded-2xl p-6 border border-gray-100">
-                                <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6 underline decoration-indigo-600 decoration-2 underline-offset-4">Payment Summary</h5>
+                            <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl p-6 border border-gray-100 dark:border-border">
+                                <h5 className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-6 underline decoration-indigo-600 decoration-2 underline-offset-4">Payment Summary</h5>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center py-2 border-b border-white/50">
-                                        <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Total Bill</span>
-                                        <span className="text-xs font-bold text-gray-900">PKR {financialData.totalDue.toLocaleString()}</span>
+                                        <span className="text-[9px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-wider">Total Bill</span>
+                                        <span className="text-xs font-bold text-gray-900 dark:text-foreground">PKR {financialData.totalDue.toLocaleString()}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-2 border-b border-white/50">
                                         <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">Amount Paid</span>
@@ -264,7 +265,7 @@ const BookingDetailCard = ({ booking }) => {
                                     </div>
                                     <div className="flex justify-between items-center pt-4">
                                         <span className="text-[9px] font-bold text-rose-500 uppercase tracking-widest">Remaining Balance</span>
-                                        <span className="text-2xl font-bold text-gray-900 tracking-tighter">PKR {financialData.balance.toLocaleString()}</span>
+                                        <span className="text-2xl font-bold text-gray-900 dark:text-foreground tracking-tighter">PKR {financialData.balance.toLocaleString()}</span>
                                     </div>
                                     <UnifiedReceipt data={booking} type="booking">
                                         <Button className="w-full h-10 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 font-bold text-[9px] uppercase tracking-widest mt-6 flex items-center gap-2 transition-all">
@@ -276,42 +277,42 @@ const BookingDetailCard = ({ booking }) => {
                         </TabsContent>
 
                         <TabsContent value="identity" className="mt-0 pb-6">
-                            <div className="bg-white border border-gray-100 rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-4">
                                         <div className="h-12 w-12 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg">
                                             <UserCheck className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Full Name</p>
-                                            <h4 className="text-lg font-bold text-gray-900 uppercase">{booking.User?.name}</h4>
+                                            <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Full Name</p>
+                                            <h4 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase">{booking.User?.name}</h4>
                                         </div>
                                     </div>
                                     <Separator />
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">CNIC Number</p>
-                                            <p className="text-[10px] font-bold text-gray-800 uppercase leading-none">{booking.User?.cnic || 'NOT PROVIDED'}</p>
+                                            <p className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">CNIC Number</p>
+                                            <p className="text-[10px] font-bold text-gray-800 dark:text-foreground uppercase leading-none">{booking.User?.cnic || 'NOT PROVIDED'}</p>
                                         </div>
                                         <div>
-                                            <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-1">Phone Number</p>
-                                            <p className="text-[10px] font-bold text-gray-800 leading-none">{booking.User?.phone}</p>
+                                            <p className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Phone Number</p>
+                                            <p className="text-[10px] font-bold text-gray-800 dark:text-foreground leading-none">{booking.User?.phone}</p>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="space-y-4 bg-gray-50/80 p-5 rounded-xl border border-gray-100">
+                                <div className="space-y-4 bg-gray-50 dark:bg-muted/10/80 p-5 rounded-xl border border-gray-100 dark:border-border">
                                     <div className="flex items-center gap-2 mb-2">
                                         <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                                        <span className="text-[9px] font-bold text-gray-900 uppercase tracking-widest">Security Protocols</span>
+                                        <span className="text-[9px] font-bold text-gray-900 dark:text-foreground uppercase tracking-widest">Security Protocols</span>
                                     </div>
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Guardian Name</span>
-                                            <span className="text-[10px] font-bold text-gray-900 uppercase">{booking.User?.ResidentProfile?.guardianName || 'N/A'}</span>
+                                            <span className="text-[8px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest">Guardian Name</span>
+                                            <span className="text-[10px] font-bold text-gray-900 dark:text-foreground uppercase">{booking.User?.ResidentProfile?.guardianName || 'N/A'}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Guardian Contact</span>
-                                            <span className="text-[10px] font-bold text-gray-900 tracking-widest">{booking.User?.ResidentProfile?.guardianPhone || 'N/A'}</span>
+                                            <span className="text-[8px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest">Guardian Contact</span>
+                                            <span className="text-[10px] font-bold text-gray-900 dark:text-foreground tracking-widest">{booking.User?.ResidentProfile?.guardianPhone || 'N/A'}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -333,20 +334,7 @@ const GuestBookings = () => {
         refetch,
     } = useBookings({ userId: user?.id });
 
-    if (isLoading) return (
-        <div className="flex h-screen items-center justify-center bg-white font-sans">
-            <div className="flex flex-col items-center gap-6">
-                <div className="relative">
-                    <div className="h-20 w-20 border-[3px] border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
-                    <Building2 className="h-8 w-8 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                </div>
-                <div className="text-center">
-                    <p className="text-lg font-bold text-gray-900 tracking-tight uppercase">Loading Stays...</p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] mt-2">Checking hostel records</p>
-                </div>
-            </div>
-        </div>
-    );
+    if (isLoading) return <ListPageSkeleton />;
     if (isError) {
         return (
             <div className="max-w-[1400px] mx-auto px-6 py-8">
@@ -366,14 +354,14 @@ const GuestBookings = () => {
     return (
         <div className="min-h-screen bg-slate-50/50 pb-20 font-sans print:hidden">
             {/* Minimal Premium Header (Admin style) */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-2 w-2 rounded-full bg-indigo-600" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 tracking-tight uppercase">My Bookings</h1>
+                            <h1 className="text-lg font-bold text-gray-900 dark:text-foreground tracking-tight uppercase">My Bookings</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Your Stays</span>
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">Your Stays</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Active Now</span>
                             </div>
@@ -383,9 +371,9 @@ const GuestBookings = () => {
                         <Button
                             onClick={() => window.location.href = '/guest/payments'}
                             variant="outline"
-                            className="h-9 px-4 rounded-xl border-gray-200 bg-white font-bold text-[10px] uppercase tracking-wider text-gray-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm group"
+                            className="h-9 px-4 rounded-xl border-gray-200 dark:border-border bg-white dark:bg-card font-bold text-[10px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground hover:bg-indigo-600 hover:text-white transition-all shadow-sm group"
                         >
-                            <Download className="h-3.5 w-3.5 mr-2 text-gray-400 group-hover:text-white" />
+                            <Download className="h-3.5 w-3.5 mr-2 text-gray-400 dark:text-muted-foreground group-hover:text-white" />
                             Financial Exports
                         </Button>
                     </div>
@@ -401,13 +389,13 @@ const GuestBookings = () => {
                         { label: 'Total Paid', value: `PKR ${(totalPayments / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                         { label: 'Security', value: 'Verified', icon: ShieldCheck, color: 'text-amber-600', bg: 'bg-amber-50' }
                     ].map((stat, i) => (
-                        <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</span>
-                                <span className="text-xl font-bold text-gray-900 tracking-tight">{stat.value}</span>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{stat.label}</span>
+                                <span className="text-xl font-bold text-gray-900 dark:text-foreground tracking-tight">{stat.value}</span>
                             </div>
                         </div>
                     ))}
@@ -416,7 +404,7 @@ const GuestBookings = () => {
                 {/* Operations Feed */}
                 <div className="space-y-4">
                     <div className="flex items-center gap-4 px-2">
-                        <h3 className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.3em] leading-none mb-4">Bookings List</h3>
+                        <h3 className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-[0.3em] leading-none mb-4">Bookings List</h3>
                     </div>
 
                     {bookings && bookings.length > 0 ? (
@@ -428,12 +416,12 @@ const GuestBookings = () => {
                                 ))}
                         </div>
                     ) : (
-                        <div className="bg-white border border-gray-100 rounded-3xl p-24 text-center shadow-sm border-dashed">
-                            <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-6 border border-gray-100">
+                        <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-24 text-center shadow-sm border-dashed">
+                            <div className="h-16 w-16 rounded-2xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center mx-auto mb-6 border border-gray-100 dark:border-border">
                                 <Search className="h-8 w-8 text-gray-300" />
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">No bookings found</h3>
-                            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">No hostel stay records found in the system</p>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">No bookings found</h3>
+                            <p className="text-gray-400 dark:text-muted-foreground font-bold text-[10px] uppercase tracking-widest mt-1">No hostel stay records found in the system</p>
                         </div>
                     )}
                 </div>

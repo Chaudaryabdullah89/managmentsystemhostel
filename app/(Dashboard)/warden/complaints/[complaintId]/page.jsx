@@ -35,6 +35,7 @@ import useAuthStore from "@/hooks/Authstate";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import ErrorState from "@/components/ui/states/ErrorState";
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -79,7 +80,7 @@ const ComplaintDetailPage = ({ params }) => {
             case "REJECTED": return "bg-rose-50 text-rose-700 border-rose-100";
             case "IN_PROGRESS": return "bg-amber-50 text-amber-700 border-amber-100";
             case "PENDING": return "bg-blue-50 text-blue-700 border-blue-100";
-            default: return "bg-gray-50 text-gray-600 border-gray-100";
+            default: return "bg-gray-50 dark:bg-muted/10 text-gray-600 dark:text-muted-foreground border-gray-100 dark:border-border";
         }
     };
 
@@ -117,14 +118,7 @@ const ComplaintDetailPage = ({ params }) => {
         });
     };
 
-    if (isLoading) return (
-        <div className="flex h-screen items-center justify-center bg-gray-50">
-            <div className="flex flex-col items-center gap-4">
-                <div className="h-10 w-10 border-[3px] border-gray-200 border-t-black rounded-full animate-spin" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading Record...</p>
-            </div>
-        </div>
-    );
+    if (isLoading) return <DetailPageSkeleton />;
     if (isError) {
         return (
             <div className="max-w-7xl mx-auto px-6 py-8">
@@ -139,37 +133,37 @@ const ComplaintDetailPage = ({ params }) => {
     }
 
     if (error || !complaint) return (
-        <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="flex h-screen items-center justify-center bg-gray-50 dark:bg-muted/10">
             <div className="text-center">
                 <AlertTriangle className="h-10 w-10 text-rose-500 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-gray-900">Record Not Found</h3>
-                <p className="text-sm text-gray-500 mb-6">The requested grievance record does not exist or has been archived.</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-foreground">Record Not Found</h3>
+                <p className="text-sm text-gray-500 dark:text-muted-foreground mb-6">The requested grievance record does not exist or has been archived.</p>
                 <Button onClick={() => router.back()} variant="outline">Go Back</Button>
             </div>
         </div>
     );
 
     return (
-        <div className="min-h-screen bg-gray-50/30 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/30 pb-20 font-sans tracking-tight">
             {/* Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16 shadow-sm shadow-black/5">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16 shadow-sm shadow-black/5">
                 <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-gray-100" onClick={() => router.back()}>
-                            <ArrowLeft className="h-4 w-4 text-gray-500" />
+                            <ArrowLeft className="h-4 w-4 text-gray-500 dark:text-muted-foreground" />
                         </Button>
                         <div className="h-6 w-px bg-gray-200" />
                         <div>
                             <div className="flex items-center gap-2">
-                                <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Grievance Record</h1>
+                                <h1 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Grievance Record</h1>
                                 <Badge variant="outline" className={`${getStatusTheme(complaint.status)} px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded-md border`}>
                                     {complaint.status.replace('_', ' ')}
                                 </Badge>
                             </div>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5 ">
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 ">
                                 {complaint.uid || `#${complaint.id.slice(-8).toUpperCase()}`}
                                 <span className="h-0.5 w-0.5 rounded-full bg-gray-300" />
-                                <span className="text-gray-400">{format(new Date(complaint.createdAt), 'MMM dd, yyyy')}</span>
+                                <span className="text-gray-400 dark:text-muted-foreground">{format(new Date(complaint.createdAt), 'MMM dd, yyyy')}</span>
                             </p>
                         </div>
                     </div>
@@ -182,7 +176,7 @@ const ComplaintDetailPage = ({ params }) => {
                                         Update Status <MoreVertical className="h-3.5 w-3.5 opacity-70" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="rounded-xl border-gray-100 shadow-xl p-1 w-48 bg-white">
+                                <DropdownMenuContent align="end" className="rounded-xl border-gray-100 dark:border-border shadow-xl p-1 w-48 bg-white dark:bg-card">
                                     <DropdownMenuItem className="rounded-lg text-[10px] font-bold uppercase tracking-wider py-2.5 cursor-pointer focus:bg-emerald-50 focus:text-emerald-700" onClick={() => handleUpdateStatus('RESOLVED')}>
                                         <CheckCircle className="h-3.5 w-3.5 mr-2" /> Mark Resolved
                                     </DropdownMenuItem>
@@ -205,21 +199,21 @@ const ComplaintDetailPage = ({ params }) => {
                 <div className="lg:col-span-2 space-y-8">
 
                     {/* Primary Issue Card */}
-                    <Card className="rounded-[2rem] border-gray-100 shadow-sm overflow-hidden bg-white">
-                        <CardHeader className="bg-gray-50/50 border-b border-gray-50 p-6 flex flex-row items-center justify-between">
+                    <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden bg-white dark:bg-card">
+                        <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 p-6 flex flex-row items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center shadow-sm">
-                                    <FileText className="h-5 w-5 text-gray-400" />
+                                <div className="h-10 w-10 rounded-xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm">
+                                    <FileText className="h-5 w-5 text-gray-400 dark:text-muted-foreground" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-sm font-bold text-gray-900 uppercase tracking-widest">Issue Details</CardTitle>
-                                    <CardDescription className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Categorized Report</CardDescription>
+                                    <CardTitle className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-widest">Issue Details</CardTitle>
+                                    <CardDescription className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">Categorized Report</CardDescription>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 border border-gray-200">
+                                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 border border-gray-200 dark:border-border">
                                     {getPriorityIcon(complaint.priority)}
-                                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-600">{complaint.priority} Priority</span>
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-gray-600 dark:text-muted-foreground">{complaint.priority} Priority</span>
                                 </div>
                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100">
                                     <Hash className="h-3 w-3 text-indigo-500" />
@@ -228,26 +222,26 @@ const ComplaintDetailPage = ({ params }) => {
                             </div>
                         </CardHeader>
                         <CardContent className="p-8">
-                            <h2 className="text-xl font-bold text-gray-900 leading-tight mb-4">{complaint.title}</h2>
-                            <p className="text-sm text-gray-600 leading-relaxed font-medium bg-gray-50/50 p-6 rounded-2xl border border-gray-100 border-dashed">
+                            <h2 className="text-xl font-bold text-gray-900 dark:text-foreground leading-tight mb-4">{complaint.title}</h2>
+                            <p className="text-sm text-gray-600 dark:text-muted-foreground leading-relaxed font-medium bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-6 rounded-2xl border border-gray-100 dark:border-border border-dashed">
                                 "{complaint.description}"
                             </p>
 
                             <div className="grid grid-cols-2 gap-6 mt-8">
-                                <div className="flex gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                                    <Building2 className="h-5 w-5 text-gray-400 mt-0.5" />
+                                <div className="flex gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border">
+                                    <Building2 className="h-5 w-5 text-gray-400 dark:text-muted-foreground mt-0.5" />
                                     <div>
-                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Location Node</p>
-                                        <p className="text-xs font-bold text-gray-900 uppercase">{complaint.Hostel?.name}</p>
-                                        <p className="text-[10px] font-bold text-gray-500 uppercase mt-0.5">Room {complaint.roomNumber || 'N/A'}</p>
+                                        <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Location Node</p>
+                                        <p className="text-xs font-bold text-gray-900 dark:text-foreground uppercase">{complaint.Hostel?.name}</p>
+                                        <p className="text-[10px] font-bold text-gray-500 dark:text-muted-foreground uppercase mt-0.5">Room {complaint.roomNumber || 'N/A'}</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100">
-                                    <ShieldCheck className="h-5 w-5 text-gray-400 mt-0.5" />
+                                <div className="flex gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border">
+                                    <ShieldCheck className="h-5 w-5 text-gray-400 dark:text-muted-foreground mt-0.5" />
                                     <div>
-                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Assigned To</p>
-                                        <p className="text-xs font-bold text-gray-900 uppercase">{complaint.User_Complaint_assignedToIdToUser?.name || 'Unassigned'}</p>
-                                        <p className="text-[10px] font-bold text-gray-500 uppercase mt-0.5">{complaint.User_Complaint_assignedToIdToUser ? 'Staff Member' : 'Pending Assignment'}</p>
+                                        <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Assigned To</p>
+                                        <p className="text-xs font-bold text-gray-900 dark:text-foreground uppercase">{complaint.User_Complaint_assignedToIdToUser?.name || 'Unassigned'}</p>
+                                        <p className="text-[10px] font-bold text-gray-500 dark:text-muted-foreground uppercase mt-0.5">{complaint.User_Complaint_assignedToIdToUser ? 'Staff Member' : 'Pending Assignment'}</p>
                                     </div>
                                 </div>
                             </div>
@@ -255,9 +249,9 @@ const ComplaintDetailPage = ({ params }) => {
                     </Card>
 
                     {/* Resolution Protocol */}
-                    <Card className="rounded-[2rem] border-gray-100 shadow-sm overflow-hidden bg-white">
-                        <CardHeader className="bg-gray-50/50 border-b border-gray-50 p-6">
-                            <CardTitle className="text-sm font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                    <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden bg-white dark:bg-card">
+                        <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 p-6">
+                            <CardTitle className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-emerald-500" /> Resolution Protocol
                             </CardTitle>
                         </CardHeader>
@@ -269,7 +263,7 @@ const ComplaintDetailPage = ({ params }) => {
                                         {complaint.resolutionNotes || "No resolution notes provided."}
                                     </p>
                                     {complaint.resolvedAt && (
-                                        <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400 mt-4 flex items-center gap-1.5">
+                                        <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground mt-4 flex items-center gap-1.5">
                                             <Clock className="h-3 w-3" /> Closed on {format(new Date(complaint.resolvedAt), 'MMM dd, yyyy HH:mm')}
                                         </p>
                                     )}
@@ -277,10 +271,10 @@ const ComplaintDetailPage = ({ params }) => {
                             ) : (
                                 <div className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 ml-1">Update Resolution Notes</Label>
+                                        <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Update Resolution Notes</Label>
                                         <Textarea
                                             placeholder="Document steps taken or instructions for staff..."
-                                            className="min-h-[120px] rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white font-medium text-sm transition-all focus:ring-0 p-4"
+                                            className="min-h-[120px] rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background focus:bg-white dark:bg-card font-medium text-sm transition-all focus:ring-0 p-4"
                                             value={responseNotes}
                                             onChange={(e) => setResponseNotes(e.target.value)}
                                         />
@@ -294,7 +288,7 @@ const ComplaintDetailPage = ({ params }) => {
                                             Resolve & Close
                                         </Button>
                                         <Button
-                                            className="flex-1 h-11 bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 font-bold text-[10px] uppercase tracking-wider rounded-xl"
+                                            className="flex-1 h-11 bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 text-gray-900 dark:text-foreground border border-gray-200 dark:border-border font-bold text-[10px] uppercase tracking-wider rounded-xl"
                                             onClick={() => handleUpdateStatus('IN_PROGRESS')}
                                             disabled={updateMutation.isPending}
                                         >
@@ -310,18 +304,18 @@ const ComplaintDetailPage = ({ params }) => {
                 {/* Right Column: Resident & Comments (1/3) */}
                 <div className="space-y-8">
                     {/* Resident Profile */}
-                    <Card className="rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden bg-white">
+                    <Card className="rounded-[2.5rem] border-gray-100 dark:border-border shadow-sm overflow-hidden bg-white dark:bg-card">
                         <div className="bg-black p-8 text-center relative overflow-hidden">
-                            <div className="absolute inset-0 bg-white/5 skew-y-6 scale-150 origin-bottom-left" />
+                            <div className="absolute inset-0 bg-white dark:bg-card/5 skew-y-6 scale-150 origin-bottom-left" />
                             <div className="relative z-10 flex flex-col items-center">
-                                <div className="h-20 w-20 rounded-2xl bg-white border-4 border-white/10 shadow-xl mb-4 flex items-center justify-center text-black">
+                                <div className="h-20 w-20 rounded-2xl bg-white dark:bg-card border-4 border-white/10 shadow-xl mb-4 flex items-center justify-center text-black">
                                     <User className="h-8 w-8" />
                                 </div>
                                 <h3 className="text-lg font-bold text-white uppercase tracking-tight">{complaint.User_Complaint_userIdToUser?.name}</h3>
                                 <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest mt-1">{complaint.User_Complaint_userIdToUser?.role || 'Resident'}</p>
 
                                 {complaint.User_Complaint_userIdToUser?.email && (
-                                    <Badge variant="outline" className="mt-4 bg-white/10 text-white border-white/10 px-3 py-1 rounded-full text-[9px] uppercase tracking-wider backdrop-blur-md">
+                                    <Badge variant="outline" className="mt-4 bg-white dark:bg-card/10 text-white border-white/10 px-3 py-1 rounded-full text-[9px] uppercase tracking-wider backdrop-blur-md">
                                         {complaint.User_Complaint_userIdToUser.email}
                                     </Badge>
                                 )}
@@ -329,36 +323,36 @@ const ComplaintDetailPage = ({ params }) => {
                         </div>
                         <CardContent className="p-6">
                             <div className="flex items-center justify-between py-3 border-b border-gray-50">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Phone</span>
-                                <span className="text-xs font-bold text-gray-900">{complaint.User_Complaint_userIdToUser?.phone || 'N/A'}</span>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Phone</span>
+                                <span className="text-xs font-bold text-gray-900 dark:text-foreground">{complaint.User_Complaint_userIdToUser?.phone || 'N/A'}</span>
                             </div>
                             <div className="flex items-center justify-between py-3">
-                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Resident ID</span>
-                                <span className="text-xs font-mono font-bold text-gray-900 bg-gray-100 px-2 py-0.5 rounded-md text-[10px]">{complaint.User_Complaint_userIdToUser?.id?.slice(0, 8).toUpperCase()}</span>
+                                <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Resident ID</span>
+                                <span className="text-xs font-mono font-bold text-gray-900 dark:text-foreground bg-gray-100 px-2 py-0.5 rounded-md text-[10px]">{complaint.User_Complaint_userIdToUser?.id?.slice(0, 8).toUpperCase()}</span>
                             </div>
                         </CardContent>
                     </Card>
 
                     {/* Chat / Comments */}
-                    <Card className="rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden bg-white h-[500px] flex flex-col">
-                        <CardHeader className="bg-white border-b border-gray-50 py-4 px-6 shrink-0">
-                            <CardTitle className="text-xs font-bold text-gray-900 uppercase tracking-widest flex items-center gap-2">
+                    <Card className="rounded-[2.5rem] border-gray-100 dark:border-border shadow-sm overflow-hidden bg-white dark:bg-card h-[500px] flex flex-col">
+                        <CardHeader className="bg-white dark:bg-card border-b border-gray-50 py-4 px-6 shrink-0">
+                            <CardTitle className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
                                 <MessageSquare className="h-3.5 w-3.5 text-indigo-500" /> Discussion Feed
                             </CardTitle>
                         </CardHeader>
 
-                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50/30">
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-50 dark:bg-muted/10/30">
                             {complaint.comments && complaint.comments.length > 0 ? (
                                 complaint.comments.map((comment, index) => {
                                     const isStaff = comment.User.role === 'ADMIN' || comment.User.role === 'WARDEN' || comment.User.role === 'STAFF';
                                     return (
                                         <div key={index} className={`flex gap-3 ${isStaff ? 'flex-row-reverse' : ''}`}>
-                                            <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 border z-10 ${isStaff ? 'bg-black text-white border-black' : 'bg-white text-gray-600 border-gray-200'}`}>
+                                            <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 border z-10 ${isStaff ? 'bg-black text-white border-black' : 'bg-white dark:bg-card text-gray-600 dark:text-muted-foreground border-gray-200 dark:border-border'}`}>
                                                 <span className="text-[10px] font-black">{comment.User.name?.charAt(0)}</span>
                                             </div>
-                                            <div className={`p-4 rounded-3xl max-w-[85%] text-xs font-medium leading-relaxed relative ${isStaff ? 'bg-black text-white rounded-tr-sm' : 'bg-white text-gray-700 border border-gray-100 shadow-sm rounded-tl-sm'}`}>
+                                            <div className={`p-4 rounded-3xl max-w-[85%] text-xs font-medium leading-relaxed relative ${isStaff ? 'bg-black text-white rounded-tr-sm' : 'bg-white dark:bg-card text-gray-700 dark:text-foreground border border-gray-100 dark:border-border shadow-sm rounded-tl-sm'}`}>
                                                 <div className={`mb-1.5 flex items-center gap-2 ${isStaff ? 'flex-row-reverse' : ''}`}>
-                                                    <span className={`text-[8px] font-black uppercase tracking-widest ${isStaff ? 'text-gray-400' : 'text-gray-400'}`}>{comment.User.name}</span>
+                                                    <span className={`text-[8px] font-black uppercase tracking-widest ${isStaff ? 'text-gray-400 dark:text-muted-foreground' : 'text-gray-400 dark:text-muted-foreground'}`}>{comment.User.name}</span>
                                                     <span className="text-[8px] opacity-40">{format(new Date(comment.createdAt), 'HH:mm')}</span>
                                                 </div>
                                                 {comment.message}
@@ -369,16 +363,16 @@ const ComplaintDetailPage = ({ params }) => {
                             ) : (
                                 <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-50">
                                     <MessageSquare className="h-8 w-8 text-gray-300 mb-2" />
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">No messages yet</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">No messages yet</p>
                                 </div>
                             )}
                         </div>
 
-                        <div className="p-4 bg-white border-t border-gray-100 shrink-0">
+                        <div className="p-4 bg-white dark:bg-card border-t border-gray-100 dark:border-border shrink-0">
                             <div className="flex gap-2">
                                 <Input
                                     placeholder="Type a message..."
-                                    className="h-11 rounded-2xl border-gray-200 bg-gray-50 focus:bg-white focus:ring-0 font-medium text-xs"
+                                    className="h-11 rounded-2xl border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/10 focus:bg-white dark:bg-card focus:ring-0 font-medium text-xs"
                                     value={newComment}
                                     onChange={(e) => setNewComment(e.target.value)}
                                     onKeyDown={(e) => {

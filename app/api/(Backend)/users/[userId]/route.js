@@ -45,7 +45,7 @@ export async function GET(request, { params }) {
                     include: { Hostel: true },
                     orderBy: { createdAt: 'desc' }
                 },
-                maintanance_maintanance_userIdToUser: {
+                Maintenance_userIdToUser: {
                     include: { Hostel: true },
                     orderBy: { createdAt: 'desc' }
                 },
@@ -131,8 +131,8 @@ export async function PATCH(request, { params }) {
             Expense_Expense_submittedByIdToUser,
             Expense_Expense_userIdToUser,
             Hostel_Hostel_managerIdToUser,
-            maintanance_maintanance_assignedToIdToUser,
-            maintanance_maintanance_userIdToUser,
+            Maintenance_assignedToIdToUser,
+            Maintenance_userIdToUser,
             id,
             ...updateData
         } = body;
@@ -254,7 +254,7 @@ export async function DELETE(request, { params }) {
         const operations = [
             // Remove references where this user may be an optional assignee/manager.
             prisma.complaint.updateMany({ where: { assignedToId: userId }, data: { assignedToId: null } }),
-            prisma.maintanance.updateMany({ where: { assignedToId: userId }, data: { assignedToId: null } }),
+            prisma.maintenance.updateMany({ where: { assignedToId: userId }, data: { assignedToId: null } }),
             prisma.expense.updateMany({ where: { approvedById: userId }, data: { approvedById: null } }),
             prisma.expense.updateMany({ where: { rejectedById: userId }, data: { rejectedById: null } }),
             prisma.hostel.updateMany({ where: { managerId: userId }, data: { managerId: null } }),
@@ -268,7 +268,7 @@ export async function DELETE(request, { params }) {
             prisma.refundRequest.deleteMany({ where: { userId } }),
             prisma.expense.deleteMany({ where: { OR: [{ submittedById: userId }, { userId }] } }),
             prisma.complaint.deleteMany({ where: { userId } }),
-            prisma.maintanance.deleteMany({ where: { userId } }),
+            prisma.maintenance.deleteMany({ where: { userId } }),
             prisma.staffTask.deleteMany({ where: { createdById: userId } }),
             prisma.session.deleteMany({ where: { userId } }),
 

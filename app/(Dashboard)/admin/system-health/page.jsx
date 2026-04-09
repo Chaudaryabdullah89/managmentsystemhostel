@@ -36,7 +36,7 @@ const StatusChip = ({ status }) => {
     };
     const label = { HEALTHY: "OK", OK: "OK", ERROR: "ERROR", UNHEALTHY: "DOWN", DEGRADED: "DEGRADED" };
     return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest ${map[status?.toUpperCase()] ?? "bg-gray-50 text-gray-500 border-gray-100"}`}>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[9px] font-black uppercase tracking-widest ${map[status?.toUpperCase()] ?? "bg-gray-50 dark:bg-muted/10 text-gray-500 dark:text-muted-foreground border-gray-100 dark:border-border"}`}>
             <StatusDot status={status} />
             {label[status?.toUpperCase()] ?? status}
         </span>
@@ -83,12 +83,12 @@ export default function SystemHealthPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50/50">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
                 <div className="flex flex-col items-center gap-4">
                     <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center animate-pulse">
                         <Activity className="h-6 w-6 text-blue-600" />
                     </div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Running diagnostics…</p>
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Running diagnostics…</p>
                 </div>
             </div>
         );
@@ -116,15 +116,15 @@ export default function SystemHealthPage() {
     return (
         <div className="min-h-screen bg-[#f8f9fa] pb-20 font-sans tracking-tight">
             {/* ── Header ─────────────────────────────────────────────────────── */}
-            <div className="bg-white border-b sticky top-0 z-50">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-blue-600 rounded-full" />
                         <div>
-                            <h1 className="text-base font-bold text-gray-900 tracking-tight uppercase">System Health</h1>
+                            <h1 className="text-base font-bold text-gray-900 dark:text-foreground tracking-tight uppercase">System Health</h1>
                             <div className="flex items-center gap-2 mt-0.5">
                                 <StatusDot status={health?.overall} />
-                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">
                                     {lastChecked ? `Last checked ${formatDistanceToNow(lastChecked, { addSuffix: true })}` : "Checking…"}
                                 </span>
                             </div>
@@ -135,7 +135,7 @@ export default function SystemHealthPage() {
                         size="sm"
                         onClick={() => fetchHealth(true)}
                         disabled={refreshing}
-                        className="rounded-xl border-gray-200 font-bold text-[10px] uppercase tracking-wider h-9 px-4 gap-2"
+                        className="rounded-xl border-gray-200 dark:border-border font-bold text-[10px] uppercase tracking-wider h-9 px-4 gap-2"
                     >
                         {refreshing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
                         Refresh
@@ -156,7 +156,7 @@ export default function SystemHealthPage() {
                         <p className={`text-xs font-bold uppercase tracking-widest ${isHealthy ? "text-emerald-600" : "text-amber-600"}`}>
                             {isHealthy ? "All Systems Operational" : "Some Systems Need Attention"}
                         </p>
-                        <p className="text-[10px] text-gray-500 font-medium mt-0.5">
+                        <p className="text-[10px] text-gray-500 dark:text-muted-foreground font-medium mt-0.5">
                             {health?.maintenance
                                 ? "⚠️ Maintenance Mode is currently ACTIVE — app is in read-only"
                                 : `Monitoring ${endpoints.length} API endpoints · ${services.length} features · DB + SMTP verified`}
@@ -164,18 +164,18 @@ export default function SystemHealthPage() {
                     </div>
                     <div className="hidden md:flex items-center gap-6 text-right shrink-0">
                         <div>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Node</p>
-                            <p className="text-sm font-black text-gray-900">{server?.nodeVersion}</p>
+                            <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Node</p>
+                            <p className="text-sm font-black text-gray-900 dark:text-foreground">{server?.nodeVersion}</p>
                         </div>
                         <div className="h-8 w-px bg-gray-200" />
                         <div>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Process Uptime</p>
-                            <p className="text-sm font-black text-gray-900">{Math.round((server?.uptime ?? 0) / 60)}m</p>
+                            <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Process Uptime</p>
+                            <p className="text-sm font-black text-gray-900 dark:text-foreground">{Math.round((server?.uptime ?? 0) / 60)}m</p>
                         </div>
                         <div className="h-8 w-px bg-gray-200" />
                         <div>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Platform</p>
-                            <p className="text-sm font-black text-gray-900 uppercase">{server?.platform}/{server?.arch}</p>
+                            <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Platform</p>
+                            <p className="text-sm font-black text-gray-900 dark:text-foreground uppercase">{server?.platform}/{server?.arch}</p>
                         </div>
                     </div>
                 </div>
@@ -184,18 +184,18 @@ export default function SystemHealthPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
                     {/* Database */}
-                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between mb-5">
                             <div className="h-11 w-11 rounded-xl bg-indigo-50 flex items-center justify-center">
                                 <Database className="h-5 w-5 text-indigo-600" />
                             </div>
                             <StatusChip status={health?.database?.status} />
                         </div>
-                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">PostgreSQL</h3>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-4">Neon Serverless</p>
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-wide">PostgreSQL</h3>
+                        <p className="text-[10px] text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-widest mb-4">Neon Serverless</p>
                         <div className="space-y-3">
                             <div className="flex justify-between items-center">
-                                <span className="text-[10px] font-bold text-gray-500 uppercase">Query latency</span>
+                                <span className="text-[10px] font-bold text-gray-500 dark:text-muted-foreground uppercase">Query latency</span>
                                 <LatencyChip ms={health?.database?.latency} />
                             </div>
                             <Progress
@@ -209,19 +209,19 @@ export default function SystemHealthPage() {
                     </div>
 
                     {/* Email / SMTP */}
-                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between mb-5">
                             <div className="h-11 w-11 rounded-xl bg-sky-50 flex items-center justify-center">
                                 <Mail className="h-5 w-5 text-sky-600" />
                             </div>
                             <StatusChip status={health?.email?.status} />
                         </div>
-                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Email / SMTP</h3>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-4">Gmail (nodemailer)</p>
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-wide">Email / SMTP</h3>
+                        <p className="text-[10px] text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-widest mb-4">Gmail (nodemailer)</p>
                         <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                                <span className="text-[10px] font-bold text-gray-500 uppercase">Account</span>
-                                <span className="text-[9px] font-bold text-gray-700 font-mono truncate max-w-[140px]">{health?.email?.account}</span>
+                                <span className="text-[10px] font-bold text-gray-500 dark:text-muted-foreground uppercase">Account</span>
+                                <span className="text-[9px] font-bold text-gray-700 dark:text-foreground font-mono truncate max-w-[140px]">{health?.email?.account}</span>
                             </div>
                             {health?.email?.error && (
                                 <p className="text-[9px] text-rose-600 font-mono break-all mt-2">{health.email.error}</p>
@@ -230,31 +230,31 @@ export default function SystemHealthPage() {
                     </div>
 
                     {/* Automation */}
-                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
                         <div className="flex items-start justify-between mb-5">
                             <div className="h-11 w-11 rounded-xl bg-amber-50 flex items-center justify-center">
                                 <Zap className="h-5 w-5 text-amber-600" />
                             </div>
                             <StatusChip status={health?.automation?.autoRent || health?.automation?.autoSalary ? "HEALTHY" : "UNHEALTHY"} />
                         </div>
-                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Automation</h3>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-4">Monthly Cron Jobs</p>
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-wide">Automation</h3>
+                        <p className="text-[10px] text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-widest mb-4">Monthly Cron Jobs</p>
                         <div className="space-y-2">
                             <div className="flex justify-between text-[10px] font-bold">
-                                <span className="text-gray-500 uppercase">Auto Rent</span>
-                                <span className={health?.automation?.autoRent ? "text-emerald-600" : "text-gray-400"}>
+                                <span className="text-gray-500 dark:text-muted-foreground uppercase">Auto Rent</span>
+                                <span className={health?.automation?.autoRent ? "text-emerald-600" : "text-gray-400 dark:text-muted-foreground"}>
                                     {health?.automation?.autoRent ? "ENABLED" : "DISABLED"}
                                 </span>
                             </div>
                             <div className="flex justify-between text-[10px] font-bold">
-                                <span className="text-gray-500 uppercase">Auto Salary</span>
-                                <span className={health?.automation?.autoSalary ? "text-emerald-600" : "text-gray-400"}>
+                                <span className="text-gray-500 dark:text-muted-foreground uppercase">Auto Salary</span>
+                                <span className={health?.automation?.autoSalary ? "text-emerald-600" : "text-gray-400 dark:text-muted-foreground"}>
                                     {health?.automation?.autoSalary ? "ENABLED" : "DISABLED"}
                                 </span>
                             </div>
                             <div className="flex justify-between text-[10px] font-bold">
-                                <span className="text-gray-500 uppercase">Last Run</span>
-                                <span className="text-gray-700 font-mono">
+                                <span className="text-gray-500 dark:text-muted-foreground uppercase">Last Run</span>
+                                <span className="text-gray-700 dark:text-foreground font-mono">
                                     {health?.automation?.lastRun
                                         ? format(new Date(health.automation.lastRun), "MMM dd, HH:mm")
                                         : "Never"}
@@ -265,31 +265,31 @@ export default function SystemHealthPage() {
                 </div>
 
                 {/* ── API Endpoint Health ──────────────────────────────────── */}
-                <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl shadow-sm overflow-hidden">
                     <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50">
                         <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center">
-                                <Globe className="h-4 w-4 text-gray-500" />
+                            <div className="h-9 w-9 rounded-xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border flex items-center justify-center">
+                                <Globe className="h-4 w-4 text-gray-500 dark:text-muted-foreground" />
                             </div>
                             <div>
-                                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">API Endpoints</h3>
-                                <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Live latency probe</p>
+                                <h3 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-wide">API Endpoints</h3>
+                                <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-widest">Live latency probe</p>
                             </div>
                         </div>
                         <StatusChip status={allEndpointsOk ? "OK" : "ERROR"} />
                     </div>
-                    <div className="divide-y divide-gray-50">
+                    <div className="divide-y divide-gray-50 dark:divide-border/20">
                         {endpoints.map(([key, val]) => (
-                            <div key={key} className="flex items-center justify-between px-6 py-3 hover:bg-gray-50/50 transition-colors">
+                            <div key={key} className="flex items-center justify-between px-6 py-3 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors">
                                 <div className="flex items-center gap-3">
                                     {val.status === "OK"
                                         ? <Wifi className="h-4 w-4 text-emerald-500" />
                                         : <WifiOff className="h-4 w-4 text-rose-500" />}
-                                    <span className="text-[11px] font-bold text-gray-800 uppercase tracking-wide">{val.name}</span>
+                                    <span className="text-[11px] font-bold text-gray-800 dark:text-foreground uppercase tracking-wide">{val.name}</span>
                                 </div>
                                 <div className="flex items-center gap-4">
                                     {val.count != null && (
-                                        <span className="text-[9px] font-black font-mono px-2 py-0.5 rounded-full border bg-gray-50 text-gray-600 border-gray-100">
+                                        <span className="text-[9px] font-black font-mono px-2 py-0.5 rounded-full border bg-gray-50 dark:bg-muted/10 text-gray-600 dark:text-muted-foreground border-gray-100 dark:border-border">
                                             {val.count.toLocaleString()} records
                                         </span>
                                     )}
@@ -308,19 +308,19 @@ export default function SystemHealthPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
                     {/* Server Resources */}
-                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-6 shadow-sm">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="h-9 w-9 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center">
-                                <Server className="h-4 w-4 text-gray-500" />
+                            <div className="h-9 w-9 rounded-xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border flex items-center justify-center">
+                                <Server className="h-4 w-4 text-gray-500 dark:text-muted-foreground" />
                             </div>
-                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Server Resources</h3>
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-wide">Server Resources</h3>
                         </div>
                         <div className="space-y-5">
                             <div>
                                 <div className="flex justify-between items-center mb-2">
                                     <div className="flex items-center gap-2">
-                                        <HardDrive className="h-3.5 w-3.5 text-gray-400" />
-                                        <span className="text-[10px] font-bold text-gray-700 uppercase">Memory</span>
+                                        <HardDrive className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
+                                        <span className="text-[10px] font-bold text-gray-700 dark:text-foreground uppercase">Memory</span>
                                     </div>
                                     <span className="text-[10px] font-black text-blue-600">
                                         {server?.memory?.usedPercent}% used · {server?.memory?.free}MB free / {server?.memory?.total}MB
@@ -331,39 +331,39 @@ export default function SystemHealthPage() {
                             <div>
                                 <div className="flex justify-between items-center mb-2">
                                     <div className="flex items-center gap-2">
-                                        <Cpu className="h-3.5 w-3.5 text-gray-400" />
-                                        <span className="text-[10px] font-bold text-gray-700 uppercase">CPU Load Avg (1m · 5m · 15m)</span>
+                                        <Cpu className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
+                                        <span className="text-[10px] font-bold text-gray-700 dark:text-foreground uppercase">CPU Load Avg (1m · 5m · 15m)</span>
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-3 gap-3">
                                     {(server?.loadAvg ?? []).map((v, i) => (
-                                        <div key={i} className="bg-gray-50 border border-gray-100 rounded-xl p-3 text-center">
-                                            <p className="text-xs font-black text-gray-900 font-mono">{v}</p>
-                                            <p className="text-[8px] font-bold text-gray-400 uppercase mt-0.5">{["1 min", "5 min", "15 min"][i]}</p>
+                                        <div key={i} className="bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border rounded-xl p-3 text-center">
+                                            <p className="text-xs font-black text-gray-900 dark:text-foreground font-mono">{v}</p>
+                                            <p className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase mt-0.5">{["1 min", "5 min", "15 min"][i]}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3 pt-1">
-                                <div className="flex justify-between text-[10px] font-bold text-gray-500 bg-gray-50 rounded-xl p-3">
+                                <div className="flex justify-between text-[10px] font-bold text-gray-500 dark:text-muted-foreground bg-gray-50 dark:bg-muted/10 rounded-xl p-3">
                                     <span className="uppercase">OS Uptime</span>
-                                    <span className="text-gray-900 font-mono">{Math.round((server?.serverUptime ?? 0) / 3600)}h</span>
+                                    <span className="text-gray-900 dark:text-foreground font-mono">{Math.round((server?.serverUptime ?? 0) / 3600)}h</span>
                                 </div>
-                                <div className="flex justify-between text-[10px] font-bold text-gray-500 bg-gray-50 rounded-xl p-3">
+                                <div className="flex justify-between text-[10px] font-bold text-gray-500 dark:text-muted-foreground bg-gray-50 dark:bg-muted/10 rounded-xl p-3">
                                     <span className="uppercase">Process</span>
-                                    <span className="text-gray-900 font-mono">{Math.round((server?.uptime ?? 0) / 60)}m</span>
+                                    <span className="text-gray-900 dark:text-foreground font-mono">{Math.round((server?.uptime ?? 0) / 60)}m</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Live DB Stats */}
-                    <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                    <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-6 shadow-sm">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="h-9 w-9 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center">
-                                <Activity className="h-4 w-4 text-gray-500" />
+                            <div className="h-9 w-9 rounded-xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border flex items-center justify-center">
+                                <Activity className="h-4 w-4 text-gray-500 dark:text-muted-foreground" />
                             </div>
-                            <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Live Database Stats</h3>
+                            <h3 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-wide">Live Database Stats</h3>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             {[
@@ -373,13 +373,13 @@ export default function SystemHealthPage() {
                                 { label: "Total Payments", value: stats?.totalPayments ?? "—", icon: CreditCard, color: "bg-amber-50 text-amber-600" },
                                 { label: "Open Complaints", value: stats?.pendingComplaints ?? "—", icon: MessageSquare, color: "bg-rose-50 text-rose-600" },
                             ].map((s, i) => (
-                                <div key={i} className="flex items-center gap-3 bg-gray-50/80 border border-gray-100 rounded-xl p-4">
+                                <div key={i} className="flex items-center gap-3 bg-gray-50 dark:bg-muted/10/80 border border-gray-100 dark:border-border rounded-xl p-4">
                                     <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${s.color}`}>
                                         <s.icon className="h-4 w-4" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{s.label}</p>
-                                        <p className="text-lg font-black text-gray-900 leading-none mt-0.5">{s.value.toLocaleString()}</p>
+                                        <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{s.label}</p>
+                                        <p className="text-lg font-black text-gray-900 dark:text-foreground leading-none mt-0.5">{s.value.toLocaleString()}</p>
                                     </div>
                                 </div>
                             ))}
@@ -388,12 +388,12 @@ export default function SystemHealthPage() {
                 </div>
 
                 {/* ── Feature Service Toggles ──────────────────────────────── */}
-                <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-gray-50">
-                        <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wide">Application Services</h3>
-                        <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Pulled from SystemSettings in database</p>
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-wide">Application Services</h3>
+                        <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-widest mt-0.5">Pulled from SystemSettings in database</p>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 divide-x divide-y divide-gray-50">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 divide-x divide-y divide-gray-50 dark:divide-border/20">
                         {services.map((svc, i) => {
                             const enabled = health?.services?.[svc.key];
                             return (
@@ -401,7 +401,7 @@ export default function SystemHealthPage() {
                                     <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${enabled ? "bg-emerald-50" : "bg-gray-100"}`}>
                                         <svc.icon className={`h-4.5 w-4.5 ${enabled ? "text-emerald-600" : "text-gray-300"}`} style={{ height: 18, width: 18 }} />
                                     </div>
-                                    <p className={`text-[9px] font-bold uppercase tracking-wider leading-tight ${enabled ? "text-gray-800" : "text-gray-400"}`}>{svc.label}</p>
+                                    <p className={`text-[9px] font-bold uppercase tracking-wider leading-tight ${enabled ? "text-gray-800 dark:text-foreground" : "text-gray-400 dark:text-muted-foreground"}`}>{svc.label}</p>
                                     <StatusChip status={enabled ? "OK" : "ERROR"} />
                                 </div>
                             );

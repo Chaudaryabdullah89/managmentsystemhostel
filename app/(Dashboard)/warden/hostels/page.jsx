@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import useAuthStore from '@/hooks/Authstate';
 import { useHostelById } from '@/hooks/usehostel';
-import Loader from '@/components/ui/Loader';
+import { DetailPageSkeleton } from "@/components/ui/skeletons";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import PageHeader from "@/components/Dashboard/PageHeader";
@@ -46,20 +46,20 @@ const WardenHostelsPage = () => {
     const hostel = hostelData?.data;
     const [showInfo, setShowInfo] = useState(false);
 
-    if (isLoading) return <Loader label="LOADING" subLabel="Getting hostel info..." icon={Activity} fullScreen={false} />;
+    if (isLoading) return <DetailPageSkeleton />;
 
     if (!hostel) {
         return (
-            <div className="min-h-screen bg-gray-50/50 flex flex-col items-center justify-center p-6 text-center">
-                <div className="h-12 w-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center shadow-sm mb-4">
+            <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex flex-col items-center justify-center p-6 text-center">
+                <div className="h-12 w-12 rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm mb-4">
                     <Building2 className="h-5 w-5 text-gray-300" />
                 </div>
-                <h2 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Access Denied</h2>
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1.5 max-w-xs">
+                <h2 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Access Denied</h2>
+                <p className="text-[10px] text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-widest mt-1.5 max-w-xs">
                     Your account is not linked to any hostel.
                 </p>
                 <Link href="/warden" className="mt-6">
-                    <Button variant="outline" className="h-9 px-5 rounded-xl border-gray-200 text-[10px] font-bold uppercase tracking-widest">
+                    <Button variant="outline" className="h-9 px-5 rounded-xl border-gray-200 dark:border-border text-[10px] font-bold uppercase tracking-widest">
                         Go Home
                     </Button>
                 </Link>
@@ -86,7 +86,7 @@ const WardenHostelsPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
             <PageHeader
                 title="My Hostel"
                 subtitleStart="Manage"
@@ -98,10 +98,10 @@ const WardenHostelsPage = () => {
                 rightSlot={(
                     <Button
                         variant="ghost"
-                        className="h-9 px-4 rounded-xl border border-gray-100 font-bold text-[10px] uppercase tracking-wider text-gray-500 hover:bg-gray-50 flex items-center gap-2"
+                        className="h-9 px-4 rounded-xl border border-gray-100 dark:border-border font-bold text-[10px] uppercase tracking-wider text-gray-500 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 flex items-center gap-2"
                         onClick={handleRefresh}
                     >
-                        <RefreshCw className="h-3.5 w-3.5 text-gray-400" /> Refresh
+                        <RefreshCw className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" /> Refresh
                     </Button>
                 )}
             />
@@ -109,7 +109,7 @@ const WardenHostelsPage = () => {
             <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 space-y-6">
 
                 {/* Hero / Identity Card */}
-                <Card className="bg-white border-gray-100 rounded-2xl p-5 md:p-6 shadow-sm overflow-hidden">
+                <Card className="bg-white dark:bg-card border-gray-100 dark:border-border rounded-2xl p-5 md:p-6 shadow-sm overflow-hidden">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
                         <div className="flex items-center gap-4">
                             <div className="h-11 w-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
@@ -117,25 +117,25 @@ const WardenHostelsPage = () => {
                             </div>
                             <div className="space-y-1 min-w-0">
                                 <div className="flex flex-wrap items-center gap-1.5">
-                                    <Badge variant="outline" className="bg-gray-50 border-gray-100 text-gray-400 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">{hostel.type}</Badge>
+                                    <Badge variant="outline" className="bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border text-gray-400 dark:text-muted-foreground font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">{hostel.type}</Badge>
                                     <Badge variant="outline" className="bg-emerald-50 border-emerald-100 text-emerald-600 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">Active</Badge>
                                 </div>
-                                <h2 className="text-base font-black text-gray-900 tracking-tight uppercase leading-none truncate">{hostel.name}</h2>
-                                <div className="flex items-center gap-1.5 text-gray-400">
+                                <h2 className="text-base font-black text-gray-900 dark:text-foreground tracking-tight uppercase leading-none truncate">{hostel.name}</h2>
+                                <div className="flex items-center gap-1.5 text-gray-400 dark:text-muted-foreground">
                                     <MapPin className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
                                     <span className="text-[10px] font-bold uppercase tracking-wider truncate">{hostel.address}, {hostel.city}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex gap-6 md:pl-6 md:border-l border-gray-100">
+                        <div className="flex gap-6 md:pl-6 md:border-l border-gray-100 dark:border-border">
                             <div className="space-y-0.5">
-                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Monthly Rent</span>
-                                <span className="text-base font-black text-gray-900 tracking-tight">PKR {hostel.montlyrent?.toLocaleString()}</span>
+                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest block">Monthly Rent</span>
+                                <span className="text-base font-black text-gray-900 dark:text-foreground tracking-tight">PKR {hostel.montlyrent?.toLocaleString()}</span>
                             </div>
                             <div className="space-y-0.5">
-                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block">Daily Rate</span>
-                                <span className="text-base font-black text-gray-900 tracking-tight">PKR {hostel.pernightrent?.toLocaleString()}</span>
+                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest block">Daily Rate</span>
+                                <span className="text-base font-black text-gray-900 dark:text-foreground tracking-tight">PKR {hostel.pernightrent?.toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
@@ -153,9 +153,9 @@ const WardenHostelsPage = () => {
                                     <stat.icon className="h-[18px] w-[18px]" />
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">{stat.label}</span>
+                                    <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none mb-1">{stat.label}</span>
                                     <div className="flex items-baseline gap-1">
-                                        <span className="text-sm font-black text-gray-900 tracking-tight uppercase leading-none tabular-nums">{stat.value}</span>
+                                        <span className="text-sm font-black text-gray-900 dark:text-foreground tracking-tight uppercase leading-none tabular-nums">{stat.value}</span>
                                         <span className="text-[9px] font-bold text-gray-300 uppercase italic leading-none">{stat.sub}</span>
                                     </div>
                                 </div>
@@ -172,7 +172,7 @@ const WardenHostelsPage = () => {
                         <div className="space-y-3">
                             <div className="flex items-center gap-2 px-1">
                                 <div className="h-4 w-1 bg-indigo-600 rounded-full" />
-                                <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-900">Room Status</h3>
+                                <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-900 dark:text-foreground">Room Status</h3>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 {[
@@ -180,19 +180,19 @@ const WardenHostelsPage = () => {
                                     { label: 'Occupied', value: roomStats.occupied, color: 'bg-emerald-600', icon: Users, sub: 'Stayers' },
                                     { label: 'Maintenance', value: roomStats.maintenance, color: 'bg-amber-500', icon: Activity, sub: 'Fixing' }
                                 ].map((node, i) => (
-                                    <Card key={i} className="bg-white border-gray-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group overflow-hidden">
+                                    <Card key={i} className="bg-white dark:bg-card border-gray-100 dark:border-border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group overflow-hidden">
                                         <div className="flex flex-col gap-3">
                                             <div className="flex items-center justify-between">
-                                                <div className="h-9 w-9 rounded-xl bg-gray-50 flex items-center justify-center text-gray-300 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                                <div className="h-9 w-9 rounded-xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center text-gray-300 group-hover:bg-indigo-600 group-hover:text-white transition-all">
                                                     <node.icon className="h-4 w-4" />
                                                 </div>
-                                                <span className="text-xl font-black text-gray-900 tracking-tight">{node.value}</span>
+                                                <span className="text-xl font-black text-gray-900 dark:text-foreground tracking-tight">{node.value}</span>
                                             </div>
                                             <div>
-                                                <p className="text-[10px] font-black text-gray-900 uppercase tracking-widest leading-none mb-0.5">{node.label}</p>
-                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest italic">{node.sub}</p>
+                                                <p className="text-[10px] font-black text-gray-900 dark:text-foreground uppercase tracking-widest leading-none mb-0.5">{node.label}</p>
+                                                <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest italic">{node.sub}</p>
                                             </div>
-                                            <div className="h-1 w-full bg-gray-50 rounded-full overflow-hidden">
+                                            <div className="h-1 w-full bg-gray-50 dark:bg-muted/10 rounded-full overflow-hidden">
                                                 <div
                                                     className={`h-full ${node.color} rounded-full`}
                                                     style={{ width: `${(node.value / (roomStats.total || 1)) * 100}%` }}
@@ -206,16 +206,16 @@ const WardenHostelsPage = () => {
 
                         {/* Details */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Card className="bg-white border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group">
+                            <Card className="bg-white dark:bg-card border-gray-100 dark:border-border rounded-2xl p-5 shadow-sm relative overflow-hidden group">
                                 <MapPin className="absolute top-4 right-4 h-8 w-8 text-gray-50 transition-colors" />
                                 <div className="space-y-4 relative z-10">
                                     <div className="flex flex-col gap-1">
-                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Address</span>
-                                        <p className="text-sm font-bold text-gray-800 leading-tight uppercase">{hostel.address}</p>
+                                        <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Address</span>
+                                        <p className="text-sm font-bold text-gray-800 dark:text-foreground leading-tight uppercase">{hostel.address}</p>
                                     </div>
                                     <div className="pt-4 border-t border-gray-50 flex items-center gap-2">
-                                        <div className="h-7 w-7 rounded-lg bg-gray-50 flex items-center justify-center">
-                                            <Globe className="h-3.5 w-3.5 text-gray-400" />
+                                        <div className="h-7 w-7 rounded-lg bg-gray-50 dark:bg-muted/10 flex items-center justify-center">
+                                            <Globe className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
                                         </div>
                                         <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{hostel.city} Branch</span>
                                     </div>
@@ -226,15 +226,15 @@ const WardenHostelsPage = () => {
                                 <div className="space-y-4 relative z-10 flex flex-col h-full justify-between">
                                     <div className="space-y-2">
                                         <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">About</span>
-                                        <p className="text-[11px] text-gray-400 font-medium leading-relaxed italic border-l-2 border-indigo-500/30 pl-3">
+                                        <p className="text-[11px] text-gray-400 dark:text-muted-foreground font-medium leading-relaxed italic border-l-2 border-indigo-500/30 pl-3">
                                             "{hostel.description || 'A premium hostel facility managed with high-quality service and security standards.'}"
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="h-7 w-7 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center">
+                                        <div className="h-7 w-7 rounded-lg bg-white dark:bg-card/5 border border-white/5 flex items-center justify-center">
                                             <Info className="h-3.5 w-3.5 text-white/30" />
                                         </div>
-                                        <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest">Info</p>
+                                        <p className="text-[9px] font-black text-gray-500 dark:text-muted-foreground uppercase tracking-widest">Info</p>
                                     </div>
                                 </div>
                             </Card>
@@ -245,18 +245,18 @@ const WardenHostelsPage = () => {
                             <div className="flex items-center justify-between px-1">
                                 <div className="flex items-center gap-2">
                                     <div className="h-4 w-1 bg-indigo-600 rounded-full" />
-                                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-900">Amenities</h3>
+                                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-900 dark:text-foreground">Amenities</h3>
                                 </div>
-                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{hostel.amenities?.length || 0} Total</span>
+                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{hostel.amenities?.length || 0} Total</span>
                             </div>
-                            <Card className="bg-white border-gray-100 rounded-2xl p-4 shadow-sm">
+                            <Card className="bg-white dark:bg-card border-gray-100 dark:border-border rounded-2xl p-4 shadow-sm">
                                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                                     {hostel.amenities?.length > 0 ? hostel.amenities.map((amenity, i) => (
-                                        <div key={i} className="p-3 bg-gray-50/50 rounded-xl border border-gray-50 hover:border-indigo-100 hover:bg-white hover:shadow-sm transition-all text-center group">
-                                            <div className="h-7 w-7 rounded-lg bg-white mx-auto mb-2 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                                        <div key={i} className="p-3 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-50 hover:border-indigo-100 hover:bg-white dark:bg-card hover:shadow-sm transition-all text-center group">
+                                            <div className="h-7 w-7 rounded-lg bg-white dark:bg-card mx-auto mb-2 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
                                                 <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
                                             </div>
-                                            <span className="text-[9px] font-black text-gray-600 uppercase tracking-tighter group-hover:text-indigo-600 truncate block">{amenity}</span>
+                                            <span className="text-[9px] font-black text-gray-600 dark:text-muted-foreground uppercase tracking-tighter group-hover:text-indigo-600 truncate block">{amenity}</span>
                                         </div>
                                     )) : (
                                         <div className="col-span-full py-8 text-center text-[10px] font-black text-gray-300 uppercase tracking-widest">No amenities listed</div>
@@ -269,20 +269,20 @@ const WardenHostelsPage = () => {
                     {/* Sidebar */}
                     <div className="lg:col-span-4 space-y-5">
                         {/* Management Card */}
-                        <Card className="bg-white border-gray-100 rounded-2xl p-5 shadow-sm relative overflow-hidden group">
+                        <Card className="bg-white dark:bg-card border-gray-100 dark:border-border rounded-2xl p-5 shadow-sm relative overflow-hidden group">
                             <div className="space-y-5 relative z-10">
                                 <div>
                                     <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest block mb-1">Management</span>
-                                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">Active Warden</h3>
+                                    <h3 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tight">Active Warden</h3>
                                 </div>
 
-                                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                                    <div className="h-10 w-10 rounded-xl bg-white shadow-sm flex items-center justify-center text-indigo-600 font-black text-base uppercase shrink-0">
+                                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-muted/10 rounded-xl border border-gray-100 dark:border-border">
+                                    <div className="h-10 w-10 rounded-xl bg-white dark:bg-card shadow-sm flex items-center justify-center text-indigo-600 font-black text-base uppercase shrink-0">
                                         {user?.name?.charAt(0) || 'D'}
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Official Warden</p>
-                                        <p className="text-sm font-black text-gray-900 uppercase tracking-tight truncate">{user?.name || 'Administrator'}</p>
+                                        <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-0.5">Official Warden</p>
+                                        <p className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tight truncate">{user?.name || 'Administrator'}</p>
                                     </div>
                                 </div>
 
@@ -293,11 +293,11 @@ const WardenHostelsPage = () => {
                                         { label: 'City', value: hostel.city, icon: Globe }
                                     ].map((item, i) => (
                                         <div key={i} className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                            <div className="flex items-center gap-2 text-gray-400">
+                                            <div className="flex items-center gap-2 text-gray-400 dark:text-muted-foreground">
                                                 <item.icon className="h-3.5 w-3.5" />
                                                 <span>{item.label}</span>
                                             </div>
-                                            <span className={item.color || 'text-gray-900'}>{item.value}</span>
+                                            <span className={item.color || 'text-gray-900 dark:text-foreground'}>{item.value}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -313,7 +313,7 @@ const WardenHostelsPage = () => {
 
                         {/* Quick Links */}
                         <div className="space-y-2">
-                            <h3 className="text-[9px] font-black uppercase tracking-widest px-1 text-gray-400">Quick Links</h3>
+                            <h3 className="text-[9px] font-black uppercase tracking-widest px-1 text-gray-400 dark:text-muted-foreground">Quick Links</h3>
                             <div className="grid grid-cols-1 gap-2">
                                 {[
                                     { title: 'Residents', sub: 'Manage People', icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50', link: '/warden/residents' },
@@ -322,14 +322,14 @@ const WardenHostelsPage = () => {
                                     { title: 'Complaints', sub: 'Fix Issues', icon: MessageSquare, color: 'text-rose-600', bg: 'bg-rose-50', link: '/warden/complaints' }
                                 ].map((item, i) => (
                                     <Link href={item.link} key={i}>
-                                        <div className="group bg-white border border-gray-100 rounded-xl p-3.5 flex items-center justify-between hover:shadow-md hover:shadow-indigo-100/50 transition-all cursor-pointer">
+                                        <div className="group bg-white dark:bg-card border border-gray-100 dark:border-border rounded-xl p-3.5 flex items-center justify-between hover:shadow-md hover:shadow-indigo-100/50 transition-all cursor-pointer">
                                             <div className="flex items-center gap-3">
                                                 <div className={`h-9 w-9 rounded-xl ${item.bg} ${item.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform`}>
                                                     <item.icon className="h-4 w-4" />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <h4 className="text-[11px] font-black text-gray-900 uppercase tracking-tight">{item.title}</h4>
-                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{item.sub}</p>
+                                                    <h4 className="text-[11px] font-black text-gray-900 dark:text-foreground uppercase tracking-tight">{item.title}</h4>
+                                                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">{item.sub}</p>
                                                 </div>
                                             </div>
                                             <ChevronRight className="h-3.5 w-3.5 text-gray-300 group-hover:text-indigo-600 transition-colors" />
@@ -348,7 +348,7 @@ const WardenHostelsPage = () => {
                     {/* Modal Header */}
                     <div className="bg-gray-950 px-6 py-5 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center">
+                            <div className="h-9 w-9 rounded-xl bg-white dark:bg-card/10 flex items-center justify-center">
                                 <Building2 className="h-4 w-4 text-white" />
                             </div>
                             <div>
@@ -359,7 +359,7 @@ const WardenHostelsPage = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 rounded-xl text-white/40 hover:text-white hover:bg-white/10"
+                            className="h-8 w-8 rounded-xl text-white/40 hover:text-white hover:bg-white dark:bg-card/10"
                             onClick={() => setShowInfo(false)}
                         >
                             <X className="h-4 w-4" />
@@ -367,27 +367,27 @@ const WardenHostelsPage = () => {
                     </div>
 
                     {/* Stats Row */}
-                    <div className="grid grid-cols-4 border-b border-gray-100">
+                    <div className="grid grid-cols-4 border-b border-gray-100 dark:border-border">
                         {[
                             { label: 'Total Rooms', value: roomStats.total, icon: BedDouble, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                             { label: 'Occupancy', value: `${occupancyRate}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                             { label: 'Floors', value: hostel.floors ?? '—', icon: Layers, color: 'text-amber-600', bg: 'bg-amber-50' },
                             { label: 'Available', value: roomStats.available, icon: CheckCircle2, color: 'text-blue-600', bg: 'bg-blue-50' },
                         ].map((s, i) => (
-                            <div key={i} className="flex flex-col items-center gap-1.5 py-4 border-r border-gray-100 last:border-r-0">
+                            <div key={i} className="flex flex-col items-center gap-1.5 py-4 border-r border-gray-100 dark:border-border last:border-r-0">
                                 <div className={`h-8 w-8 rounded-lg ${s.bg} ${s.color} flex items-center justify-center`}>
                                     <s.icon className="h-3.5 w-3.5" />
                                 </div>
-                                <span className="text-sm font-black text-gray-900 tabular-nums">{s.value}</span>
-                                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest text-center">{s.label}</span>
+                                <span className="text-sm font-black text-gray-900 dark:text-foreground tabular-nums">{s.value}</span>
+                                <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center">{s.label}</span>
                             </div>
                         ))}
                     </div>
 
                     {/* Body */}
-                    <div className="p-6 space-y-4 bg-gray-50/30">
+                    <div className="p-6 space-y-4 bg-gray-50 dark:bg-muted/10/30">
                         {/* Identity */}
-                        <div className="bg-white rounded-xl border border-gray-100 p-4 grid grid-cols-2 gap-4">
+                        <div className="bg-white dark:bg-card rounded-xl border border-gray-100 dark:border-border p-4 grid grid-cols-2 gap-4">
                             {[
                                 { label: 'Hostel Name', value: hostel.name, icon: Building2 },
                                 { label: 'Type', value: hostel.type, icon: ShieldCheck },
@@ -399,12 +399,12 @@ const WardenHostelsPage = () => {
                                 { label: 'System ID', value: hostel.id.slice(-10).toUpperCase(), icon: Hash },
                             ].map((f, i) => (
                                 <div key={i} className="flex items-start gap-2.5">
-                                    <div className="h-7 w-7 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 mt-0.5">
-                                        <f.icon className="h-3.5 w-3.5 text-gray-400" />
+                                    <div className="h-7 w-7 rounded-lg bg-gray-50 dark:bg-muted/10 flex items-center justify-center shrink-0 mt-0.5">
+                                        <f.icon className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{f.label}</p>
-                                        <p className="text-[11px] font-black text-gray-900 uppercase mt-0.5 truncate">{f.value}</p>
+                                        <p className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{f.label}</p>
+                                        <p className="text-[11px] font-black text-gray-900 dark:text-foreground uppercase mt-0.5 truncate">{f.value}</p>
                                     </div>
                                 </div>
                             ))}
@@ -412,16 +412,16 @@ const WardenHostelsPage = () => {
 
                         {/* Description */}
                         {hostel.description && (
-                            <div className="bg-white rounded-xl border border-gray-100 p-4">
-                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Description</p>
-                                <p className="text-[11px] text-gray-600 leading-relaxed italic">"{hostel.description}"</p>
+                            <div className="bg-white dark:bg-card rounded-xl border border-gray-100 dark:border-border p-4">
+                                <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-2">Description</p>
+                                <p className="text-[11px] text-gray-600 dark:text-muted-foreground leading-relaxed italic">"{hostel.description}"</p>
                             </div>
                         )}
 
                         {/* Amenities */}
                         {hostel.amenities?.length > 0 && (
-                            <div className="bg-white rounded-xl border border-gray-100 p-4">
-                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-3">Amenities ({hostel.amenities.length})</p>
+                            <div className="bg-white dark:bg-card rounded-xl border border-gray-100 dark:border-border p-4">
+                                <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-3">Amenities ({hostel.amenities.length})</p>
                                 <div className="flex flex-wrap gap-1.5">
                                     {hostel.amenities.map((a, i) => (
                                         <span key={i} className="text-[9px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg uppercase tracking-tighter">
@@ -434,7 +434,7 @@ const WardenHostelsPage = () => {
 
                         {/* Created At */}
                         {hostel.createdAt && (
-                            <div className="flex items-center gap-2 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                            <div className="flex items-center gap-2 text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                                 <Calendar className="h-3 w-3" />
                                 Registered: {format(new Date(hostel.createdAt), 'MMMM dd, yyyy')}
                             </div>

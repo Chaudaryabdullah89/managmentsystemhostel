@@ -84,7 +84,7 @@ const ReceiptModal = ({ children, booking }) => {
                 <div class="container">
                     <div class="header">
                         <div class="brand">
-                            <h1>Mubarak Group of Hostels</h1>
+                            <h1>Hostel Management System</h1>
                             <p>Agreement Details</p>
                         </div>
                         <div class="invoice-meta">
@@ -142,7 +142,7 @@ const ReceiptModal = ({ children, booking }) => {
                     </div>
                     
                     <div class="footer">
-                        <p>This document serves as an official summary of your stay at Mubarak Group of Hostels.</p>
+                        <p>This document serves as an official summary of your stay at our hostel.</p>
                         <p>Digitally Verified Payment Record</p>
                     </div>
                 </div>
@@ -295,7 +295,7 @@ const ReceiptModal = ({ children, booking }) => {
                     {/* Header */}
                     <div className="border-b-2 border-black pb-6 mb-6 flex justify-between items-start">
                         <div>
-                            <h1 className="text-2xl font-black uppercase tracking-tight text-indigo-600">Mubarak Group of Hostels</h1>
+                            <h1 className="text-2xl font-black uppercase tracking-tight text-indigo-600">Official Receipt</h1>
                             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">Agreement Details</p>
                         </div>
                         <div className="text-right">
@@ -355,7 +355,7 @@ const ReceiptModal = ({ children, booking }) => {
 
                     {/* Footer */}
                     <div className="mt-16 pt-8 border-t border-gray-200 text-center">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">This document serves as an official summary of your stay at Mubarak Group of Hostels.</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">This document serves as an official summary of your stay at our hostel.</p>
                         <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest mt-1">Digitally Verified Payment Record</p>
                     </div>
                 </div>

@@ -43,20 +43,20 @@ const COLOR_MAP = {
     emerald: { dot: 'bg-emerald-500', bar: 'bg-emerald-500', hover: 'hover:border-emerald-100', icon: 'group-hover:bg-emerald-600', badge: 'bg-emerald-50 text-emerald-700', tab: 'bg-emerald-600 text-white shadow-emerald-200' },
     rose: { dot: 'bg-rose-500', bar: 'bg-rose-500', hover: 'hover:border-rose-100', icon: 'group-hover:bg-rose-600', badge: 'bg-rose-50 text-rose-700', tab: 'bg-rose-600 text-white shadow-rose-200' },
     amber: { dot: 'bg-amber-500', bar: 'bg-amber-500', hover: 'hover:border-amber-100', icon: 'group-hover:bg-amber-600', badge: 'bg-amber-50 text-amber-700', tab: 'bg-amber-600 text-white shadow-amber-200' },
-    gray: { dot: 'bg-gray-400', bar: 'bg-gray-400', hover: 'hover:border-gray-200', icon: 'group-hover:bg-gray-800', badge: 'bg-gray-50 text-gray-700', tab: 'bg-gray-900 text-white shadow-gray-200' },
+    gray: { dot: 'bg-gray-400', bar: 'bg-gray-400', hover: 'hover:border-gray-200 dark:border-border', icon: 'group-hover:bg-gray-800', badge: 'bg-gray-50 dark:bg-muted/10 text-gray-700 dark:text-foreground', tab: 'bg-gray-900 text-white shadow-gray-200' },
 };
 
 const STATUS_COLORS = {
     PAID: 'bg-emerald-50 text-emerald-700', CONFIRMED: 'bg-emerald-50 text-emerald-700',
     CHECKED_IN: 'bg-indigo-50 text-indigo-700', PENDING: 'bg-amber-50 text-amber-700',
-    OVERDUE: 'bg-rose-50 text-rose-700', CANCELLED: 'bg-gray-50 text-gray-600',
+    OVERDUE: 'bg-rose-50 text-rose-700', CANCELLED: 'bg-gray-50 dark:bg-muted/10 text-gray-600 dark:text-muted-foreground',
     RESOLVED: 'bg-emerald-50 text-emerald-700', OPEN: 'bg-rose-50 text-rose-700',
     IN_PROGRESS: 'bg-blue-50 text-blue-700', COMPLETED: 'bg-emerald-50 text-emerald-700',
-    ACTIVE: 'bg-emerald-50 text-emerald-700', INACTIVE: 'bg-gray-50 text-gray-500',
+    ACTIVE: 'bg-emerald-50 text-emerald-700', INACTIVE: 'bg-gray-50 dark:bg-muted/10 text-gray-500 dark:text-muted-foreground',
 };
 
 const StatusBadge = ({ status }) => (
-    <Badge className={`${STATUS_COLORS[status?.toUpperCase()] || 'bg-gray-50 text-gray-600'} border-none text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5`}>
+    <Badge className={`${STATUS_COLORS[status?.toUpperCase()] || 'bg-gray-50 dark:bg-muted/10 text-gray-600 dark:text-muted-foreground'} border-none text-[9px] font-bold uppercase tracking-wider px-2.5 py-0.5`}>
         {status}
     </Badge>
 );
@@ -74,16 +74,16 @@ const ResultCard = ({ item, type, onClick }) => {
     return (
         <div
             onClick={onClick}
-            className={`bg-white border border-gray-100 rounded-2xl p-5 flex items-center justify-between group ${colors.color.hover} hover:shadow-lg transition-all cursor-pointer relative overflow-hidden`}
+            className={`bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-5 flex items-center justify-between group ${colors.color.hover} hover:shadow-lg transition-all cursor-pointer relative overflow-hidden`}
         >
             <div className={`absolute left-0 top-0 w-1 h-full ${colors.color.bar} opacity-70 rounded-r`} />
             <div className="flex items-center gap-4 min-w-0 flex-1">
-                <div className={`h-11 w-11 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 ${colors.color.icon} transition-colors`}>
-                    <Icon className="h-5 w-5 text-gray-400 group-hover:text-white transition-colors" />
+                <div className={`h-11 w-11 rounded-xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border flex items-center justify-center shrink-0 ${colors.color.icon} transition-colors`}>
+                    <Icon className="h-5 w-5 text-gray-400 dark:text-muted-foreground group-hover:text-white transition-colors" />
                 </div>
                 <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-bold text-gray-900 uppercase tracking-tight truncate">{colors.title}</h3>
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-0.5 truncate">{colors.sub}</p>
+                    <h3 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-tight truncate">{colors.title}</h3>
+                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5 truncate">{colors.sub}</p>
                 </div>
             </div>
             <div className="flex flex-col items-end gap-1.5 shrink-0 ml-4">
@@ -201,16 +201,16 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
     const profileGalleryImages = Array.isArray(profileDocuments?.galleryImages) ? profileDocuments.galleryImages : [];
 
     return (
-        <div className="relative w-full h-full bg-white flex overflow-hidden font-sans rounded-[2.5rem]">
+        <div className="relative w-full h-full bg-white dark:bg-card flex overflow-hidden font-sans rounded-[2.5rem]">
             {/* Sidebar Navigation */}
-            <aside className="w-72 bg-gray-50/50 flex flex-col shrink-0 border-r border-gray-100">
-                <div className="p-8 border-b border-gray-100">
+            <aside className="w-72 bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex flex-col shrink-0 border-r border-gray-100 dark:border-border">
+                <div className="p-8 border-b border-gray-100 dark:border-border">
                     <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white text-lg font-bold shadow-lg shadow-blue-500/20">
                             {user.name.charAt(0)}
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-gray-900 font-bold text-base truncate leading-tight">{user.name}</h2>
+                            <h2 className="text-gray-900 dark:text-foreground font-bold text-base truncate leading-tight">{user.name}</h2>
                             <p className="text-blue-600 text-[9px] font-bold uppercase tracking-[0.2em] mt-1">{user.role}</p>
                         </div>
                     </div>
@@ -221,33 +221,33 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all group ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/10' : 'text-gray-500 hover:bg-white hover:text-gray-900 hover:shadow-sm'}`}
+                            className={`w-full flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all group ${activeTab === tab.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/10' : 'text-gray-500 dark:text-muted-foreground hover:bg-white dark:bg-card hover:text-gray-900 dark:text-foreground hover:shadow-sm'}`}
                         >
-                            <tab.icon className={`h-4.5 w-4.5 ${activeTab === tab.id ? 'text-white' : 'text-gray-400 group-hover:text-blue-600'}`} />
+                            <tab.icon className={`h-4.5 w-4.5 ${activeTab === tab.id ? 'text-white' : 'text-gray-400 dark:text-muted-foreground group-hover:text-blue-600'}`} />
                             <span className="text-[10px] font-bold uppercase tracking-widest">{tab.label}</span>
                         </button>
                     ))}
                 </nav>
 
-                <div className="p-8 mt-auto border-t border-gray-100">
-                    <Button variant="outline" onClick={onClose} className="w-full h-11 rounded-2xl border-gray-200 text-gray-400 bg-white hover:bg-gray-50 font-bold text-[10px] uppercase tracking-widest gap-2">
+                <div className="p-8 mt-auto border-t border-gray-100 dark:border-border">
+                    <Button variant="outline" onClick={onClose} className="w-full h-11 rounded-2xl border-gray-200 dark:border-border text-gray-400 dark:text-muted-foreground bg-white dark:bg-card hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 font-bold text-[10px] uppercase tracking-widest gap-2">
                         <ChevronLeft className="h-4 w-4" /> Exit
                     </Button>
                 </div>
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 flex flex-col bg-gray-50/50 overflow-hidden relative">
+            <main className="flex-1 flex flex-col bg-gray-50 dark:bg-muted/10/50 dark:bg-background overflow-hidden relative">
                 {/* Top Quick Profile Stats */}
-                <header className="bg-white border-b px-10 py-6 flex items-center justify-between shrink-0">
+                <header className="bg-white dark:bg-card border-b px-10 py-6 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-8">
                         <div>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">User ID</p>
-                            <p className="text-sm font-bold text-gray-900 mt-1">{user.uid || 'N/A'} • {user.regNumber || 'N/A'}</p>
+                            <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">User ID</p>
+                            <p className="text-sm font-bold text-gray-900 dark:text-foreground mt-1">{user.uid || 'N/A'} • {user.regNumber || 'N/A'}</p>
                         </div>
                         <div className="h-8 w-px bg-gray-100" />
                         <div>
-                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Status</p>
+                            <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Status</p>
                             <Badge className={`mt-1 font-bold text-[9px] uppercase tracking-widest border-none ${user.isActive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                                 {user.isActive ? 'Active' : 'Stopped'}
                             </Badge>
@@ -255,7 +255,7 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <Button variant="outline" onClick={() => setActiveTab('activity')} className="h-10 px-6 rounded-xl border-gray-200 text-gray-500 hover:text-blue-600 hover:bg-blue-50 font-bold text-[10px] uppercase tracking-widest gap-2">
+                        <Button variant="outline" onClick={() => setActiveTab('activity')} className="h-10 px-6 rounded-xl border-gray-200 dark:border-border text-gray-500 dark:text-muted-foreground hover:text-blue-600 hover:bg-blue-50 font-bold text-[10px] uppercase tracking-widest gap-2">
                             <History className="h-3.5 w-3.5" /> Actions
                         </Button>
                         <Button onClick={() => window.print()} className="h-10 px-6 rounded-xl bg-gray-900 border-none text-white font-bold text-[10px] uppercase tracking-widest gap-2">
@@ -267,7 +267,7 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                 {loading ? (
                     <div className="flex-1 flex flex-col items-center justify-center gap-4">
                         <Loader2 className="h-12 w-12 text-indigo-600 animate-spin" />
-                        <p className="text-[11px] font-black text-gray-900 uppercase tracking-[0.3em] animate-pulse">Loading User Info...</p>
+                        <p className="text-[11px] font-black text-gray-900 dark:text-foreground uppercase tracking-[0.3em] animate-pulse">Loading User Info...</p>
                     </div>
                 ) : (
                     <div className="flex-1 overflow-y-auto p-10">
@@ -280,24 +280,24 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                         { label: 'Complaints', value: `${details?.Complaint_Complaint_userIdToUser?.length || 0} Items`, icon: AlertTriangle, color: 'text-rose-600', bg: 'bg-rose-50' },
                                         { label: 'Phone Number', value: user.phone || 'N/A', icon: Phone, color: 'text-amber-600', bg: 'bg-amber-50' },
                                     ].map((stat, i) => (
-                                        <div key={i} className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm flex items-center gap-5 hover:shadow-md transition-shadow">
+                                        <div key={i} className="bg-white dark:bg-card p-6 rounded-[2rem] border border-gray-100 dark:border-border shadow-sm flex items-center gap-5 hover:shadow-md transition-shadow">
                                             <div className={`h-12 w-12 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
                                                 <stat.icon className="h-6 w-6" />
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{stat.label}</p>
-                                                <p className="text-base font-bold text-gray-900 truncate mt-1">{stat.value}</p>
+                                                <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{stat.label}</p>
+                                                <p className="text-base font-bold text-gray-900 dark:text-foreground truncate mt-1">{stat.value}</p>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                    <div className="lg:col-span-2 bg-white rounded-[2.5rem] p-10 border border-gray-100 shadow-sm relative overflow-hidden group">
+                                    <div className="lg:col-span-2 bg-white dark:bg-card rounded-[2.5rem] p-10 border border-gray-100 dark:border-border shadow-sm relative overflow-hidden group">
                                         <div className="absolute top-0 right-0 p-10">
                                             <Fingerprint className="h-20 w-20 text-gray-50 group-hover:scale-110 transition-transform duration-500" />
                                         </div>
-                                        <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-10 border-b pb-4 flex items-center gap-3">
+                                        <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest mb-10 border-b pb-4 flex items-center gap-3">
                                             <Activity className="h-3.5 w-3.5 text-blue-600" /> User Info
                                         </h3>
                                         <div className="grid grid-cols-2 gap-y-10">
@@ -313,22 +313,22 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                                 { label: 'City', value: user.city || details?.ResidentProfile?.city || '—' },
                                                 { label: 'Current Residence', value: details?.ResidentProfile?.documents?.currentResidence || '—' },
                                                 { label: 'Additional Docs', value: Array.isArray(details?.ResidentProfile?.documents?.galleryImages) ? details.ResidentProfile.documents.galleryImages.length : 0 },
-                                                { label: 'Maintenance Records', value: `${details?.maintanance_maintanance_userIdToUser?.length || 0}` },
+                                                { label: 'Maintenance Records', value: `${details?.Maintenance_userIdToUser?.length || 0}` },
                                                 { label: 'Join Date', value: format(new Date(user.createdAt), 'MMMM dd, yyyy') },
                                             ].map((f, i) => (
                                                 <div key={i}>
-                                                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{f.label}</p>
-                                                    <p className="text-sm font-black text-gray-900 mt-2">{f.value}</p>
+                                                    <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{f.label}</p>
+                                                    <p className="text-sm font-black text-gray-900 dark:text-foreground mt-2">{f.value}</p>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
                                     <div className="bg-indigo-600 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-indigo-200 relative overflow-hidden">
-                                        <div className="absolute inset-0 bg-white/5 -skew-x-12 translate-x-20" />
+                                        <div className="absolute inset-0 bg-white dark:bg-card/5 -skew-x-12 translate-x-20" />
                                         <h3 className="text-xs font-bold uppercase tracking-widest text-white/60 mb-8">Hostel Info</h3>
                                         <div className="space-y-10 relative z-10">
                                             <div className="flex items-center gap-5">
-                                                <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10">
+                                                <div className="h-14 w-14 rounded-2xl bg-white dark:bg-card/10 flex items-center justify-center border border-white/10">
                                                     <Building2 className="h-7 w-7" />
                                                 </div>
                                                 <div>
@@ -337,7 +337,7 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-5">
-                                                <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10">
+                                                <div className="h-14 w-14 rounded-2xl bg-white dark:bg-card/10 flex items-center justify-center border border-white/10">
                                                     <Hash className="h-7 w-7" />
                                                 </div>
                                                 <div>
@@ -349,8 +349,8 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                     </div>
                                 </div>
                                 {profileGalleryImages.length > 0 && (
-                                    <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm">
-                                        <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-5">Additional Documents</h3>
+                                    <div className="bg-white dark:bg-card rounded-[2.5rem] p-8 border border-gray-100 dark:border-border shadow-sm">
+                                        <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground mb-5">Additional Documents</h3>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                             {profileGalleryImages.map((src, idx) => (
                                                 <a
@@ -358,7 +358,7 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                                     href={src}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="block rounded-xl overflow-hidden border border-gray-100 bg-white"
+                                                    className="block rounded-xl overflow-hidden border border-gray-100 dark:border-border bg-white dark:bg-card"
                                                 >
                                                     <img src={src} alt={`profile-doc-${idx}`} className="h-28 w-full object-cover" />
                                                 </a>
@@ -372,14 +372,14 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                         {activeTab === 'bookings' && (
                             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Booking History</h2>
+                                    <h2 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Booking History</h2>
                                     <Button onClick={() => router.push('/admin/bookings/create')} className="h-11 px-6 rounded-2xl bg-gray-900 text-white font-black text-[10px] uppercase tracking-widest gap-2">
                                         <Plus className="h-4 w-4" /> Add Booking
                                     </Button>
                                 </div>
-                                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+                                <div className="bg-white dark:bg-card rounded-[2.5rem] border border-gray-100 dark:border-border shadow-sm overflow-hidden">
                                     <Table>
-                                        <TableHeader className="bg-gray-50/50 h-16">
+                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background h-16">
                                             <TableRow className="border-none">
                                                 <TableHead className="px-10 text-[10px] font-black uppercase tracking-[0.2em]">Check-In</TableHead>
                                                 <TableHead className="px-6 text-[10px] font-black uppercase tracking-[0.2em]">Room / Branch</TableHead>
@@ -389,14 +389,14 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                         </TableHeader>
                                         <TableBody>
                                             {details?.Booking?.map((b) => (
-                                                <TableRow key={b.id} className="border-gray-50 group hover:bg-gray-50/50 transition-colors">
+                                                <TableRow key={b.id} className="border-gray-50 group hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors">
                                                     <TableCell className="px-10 py-6">
-                                                        <p className="text-sm font-black text-gray-900">{b.checkIn ? format(new Date(b.checkIn), 'MMM dd, yyyy') : '—'}</p>
-                                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">To {b.checkOut ? format(new Date(b.checkOut), 'MMM dd, yyyy') : 'Present'}</p>
+                                                        <p className="text-sm font-black text-gray-900 dark:text-foreground">{b.checkIn ? format(new Date(b.checkIn), 'MMM dd, yyyy') : '—'}</p>
+                                                        <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">To {b.checkOut ? format(new Date(b.checkOut), 'MMM dd, yyyy') : 'Present'}</p>
                                                     </TableCell>
                                                     <TableCell className="px-6 py-6 font-black text-indigo-600 text-sm">
                                                         Room {b.Room?.roomNumber}
-                                                        <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mt-1">{b.Room?.Hostel?.name}</p>
+                                                        <p className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">{b.Room?.Hostel?.name}</p>
                                                     </TableCell>
                                                     <TableCell className="px-6 py-6">
                                                         <Badge className="font-black text-[8px] uppercase px-2 py-0.5 border-none bg-indigo-50 text-indigo-600">{b.status}</Badge>
@@ -406,9 +406,9 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                                             <Button onClick={() => handleUpdateStatus(b.id, 'booking', 'CHECKED_IN')} size="sm" className="h-8 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[8px] uppercase px-3">Verify</Button>
                                                         )}
                                                         <UnifiedReceipt data={b} type="booking">
-                                                            <Button variant="ghost" className="h-8 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 font-bold text-[8px] uppercase px-3">Receipt</Button>
+                                                            <Button variant="ghost" className="h-8 rounded-lg text-gray-400 dark:text-muted-foreground hover:text-blue-600 hover:bg-blue-50 font-bold text-[8px] uppercase px-3">Receipt</Button>
                                                         </UnifiedReceipt>
-                                                        <Button onClick={() => { onClose(); router.push(`/admin/bookings/${b.id}`); }} variant="ghost" className="h-8 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 font-bold text-[8px] uppercase px-3">Details</Button>
+                                                        <Button onClick={() => { onClose(); router.push(`/admin/bookings/${b.id}`); }} variant="ghost" className="h-8 rounded-lg text-gray-400 dark:text-muted-foreground hover:text-emerald-600 hover:bg-emerald-50 font-bold text-[8px] uppercase px-3">Details</Button>
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -424,14 +424,14 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                         {activeTab === 'payments' && (
                             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Payments History</h2>
+                                    <h2 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Payments History</h2>
                                     <Button onClick={() => setShowPayModal(true)} className="h-10 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] uppercase tracking-widest gap-2 shadow-lg shadow-emerald-500/10">
                                         <Plus className="h-4 w-4" /> Add Payment
                                     </Button>
                                 </div>
-                                <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+                                <div className="bg-white dark:bg-card rounded-[2.5rem] border border-gray-100 dark:border-border shadow-sm overflow-hidden">
                                     <Table>
-                                        <TableHeader className="bg-gray-50/50 h-16">
+                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background h-16">
                                             <TableRow className="border-none">
                                                 <TableHead className="px-10 text-[10px] font-black uppercase tracking-[0.2em]">Transaction Date</TableHead>
                                                 <TableHead className="px-6 text-[10px] font-black uppercase tracking-[0.2em]">Reference / Mode</TableHead>
@@ -441,24 +441,24 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                         </TableHeader>
                                         <TableBody>
                                             {details?.Payment?.map((p) => (
-                                                <TableRow key={p.id} className="border-gray-50 group hover:bg-gray-50/50 transition-colors">
-                                                    <TableCell className="px-10 py-6 font-black text-gray-900 text-sm">{p.date ? format(new Date(p.date), 'MMM dd, yyyy') : format(new Date(p.createdAt), 'MMM dd, yyyy')}</TableCell>
+                                                <TableRow key={p.id} className="border-gray-50 group hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors">
+                                                    <TableCell className="px-10 py-6 font-black text-gray-900 dark:text-foreground text-sm">{p.date ? format(new Date(p.date), 'MMM dd, yyyy') : format(new Date(p.createdAt), 'MMM dd, yyyy')}</TableCell>
                                                     <TableCell className="px-6 py-6">
                                                         <div className="flex flex-col">
                                                             <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{p.method || 'CASH'}</span>
-                                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight mt-1">Ref: {p.transactionId || 'INTERNAL'}</span>
+                                                            <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-tight mt-1">Ref: {p.transactionId || 'INTERNAL'}</span>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="px-6 py-6">
                                                         <p className="text-sm font-black text-emerald-600">PKR {p.amount?.toLocaleString()}</p>
-                                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">{p.status}</p>
+                                                        <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">{p.status}</p>
                                                     </TableCell>
                                                     <TableCell className="px-10 py-6 text-right space-x-2">
                                                         {p.status === 'PENDING' && (
                                                             <Button onClick={() => handleUpdateStatus(p.id, 'payment', 'PAID')} size="sm" className="h-8 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-black text-[8px] uppercase">Verify</Button>
                                                         )}
                                                         <UnifiedReceipt data={p} type="payment">
-                                                            <Button variant="ghost" className="h-8 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 font-black text-[8px] uppercase">Receipt</Button>
+                                                            <Button variant="ghost" className="h-8 rounded-lg text-gray-400 dark:text-muted-foreground hover:text-blue-600 hover:bg-blue-50 font-black text-[8px] uppercase">Receipt</Button>
                                                         </UnifiedReceipt>
                                                     </TableCell>
                                                 </TableRow>
@@ -474,22 +474,22 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
 
                         {activeTab === 'complaints' && (
                             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight">User Issues</h2>
+                                <h2 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">User Issues</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     {details?.Complaint_Complaint_userIdToUser?.map((c) => (
-                                        <div key={c.id} className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm space-y-4 hover:shadow-md transition-shadow group">
+                                        <div key={c.id} className="bg-white dark:bg-card p-8 rounded-[2rem] border border-gray-100 dark:border-border shadow-sm space-y-4 hover:shadow-md transition-shadow group">
                                             <div className="flex justify-between items-start">
-                                                <div className="h-12 w-12 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                                <div className="h-12 w-12 rounded-2xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center text-gray-400 dark:text-muted-foreground group-hover:bg-blue-600 group-hover:text-white transition-all">
                                                     <AlertCircle className="h-6 w-6" />
                                                 </div>
                                                 <Badge className="font-black text-[9px] uppercase px-3 py-1 border-none bg-rose-50 text-rose-600">{c.status}</Badge>
                                             </div>
                                             <div className="space-y-2">
-                                                <h4 className="text-sm font-black text-gray-900 uppercase tracking-tight">{c.title}</h4>
-                                                <p className="text-xs text-gray-500 leading-relaxed italic line-clamp-3">"{c.description}"</p>
+                                                <h4 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tight">{c.title}</h4>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground leading-relaxed italic line-clamp-3">"{c.description}"</p>
                                             </div>
                                             <div className="flex items-center justify-between pt-6 border-t border-gray-50 mt-4">
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{format(new Date(c.createdAt), 'MMMM dd, yyyy')}</span>
+                                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{format(new Date(c.createdAt), 'MMMM dd, yyyy')}</span>
                                                 <Link href={`/admin/complaints/${c.id}`} onClick={onClose}>
                                                     <Button variant="ghost" className="h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50">View More</Button>
                                                 </Link>
@@ -497,7 +497,7 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                         </div>
                                     ))}
                                     {(!details?.Complaint_Complaint_userIdToUser || details.Complaint_Complaint_userIdToUser.length === 0) && (
-                                        <div className="md:col-span-2 py-20 border-2 border-dashed border-gray-100 rounded-[2.5rem] flex flex-col items-center justify-center text-gray-300 gap-4">
+                                        <div className="md:col-span-2 py-20 border-2 border-dashed border-gray-100 dark:border-border rounded-[2.5rem] flex flex-col items-center justify-center text-gray-300 gap-4">
                                             <CheckCircle className="h-12 w-12" />
                                             <p className="text-[10px] font-black uppercase tracking-widest">No issues found</p>
                                         </div>
@@ -509,8 +509,8 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                         {activeTab === 'activity' && (
                             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Recent Activity</h2>
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 px-3 py-1.5 rounded-full">
+                                    <h2 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Recent Activity</h2>
+                                    <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest bg-gray-50 dark:bg-muted/10 px-3 py-1.5 rounded-full">
                                         {activities.length} Records
                                     </span>
                                 </div>
@@ -522,28 +522,28 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                     {activities.map((act, i) => (
                                         <div key={i} className="relative group">
                                             {/* Dot */}
-                                            <div className="absolute -left-[28px] top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-white border-2 border-gray-200 group-hover:border-blue-600 transition-colors z-10 shadow-sm" />
+                                            <div className="absolute -left-[28px] top-1/2 -translate-y-1/2 h-4 w-4 rounded-full bg-white dark:bg-card border-2 border-gray-200 dark:border-border group-hover:border-blue-600 transition-colors z-10 shadow-sm" />
 
-                                            <div className="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
+                                            <div className="bg-white dark:bg-card p-6 rounded-[2rem] border border-gray-100 dark:border-border shadow-sm hover:shadow-md transition-all flex items-center justify-between">
                                                 <div className="flex items-center gap-5">
                                                     <div className={`h-11 w-11 rounded-2xl ${act.bg} ${act.color} flex items-center justify-center shrink-0`}>
                                                         <act.icon className="h-4.5 w-4.5" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">{act.title}</p>
-                                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">{act.sub}</p>
+                                                        <p className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">{act.title}</p>
+                                                        <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">{act.sub}</p>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-xs font-bold text-gray-900">{format(act.date, 'MMM dd')}</p>
-                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">{format(act.date, 'hh:mm a')}</p>
+                                                    <p className="text-xs font-bold text-gray-900 dark:text-foreground">{format(act.date, 'MMM dd')}</p>
+                                                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">{format(act.date, 'hh:mm a')}</p>
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
 
                                     {activities.length === 0 && (
-                                        <div className="flex flex-col items-center justify-center py-20 text-gray-300 gap-4 bg-gray-50/50 rounded-[2.5rem] border-2 border-dashed border-gray-100">
+                                        <div className="flex flex-col items-center justify-center py-20 text-gray-300 gap-4 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-[2.5rem] border-2 border-dashed border-gray-100 dark:border-border">
                                             <Clock className="h-10 w-10" />
                                             <p className="text-[10px] font-black uppercase tracking-widest">No activity yet</p>
                                         </div>
@@ -557,34 +557,34 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                 {/* Create Payment Mini-Modal */}
                 {showPayModal && (
                     <div className="absolute inset-0 z-50 bg-gray-900/40 backdrop-blur-sm flex items-center justify-center p-6 animate-in fade-in duration-300">
-                        <div className="bg-white rounded-[3rem] w-full max-w-md p-10 shadow-2xl space-y-8 animate-in zoom-in-95 duration-300">
+                        <div className="bg-white dark:bg-card rounded-[3rem] w-full max-w-md p-10 shadow-2xl space-y-8 animate-in zoom-in-95 duration-300">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Voucher Entry</h3>
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mt-1">User: {user.name}</p>
+                                    <h3 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Voucher Entry</h3>
+                                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">User: {user.name}</p>
                                 </div>
                                 <Button size="icon" variant="ghost" className="rounded-xl" onClick={() => setShowPayModal(false)}><X className="h-5 w-5" /></Button>
                             </div>
 
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Payment Amount</Label>
+                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Payment Amount</Label>
                                     <Input
                                         type="number"
                                         value={payData.amount}
                                         onChange={e => setPayData({ ...payData, amount: e.target.value })}
                                         placeholder="0.00"
-                                        className="h-14 rounded-2xl border-gray-100 bg-gray-50 px-6 font-bold text-lg focus-visible:ring-blue-600"
+                                        className="h-14 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 px-6 font-bold text-lg focus-visible:ring-blue-600"
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Method</Label>
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Method</Label>
                                         <Select value={payData.method} onValueChange={v => setPayData({ ...payData, method: v })}>
-                                            <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-100 font-bold text-[10px] uppercase">
+                                            <SelectTrigger className="h-12 rounded-xl bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border font-bold text-[10px] uppercase">
                                                 <SelectValue />
                                             </SelectTrigger>
-                                            <SelectContent className="rounded-xl border-gray-100 font-bold text-[10px] uppercase">
+                                            <SelectContent className="rounded-xl border-gray-100 dark:border-border font-bold text-[10px] uppercase">
                                                 <SelectItem value="CASH">Cash</SelectItem>
                                                 <SelectItem value="BANK_TRANSFER">Bank</SelectItem>
                                                 <SelectItem value="CHEQUE">Cheque</SelectItem>
@@ -592,12 +592,12 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                         </Select>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">Account Type</Label>
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Account Type</Label>
                                         <Select value={payData.type} onValueChange={v => setPayData({ ...payData, type: v })}>
-                                            <SelectTrigger className="h-12 rounded-xl bg-gray-50 border-gray-100 font-bold text-[10px] uppercase">
+                                            <SelectTrigger className="h-12 rounded-xl bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border font-bold text-[10px] uppercase">
                                                 <SelectValue />
                                             </SelectTrigger>
-                                            <SelectContent className="rounded-xl border-gray-100 font-bold text-[10px] uppercase">
+                                            <SelectContent className="rounded-xl border-gray-100 dark:border-border font-bold text-[10px] uppercase">
                                                 <SelectItem value="RENT">Rent</SelectItem>
                                                 <SelectItem value="SECURITY">Security</SelectItem>
                                                 <SelectItem value="MESS">Mess</SelectItem>
@@ -754,14 +754,14 @@ const SearchPage = () => {
     const openDetail = (item, type) => { setSelectedItem(item); setItemType(type); };
 
     return (
-        <div className="min-h-screen bg-gray-50/30 pb-24 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/30 pb-24 font-sans">
             {/* Header */}
-            <header className="bg-white border-b sticky top-0 z-50 h-16">
+            <header className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1400px] mx-auto px-4 md:px-8 h-full flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1.5 bg-indigo-600 rounded-full" />
                         <div>
-                            <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight">Search</h1>
+                            <h1 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Search</h1>
                             <div className="flex items-center gap-2">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                 <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">Live</span>
@@ -770,11 +770,11 @@ const SearchPage = () => {
                     </div>
                     <div className="flex items-center gap-2">
                         {results && (
-                            <Button variant="ghost" onClick={handleExport} className="h-9 px-4 rounded-xl text-[10px] font-bold uppercase tracking-widest text-gray-500 hover:bg-gray-50 flex items-center gap-2">
+                            <Button variant="ghost" onClick={handleExport} className="h-9 px-4 rounded-xl text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 flex items-center gap-2">
                                 <Download className="h-3.5 w-3.5" /> Report
                             </Button>
                         )}
-                        <Badge variant="outline" className="h-7 px-3 rounded-full border-gray-100 bg-gray-50 text-[9px] font-bold uppercase tracking-widest text-gray-400">
+                        <Badge variant="outline" className="h-7 px-3 rounded-full border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                             SAFE
                         </Badge>
                     </div>
@@ -783,7 +783,7 @@ const SearchPage = () => {
 
             <div className="max-w-[1400px] mx-auto px-4 md:px-8 pt-8 space-y-6">
                 {/* Hero Search Bar */}
-                <div className="bg-white border border-gray-100 rounded-[2rem] shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-[2rem] shadow-sm overflow-hidden">
                     <form onSubmit={handleSearch} className="flex items-center gap-3 p-3">
                         <div className="flex-1 flex items-center gap-3 px-3">
                             {isLoading
@@ -799,12 +799,12 @@ const SearchPage = () => {
                             />
                             {query && (
                                 <button type="button" onClick={() => { setQuery(''); setResults(null); }} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors shrink-0">
-                                    <X className="h-4 w-4 text-gray-400" />
+                                    <X className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />
                                 </button>
                             )}
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                            <kbd className="hidden md:flex items-center gap-1 px-2 py-1 bg-gray-50 border border-gray-100 rounded-lg text-[9px] font-bold text-gray-400 uppercase">
+                            <kbd className="hidden md:flex items-center gap-1 px-2 py-1 bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border rounded-lg text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase">
                                 <Command className="h-3 w-3" />K
                             </kbd>
                             <Button
@@ -824,9 +824,9 @@ const SearchPage = () => {
                                 <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest shrink-0">Recent:</span>
                                 {recentSearches.map((s, i) => (
                                     <button key={i} onClick={() => { setQuery(s); handleSearch(null, s); }}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-indigo-50 rounded-xl border border-gray-100 hover:border-indigo-100 transition-all group">
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-muted/10 hover:bg-indigo-50 rounded-xl border border-gray-100 dark:border-border hover:border-indigo-100 transition-all group">
                                         <Clock className="h-3 w-3 text-gray-300 group-hover:text-indigo-400" />
-                                        <span className="text-[10px] font-bold text-gray-500 group-hover:text-indigo-600 uppercase">{s}</span>
+                                        <span className="text-[10px] font-bold text-gray-500 dark:text-muted-foreground group-hover:text-indigo-600 uppercase">{s}</span>
                                     </button>
                                 ))}
                             </div>
@@ -846,11 +846,11 @@ const SearchPage = () => {
                                     key={cat.key}
                                     onClick={() => setActiveCategory(cat.key)}
                                     disabled={cat.key !== 'all' && count === 0}
-                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all whitespace-nowrap border shrink-0 shadow-sm ${isActive ? `${colors.tab} border-transparent shadow-md` : 'bg-white border-gray-100 text-gray-500 hover:border-gray-200 disabled:opacity-30 disabled:cursor-not-allowed'}`}
+                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-all whitespace-nowrap border shrink-0 shadow-sm ${isActive ? `${colors.tab} border-transparent shadow-md` : 'bg-white dark:bg-card border-gray-100 dark:border-border text-gray-500 dark:text-muted-foreground hover:border-gray-200 dark:border-border disabled:opacity-30 disabled:cursor-not-allowed'}`}
                                 >
                                     {cat.icon && <cat.icon className="h-3.5 w-3.5" />}
                                     {cat.label}
-                                    {count > 0 && <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-black ${isActive ? 'bg-white/20' : 'bg-gray-100 text-gray-500'}`}>{count}</span>}
+                                    {count > 0 && <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-black ${isActive ? 'bg-white dark:bg-card/20' : 'bg-gray-100 text-gray-500 dark:text-muted-foreground'}`}>{count}</span>}
                                 </button>
                             );
                         })}
@@ -860,11 +860,11 @@ const SearchPage = () => {
                 {/* Results Summary Bar */}
                 {results && (
                     <div className="flex items-center justify-between">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                             {totalFiltered} Total <span className="text-indigo-600">"{query}"</span>
                         </p>
                         <Button variant="ghost" size="sm" onClick={() => { setResults(null); setQuery(''); setActiveCategory('all'); }}
-                            className="h-8 px-3 rounded-xl text-[9px] font-bold uppercase tracking-widest text-gray-400 hover:bg-gray-100">
+                            className="h-8 px-3 rounded-xl text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground hover:bg-gray-100">
                             <X className="h-3 w-3 mr-1" /> Clear
                         </Button>
                     </div>
@@ -875,19 +875,19 @@ const SearchPage = () => {
                 {/* Empty State */}
                 {!results && !isLoading && (
                     <div className="flex flex-col items-center justify-center py-32 animate-in fade-in duration-700">
-                        <div className="h-24 w-24 bg-white border border-gray-100 rounded-3xl flex items-center justify-center shadow-md mb-8 group overflow-hidden relative">
+                        <div className="h-24 w-24 bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl flex items-center justify-center shadow-md mb-8 group overflow-hidden relative">
                             <div className="absolute inset-0 bg-indigo-600 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                             <Search className="h-10 w-10 text-gray-200 relative z-10 group-hover:text-white transition-colors" />
                         </div>
-                        <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight mb-3">Search</h3>
-                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center max-w-sm leading-relaxed">
-                            Find anything in our system database. Use <kbd className="px-1.5 py-0.5 bg-gray-50 border border-gray-100 rounded text-gray-500 font-mono">⌘K</kbd> to quick search.
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight mb-3">Search</h3>
+                        <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center max-w-sm leading-relaxed">
+                            Find anything in our system database. Use <kbd className="px-1.5 py-0.5 bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border rounded text-gray-500 dark:text-muted-foreground font-mono">⌘K</kbd> to quick search.
                         </p>
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-10 w-full max-w-2xl">
                             {CATEGORIES.slice(1).map(cat => (
-                                <div key={cat.key} className={`flex flex-col items-center gap-2 p-4 rounded-2xl border border-gray-100 bg-white`}>
+                                <div key={cat.key} className={`flex flex-col items-center gap-2 p-4 rounded-2xl border border-gray-100 dark:border-border bg-white dark:bg-card`}>
                                     <cat.icon className={`h-5 w-5 ${COLOR_MAP[cat.color].badge.split(' ')[1]}`} />
-                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{cat.label}</span>
+                                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{cat.label}</span>
                                 </div>
                             ))}
                         </div>
@@ -898,10 +898,10 @@ const SearchPage = () => {
                 {isLoading && (
                     <div className="flex flex-col items-center justify-center py-32">
                         <div className="relative mb-8">
-                            <div className="h-20 w-20 border-4 border-gray-100 border-t-indigo-600 rounded-full animate-spin" />
+                            <div className="h-20 w-20 border-4 border-gray-100 dark:border-border border-t-indigo-600 rounded-full animate-spin" />
                             <Search className="h-8 w-8 text-indigo-600 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                         </div>
-                        <p className="text-[10px] font-bold text-gray-900 uppercase tracking-widest animate-pulse">Syncing Updates...</p>
+                        <p className="text-[10px] font-bold text-gray-900 dark:text-foreground uppercase tracking-widest animate-pulse">Syncing Updates...</p>
                     </div>
                 )}
 
@@ -928,7 +928,7 @@ const SearchPage = () => {
                                                 <div className={`h-7 w-7 rounded-lg ${c.badge} flex items-center justify-center`}>
                                                     <Icon className="h-3.5 w-3.5" />
                                                 </div>
-                                                <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.25em]">{label}</h2>
+                                                <h2 className="text-[11px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-[0.25em]">{label}</h2>
                                                 <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${c.badge}`}>{items.length}</span>
                                             </div>
                                         </div>
@@ -944,8 +944,8 @@ const SearchPage = () => {
                             {totalFiltered === 0 && (
                                 <div className="text-center py-20">
                                     <Blocks className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                                    <h3 className="text-base font-black text-gray-900 uppercase">Empty</h3>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Clear</p>
+                                    <h3 className="text-base font-black text-gray-900 dark:text-foreground uppercase">Empty</h3>
+                                    <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-2">Clear</p>
                                 </div>
                             )}
                         </div>
@@ -955,7 +955,7 @@ const SearchPage = () => {
 
             {/* Unified Detail Modal */}
             <Dialog open={!!selectedItem} onOpenChange={(o) => !o && setSelectedItem(null)}>
-                <DialogContent className={`!max-w-none border-none p-0 shadow-2xl bg-white overflow-hidden flex flex-col [&>button]:hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[2.5rem] ${selectedItem && itemType === 'users' ? 'w-[94vw] h-[92vh]' : 'w-[90vw] max-w-2xl h-auto md:h-auto max-h-[90vh]'}`}>
+                <DialogContent className={`!max-w-none border-none p-0 shadow-2xl bg-white dark:bg-card overflow-hidden flex flex-col [&>button]:hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-[2.5rem] ${selectedItem && itemType === 'users' ? 'w-[94vw] h-[92vh]' : 'w-[90vw] max-w-2xl h-auto md:h-auto max-h-[90vh]'}`}>
                     <DialogHeader className="sr-only">
                         <DialogTitle>Audit Record Details</DialogTitle>
                     </DialogHeader>
@@ -1011,7 +1011,7 @@ const SearchPage = () => {
                                 { label: 'Current Status', value: selectedItem.status },
                                 { label: 'Hostel Name', value: selectedItem.Hostel?.name },
                                 { label: 'Room Unit', value: selectedItem.Room?.roomNumber ? `Room ${selectedItem.Room.roomNumber}` : 'N/A' },
-                                { label: 'Submitted By', value: selectedItem.User_maintanance_userIdToUser?.name || 'N/A' },
+                                { label: 'Submitted By', value: selectedItem.Maintenance_userIdToUser?.name || 'N/A' },
                                 { label: 'Problem Details', value: selectedItem.description, fullWidth: true },
                                 { label: 'Creation Date', value: selectedItem.createdAt ? format(new Date(selectedItem.createdAt), 'MMM dd, yyyy') : 'N/A' },
                                 { label: 'Request ID', value: selectedItem.uid || 'N/A' },
@@ -1019,33 +1019,33 @@ const SearchPage = () => {
                         }[itemType] || [];
 
                         return (
-                            <div className="flex-1 flex flex-col bg-gray-50/30">
+                            <div className="flex-1 flex flex-col bg-gray-50 dark:bg-muted/10/30">
                                 {/* Header Section */}
-                                <div className="bg-white px-10 py-8 border-b border-gray-100 flex items-center justify-between shrink-0">
+                                <div className="bg-white dark:bg-card px-10 py-8 border-b border-gray-100 dark:border-border flex items-center justify-between shrink-0">
                                     <div className="flex items-center gap-5">
                                         <div className={`h-12 w-12 rounded-2xl ${bg} ${color} flex items-center justify-center`}>
                                             <Icon className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">
+                                            <h3 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">
                                                 {itemType === 'payments' ? `PKR ${selectedItem.amount?.toLocaleString()}` : selectedItem.title || selectedItem.Room?.Hostel?.name}
                                             </h3>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{label}</p>
+                                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">{label}</p>
                                         </div>
                                     </div>
-                                    <Button variant="outline" onClick={() => setSelectedItem(null)} className="h-10 w-10 p-0 rounded-xl border-gray-200 text-gray-400">
+                                    <Button variant="outline" onClick={() => setSelectedItem(null)} className="h-10 w-10 p-0 rounded-xl border-gray-200 dark:border-border text-gray-400 dark:text-muted-foreground">
                                         <X className="h-5 w-5" />
                                     </Button>
                                 </div>
 
                                 {/* Content Section */}
                                 <div className="flex-1 overflow-y-auto p-8">
-                                    <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+                                    <div className="bg-white dark:bg-card rounded-[2rem] p-8 border border-gray-100 dark:border-border shadow-sm">
                                         <div className="grid grid-cols-2 gap-x-8 gap-y-8">
                                             {fields.map((f, i) => (
-                                                <div key={i} className={f.fullWidth ? 'col-span-2 bg-gray-50/50 p-6 rounded-2xl border border-gray-100' : ''}>
-                                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mb-2">{f.label}</p>
-                                                    <p className={`font-bold text-gray-900 ${f.fullWidth ? 'text-sm leading-relaxed' : 'text-base'}`}>
+                                                <div key={i} className={f.fullWidth ? 'col-span-2 bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-6 rounded-2xl border border-gray-100 dark:border-border' : ''}>
+                                                    <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground mb-2">{f.label}</p>
+                                                    <p className={`font-bold text-gray-900 dark:text-foreground ${f.fullWidth ? 'text-sm leading-relaxed' : 'text-base'}`}>
                                                         {f.value || 'N/A'}
                                                     </p>
                                                 </div>
@@ -1055,10 +1055,10 @@ const SearchPage = () => {
                                 </div>
 
                                 {/* Footer Actions */}
-                                <div className="px-10 py-8 bg-white border-t border-gray-100 flex items-center justify-end gap-3 shrink-0">
+                                <div className="px-10 py-8 bg-white dark:bg-card border-t border-gray-100 dark:border-border flex items-center justify-end gap-3 shrink-0">
                                     {(itemType === 'payments' || itemType === 'bookings') && (
                                         <UnifiedReceipt data={selectedItem} type={itemType === 'payments' ? 'payment' : 'booking'}>
-                                            <Button variant="outline" className="h-12 px-8 rounded-2xl border-gray-200 text-gray-600 font-bold text-[10px] uppercase tracking-widest gap-2">
+                                            <Button variant="outline" className="h-12 px-8 rounded-2xl border-gray-200 dark:border-border text-gray-600 dark:text-muted-foreground font-bold text-[10px] uppercase tracking-widest gap-2">
                                                 <Printer className="h-4 w-4" /> Print
                                             </Button>
                                         </UnifiedReceipt>
@@ -1066,7 +1066,7 @@ const SearchPage = () => {
 
                                     {/* Action Controls */}
                                     {selectedItem.status !== 'CANCELLED' && selectedItem.status !== 'RESOLVED' && (
-                                        <div className="flex gap-2 border-r pr-3 mr-3 border-gray-100">
+                                        <div className="flex gap-2 border-r pr-3 mr-3 border-gray-100 dark:border-border">
                                             {itemType === 'payments' && selectedItem.status === 'PENDING' && (
                                                 <Button
                                                     onClick={() => handleGlobalUpdate(selectedItem.id, 'payments', 'PAID')}
@@ -1108,7 +1108,7 @@ const SearchPage = () => {
                                     )}
 
                                     <Link href={link}>
-                                        <Button variant="ghost" className="h-12 px-8 rounded-2xl text-gray-500 hover:bg-gray-50 font-bold text-[10px] uppercase tracking-widest gap-2">
+                                        <Button variant="ghost" className="h-12 px-8 rounded-2xl text-gray-500 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 font-bold text-[10px] uppercase tracking-widest gap-2">
                                             Full Page <ExternalLink className="h-4 w-4" />
                                         </Button>
                                     </Link>

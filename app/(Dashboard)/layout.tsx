@@ -185,7 +185,7 @@ export default function RootLayout({
               <div></div>
 
               <div className="flex items-center gap-4 min-w-0">
-                <HeaderNotices />
+                {!(["ADMIN", "WARDEN"].includes((user?.role || "").toString().toUpperCase())) && <HeaderNotices />}
                 <div className="flex items-center gap-3 min-w-0">
                   {/* Avatar */}
                   <div className="relative shrink-0">

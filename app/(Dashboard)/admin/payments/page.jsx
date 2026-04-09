@@ -92,7 +92,9 @@ import SecurityRefundModal from "./SecurityRefundModal";
 import { useBookings } from "@/hooks/useBooking";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import Loader from "@/components/ui/Loader";
+import { exportToExcel } from "@/lib/utils/exportToExcel";
+import { ListPageSkeleton } from "@/components/ui/skeletons";
+import { useBranding } from "@/hooks/useBranding";
 import EmptyState from "@/components/ui/states/EmptyState";
 import ErrorState from "@/components/ui/states/ErrorState";
 import useAuthStore from "@/hooks/Authstate";
@@ -216,6 +218,8 @@ const PaymentManagementPage = () => {
     }
   };
 
+  const { companyName } = useBranding();
+  
   const hostels = hostelsData?.data || [];
 
   // Admin Filtering: Allow filtering by selected hostel
@@ -394,9 +398,9 @@ const PaymentManagementPage = () => {
       case "OVERDUE":
         return "bg-rose-50 text-rose-700 border-rose-100";
       case "REJECTED":
-        return "bg-gray-100 text-gray-700 border-gray-200";
+        return "bg-gray-100 text-gray-700 dark:text-foreground border-gray-200 dark:border-border";
       default:
-        return "bg-gray-50 text-gray-600 border-gray-100";
+        return "bg-gray-50 dark:bg-muted/10 text-gray-600 dark:text-muted-foreground border-gray-100 dark:border-border";
     }
   };
 
@@ -604,7 +608,7 @@ const PaymentManagementPage = () => {
             { align: "center" },
           );
           doc.text(
-            "Official Mubarak Group of Hostels Records",
+            `Official ${companyName} Records`,
             14,
             doc.internal.pageSize.height - 10,
           );
@@ -776,7 +780,7 @@ const PaymentManagementPage = () => {
             { align: "center" },
           );
           doc.text(
-            "Official Mubarak Group of Hostels Records",
+            `Official ${companyName} Records`,
             14,
             doc.internal.pageSize.height - 10,
           );
@@ -793,14 +797,52 @@ const PaymentManagementPage = () => {
     }
   };
 
+  const handleExportPaymentsExcel = () => {
+    setIsExportDialogOpen(false);
+    const rawPayments = paymentsData?.payments || [];
+
+    // Apply Advanced Export Filters
+    const listToExport = rawPayments.filter((p) => {
+      const pDate = new Date(p.date || p.createdAt);
+
+      if (paymentExportOptions.fromDate && pDate < new Date(paymentExportOptions.fromDate)) return false;
+      if (paymentExportOptions.toDate) {
+        const to = new Date(paymentExportOptions.toDate);
+        to.setHours(23, 59, 59);
+        if (pDate > to) return false;
+      }
+      if (paymentExportOptions.hostel !== "All" && p.Booking?.Room?.Hostel?.name !== paymentExportOptions.hostel) return false;
+      if (paymentExportOptions.status !== "All" && p.status !== paymentExportOptions.status) return false;
+      if (paymentExportOptions.type !== "All" && p.type !== paymentExportOptions.type) return false;
+
+      return true;
+    });
+
+    if (!listToExport.length) {
+      toast.error("No payments to export.");
+      return;
+    }
+
+    const rows = listToExport.map(p => ({
+      "Payment ID": p.uid || p.id,
+      "Date": format(new Date(p.date || p.createdAt), "dd/MM/yyyy"),
+      "Resident Name": p.User?.name || "N/A",
+      "CNIC": p.User?.cnic || "N/A",
+      "Hostel": p.Booking?.Room?.Hostel?.name || "N/A",
+      "Room Number": p.Booking?.Room?.roomNumber || "N/A",
+      "Amount": p.amount,
+      "Status": p.status,
+      "Method": p.method,
+      "Type": p.type,
+      "Notes": p.notes || "N/A"
+    }));
+
+    exportToExcel(rows, `Payments_Export_${format(new Date(), "dd_MM_yyyy")}`, "Payments");
+  };
+
   if (paymentsLoading || statsLoading)
     return (
-      <Loader
-        label="Loading"
-        subLabel="Updates..."
-        icon={Wallet}
-        fullScreen={false}
-      />
+      <ListPageSkeleton accentColor="bg-blue-600" />
     );
   if (isPaymentsError || isStatsError) {
     return (
@@ -819,18 +861,18 @@ const PaymentManagementPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight print:hidden">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-50 py-2 md:h-16">
+      <div className="bg-white dark:bg-card border-b sticky top-0 z-50 py-2 md:h-16">
         <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
           <div className="flex items-center gap-4">
             <div className="h-8 w-1 bg-blue-600 rounded-full shrink-0" />
             <div className="flex flex-col">
-              <h1 className="text-base md:text-lg font-bold text-gray-900 tracking-tight uppercase">
+              <h1 className="text-base md:text-lg font-bold text-gray-900 dark:text-foreground tracking-tight uppercase">
                 Payments
               </h1>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground">
                   Total
                 </span>
                 <div className="h-1 w-1 rounded-full bg-blue-500 animate-pulse" />
@@ -855,11 +897,11 @@ const PaymentManagementPage = () => {
               )}
               <span className="truncate">Create Monthly Dues</span>
             </Button>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-xl">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border rounded-xl">
               <div
                 className={`h-2 w-2 rounded-full ${settings?.autoGenerateRentInvoices ? "bg-emerald-500 animate-pulse" : "bg-gray-300"}`}
               />
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-wider">
                 Auto-Gen: {settings?.autoGenerateRentInvoices ? "ON" : "OFF"}
               </span>
             </div>
@@ -944,7 +986,7 @@ const PaymentManagementPage = () => {
           ].map((stat, i) => (
             <div
               key={i}
-              className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default min-w-0"
+              className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 md:p-5 flex items-center gap-3 md:gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default min-w-0"
             >
               <div
                 className={`h-9 w-9 md:h-11 md:w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}
@@ -952,10 +994,10 @@ const PaymentManagementPage = () => {
                 <stat.icon className="h-4 w-4 md:h-5 md:w-5" />
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">
+                <span className="text-[8px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">
                   {stat.label}
                 </span>
-                <span className="text-sm md:text-xl font-bold text-gray-900 tracking-tight truncate">
+                <span className="text-sm md:text-xl font-bold text-gray-900 dark:text-foreground tracking-tight truncate">
                   {stat.value}
                 </span>
               </div>
@@ -982,14 +1024,14 @@ const PaymentManagementPage = () => {
             </div>
           )}
           filtersSlot={(
-            <div className="flex items-center gap-1 md:gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
+            <div className="flex items-center gap-1 md:gap-2 p-1 bg-gray-50 dark:bg-muted/10 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none"
+                  className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 dark:text-muted-foreground hover:bg-white dark:bg-card hover:text-black hover:shadow-sm flex-1 md:flex-none"
                 >
-                  <Filter className="h-3.5 w-3.5 mr-1.5 md:mr-2 text-gray-400" />
+                  <Filter className="h-3.5 w-3.5 mr-1.5 md:mr-2 text-gray-400 dark:text-muted-foreground" />
                   <span className="truncate">
                     {filterStatus === "All" ? "Status" : filterStatus}
                   </span>
@@ -997,12 +1039,12 @@ const PaymentManagementPage = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="end"
-                className="w-[180px] md:w-[220px] rounded-xl border-gray-100 shadow-xl p-2"
+                className="w-[180px] md:w-[220px] rounded-xl border-gray-100 dark:border-border shadow-xl p-2"
               >
-                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">
+                <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground p-2">
                   Status
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator className="bg-gray-50 mb-1" />
+                <DropdownMenuSeparator className="bg-gray-50 dark:bg-muted/10 mb-1" />
                 {[
                   "All",
                   "PAID",
@@ -1029,9 +1071,9 @@ const PaymentManagementPage = () => {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 hover:bg-white hover:text-black hover:shadow-sm flex-1 md:flex-none"
+                      className="h-9 md:h-10 px-3 md:px-4 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 dark:text-muted-foreground hover:bg-white dark:bg-card hover:text-black hover:shadow-sm flex-1 md:flex-none"
                     >
-                      <Building2 className="h-3.5 w-3.5 mr-1.5 md:mr-2 text-gray-400" />
+                      <Building2 className="h-3.5 w-3.5 mr-1.5 md:mr-2 text-gray-400 dark:text-muted-foreground" />
                       <span className="truncate">
                         {filterHostel === "All" ? "Hostel" : filterHostel}
                       </span>
@@ -1039,12 +1081,12 @@ const PaymentManagementPage = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-[200px] md:w-[280px] rounded-xl border-gray-100 shadow-xl p-2"
+                    className="w-[200px] md:w-[280px] rounded-xl border-gray-100 dark:border-border shadow-xl p-2"
                   >
-                    <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 p-2">
+                    <DropdownMenuLabel className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground p-2">
                       Hostels
                     </DropdownMenuLabel>
-                    <DropdownMenuSeparator className="bg-gray-50 mb-1" />
+                    <DropdownMenuSeparator className="bg-gray-50 dark:bg-muted/10 mb-1" />
                     <DropdownMenuItem
                       onClick={() => setFilterHostel("All")}
                       className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg"
@@ -1068,8 +1110,8 @@ const PaymentManagementPage = () => {
             <div className="h-4 w-px bg-gray-200 shrink-0 hidden md:block" />
 
             <div className="flex items-center gap-2 px-2">
-              <div className="flex items-center gap-1.5 bg-white border border-gray-100 rounded-lg px-2 h-9 md:h-10">
-                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">
+              <div className="flex items-center gap-1.5 bg-white dark:bg-card border border-gray-100 dark:border-border rounded-lg px-2 h-9 md:h-10">
+                <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                   From
                 </span>
                 <input
@@ -1079,8 +1121,8 @@ const PaymentManagementPage = () => {
                   onChange={(e) => setFilterFromDate(e.target.value)}
                 />
               </div>
-              <div className="flex items-center gap-1.5 bg-white border border-gray-100 rounded-lg px-2 h-9 md:h-10">
-                <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">
+              <div className="flex items-center gap-1.5 bg-white dark:bg-card border border-gray-100 dark:border-border rounded-lg px-2 h-9 md:h-10">
+                <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                   To
                 </span>
                 <input
@@ -1094,7 +1136,7 @@ const PaymentManagementPage = () => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 text-gray-400 hover:text-rose-600"
+                  className="h-8 w-8 text-gray-400 dark:text-muted-foreground hover:text-rose-600"
                   onClick={() => {
                     setFilterFromDate("");
                     setFilterToDate("");
@@ -1114,7 +1156,7 @@ const PaymentManagementPage = () => {
           className="w-full space-y-6"
         >
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-2">
-            <TabsList className="bg-white border border-gray-100 p-1 rounded-xl h-11 w-full lg:w-auto shadow-sm overflow-x-auto scrollbar-hide flex justify-start lg:justify-center">
+            <TabsList className="bg-white dark:bg-card border border-gray-100 dark:border-border p-1 rounded-xl h-11 w-full lg:w-auto shadow-sm overflow-x-auto scrollbar-hide flex justify-start lg:justify-center">
               <TabsTrigger
                 value="ledger"
                 className="h-full px-4 md:px-8 rounded-lg font-bold text-[9px] md:text-[10px] uppercase tracking-wider data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all shrink-0"
@@ -1161,10 +1203,10 @@ const PaymentManagementPage = () => {
                   <Activity className="h-2 w-2 text-blue-600" />
                 </div>
               </div>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none">
+              <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none">
                 Total
               </span>
-              <span className="text-[10px] font-black text-gray-900 uppercase tracking-tight">
+              <span className="text-[10px] font-black text-gray-900 dark:text-foreground uppercase tracking-tight">
                 {filteredPayments.length} Total
               </span>
             </div>
@@ -1175,7 +1217,7 @@ const PaymentManagementPage = () => {
               filteredPayments.map((payment) => (
               <div
                 key={payment.id}
-                className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-shadow group relative overflow-hidden"
+                className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-shadow group relative overflow-hidden"
               >
                 <div
                   className={`absolute top-0 left-0 w-1 md:w-1.5 h-full ${getRibbonColor(payment.status)} opacity-70`}
@@ -1183,15 +1225,15 @@ const PaymentManagementPage = () => {
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6 flex-1 min-w-0 w-full">
                   <div className="flex items-center gap-3 md:gap-5 min-w-0 lg:min-w-[280px] w-full sm:w-auto">
-                    <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm shrink-0 group-hover:bg-blue-600 transition-colors">
-                      <User className="h-5 w-5 md:h-6 md:w-6 text-gray-400 group-hover:text-white transition-colors" />
+                    <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center border border-gray-100 dark:border-border shadow-sm shrink-0 group-hover:bg-blue-600 transition-colors">
+                      <User className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground group-hover:text-white transition-colors" />
                     </div>
                     <div className="flex flex-col min-w-0 flex-1 sm:flex-none">
-                      <h4 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight truncate">
+                      <h4 className="text-sm md:text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight truncate">
                         {payment.User?.name}
                       </h4>
                       <div className="flex items-center gap-1.5 md:gap-2 mt-0.5">
-                        <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">
+                        <span className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">
                           {payment.Booking?.Room?.Hostel?.name}
                         </span>
                         {payment.uid && (
@@ -1217,24 +1259,24 @@ const PaymentManagementPage = () => {
                   <div className="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-1 min-w-0 sm:min-w-[140px] md:min-w-[160px]">
                     <div className="flex items-center gap-1.5 md:gap-2">
                       <CreditCard className="h-3 w-3 md:h-3.5 md:w-3.5 text-blue-500" />
-                      <span className="text-xs md:text-sm font-bold text-gray-900 uppercase">
+                      <span className="text-xs md:text-sm font-bold text-gray-900 dark:text-foreground uppercase">
                         PKR {payment.amount.toLocaleString()}
                       </span>
                     </div>
-                    <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5 whitespace-nowrap">
+                    <span className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest px-0.5 whitespace-nowrap">
                       {payment.method}
                     </span>
                   </div>
 
                   <div className="hidden sm:flex items-center gap-3 min-w-0 md:min-w-[180px] xl:min-w-[220px]">
-                    <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 border border-gray-100 shrink-0">
+                    <div className="h-8 w-8 rounded-lg bg-gray-50 dark:bg-muted/10 flex items-center justify-center text-gray-400 dark:text-muted-foreground border border-gray-100 dark:border-border shrink-0">
                       <Calendar className="h-3.5 w-3.5" />
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-[8px] md:text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                      <span className="text-[8px] md:text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">
                         Date
                       </span>
-                      <span className="text-[10px] md:text-xs font-bold text-gray-900 uppercase truncate">
+                      <span className="text-[10px] md:text-xs font-bold text-gray-900 dark:text-foreground uppercase truncate">
                         {format(new Date(payment.date), "MMM dd, yyyy")}
                       </span>
                     </div>
@@ -1256,14 +1298,14 @@ const PaymentManagementPage = () => {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-gray-50 text-gray-400 transition-colors"
+                        className="h-9 w-9 md:h-10 md:w-10 rounded-full hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 text-gray-400 dark:text-muted-foreground transition-colors"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                       align="end"
-                      className="w-48 rounded-xl border-gray-100 shadow-xl p-2"
+                      className="w-48 rounded-xl border-gray-100 dark:border-border shadow-xl p-2"
                     >
                       <DropdownMenuItem asChild>
                         <Link
@@ -1295,7 +1337,7 @@ const PaymentManagementPage = () => {
                         </SecurityRefundModal>
                       )}
 
-                      <DropdownMenuSeparator className="bg-gray-50" />
+                      <DropdownMenuSeparator className="bg-gray-50 dark:bg-muted/10" />
                       <DropdownMenuItem
                         onClick={() => handleDeleteClick(payment.id)}
                         className="p-2.5 font-bold text-[10px] uppercase tracking-wider rounded-lg cursor-pointer flex items-center gap-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
@@ -1332,11 +1374,11 @@ const PaymentManagementPage = () => {
               filteredPayments.map((payment) => (
                 <div
                   key={payment.id}
-                  className="bg-white border border-gray-100 rounded-3xl p-4 md:p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 md:gap-8 hover:shadow-md transition-shadow group relative overflow-hidden"
+                  className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-4 md:p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 md:gap-8 hover:shadow-md transition-shadow group relative overflow-hidden"
                 >
                   <div className="absolute top-0 left-0 w-1 md:w-1.5 h-full bg-amber-500 opacity-70" />
                   <div className="flex flex-col sm:flex-row items-center sm:items-start lg:items-center gap-4 md:gap-8 flex-1 w-full min-w-0">
-                    <div className="h-40 w-full sm:w-20 sm:h-24 rounded-2xl bg-gray-50 border border-gray-200 flex flex-col items-center justify-center gap-3 shrink-0 overflow-hidden relative group/img">
+                    <div className="h-40 w-full sm:w-20 sm:h-24 rounded-2xl bg-gray-50 dark:bg-muted/10 border border-gray-200 dark:border-border flex flex-col items-center justify-center gap-3 shrink-0 overflow-hidden relative group/img">
                       {payment.receiptUrl ? (
                         <>
                           <img
@@ -1354,8 +1396,8 @@ const PaymentManagementPage = () => {
                                 <Scan className="h-6 w-6 text-white drop-shadow-md" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-4xl bg-white p-0 border-gray-200 overflow-hidden rounded-3xl shadow-2xl">
-                              <div className="relative aspect-16/10 bg-gray-50">
+                            <DialogContent className="max-w-4xl bg-white dark:bg-card p-0 border-gray-200 dark:border-border overflow-hidden rounded-3xl shadow-2xl">
+                              <div className="relative aspect-16/10 bg-gray-50 dark:bg-muted/10">
                                 <img
                                   src={payment.receiptUrl}
                                   alt="Proof of Payment"
@@ -1365,7 +1407,7 @@ const PaymentManagementPage = () => {
                                   <Badge className="bg-blue-600 text-white font-bold uppercase text-[9px] tracking-widest px-3">
                                     CHECK
                                   </Badge>
-                                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                                  <span className="text-[10px] text-gray-500 dark:text-muted-foreground font-bold uppercase tracking-widest">
                                     {payment.uid
                                       ? `REF: ${payment.uid}`
                                       : `ID: ${payment.id.slice(-8)}`}
@@ -1391,7 +1433,7 @@ const PaymentManagementPage = () => {
                     </div>
                     <div className="flex flex-col gap-4 flex-1 min-w-0 w-full">
                       <div className="flex items-center gap-3">
-                        <h4 className="text-base md:text-lg font-bold text-gray-900 uppercase tracking-tight truncate">
+                        <h4 className="text-base md:text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight truncate">
                           {payment.User?.name}
                         </h4>
                         <Badge className="hidden sm:inline-flex bg-amber-50 text-amber-600 border-amber-100 font-bold uppercase text-[8px] md:text-[9px] tracking-widest px-2 md:px-3">
@@ -1412,15 +1454,15 @@ const PaymentManagementPage = () => {
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                         <div className="min-w-0">
-                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                          <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest block mb-1">
                             Total
                           </span>
-                          <p className="text-sm font-bold text-gray-900 uppercase truncate">
+                          <p className="text-sm font-bold text-gray-900 dark:text-foreground uppercase truncate">
                             PKR {payment.amount.toLocaleString()}
                           </p>
                         </div>
                         <div className="min-w-0">
-                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                          <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest block mb-1">
                             Method
                           </span>
                           <p className="text-[10px] md:text-xs font-bold text-emerald-600 uppercase tracking-widest truncate">
@@ -1428,18 +1470,18 @@ const PaymentManagementPage = () => {
                           </p>
                         </div>
                         <div className="min-w-0">
-                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                          <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest block mb-1">
                             Hostel
                           </span>
-                          <p className="text-[10px] md:text-xs font-bold text-gray-900 uppercase tracking-widest truncate">
+                          <p className="text-[10px] md:text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest truncate">
                             {payment.Booking?.Room?.Hostel?.name}
                           </p>
                         </div>
                         <div className="min-w-0">
-                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
+                          <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest block mb-1">
                             Date Sent
                           </span>
-                          <p className="text-[10px] md:text-xs font-bold text-gray-900 uppercase tracking-tight truncate">
+                          <p className="text-[10px] md:text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-tight truncate">
                             {format(new Date(payment.date), "dd/MM/yy HH:mm")}
                           </p>
                         </div>
@@ -1451,7 +1493,7 @@ const PaymentManagementPage = () => {
                     <Button
                       asChild
                       variant="ghost"
-                      className="h-11 w-11 md:h-12 md:w-12 rounded-xl hover:bg-gray-100 text-gray-400 order-3 hidden lg:flex items-center justify-center p-0"
+                      className="h-11 w-11 md:h-12 md:w-12 rounded-xl hover:bg-gray-100 text-gray-400 dark:text-muted-foreground order-3 hidden lg:flex items-center justify-center p-0"
                     >
                       <Link href={`/admin/payment-approvals/${payment.id}`}>
                         <ChevronRight className="h-5 w-5" />
@@ -1504,7 +1546,7 @@ const PaymentManagementPage = () => {
                 submissions.map((payment) => (
                   <div
                     key={payment.id}
-                    className="bg-white border border-indigo-100 rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-all group relative overflow-hidden"
+                    className="bg-white dark:bg-card border border-indigo-100 rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-all group relative overflow-hidden"
                   >
                     <div className="absolute top-0 left-0 w-1 md:w-1.5 h-full bg-indigo-500 opacity-70" />
 
@@ -1526,7 +1568,7 @@ const PaymentManagementPage = () => {
                       {/* Info */}
                       <div className="flex flex-col min-w-0 flex-1 gap-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight truncate">
+                          <h4 className="text-sm md:text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight truncate">
                             {payment.User?.name}
                           </h4>
                           <Badge className="bg-indigo-50 text-indigo-700 border border-indigo-100 text-[8px] font-black px-2 py-0.5 uppercase tracking-widest">
@@ -1535,11 +1577,11 @@ const PaymentManagementPage = () => {
                           </Badge>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                          <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                          <span className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                             {payment.Booking?.Room?.Hostel?.name || "—"}
                           </span>
                           <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
-                          <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                          <span className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                             {payment.type}
                           </span>
                           {payment.month && (
@@ -1551,12 +1593,12 @@ const PaymentManagementPage = () => {
                             </>
                           )}
                           <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
-                          <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                          <span className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                             {payment.method || "CASH"}
                           </span>
                         </div>
                         {payment.notes && (
-                          <p className="text-[9px] text-gray-400 italic mt-0.5 truncate max-w-xs">
+                          <p className="text-[9px] text-gray-400 dark:text-muted-foreground italic mt-0.5 truncate max-w-xs">
                             "{payment.notes}"
                           </p>
                         )}
@@ -1567,7 +1609,7 @@ const PaymentManagementPage = () => {
                         <span className="text-lg md:text-xl font-black text-indigo-600 tracking-tight">
                           PKR {Number(payment.amount).toLocaleString()}
                         </span>
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+                        <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                           {payment.date
                             ? format(new Date(payment.date), "dd MMM yyyy")
                             : "—"}
@@ -1605,7 +1647,7 @@ const PaymentManagementPage = () => {
               filteredRefunds.map((refund) => (
                 <div
                   key={refund.id}
-                  className="bg-white border border-gray-100 rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-shadow group relative overflow-hidden"
+                  className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 md:p-5 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-6 hover:shadow-md transition-shadow group relative overflow-hidden"
                 >
                   <div
                     className={`absolute top-0 left-0 w-1 md:w-1.5 h-full ${refund.status === "PENDING" ? "bg-amber-500" : refund.status === "COMPLETED" ? "bg-emerald-500" : "bg-rose-500"} opacity-70`}
@@ -1613,15 +1655,15 @@ const PaymentManagementPage = () => {
 
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6 flex-1 min-w-0 w-full">
                     <div className="flex items-center gap-3 md:gap-5 min-w-0 lg:min-w-[280px] w-full sm:w-auto">
-                      <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl bg-gray-50 flex items-center justify-center border border-gray-100 shadow-sm shrink-0">
+                      <div className="h-10 w-10 md:h-14 md:w-14 rounded-xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center border border-gray-100 dark:border-border shadow-sm shrink-0">
                         <Undo2 className="h-5 w-5 md:h-6 md:w-6 text-rose-400" />
                       </div>
                       <div className="flex flex-col min-w-0 flex-1">
-                        <h4 className="text-sm md:text-base font-bold text-gray-900 uppercase tracking-tight truncate">
+                        <h4 className="text-sm md:text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight truncate">
                           {refund.User?.name}
                         </h4>
                         <div className="flex items-center gap-1.5 md:gap-2 mt-0.5">
-                          <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest truncate">
+                          <span className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">
                             {refund.Payment?.Booking?.Room?.Hostel?.name}
                           </span>
                           <span className="h-0.5 w-0.5 rounded-full bg-gray-200" />
@@ -1631,11 +1673,11 @@ const PaymentManagementPage = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="mt-1 md:mt-0 py-2 px-3 bg-slate-50 rounded-lg border border-gray-100 flex-1 min-w-0 w-full">
-                      <p className="text-[8px] md:text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1 leading-none">
+                    <div className="mt-1 md:mt-0 py-2 px-3 bg-slate-50 rounded-lg border border-gray-100 dark:border-border flex-1 min-w-0 w-full">
+                      <p className="text-[8px] md:text-[9px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest mb-1 leading-none">
                         Reason
                       </p>
-                      <p className="text-[10px] md:text-xs font-semibold text-gray-700 leading-relaxed italic truncate sm:whitespace-normal">
+                      <p className="text-[10px] md:text-xs font-semibold text-gray-700 dark:text-foreground leading-relaxed italic truncate sm:whitespace-normal">
                         "{refund.reason}"
                       </p>
                     </div>
@@ -1647,7 +1689,7 @@ const PaymentManagementPage = () => {
                           PKR {refund.amount.toLocaleString()}
                         </span>
                       </div>
-                      <span className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest px-0.5 truncate overflow-hidden">
+                      <span className="text-[9px] md:text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest px-0.5 truncate overflow-hidden">
                         UID:{" "}
                         {refund.Payment?.uid ||
                           refund.Payment?.id.slice(-6).toUpperCase()}
@@ -1661,7 +1703,7 @@ const PaymentManagementPage = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-9 md:h-10 px-4 md:px-6 rounded-xl font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-400 hover:text-rose-600 hover:bg-rose-50 flex-1 sm:grow-0"
+                          className="h-9 md:h-10 px-4 md:px-6 rounded-xl font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground hover:text-rose-600 hover:bg-rose-50 flex-1 sm:grow-0"
                           onClick={() =>
                             updateRefundStatus.mutate({
                               id: refund.id,
@@ -1724,10 +1766,10 @@ const PaymentManagementPage = () => {
         open={isDefaulterOptionsOpen}
         onOpenChange={setIsDefaulterOptionsOpen}
       >
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-white ring-1 ring-gray-100">
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-white dark:bg-card ring-1 ring-gray-100">
           <div className="bg-rose-600 p-10 text-white text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
-            <div className="h-16 w-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
+            <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
+            <div className="h-16 w-16 bg-white dark:bg-card/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
               <Clock className="h-8 w-8 text-white stroke-[1.5]" />
             </div>
             <h2 className="text-2xl font-black uppercase tracking-tight">
@@ -1740,11 +1782,11 @@ const PaymentManagementPage = () => {
 
           <div className="p-10 space-y-6">
             <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
                 Rent Due Day (from 1st)
               </Label>
               <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
                 <Input
                   type="number"
                   min="1"
@@ -1757,21 +1799,21 @@ const PaymentManagementPage = () => {
                       dueDay: Number(e.target.value),
                     })
                   }
-                  className="h-14 pl-12 rounded-2xl border-gray-100 bg-gray-50 font-bold text-gray-900 focus:ring-rose-500"
+                  className="h-14 pl-12 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-gray-900 dark:text-foreground focus:ring-rose-500"
                 />
               </div>
-              <p className="text-[9px] text-gray-400 font-medium italic ml-1">
+              <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-medium italic ml-1">
                 Residents who haven't paid rent by this day will be marked as
                 defaulters.
               </p>
             </div>
 
             <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
                 Late Fee (per day)
               </Label>
               <div className="relative">
-                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
                 <Input
                   type="number"
                   min="0"
@@ -1783,21 +1825,21 @@ const PaymentManagementPage = () => {
                       lateFeePerDay: Number(e.target.value),
                     })
                   }
-                  className="h-14 pl-12 rounded-2xl border-gray-100 bg-gray-50 font-bold text-gray-900 focus:ring-rose-500"
+                  className="h-14 pl-12 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-gray-900 dark:text-foreground focus:ring-rose-500"
                 />
               </div>
-              <p className="text-[9px] text-gray-400 font-medium italic ml-1">
+              <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-medium italic ml-1">
                 Added to the total for each day past the due date.
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
                   Target Month
                 </Label>
                 <select
-                  className="w-full h-14 rounded-2xl border-gray-100 bg-gray-50 font-bold text-gray-900 px-4 focus:ring-rose-500"
+                  className="w-full h-14 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-gray-900 dark:text-foreground px-4 focus:ring-rose-500"
                   value={defaulterOptions.month}
                   onChange={(e) =>
                     setDefaulterOptions({
@@ -1827,11 +1869,11 @@ const PaymentManagementPage = () => {
                 </select>
               </div>
               <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
                   Target Year
                 </Label>
                 <select
-                  className="w-full h-14 rounded-2xl border-gray-100 bg-gray-50 font-bold text-gray-900 px-4 focus:ring-rose-500"
+                  className="w-full h-14 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-gray-900 dark:text-foreground px-4 focus:ring-rose-500"
                   value={defaulterOptions.year}
                   onChange={(e) =>
                     setDefaulterOptions({
@@ -1856,7 +1898,7 @@ const PaymentManagementPage = () => {
             <div className="flex gap-4 pt-4">
               <Button
                 variant="ghost"
-                className="flex-1 rounded-2xl h-14 font-bold text-[10px] uppercase tracking-wider text-gray-400 hover:bg-gray-50"
+                className="flex-1 rounded-2xl h-14 font-bold text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10"
                 onClick={() => setIsDefaulterOptionsOpen(false)}
               >
                 Cancel
@@ -1873,10 +1915,10 @@ const PaymentManagementPage = () => {
       </Dialog>
 
       <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-white ring-1 ring-gray-100">
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-white dark:bg-card ring-1 ring-gray-100">
           <div className="bg-indigo-600 p-10 text-white text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
-            <div className="h-16 w-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
+            <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
+            <div className="h-16 w-16 bg-white dark:bg-card/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
               <FileText className="h-8 w-8 text-white stroke-[1.5]" />
             </div>
             <h2 className="text-2xl font-black uppercase tracking-tight">
@@ -1890,12 +1932,12 @@ const PaymentManagementPage = () => {
           <div className="p-10 space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
                   From Date
                 </Label>
                 <Input
                   type="date"
-                  className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                  className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold"
                   value={paymentExportOptions.fromDate}
                   onChange={(e) =>
                     setPaymentExportOptions({
@@ -1906,12 +1948,12 @@ const PaymentManagementPage = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
                   To Date
                 </Label>
                 <Input
                   type="date"
-                  className="h-12 rounded-xl border-gray-100 bg-gray-50 font-bold"
+                  className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold"
                   value={paymentExportOptions.toDate}
                   onChange={(e) =>
                     setPaymentExportOptions({
@@ -1924,11 +1966,11 @@ const PaymentManagementPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
                 Hostel
               </Label>
               <select
-                className="w-full h-12 rounded-xl border-gray-100 bg-gray-50 font-bold text-sm px-4 focus:ring-indigo-500"
+                className="w-full h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-sm px-4 focus:ring-indigo-500"
                 value={paymentExportOptions.hostel}
                 onChange={(e) =>
                   setPaymentExportOptions({
@@ -1948,11 +1990,11 @@ const PaymentManagementPage = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
                   Status
                 </Label>
                 <select
-                  className="w-full h-12 rounded-xl border-gray-100 bg-gray-50 font-bold text-sm px-4 focus:ring-indigo-500"
+                  className="w-full h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-sm px-4 focus:ring-indigo-500"
                   value={paymentExportOptions.status}
                   onChange={(e) =>
                     setPaymentExportOptions({
@@ -1972,11 +2014,11 @@ const PaymentManagementPage = () => {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
                   Type
                 </Label>
                 <select
-                  className="w-full h-12 rounded-xl border-gray-100 bg-gray-50 font-bold text-sm px-4 focus:ring-indigo-500"
+                  className="w-full h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-sm px-4 focus:ring-indigo-500"
                   value={paymentExportOptions.type}
                   onChange={(e) =>
                     setPaymentExportOptions({
@@ -2000,16 +2042,22 @@ const PaymentManagementPage = () => {
             <div className="flex gap-4 pt-4">
               <Button
                 variant="ghost"
-                className="flex-1 rounded-2xl h-14 font-bold text-[10px] uppercase tracking-wider text-gray-400 hover:bg-gray-50"
+                className="flex-1 rounded-2xl h-14 font-bold text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10"
                 onClick={() => setIsExportDialogOpen(false)}
               >
                 Cancel
               </Button>
               <Button
+                className="flex-1 h-14 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[10px] uppercase tracking-widest rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2"
+                onClick={handleExportPaymentsExcel}
+              >
+                <Download className="h-4 w-4" /> Excel
+              </Button>
+              <Button
                 className="flex-1 h-14 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-2xl shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-2"
                 onClick={handleExportPaymentsList}
               >
-                <Download className="h-4 w-4" /> Export
+                <Download className="h-4 w-4" /> PDF
               </Button>
             </div>
           </div>
@@ -2018,9 +2066,9 @@ const PaymentManagementPage = () => {
 
       {/* Modals */}
       <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white ring-1 ring-gray-100">
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-card ring-1 ring-gray-100">
           <div className="bg-rose-600 p-10 text-white text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+            <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
             <div className="h-16 w-16 bg-black/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-black/10 shadow-lg">
               <XCircle className="h-8 w-8" />
             </div>
@@ -2033,12 +2081,12 @@ const PaymentManagementPage = () => {
           </div>
           <div className="p-10 space-y-8">
             <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-1">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
                 Why reject this?
               </Label>
               <Textarea
                 placeholder="Write reason..."
-                className="rounded-2xl border-gray-100 bg-gray-50 p-6 font-medium text-sm min-h-[120px] focus:ring-rose-500 text-gray-900 resize-none pt-4 placeholder:text-gray-300"
+                className="rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 p-6 font-medium text-sm min-h-[120px] focus:ring-rose-500 text-gray-900 dark:text-foreground resize-none pt-4 placeholder:text-gray-300"
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
               />
@@ -2046,7 +2094,7 @@ const PaymentManagementPage = () => {
             <div className="flex gap-4">
               <Button
                 variant="ghost"
-                className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400"
+                className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground"
                 onClick={() => setIsRejectDialogOpen(false)}
               >
                 Cancel
@@ -2068,10 +2116,10 @@ const PaymentManagementPage = () => {
       </Dialog>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white ring-1 ring-gray-100">
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-card ring-1 ring-gray-100">
           <div className="bg-blue-600 p-10 text-white text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
-            <div className="h-16 w-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
+            <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
+            <div className="h-16 w-16 bg-white dark:bg-card/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
               <Settings2 className="h-8 w-8 text-white" />
             </div>
             <h2 className="text-2xl font-bold uppercase tracking-tight">
@@ -2084,7 +2132,7 @@ const PaymentManagementPage = () => {
           <div className="p-10 space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                   Amount (PKR)
                 </Label>
                 <Input
@@ -2096,15 +2144,15 @@ const PaymentManagementPage = () => {
                       amount: Number(e.target.value),
                     })
                   }
-                  className="rounded-xl border-gray-100 bg-gray-50 font-bold"
+                  className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                   Status
                 </Label>
                 <select
-                  className="w-full h-10 rounded-xl border-gray-100 bg-gray-50 text-[10px] font-bold uppercase px-3"
+                  className="w-full h-10 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 text-[10px] font-bold uppercase px-3"
                   value={editFormData.status}
                   onChange={(e) =>
                     setEditFormData({ ...editFormData, status: e.target.value })
@@ -2121,7 +2169,7 @@ const PaymentManagementPage = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                 Payment Method
               </Label>
               <Input
@@ -2129,11 +2177,11 @@ const PaymentManagementPage = () => {
                 onChange={(e) =>
                   setEditFormData({ ...editFormData, method: e.target.value })
                 }
-                className="rounded-xl border-gray-100 bg-gray-50 font-bold"
+                className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                 Notes
               </Label>
               <Textarea
@@ -2141,14 +2189,14 @@ const PaymentManagementPage = () => {
                 onChange={(e) =>
                   setEditFormData({ ...editFormData, notes: e.target.value })
                 }
-                className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24"
+                className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-medium text-xs resize-none h-24"
                 placeholder="..."
               />
             </div>
             <div className="flex gap-4 pt-4">
               <Button
                 variant="ghost"
-                className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400"
+                className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground"
                 onClick={() => setIsEditDialogOpen(false)}
               >
                 Cancel
@@ -2183,12 +2231,12 @@ const PaymentManagementPage = () => {
             <AlertDialogTitle className="text-xl font-bold uppercase tracking-tight">
               Delete Payment?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed mt-2">
+            <AlertDialogDescription className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-relaxed mt-2">
               Are you sure you want to permanently delete this payment record?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-10 gap-3">
-            <AlertDialogCancel className="h-12 px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest border-gray-100">
+            <AlertDialogCancel className="h-12 px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest border-gray-100 dark:border-border">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction

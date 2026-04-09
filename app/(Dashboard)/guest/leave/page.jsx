@@ -34,7 +34,7 @@ const StatusBadge = ({ status }) => {
         case 'IN_PROGRESS':
             return <Badge className="bg-blue-50 text-blue-700 border-none text-[9px] font-bold uppercase px-3">In Progress</Badge>;
         default:
-            return <Badge className="bg-gray-50 text-gray-600 border-none text-[9px] font-bold uppercase px-3">{status}</Badge>;
+            return <Badge className="bg-gray-50 dark:bg-muted/10 text-gray-600 dark:text-muted-foreground border-none text-[9px] font-bold uppercase px-3">{status}</Badge>;
     }
 };
 
@@ -136,9 +136,9 @@ const GuestLeavePage = () => {
     const approvedCount = parsedLeaves.filter(l => l.status === 'APPROVED').length;
 
     return (
-        <div className="min-h-screen bg-gray-50/30 pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/30 pb-20 font-sans">
             {/* Header */}
-            <header className="bg-white border-b sticky top-0 z-40 h-16">
+            <header className="bg-white dark:bg-card border-b sticky top-0 z-40 h-16">
                 <div className="max-w-4xl mx-auto px-4 md:px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-xl h-9 w-9 hover:bg-gray-100">
@@ -146,8 +146,8 @@ const GuestLeavePage = () => {
                         </Button>
                         <div className="h-5 w-px bg-gray-100" />
                         <div>
-                            <h1 className="text-base font-bold text-gray-900 uppercase tracking-tight">Leave Requests</h1>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Absence Management</p>
+                            <h1 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Leave Requests</h1>
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Absence Management</p>
                         </div>
                     </div>
 
@@ -160,26 +160,26 @@ const GuestLeavePage = () => {
                                 <PlusCircle className="h-3.5 w-3.5" /> New Request
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-md p-0 overflow-hidden border-none rounded-[2.5rem] shadow-2xl bg-white">
+                        <DialogContent className="max-w-md p-0 overflow-hidden border-none rounded-[2.5rem] shadow-2xl bg-white dark:bg-card">
                             <DialogHeader className="p-8 pb-6 border-b border-gray-50 flex flex-row items-center gap-4">
                                 <div className="h-12 w-12 rounded-2xl bg-indigo-600 flex items-center justify-center shrink-0">
                                     <Plane className="h-6 w-6 text-white" />
                                 </div>
                                 <div className="text-left">
-                                    <DialogTitle className="text-lg font-bold text-gray-900 uppercase leading-none tracking-tight">Leave Request</DialogTitle>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Submit your absence schedule</p>
+                                    <DialogTitle className="text-lg font-bold text-gray-900 dark:text-foreground uppercase leading-none tracking-tight">Leave Request</DialogTitle>
+                                    <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">Submit your absence schedule</p>
                                 </div>
                             </DialogHeader>
 
                             <form onSubmit={handleSubmit} className="p-8 space-y-5">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">From Date *</Label>
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">From Date *</Label>
                                         <div className="relative">
                                             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
                                             <Input
                                                 type="date"
-                                                className="h-12 pl-10 rounded-xl border-gray-100 font-bold text-sm bg-gray-50"
+                                                className="h-12 pl-10 rounded-xl border-gray-100 dark:border-border font-bold text-sm bg-gray-50 dark:bg-muted/10"
                                                 value={formData.startDate}
                                                 onChange={e => setFormData(p => ({ ...p, startDate: e.target.value }))}
                                                 min={new Date().toISOString().split('T')[0]}
@@ -188,12 +188,12 @@ const GuestLeavePage = () => {
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">To Date *</Label>
+                                        <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">To Date *</Label>
                                         <div className="relative">
                                             <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
                                             <Input
                                                 type="date"
-                                                className="h-12 pl-10 rounded-xl border-gray-100 font-bold text-sm bg-gray-50"
+                                                className="h-12 pl-10 rounded-xl border-gray-100 dark:border-border font-bold text-sm bg-gray-50 dark:bg-muted/10"
                                                 value={formData.endDate}
                                                 onChange={e => setFormData(p => ({ ...p, endDate: e.target.value }))}
                                                 min={formData.startDate || new Date().toISOString().split('T')[0]}
@@ -213,9 +213,9 @@ const GuestLeavePage = () => {
                                 )}
 
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Reason *</Label>
+                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Reason *</Label>
                                     <Textarea
-                                        className="rounded-xl border-gray-100 font-bold text-sm bg-gray-50 min-h-[100px] resize-none"
+                                        className="rounded-xl border-gray-100 dark:border-border font-bold text-sm bg-gray-50 dark:bg-muted/10 min-h-[100px] resize-none"
                                         placeholder="Why are you going on leave? (Family visit, medical, studies...)"
                                         value={formData.reason}
                                         onChange={e => setFormData(p => ({ ...p, reason: e.target.value }))}
@@ -224,11 +224,11 @@ const GuestLeavePage = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Emergency Contact (optional)</Label>
+                                    <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Emergency Contact (optional)</Label>
                                     <div className="relative">
                                         <PhoneCall className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
                                         <Input
-                                            className="h-12 pl-10 rounded-xl border-gray-100 font-bold text-sm bg-gray-50"
+                                            className="h-12 pl-10 rounded-xl border-gray-100 dark:border-border font-bold text-sm bg-gray-50 dark:bg-muted/10"
                                             placeholder="Contact number while on leave"
                                             value={formData.emergencyContact}
                                             onChange={e => setFormData(p => ({ ...p, emergencyContact: e.target.value }))}
@@ -283,14 +283,14 @@ const GuestLeavePage = () => {
 
                 {/* Leave List */}
                 <div className="space-y-4">
-                    <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">My Leave Requests</h3>
+                    <h3 className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest px-1">My Leave Requests</h3>
 
                     {isLoading ? (
-                        <div className="flex items-center justify-center py-16 bg-white rounded-3xl border border-gray-100">
+                        <div className="flex items-center justify-center py-16 bg-white dark:bg-card rounded-3xl border border-gray-100 dark:border-border">
                             <Loader2 className="h-6 w-6 animate-spin text-gray-300" />
                         </div>
                     ) : parsedLeaves.length > 0 ? parsedLeaves.map((leave) => (
-                        <div key={leave.id} className="bg-white border border-gray-100 rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-md transition-all">
+                        <div key={leave.id} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-6 md:p-8 shadow-sm hover:shadow-md transition-all">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="flex items-start gap-4">
                                     <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 ${leave.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600' :
@@ -301,15 +301,15 @@ const GuestLeavePage = () => {
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-3 flex-wrap">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                            <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                                                 {leave.uid || leave.id?.slice(-8).toUpperCase()}
                                             </span>
                                             <StatusBadge status={leave.status} />
                                         </div>
-                                        <p className="text-base font-bold text-gray-900 mt-1 uppercase tracking-tight">
+                                        <p className="text-base font-bold text-gray-900 dark:text-foreground mt-1 uppercase tracking-tight">
                                             {leave.duration > 0 ? `${leave.duration}-Day Leave` : 'Leave Request'}
                                         </p>
-                                        <p className="text-sm text-gray-500 font-medium mt-1 line-clamp-2">{leave.reason}</p>
+                                        <p className="text-sm text-gray-500 dark:text-muted-foreground font-medium mt-1 line-clamp-2">{leave.reason}</p>
                                     </div>
                                 </div>
                             </div>
@@ -324,27 +324,27 @@ const GuestLeavePage = () => {
                                     <div key={i} className="flex items-center gap-2">
                                         <item.icon className="h-3.5 w-3.5 text-gray-300 shrink-0" />
                                         <div>
-                                            <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">{item.label}</p>
-                                            <p className="text-[10px] font-bold text-gray-700">{item.value}</p>
+                                            <p className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{item.label}</p>
+                                            <p className="text-[10px] font-bold text-gray-700 dark:text-foreground">{item.value}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
 
                             {leave.resolutionNotes && (
-                                <div className="mt-4 p-3 bg-gray-50 rounded-xl">
-                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1">Admin Note</p>
-                                    <p className="text-xs font-medium text-gray-600">{leave.resolutionNotes}</p>
+                                <div className="mt-4 p-3 bg-gray-50 dark:bg-muted/10 rounded-xl">
+                                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Admin Note</p>
+                                    <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">{leave.resolutionNotes}</p>
                                 </div>
                             )}
                         </div>
                     )) : (
-                        <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-dashed border-gray-200">
-                            <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center mb-4">
+                        <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-card rounded-3xl border border-dashed border-gray-200 dark:border-border">
+                            <div className="h-16 w-16 rounded-2xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center mb-4">
                                 <Plane className="h-8 w-8 text-gray-200" />
                             </div>
-                            <h3 className="text-base font-bold text-gray-900 uppercase tracking-tight">No Leave Requests</h3>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2">Submit a request when you plan to be absent</p>
+                            <h3 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">No Leave Requests</h3>
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-2">Submit a request when you plan to be absent</p>
                         </div>
                     )}
                 </div>

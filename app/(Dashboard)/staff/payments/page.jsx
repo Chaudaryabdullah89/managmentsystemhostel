@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import { ListPageSkeleton } from "@/components/ui/skeletons";
 import {
     CreditCard,
     DollarSign,
@@ -50,16 +51,7 @@ const StaffPaymentsPage = () => {
         p.id.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (isLoading) {
-        return (
-            <div className="flex h-screen items-center justify-center bg-white">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="h-8 w-8 border-2 border-gray-100 border-t-black rounded-full animate-spin" />
-                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">Auditing Ledger...</p>
-                </div>
-            </div>
-        );
-    }
+    if (isLoading) return <ListPageSkeleton />;
     if (isError) {
         return (
             <div className="max-w-[1600px] mx-auto px-6 py-8">
@@ -76,16 +68,16 @@ const StaffPaymentsPage = () => {
     const totalEarned = salaries?.reduce((acc, curr) => acc + curr.amount, 0) || 0;
 
     return (
-        <div className="min-h-screen bg-gray-50/30 pb-20 font-sans antialiased">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/30 pb-20 font-sans antialiased">
             {/* Slim Premium Header */}
-            <div className="bg-white border-b sticky top-0 z-50 h-16">
+            <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-black rounded-full" />
                         <div className="flex flex-col">
-                            <h1 className="text-sm font-black text-gray-900 uppercase tracking-tighter">Financial Audit</h1>
+                            <h1 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tighter">Financial Audit</h1>
                             <div className="flex items-center gap-2">
-                                <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Salary Disbursements</span>
+                                <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Salary Disbursements</span>
                                 <div className="h-1 w-1 rounded-full bg-emerald-500" />
                             </div>
                         </div>
@@ -93,10 +85,10 @@ const StaffPaymentsPage = () => {
 
                     <div className="flex items-center gap-3">
                         <div className="relative group hidden md:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
                             <Input
                                 placeholder="Filter registry..."
-                                className="h-9 w-64 pl-9 rounded-xl border-gray-100 bg-gray-50 text-[10px] font-bold uppercase tracking-wider focus:bg-white transition-all shadow-none"
+                                className="h-9 w-64 pl-9 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 text-[10px] font-bold uppercase tracking-wider focus:bg-white dark:bg-card transition-all shadow-none"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -115,15 +107,15 @@ const StaffPaymentsPage = () => {
                         { label: 'Total Ingress', value: `PKR ${totalEarned.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                         { label: 'Last Cycle', value: salaries?.[0] ? `PKR ${salaries[0].amount.toLocaleString()}` : 'N/A', icon: TrendingUp, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                         { label: 'Cycles Paid', value: salaries?.length || 0, icon: History, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Registry ID', value: user?.id?.slice(-8).toUpperCase() || 'N/A', icon: CreditCard, color: 'text-gray-400', bg: 'bg-gray-100' },
+                        { label: 'Registry ID', value: user?.id?.slice(-8).toUpperCase() || 'N/A', icon: CreditCard, color: 'text-gray-400 dark:text-muted-foreground', bg: 'bg-gray-100' },
                     ].map((stat, i) => (
-                        <Card key={i} className="bg-white border-none shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)] p-4 rounded-2xl flex items-center gap-4">
+                        <Card key={i} className="bg-white dark:bg-card border-none shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)] p-4 rounded-2xl flex items-center gap-4">
                             <div className={`h-10 w-10 rounded-xl ${stat.bg} flex items-center justify-center ${stat.color}`}>
                                 <stat.icon className="h-5 w-5" />
                             </div>
                             <div>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-0.5">{stat.label}</p>
-                                <p className="text-base font-black text-gray-900 tracking-tighter">{stat.value}</p>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground mb-0.5">{stat.label}</p>
+                                <p className="text-base font-black text-gray-900 dark:text-foreground tracking-tighter">{stat.value}</p>
                             </div>
                         </Card>
                     ))}
@@ -133,14 +125,14 @@ const StaffPaymentsPage = () => {
                 <div className="space-y-4">
                     <div className="flex items-center justify-between px-2">
                         <div className="flex items-center gap-2">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-gray-400" />
-                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Transaction History</h3>
+                            <CheckCircle2 className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
+                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-muted-foreground">Transaction History</h3>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {filteredPayments?.map((payment) => (
-                            <Card key={payment.id} className="group bg-white border-transparent hover:border-gray-100 shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all rounded-[1.5rem] overflow-hidden flex flex-col">
+                            <Card key={payment.id} className="group bg-white dark:bg-card border-transparent hover:border-gray-100 dark:border-border shadow-[0_2px_20px_-5px_rgba(0,0,0,0.05)] hover:shadow-xl transition-all rounded-[1.5rem] overflow-hidden flex flex-col">
                                 <div className="p-5 flex-1 space-y-4">
                                     <div className="flex items-center justify-between">
                                         <Badge variant="outline" className="bg-emerald-50 text-emerald-600 text-[8px] font-black uppercase px-2 py-0 border-none">
@@ -152,26 +144,26 @@ const StaffPaymentsPage = () => {
                                     </div>
 
                                     <div className="space-y-1">
-                                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{payment.month}</p>
-                                        <h4 className="text-xl font-black text-gray-900 tracking-tighter italic leading-none">
+                                        <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{payment.month}</p>
+                                        <h4 className="text-xl font-black text-gray-900 dark:text-foreground tracking-tighter italic leading-none">
                                             PKR {payment.amount.toLocaleString()}
                                         </h4>
                                     </div>
 
                                     <div className="flex items-center gap-4 pt-1 border-t border-gray-50">
                                         <div className="flex items-center gap-1.5">
-                                            <Calendar className="h-3 w-3 text-gray-400" />
-                                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">
+                                            <Calendar className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
+                                            <span className="text-[9px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest">
                                                 {payment.paymentDate ? format(new Date(payment.paymentDate), 'MMM dd, yyyy') : 'Pending'}
                                             </span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="px-5 py-3.5 bg-gray-50/50 flex items-center justify-between border-t border-gray-100/50">
+                                <div className="px-5 py-3.5 bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex items-center justify-between border-t border-gray-100 dark:border-border/50">
                                     <div className="flex items-center gap-2">
                                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                        <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest">Digital Auth Verified</span>
+                                        <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Digital Auth Verified</span>
                                     </div>
                                     <Button
                                         variant="ghost"
@@ -194,8 +186,8 @@ const StaffPaymentsPage = () => {
                                     icon={History}
                                     title="No Transactions Recorded"
                                     description="Registry awaits initial disbursement."
-                                    containerClassName="py-20 bg-white rounded-[2rem] border-2 border-dashed border-gray-100 text-center"
-                                    iconWrapperClassName="bg-gray-50 border-gray-100"
+                                    containerClassName="py-20 bg-white dark:bg-card rounded-[2rem] border-2 border-dashed border-gray-100 dark:border-border text-center"
+                                    iconWrapperClassName="bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border"
                                     iconClassName="text-gray-300"
                                 />
                             </div>

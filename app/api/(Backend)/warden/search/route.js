@@ -182,7 +182,7 @@ export async function GET(req) {
             }),
 
             // Maintenance in this hostel
-            prisma.maintanance.findMany({
+            prisma.maintenance.findMany({
                 where: {
                     AND: [
                         { hostelId: hostelId },
@@ -192,7 +192,7 @@ export async function GET(req) {
                                 { title: { contains: query, mode: 'insensitive' } },
                                 { id: { contains: query, mode: 'insensitive' } },
                                 {
-                                    User_maintanance_userIdToUser: {
+                                    Maintenance_userIdToUser: {
                                         OR: [
                                             { name: { contains: query, mode: 'insensitive' } },
                                             { email: { contains: query, mode: 'insensitive' } },
@@ -205,7 +205,7 @@ export async function GET(req) {
                     ]
                 },
                 include: {
-                    User_maintanance_userIdToUser: { select: { id: true, uid: true, name: true, email: true } },
+                    Maintenance_userIdToUser: { select: { id: true, uid: true, name: true, email: true } },
                     Hostel: { select: { id: true, name: true } }
                 },
                 take: 10

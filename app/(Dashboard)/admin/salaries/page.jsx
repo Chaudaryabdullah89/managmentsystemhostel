@@ -42,7 +42,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
 import SalarySlip from "@/components/SalarySlip";
-import Loader from "@/components/ui/Loader";
+import { GridPageSkeleton } from "@/components/ui/skeletons";
 
 const SalariesPage = () => {
     const router = useRouter();
@@ -335,41 +335,36 @@ const SalariesPage = () => {
     };
 
     if (salariesLoading) return (
-        <div className="flex h-screen items-center justify-center bg-gray-50">
-            <div className="flex flex-col items-center gap-4">
-                <div className="h-10 w-10 border-[3px] border-gray-200 border-t-indigo-600 rounded-full animate-spin" />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Loading...</p>
-            </div>
-        </div>
+        <GridPageSkeleton accentColor="bg-indigo-600" />
     );
 
     return (
-        <div className="min-h-screen bg-gray-50/50 pb-20 font-sans tracking-tight print:hidden">
+        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight print:hidden">
             {/* Header - Staff Management Style */}
-            <div className="bg-white border-b border-gray-100 sticky top-0 z-40">
+            <div className="bg-white dark:bg-card border-b border-gray-100 dark:border-border sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1.5 bg-indigo-600 rounded-full" />
                         <div>
-                            <h1 className="text-sm font-bold text-gray-900 uppercase tracking-tight">Salaries</h1>
-                            <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} Records</p>
+                            <h1 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Salaries</h1>
+                            <p className="text-[10px] text-gray-400 dark:text-muted-foreground font-medium">{filteredSalaries.length} Records</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
                             <Input
                                 placeholder="Search..."
-                                className="h-9 pl-9 w-[220px] rounded-xl border-gray-200 bg-gray-50 text-xs font-medium"
+                                className="h-9 pl-9 w-[220px] rounded-xl border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/10 text-xs font-medium"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
                         <Select value={filterHostel} onValueChange={setFilterHostel}>
-                            <SelectTrigger className="h-9 w-[160px] rounded-xl border-gray-200 bg-white text-[10px] font-bold uppercase tracking-wider">
+                            <SelectTrigger className="h-9 w-[160px] rounded-xl border-gray-200 dark:border-border bg-white dark:bg-card text-[10px] font-bold uppercase tracking-wider">
                                 <SelectValue placeholder="All Hostels" />
                             </SelectTrigger>
-                            <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
+                            <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-xl">
                                 <SelectItem value="All" className="text-[10px] font-bold uppercase">All Hostels</SelectItem>
                                 {hostels.map(h => (
                                     <SelectItem key={h.id} value={h.id} className="text-[10px] font-bold uppercase">{h.name}</SelectItem>
@@ -377,9 +372,9 @@ const SalariesPage = () => {
                             </SelectContent>
                         </Select>
 
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-xl">
+                        <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border rounded-xl">
                             <div className={`h-2 w-2 rounded-full ${settings?.autoGenerateStaffSalaries ? 'bg-indigo-500 animate-pulse' : 'bg-gray-300'}`} />
-                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                            <span className="text-[10px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-wider">
                                 Auto: {settings?.autoGenerateStaffSalaries ? 'ON' : 'OFF'}
                             </span>
                         </div>
@@ -396,12 +391,12 @@ const SalariesPage = () => {
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 bg-white">
-                                    <MoreVertical className="h-4 w-4 text-gray-400" />
+                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 dark:border-border bg-white dark:bg-card">
+                                    <MoreVertical className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-xl border-gray-100 p-2">
-                                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-gray-400 p-3">Actions</DropdownMenuLabel>
+                            <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-xl border-gray-100 dark:border-border p-2">
+                                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground p-3">Actions</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={handleGeneratePayroll} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
                                     <Calculator className="h-4 w-4 text-indigo-600" /> Auto
                                 </DropdownMenuItem>
@@ -425,14 +420,14 @@ const SalariesPage = () => {
                 {/* Overview Stats - Staff Management Card Style */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: "Total", value: `PKR ${(stats.total / 1000).toFixed(1)}k`, icon: Wallet, color: "text-gray-700", bg: "bg-white", iconBg: "bg-gray-100" },
+                        { label: "Total", value: `PKR ${(stats.total / 1000).toFixed(1)}k`, icon: Wallet, color: "text-gray-700 dark:text-foreground", bg: "bg-white dark:bg-card", iconBg: "bg-gray-100" },
                         { label: "Paid", value: `PKR ${(stats.paidVolume / 1000).toFixed(1)}k`, icon: CheckCircle2, color: "text-indigo-600", bg: "bg-indigo-50", iconBg: "bg-indigo-100" },
                         { label: "Appeals", value: stats.appealCount, icon: AlertCircle, color: "text-amber-600", bg: "bg-amber-50", iconBg: "bg-amber-100" },
                         { label: "Cycles", value: stats.count, icon: Calendar, color: "text-emerald-600", bg: "bg-emerald-50", iconBg: "bg-emerald-100" },
                     ].map((stat, i) => (
-                        <div key={i} className={`${stat.bg} border border-gray-100 rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
+                        <div key={i} className={`${stat.bg} border border-gray-100 dark:border-border rounded-2xl p-5 flex items-center justify-between shadow-sm hover:shadow-md transition-all`}>
                             <div>
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                                <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
                                 <p className={`text-3xl font-bold ${stat.color}`}>{stat.value}</p>
                             </div>
                             <div className={`h-12 w-12 ${stat.iconBg} rounded-2xl flex items-center justify-center`}>
@@ -466,43 +461,43 @@ const SalariesPage = () => {
                 {/* Ledger Grid */}
                 <div>
                     <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3 p-1.5 bg-white border border-gray-100 rounded-2xl shadow-sm">
+                        <div className="flex items-center gap-3 p-1.5 bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl shadow-sm">
                             <Button
                                 variant="ghost"
                                 onClick={() => setActiveTab('current')}
-                                className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}
+                                className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'current' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 dark:text-muted-foreground hover:text-gray-900 dark:text-foreground'}`}
                             >
                                 Current
                             </Button>
                             <Button
                                 variant="ghost"
                                 onClick={() => setActiveTab('appeals')}
-                                className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'appeals' ? 'bg-rose-600 text-white shadow-lg' : 'text-gray-400 hover:text-rose-600'}`}
+                                className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'appeals' ? 'bg-rose-600 text-white shadow-lg' : 'text-gray-400 dark:text-muted-foreground hover:text-rose-600'}`}
                             >
                                 Appeals
                             </Button>
                             <Button
                                 variant="ghost"
                                 onClick={() => setActiveTab('history')}
-                                className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 hover:text-gray-900'}`}
+                                className={`h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === 'history' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-400 dark:text-muted-foreground hover:text-gray-900 dark:text-foreground'}`}
                             >
                                 History
                             </Button>
                         </div>
-                        <p className="text-[10px] text-gray-400 font-medium">{filteredSalaries.length} records shown</p>
+                        <p className="text-[10px] text-gray-400 dark:text-muted-foreground font-medium">{filteredSalaries.length} records shown</p>
                     </div>
 
                     <Tabs value={activeTab} className="mt-0 space-y-0">
                         <TabsContent value="current" className="mt-0">
                             {filteredSalaries.length === 0 ? (
-                                <div className="text-center py-20 bg-white border border-dashed border-gray-200 rounded-3xl">
+                                <div className="text-center py-20 bg-white dark:bg-card border border-dashed border-gray-200 dark:border-border rounded-3xl">
                                     <Wallet className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                                    <p className="text-sm font-bold text-gray-400">No activity</p>
+                                    <p className="text-sm font-bold text-gray-400 dark:text-muted-foreground">No activity</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                                     {filteredSalaries.map(salary => (
-                                        <div key={salary.id} className="bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all group">
+                                        <div key={salary.id} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all group">
                                             {/* Card Header */}
                                             <div className="p-6 border-b border-gray-50">
                                                 <div className="flex items-start justify-between gap-3">
@@ -512,18 +507,18 @@ const SalariesPage = () => {
                                                         </div>
                                                         <div>
                                                             <div className="flex items-center gap-2">
-                                                                <h3 className="text-sm font-bold text-gray-900">{salary.StaffProfile?.User?.name}</h3>
+                                                                <h3 className="text-sm font-bold text-gray-900 dark:text-foreground">{salary.StaffProfile?.User?.name}</h3>
                                                                 {salary.status === "PAID" && (
                                                                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                                                                 )}
                                                             </div>
                                                             <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">{salary.StaffProfile?.designation}</p>
                                                             <div className="flex items-center gap-2 mt-0.5">
-                                                                <p className="text-[9px] text-gray-400 font-medium uppercase">{salary.month}</p>
+                                                                <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-medium uppercase">{salary.month}</p>
                                                                 <div className="h-1 w-1 rounded-full bg-gray-200" />
                                                                 <div className="flex items-center gap-0.5">
-                                                                    <CreditCard className="h-2.5 w-2.5 text-gray-400" />
-                                                                    <span className="text-[9px] font-bold text-gray-600">{salary.paymentMethod?.replace('_', ' ') || "PENDING"}</span>
+                                                                    <CreditCard className="h-2.5 w-2.5 text-gray-400 dark:text-muted-foreground" />
+                                                                    <span className="text-[9px] font-bold text-gray-600 dark:text-muted-foreground">{salary.paymentMethod?.replace('_', ' ') || "PENDING"}</span>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -533,7 +528,7 @@ const SalariesPage = () => {
                                                     </Badge>
                                                 </div>
 
-                                                <div className="flex items-center gap-1.5 mt-3 text-[10px] text-gray-400 font-medium">
+                                                <div className="flex items-center gap-1.5 mt-3 text-[10px] text-gray-400 dark:text-muted-foreground font-medium">
                                                     <Building2 className="h-3 w-3" />
                                                     {salary.StaffProfile?.User?.Hostel_User_hostelIdToHostel?.name || "Global / Unassigned"}
                                                 </div>
@@ -542,24 +537,24 @@ const SalariesPage = () => {
                                             {/* Stats Grid */}
                                             <div className="px-6 py-4 grid grid-cols-3 gap-3">
                                                 <div className="text-center">
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Basic</p>
-                                                    <p className="text-sm font-bold text-gray-900">{(salary.basicSalary || 0).toLocaleString()}</p>
+                                                    <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider mb-1">Basic</p>
+                                                    <p className="text-sm font-bold text-gray-900 dark:text-foreground">{(salary.basicSalary || 0).toLocaleString()}</p>
                                                 </div>
-                                                <div className="text-center border-x border-gray-100">
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Bonus</p>
+                                                <div className="text-center border-x border-gray-100 dark:border-border">
+                                                    <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider mb-1">Bonus</p>
                                                     <p className="text-sm font-bold text-emerald-600">{(salary.bonuses || 0).toLocaleString()}</p>
                                                 </div>
                                                 <div className="text-center">
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total</p>
-                                                    <p className="text-sm font-bold text-gray-900">{(salary.amount || 0).toLocaleString()}</p>
+                                                    <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider mb-1">Total</p>
+                                                    <p className="text-sm font-bold text-gray-900 dark:text-foreground">{(salary.amount || 0).toLocaleString()}</p>
                                                 </div>
                                             </div>
 
                                             {/* Payout Bar */}
                                             <div className="px-6 pb-4">
                                                 <div className="flex items-center justify-between mb-1.5">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Progress</span>
-                                                    <span className="text-[10px] font-bold text-gray-900 tracking-tight">PKR {(salary.amount || 0).toLocaleString()}</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">Progress</span>
+                                                    <span className="text-[10px] font-bold text-gray-900 dark:text-foreground tracking-tight">PKR {(salary.amount || 0).toLocaleString()}</span>
                                                 </div>
                                                 <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                                     <div
@@ -580,7 +575,7 @@ const SalariesPage = () => {
                                                     </Button>
                                                 ) : (
                                                     <Button
-                                                        className="flex-1 h-9 bg-white border border-gray-200 hover:bg-gray-50 text-gray-900 text-[10px] font-bold rounded-xl gap-1.5 transition-all"
+                                                        className="flex-1 h-9 bg-white dark:bg-card border border-gray-200 dark:border-border hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 text-gray-900 dark:text-foreground text-[10px] font-bold rounded-xl gap-1.5 transition-all"
                                                         onClick={() => {
                                                             setSelectedSalary(salary);
                                                             setIsSlipDialogOpen(true);
@@ -592,11 +587,11 @@ const SalariesPage = () => {
 
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
-                                                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 hover:border-indigo-300 hover:bg-indigo-50">
-                                                            <MoreVertical className="h-4 w-4 text-gray-400" />
+                                                        <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-gray-200 dark:border-border hover:border-indigo-300 hover:bg-indigo-50">
+                                                            <MoreVertical className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="w-52 rounded-2xl p-2 shadow-xl border-gray-100">
+                                                    <DropdownMenuContent align="end" className="w-52 rounded-2xl p-2 shadow-xl border-gray-100 dark:border-border">
                                                         <DropdownMenuItem onClick={() => { setSelectedSalary(salary); setIsSlipDialogOpen(true); }} className="p-3 rounded-xl gap-3 text-[10px] font-bold uppercase cursor-pointer">
                                                             <FileText className="h-4 w-4" /> View
                                                         </DropdownMenuItem>
@@ -619,13 +614,13 @@ const SalariesPage = () => {
                         <TabsContent value="appeals" className="mt-0">
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
                                 {salaries?.filter(s => s.appealStatus && s.appealStatus !== 'NONE').length === 0 ? (
-                                    <div className="col-span-full py-20 bg-white border border-dashed border-gray-200 rounded-3xl text-center">
+                                    <div className="col-span-full py-20 bg-white dark:bg-card border border-dashed border-gray-200 dark:border-border rounded-3xl text-center">
                                         <MessageSquare className="h-12 w-12 text-gray-200 mx-auto mb-4" />
-                                        <p className="text-sm font-bold text-gray-400">No activity</p>
+                                        <p className="text-sm font-bold text-gray-400 dark:text-muted-foreground">No activity</p>
                                     </div>
                                 ) : (
                                     salaries?.filter(s => s.appealStatus && s.appealStatus !== 'NONE').map(salary => (
-                                        <div key={salary.id} className="bg-white border-2 border-rose-50 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all">
+                                        <div key={salary.id} className="bg-white dark:bg-card border-2 border-rose-50 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all">
                                             <div className="p-6 bg-rose-50/30 border-b border-rose-50">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-3">
@@ -633,7 +628,7 @@ const SalariesPage = () => {
                                                             <AlertCircle className="h-5 w-5 text-rose-600" />
                                                         </div>
                                                         <div>
-                                                            <h4 className="text-sm font-bold text-gray-900">{salary.StaffProfile?.User?.name}</h4>
+                                                            <h4 className="text-sm font-bold text-gray-900 dark:text-foreground">{salary.StaffProfile?.User?.name}</h4>
                                                             <p className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">Pending</p>
                                                         </div>
                                                     </div>
@@ -643,9 +638,9 @@ const SalariesPage = () => {
                                                 </div>
                                             </div>
                                             <div className="p-6 space-y-4">
-                                                <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
-                                                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Message</p>
-                                                    <p className="text-xs font-bold text-gray-700 italic">"{salary.appealText || "No context provided."}"</p>
+                                                <div className="bg-gray-50 dark:bg-muted/10 rounded-2xl p-4 border border-gray-100 dark:border-border">
+                                                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-2">Message</p>
+                                                    <p className="text-xs font-bold text-gray-700 dark:text-foreground italic">"{salary.appealText || "No context provided."}"</p>
                                                 </div>
                                                 {salary.appealResponse && (
                                                     <div className="bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
@@ -656,7 +651,7 @@ const SalariesPage = () => {
                                                 <div className="flex items-center gap-3 pt-2">
                                                     <Button
                                                         variant="outline"
-                                                        className="flex-1 h-10 rounded-xl border-gray-200 text-[10px] font-bold uppercase"
+                                                        className="flex-1 h-10 rounded-xl border-gray-200 dark:border-border text-[10px] font-bold uppercase"
                                                         onClick={() => { setSelectedSalary(salary); setIsSlipDialogOpen(true); }}
                                                     >
                                                         <Eye className="h-3.5 w-3.5 mr-2" /> View Slip
@@ -693,11 +688,11 @@ const SalariesPage = () => {
 
             {/* Edit Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-card">
                     <div className="bg-indigo-600 p-8 text-white relative overflow-hidden">
-                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
                         <div className="flex items-center gap-3 relative z-10">
-                            <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                            <div className="h-10 w-10 bg-white dark:bg-card/20 rounded-xl flex items-center justify-center backdrop-blur-md">
                                 <Calculator className="h-5 w-5 text-white" />
                             </div>
                             <div>
@@ -709,12 +704,12 @@ const SalariesPage = () => {
                     <div className="p-8 space-y-5">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Basic Salary</Label>
-                                <Input type="number" value={editFormData.basicSalary} onChange={e => setEditFormData({ ...editFormData, basicSalary: Number(e.target.value) })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Basic Salary</Label>
+                                <Input type="number" value={editFormData.basicSalary} onChange={e => setEditFormData({ ...editFormData, basicSalary: Number(e.target.value) })} className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold h-11 focus:ring-0" />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Allowances</Label>
-                                <Input type="number" value={editFormData.allowances} onChange={e => setEditFormData({ ...editFormData, allowances: Number(e.target.value) })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
+                                <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Allowances</Label>
+                                <Input type="number" value={editFormData.allowances} onChange={e => setEditFormData({ ...editFormData, allowances: Number(e.target.value) })} className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold h-11 focus:ring-0" />
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-[9px] font-bold uppercase tracking-widest text-emerald-500">Bonuses</Label>
@@ -726,11 +721,11 @@ const SalariesPage = () => {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Details</Label>
-                            <Textarea value={editFormData.notes} onChange={e => setEditFormData({ ...editFormData, notes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Add notes..." />
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Details</Label>
+                            <Textarea value={editFormData.notes} onChange={e => setEditFormData({ ...editFormData, notes: e.target.value })} className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Add notes..." />
                         </div>
                         <div className="flex gap-3 pt-2">
-                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100 dark:border-border" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
                             <Button className="flex-1 h-11 bg-indigo-600 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-100" onClick={handleEditSubmit} disabled={updateSalary.isPending}>
                                 {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
                             </Button>
@@ -741,11 +736,11 @@ const SalariesPage = () => {
 
             {/* Pay Dialog */}
             <Dialog open={isPayDialogOpen} onOpenChange={setIsPayDialogOpen}>
-                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-card">
                     <div className="bg-emerald-600 p-8 text-white relative overflow-hidden">
-                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
                         <div className="flex items-center gap-3 relative z-10">
-                            <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                            <div className="h-10 w-10 bg-white dark:bg-card/20 rounded-xl flex items-center justify-center backdrop-blur-md">
                                 <ShieldCheck className="h-5 w-5 text-white" />
                             </div>
                             <div>
@@ -756,12 +751,12 @@ const SalariesPage = () => {
                     </div>
                     <div className="p-8 space-y-5">
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Payment Method</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Payment Method</Label>
                             <Select value={payFormData.paymentMethod} onValueChange={v => setPayFormData({ ...payFormData, paymentMethod: v })}>
-                                <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-[10px] uppercase focus:ring-0">
+                                <SelectTrigger className="h-11 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-[10px] uppercase focus:ring-0">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                                <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl">
                                     <SelectItem value="BANK_TRANSFER" className="text-[10px] font-bold uppercase tracking-widest">Bank Transfer</SelectItem>
                                     <SelectItem value="CASH" className="text-[10px] font-bold uppercase tracking-widest">Cash</SelectItem>
                                     <SelectItem value="ONLINE" className="text-[10px] font-bold uppercase tracking-widest">Online Transfer</SelectItem>
@@ -770,11 +765,11 @@ const SalariesPage = () => {
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Date</Label>
-                            <Input type="date" value={payFormData.paymentDate} onChange={e => setPayFormData({ ...payFormData, paymentDate: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-bold h-11 focus:ring-0" />
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Date</Label>
+                            <Input type="date" value={payFormData.paymentDate} onChange={e => setPayFormData({ ...payFormData, paymentDate: e.target.value })} className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold h-11 focus:ring-0" />
                         </div>
                         <div className="flex gap-3 pt-4">
-                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsPayDialogOpen(false)}>Cancel</Button>
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100 dark:border-border" onClick={() => setIsPayDialogOpen(false)}>Cancel</Button>
                             <Button className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-100" onClick={handlePaySubmit} disabled={updateSalary.isPending}>
                                 {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm'}
                             </Button>
@@ -785,27 +780,27 @@ const SalariesPage = () => {
 
             {/* Manual Entry Dialog */}
             <Dialog open={isAddSalaryDialogOpen} onOpenChange={setIsAddSalaryDialogOpen}>
-                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-card">
                     <div className="bg-gray-900 p-8 text-white relative overflow-hidden">
-                        <div className="absolute inset-0 bg-white/5 skew-x-12 translate-x-20" />
+                        <div className="absolute inset-0 bg-white dark:bg-card/5 skew-x-12 translate-x-20" />
                         <div className="flex items-center gap-3 relative z-10">
-                            <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-md">
+                            <div className="h-10 w-10 bg-white dark:bg-card/10 rounded-xl flex items-center justify-center backdrop-blur-md">
                                 <Plus className="h-5 w-5 text-white" />
                             </div>
                             <div>
                                 <h2 className="text-sm font-bold uppercase tracking-tight">Add</h2>
-                                <p className="text-[10px] text-gray-400 font-medium">Add record</p>
+                                <p className="text-[10px] text-gray-400 dark:text-muted-foreground font-medium">Add record</p>
                             </div>
                         </div>
                     </div>
                     <div className="p-8 space-y-5">
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Staff</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Staff</Label>
                             <Select value={addSalaryForm.staffId} onValueChange={v => setAddSalaryForm({ ...addSalaryForm, staffId: v })}>
-                                <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-xs focus:ring-0">
+                                <SelectTrigger className="h-11 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-xs focus:ring-0">
                                     <SelectValue placeholder="Choose staff" />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl max-h-[300px]">
+                                <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl max-h-[300px]">
                                     {staffList?.map(s => (
                                         <SelectItem key={s.id} value={s.id} className="text-xs font-bold">{s.User?.name} — {s.designation}</SelectItem>
                                     ))}
@@ -823,11 +818,11 @@ const SalariesPage = () => {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Details</Label>
-                            <Textarea value={addSalaryForm.customNotes} onChange={e => setAddSalaryForm({ ...addSalaryForm, customNotes: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Add notes..." />
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Details</Label>
+                            <Textarea value={addSalaryForm.customNotes} onChange={e => setAddSalaryForm({ ...addSalaryForm, customNotes: e.target.value })} className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-medium text-xs resize-none h-24 focus:ring-0" placeholder="Add notes..." />
                         </div>
                         <div className="flex gap-3 pt-2">
-                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsAddSalaryDialogOpen(false)}>Cancel</Button>
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100 dark:border-border" onClick={() => setIsAddSalaryDialogOpen(false)}>Cancel</Button>
                             <Button className="flex-1 h-11 bg-gray-900 hover:bg-black text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-xl" onClick={handleAddSalarySubmit} disabled={createSalary.isPending}>
                                 {createSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
                             </Button>
@@ -838,11 +833,11 @@ const SalariesPage = () => {
 
             {/* Resolve Appeal Dialog */}
             <Dialog open={isResolveDialogOpen} onOpenChange={setIsResolveDialogOpen}>
-                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white">
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-card">
                     <div className="bg-rose-600 p-8 text-white relative overflow-hidden">
-                        <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                        <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
                         <div className="flex items-center gap-3 relative z-10">
-                            <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-md">
+                            <div className="h-10 w-10 bg-white dark:bg-card/20 rounded-xl flex items-center justify-center backdrop-blur-md">
                                 <MessageSquare className="h-5 w-5 text-white" />
                             </div>
                             <div>
@@ -853,23 +848,23 @@ const SalariesPage = () => {
                     </div>
                     <div className="p-8 space-y-5">
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Fiscal Status</Label>
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Fiscal Status</Label>
                             <Select value={resolveFormData.appealStatus} onValueChange={v => setResolveFormData({ ...resolveFormData, appealStatus: v })}>
-                                <SelectTrigger className="h-11 rounded-xl border-gray-100 bg-gray-50 font-bold text-[10px] uppercase focus:ring-0">
+                                <SelectTrigger className="h-11 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-[10px] uppercase focus:ring-0">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                                <SelectContent className="rounded-2xl border-gray-100 dark:border-border shadow-2xl">
                                     <SelectItem value="RESOLVED" className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Resolved</SelectItem>
                                     <SelectItem value="REJECTED" className="text-[10px] font-bold uppercase tracking-widest text-rose-600">Rejected</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Administrative Response</Label>
-                            <Textarea value={resolveFormData.appealResponse} onChange={e => setResolveFormData({ ...resolveFormData, appealResponse: e.target.value })} className="rounded-xl border-gray-100 bg-gray-50 font-medium text-xs resize-none h-32 focus:ring-0" placeholder="Enter details about the resolution..." />
+                            <Label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Administrative Response</Label>
+                            <Textarea value={resolveFormData.appealResponse} onChange={e => setResolveFormData({ ...resolveFormData, appealResponse: e.target.value })} className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-medium text-xs resize-none h-32 focus:ring-0" placeholder="Enter details about the resolution..." />
                         </div>
                         <div className="flex gap-3 pt-4">
-                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100" onClick={() => setIsResolveDialogOpen(false)}>Cancel</Button>
+                            <Button variant="outline" className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-widest border-gray-100 dark:border-border" onClick={() => setIsResolveDialogOpen(false)}>Cancel</Button>
                             <Button className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-rose-100" onClick={handleResolveSubmit} disabled={updateSalary.isPending}>
                                 {updateSalary.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Finalize Resolution'}
                             </Button>
@@ -886,12 +881,12 @@ const SalariesPage = () => {
                     </div>
                     <AlertDialogHeader>
                         <AlertDialogTitle className="text-xl font-bold uppercase tracking-tight">Evict Ledger Entry?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed mt-2">
+                        <AlertDialogDescription className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-relaxed mt-2">
                             This operation will permanently remove the salary record from the system. This is irreversible.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="flex flex-col sm:flex-row gap-3 mt-8">
-                        <AlertDialogCancel className="h-11 w-full rounded-xl bg-gray-50 border-none font-bold text-[10px] uppercase tracking-widest">Abort</AlertDialogCancel>
+                        <AlertDialogCancel className="h-11 w-full rounded-xl bg-gray-50 dark:bg-muted/10 border-none font-bold text-[10px] uppercase tracking-widest">Abort</AlertDialogCancel>
                         <AlertDialogAction onClick={handleDeleteConfirm} className="h-11 w-full rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-rose-100">Confirm Eviction</AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
