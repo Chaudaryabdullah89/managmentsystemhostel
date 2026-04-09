@@ -155,8 +155,3 @@ export default async function PrivacyPolicy() {
         </main>
     );
 }
-
-    return (
-        <main className="min-h-screen bg-gradient-to-br from-slate-100 via-white to-slate-200 text-slate-800">
-
-            {/* Top Portal Header */}
