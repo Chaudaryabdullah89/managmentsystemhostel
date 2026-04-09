@@ -313,7 +313,7 @@ const HostelOverviewPage = () => {
                       <div className="grid grid-cols-2 gap-2 mt-4">
                         <Button
                           size="sm"
-                          className="h-9 bg-white dark:bg-card/10 hover:bg-white dark:bg-card/20 text-[9px] font-black uppercase tracking-widest rounded-lg border-none"
+                          className="h-9 bg-white dark:bg-card/10 hover:bg-white dark:bg-card/20 text-[9px] font-black text-black uppercase tracking-widest rounded-lg border-none"
                           onClick={() =>
                             router.push(
                               `/admin/hostels/${encodeURIComponent(hostel.name)}/residents?hostelId=${hostelId}`,
