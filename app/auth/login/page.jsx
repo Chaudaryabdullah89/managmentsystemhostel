@@ -28,9 +28,11 @@ export default function LoginPage() {
     fetch("/api/settings/public")
       .then(res => res.json())
       .then(data => {
-        if (data.success) setBranding(data.data);
+        if (data.success && (data.data || data.settings || data.companyName)) {
+          setBranding(data.data || data.settings || data);
+        }
       })
-      .catch(() => {});
+      .catch((err) => console.error("Branding fetch error:", err));
   }, []);
 
   const handleSubmit = async (e) => {

@@ -5,5 +5,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
     const branding = await getBranding();
-    return successResponse(branding);
+    return successResponse({ 
+        ...branding, 
+        data: branding,
+        settings: branding 
+    });
 }
