@@ -15,7 +15,7 @@
  * to verify JWT signatures on the client side — this exposed the secret to
  * the browser. This version no longer does that. Token reads are decode-only
  * (no signature check) on the client; actual signature verification only
- * happens server-side in middleware.ts and checkRole.js.
+ * happens server-side in proxy.ts and checkRole.js.
  */
 
 import React, { createContext, useContext } from "react";

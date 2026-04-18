@@ -230,7 +230,7 @@ export default class AuthService {
         }
     }
 
-    // Note: Token verification is handled by `jose` in middleware.ts and checkRole.js.
+    // Note: Token verification is handled by `jose` in proxy.ts and checkRole.js.
     // This method is kept for legacy compatibility but should not be used directly.
     async verifyToken(token: string): Promise<{ userId: string; email: string } | null> {
         try {

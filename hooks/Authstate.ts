@@ -91,7 +91,7 @@ const useAuthStore = create<AuthState>((set) => ({
  * then fetches the full profile with permissions from the server.
  *
  * NOTE: We do NOT call logout() if there is no token — that would redirect
- * users who land on a public page. The middleware handles unauthenticated
+ * users who land on a public page. The proxy handles unauthenticated
  * redirects for protected routes.
  */
 export const checkAuth = async () => {
