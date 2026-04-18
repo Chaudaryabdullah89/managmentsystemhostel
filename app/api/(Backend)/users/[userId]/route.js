@@ -170,6 +170,15 @@ export async function PATCH(request, { params }) {
             }
         });
 
+        // 🆔 Session Invalidation for Terminated Users
+        // If isActive is explicitly set to false, wipe all sessions
+        if (updateData.isActive === false) {
+            await prisma.session.deleteMany({
+                where: { userId }
+            });
+            console.log(`[API] Terminated user ${userId}: All sessions invalidated.`);
+        }
+
         const permissionKeys = [
             "canManageExpenses",
             "canManageMess",

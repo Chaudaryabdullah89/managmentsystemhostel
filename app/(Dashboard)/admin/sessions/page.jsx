@@ -41,7 +41,7 @@ export default function SessionsPage() {
 
     const terminateMutation = useMutation({
         mutationFn: async (sessionId) => {
-            const url = sessionId ? `/api/user/sessions?sessionId=${sessionId}` : '/api/user/sessions';
+            const url = sessionId ? `/api/user/sessions?sessionId=${sessionId}` : '/api/user/sessions?excludeCurrent=true';
             const res = await fetch(url, { method: 'DELETE' });
             const json = await res.json();
             if (!res.ok) throw new Error(json.error);

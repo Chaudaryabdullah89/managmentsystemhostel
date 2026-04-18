@@ -8,6 +8,7 @@ type Body = {
     currentPassword?: string;
     newPassword: string;
     isReset?: boolean;
+    logoutAll?: boolean;
 };
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const callerRole = auth.user.role;
 
     const body: Body = await req.json();
-    const { currentPassword, newPassword, isReset } = body;
+    const { currentPassword, newPassword, isReset, logoutAll } = body;
 
     if (!newPassword || newPassword.length < 8) {
         return errorResponse("newPassword must be at least 8 characters.", 400);
@@ -57,11 +58,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const hashedPassword = await bcrypt.hash(newPassword, 12);
     await prisma.user.update({ where: { id }, data: { password: hashedPassword } });
 
-    // Invalidate all sessions on password change
-    await prisma.session.updateMany({
-        where: { userId: id },
-        data: { isActive: false },
-    });
+    // Handle session invalidation based on logoutAll flag
+    const response = successResponse({ message: "Password updated successfully." }, 200);
 
-    return successResponse({ message: "Password updated successfully." }, 200);
+    if (logoutAll) {
+        await prisma.session.updateMany({
+            where: { userId: id },
+            data: { isActive: false },
+        });
+
+        if (!isReset) {
+            response.cookies.set({
+                name: 'token',
+                value: '',
+                maxAge: 0,
+                path: '/',
+                expires: new Date(0),
+                sameSite: 'strict',
+                secure: process.env.NODE_ENV === "production"
+            });
+        }
+    }
+
+    return response;
 }
