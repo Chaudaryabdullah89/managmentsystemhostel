@@ -48,7 +48,6 @@ import { toast } from "sonner";
 const UnifiedReceipt = ({ data, type, children }) => {
     const { companyName, companyShortName } = useBranding();
     if (!data) return null;
-    const { companyName, companyShortName } = useBranding();
 
     // 1. Data Mapping Logic
     const getReceiptData = () => {

@@ -15,8 +15,8 @@ type DecodedUser = {
   lastLogin?: string;
   /** Role-level granular permissions from RolePermission table */
   rolePermissions?: Record<string, boolean>;
-  /** Global feature toggles from SystemSettings table */
-  systemSettings?: Record<string, boolean>;
+  /** Global feature toggles and branding from SystemSettings table */
+  systemSettings?: Record<string, string | boolean | number>;
 };
 
 type AuthState = {

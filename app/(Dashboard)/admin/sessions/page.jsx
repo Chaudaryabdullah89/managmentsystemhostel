@@ -112,7 +112,6 @@ export default function SessionsPage() {
                         )}
                     </div>
                 </div>
-            </div>
 
             <main className="max-w-4xl mx-auto px-6 py-8 space-y-8">
                 {/* Security Status Banner */}

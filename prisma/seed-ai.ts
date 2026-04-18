@@ -1,5 +1,5 @@
 
-import { PrismaClient as AiPrisma } from './node_modules/@prisma/ai-client';
+import { PrismaClient as AiPrisma } from '../node_modules/@prisma/ai-client';
 const aiPrisma = new AiPrisma();
 
 async function train() {
