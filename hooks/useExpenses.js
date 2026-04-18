@@ -9,7 +9,7 @@ export const ExpenseQueryKeys = {
 
 export function useExpenses(filters = {}) {
     return useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: ExpenseQueryKeys.list(filters),
         queryFn: async () => {
@@ -27,7 +27,7 @@ export function useExpenses(filters = {}) {
 
 export function useExpenseStats(hostelId = 'all') {
     return useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: ExpenseQueryKeys.stats(hostelId),
         queryFn: async () => {

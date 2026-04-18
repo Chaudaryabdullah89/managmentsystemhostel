@@ -49,7 +49,7 @@ export function useAllPayments(filters = {}) {
             if (!data.success) throw new Error(data.error);
             return data;
         },
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
     });
 }
@@ -64,7 +64,7 @@ export function useFinancialStats(hostelId) {
             if (!data.success) throw new Error(data.error);
             return data.stats;
         },
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
     });
 }
@@ -93,7 +93,7 @@ export function useReconcilePayment() {
 }
 export function usePaymentById(id) {
     return useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: PaymentQueryKeys.byId(id),
         queryFn: async () => {

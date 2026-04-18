@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 export function useRoom() {
     const { data, isLoading, isPending } = useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: [...QueryKeys.Roomlist()],
         queryFn: async () => {
@@ -18,7 +18,7 @@ export function useRoom() {
 }
 export function useRoomById(id) {
     const { data, isLoading, isPending } = useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: [...QueryKeys.Roombyid(id)],
         queryFn: async () => {
@@ -32,7 +32,7 @@ export function useRoomById(id) {
 
 export function useRoomByHostelId(id) {
     const { data, isLoading, isPending } = useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: [...QueryKeys.Roombyhostelid(id)],
         queryFn: async () => {
@@ -45,7 +45,7 @@ export function useRoomByHostelId(id) {
 }
 export function useSingleRoomByHostelId(hostelId, roomid) {
     const { data, isLoading, isPending } = useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: [...QueryKeys.singleRoombyHostelId(hostelId, roomid)],
         queryFn: async () => {

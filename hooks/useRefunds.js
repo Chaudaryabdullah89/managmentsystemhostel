@@ -8,7 +8,7 @@ export const RefundQueryKeys = {
 
 export function useRefundRequests(filters = {}) {
     return useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: RefundQueryKeys.list(filters),
         queryFn: async () => {

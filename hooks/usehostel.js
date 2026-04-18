@@ -18,14 +18,14 @@ export function useHostel() {
             return await response.json()
         },
         gcTime: 30 * 60 * 1000,
-        staleTime: 0,
+
     })
     return { data, isLoading, error, isFetching }
 }
 
 export function useHostelById(id) {
     const { data, isLoading, error, isFetching } = useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: [...QueryKeys.hostellist(), id],
         queryFn: async () => {

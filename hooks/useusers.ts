@@ -8,6 +8,11 @@ export const useUsers = () => {
     const queryClient = useQueryClient();
     const { data, isLoading, error } = useQuery({
         queryKey: [...QueryKeys.userlist()],
+        queryFn: async () => {
+            const response = await fetch("/api/users");
+            if (!response.ok) throw new Error("Failed to fetch users");
+            return await response.json();
+        },
         gcTime: 30 * 60 * 1000,
 
     });

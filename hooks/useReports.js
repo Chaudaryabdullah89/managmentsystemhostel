@@ -18,6 +18,6 @@ export const useReports = (period = 'month', hostelId = null, startDate = null, 
             if (!data.success) throw new Error(data.error);
             return data.data;
         },
-        staleTime: 0, // 5 minutes cache
+
     });
 };

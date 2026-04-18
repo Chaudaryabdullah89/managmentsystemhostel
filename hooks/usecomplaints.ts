@@ -21,14 +21,14 @@ export function useComplaints(filters: any = {}) {
             if (!data.success) throw new Error(data.error);
             return data.data;
         },
-        staleTime: 0, // 5 minutes
+
         gcTime: 10 * 60 * 1000, // 10 minutes
     });
 }
 
 export function useComplaintById(id: string) {
     return useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: ["complaints", id],
         queryFn: async () => {

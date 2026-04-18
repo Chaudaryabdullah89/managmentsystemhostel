@@ -9,7 +9,7 @@ import { toast } from "sonner"
 export function useMaintenances({ status = "", start = "", end = "" } = {}) {
     const queryKey = ['maintenances', status, start, end]
     return useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey,
         queryFn: async () => {

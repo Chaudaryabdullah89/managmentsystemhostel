@@ -9,7 +9,6 @@ export const BookingQueryKeys = {
 export function useBookings(options = {}) {
     const { userId, hostelId } = options;
     return useQuery({
-        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: ["bookings", { userId, hostelId }],
         queryFn: async () => {
@@ -98,7 +97,6 @@ export function useUpdateBookingStatus() {
 
 export function useBookingById(id) {
     return useQuery({
-        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: BookingQueryKeys.byId(id),
         queryFn: async () => {

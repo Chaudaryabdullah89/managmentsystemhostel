@@ -5,7 +5,7 @@ export const useAttendance = (userId) => {
     const queryClient = useQueryClient();
 
     const { data: attendanceHistory, isLoading: historyLoading } = useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: ["attendanceHistory", userId],
         queryFn: async () => {

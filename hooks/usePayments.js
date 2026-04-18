@@ -8,7 +8,7 @@ import { toast } from "sonner"
  */
 export function usePayments(userId) {
     return useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: ['payments', userId],
         queryFn: async () => {

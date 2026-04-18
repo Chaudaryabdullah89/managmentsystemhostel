@@ -11,7 +11,7 @@ export const SalaryQueryKeys = {
 
 export function useStaffList(hostelId) {
     return useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: SalaryQueryKeys.staff(hostelId),
         queryFn: async () => {
@@ -26,7 +26,7 @@ export function useStaffList(hostelId) {
 
 export function useStaffSalaryHistory(staffId) {
     return useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: SalaryQueryKeys.staffHistory(staffId),
         queryFn: async () => {
@@ -62,7 +62,7 @@ export function useCreateSalary() {
 
 export function useAllSalaries(filters = {}) {
     return useQuery({
-        staleTime: 0,
+
         gcTime: 10 * 60 * 1000,
         queryKey: SalaryQueryKeys.list(filters),
         queryFn: async () => {
