@@ -44,7 +44,9 @@ import {
     ArrowUpRight,
     PhoneCall,
     Printer,
-    Loader2
+    Loader2,
+    Smartphone,
+    Activity as ActivityIcon
 } from "lucide-react";
 import {
     DropdownMenu,
@@ -544,6 +546,7 @@ const UserDetailsPage = () => {
                                         <TabsTrigger value="salaries" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Salaries</TabsTrigger>
                                     )}
                                     <TabsTrigger value="complaints" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Reports</TabsTrigger>
+                                    <TabsTrigger value="security" className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all">Security</TabsTrigger>
                                 </TabsList>
                             </div>
 
@@ -925,6 +928,118 @@ const UserDetailsPage = () => {
                                         </div>
                                     )}
                                 </div>
+                            </TabsContent>
+
+                            <TabsContent value="security" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                                <Card className="rounded-[2.5rem] bg-white dark:bg-card overflow-hidden border-none shadow-sm">
+                                    <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                                                <Shield className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-sm font-black uppercase tracking-tight text-gray-900 dark:text-foreground">Active Sessions</h3>
+                                                <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Global Session Control</p>
+                                            </div>
+                                        </div>
+                                        <Button 
+                                            variant="outline" 
+                                            className="h-10 px-6 rounded-xl border-rose-100 text-rose-600 hover:bg-rose-50 font-bold text-[10px] uppercase tracking-widest"
+                                            onClick={async () => {
+                                                if (confirm("Terminate all sessions for this user? They will be logged out everywhere.")) {
+                                                    try {
+                                                        const res = await fetch(`/api/user/sessions?userId=${user.id}`, { method: 'DELETE' });
+                                                        if (res.ok) {
+                                                            toast.success("All sessions terminated");
+                                                            router.refresh();
+                                                        }
+                                                    } catch (e) {
+                                                        toast.error("Failed to terminate sessions");
+                                                    }
+                                                }
+                                            }}
+                                        >
+                                            Terminate All
+                                        </Button>
+                                    </div>
+                                    <Table>
+                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                                            <TableRow className="border-none hover:bg-transparent">
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Device / Client</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Network</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Last Activity</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Status</TableHead>
+                                                <TableHead className="text-[10px] font-black uppercase tracking-widest px-8 text-right">Control</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {userDetails?.sessions?.map((s) => (
+                                                <TableRow key={s.id} className="border-gray-50 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 transition-colors">
+                                                    <TableCell className="px-8 py-5">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-9 w-9 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500">
+                                                                <Smartphone className="h-4 w-4" />
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="text-xs font-bold text-gray-900 dark:text-foreground">{s.device || 'Unknown Device'}</span>
+                                                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">ID: {s.id.slice(-8).toUpperCase()}</span>
+                                                            </div>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="px-4 py-5 font-bold text-gray-700 dark:text-foreground text-xs font-mono">
+                                                        <div className="flex items-center gap-2">
+                                                            <Globe className="h-3 w-3 text-gray-300" />
+                                                            {s.ipAddress || '0.0.0.0'}
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="px-4 py-5">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-xs font-bold text-gray-700 dark:text-foreground">{format(new Date(s.lastActive), 'MMM dd, p')}</span>
+                                                            <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Created: {format(new Date(s.createdAt), 'MMM dd')}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="px-4 py-5">
+                                                        <Badge className={`rounded-lg px-3 py-1 font-bold text-[9px] uppercase tracking-widest border shadow-none ${s.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
+                                                            {s.isActive ? 'Active' : 'Revoked'}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="px-8 py-5 text-right">
+                                                        {s.isActive && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        const res = await fetch(`/api/user/sessions?sessionId=${s.id}`, { method: 'DELETE' });
+                                                                        if (res.ok) {
+                                                                            toast.success("Session terminated");
+                                                                            router.refresh();
+                                                                        }
+                                                                    } catch (e) {
+                                                                        toast.error("Failed to revoke session");
+                                                                    }
+                                                                }}
+                                                                className="h-8 w-8 p-0 rounded-xl text-rose-600 hover:bg-rose-50"
+                                                            >
+                                                                <Power className="h-4 w-4" />
+                                                            </Button>
+                                                        )}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                            {(!userDetails?.sessions || userDetails.sessions.length === 0) && (
+                                                <TableRow>
+                                                    <TableCell colSpan={5} className="h-60 text-center">
+                                                        <div className="flex flex-col items-center gap-3">
+                                                            <ShieldCheck className="h-10 w-10 text-gray-200" />
+                                                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">No active sessions found</p>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </Card>
                             </TabsContent>
                         </Tabs>
                     </div>

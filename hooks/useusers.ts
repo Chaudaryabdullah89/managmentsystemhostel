@@ -8,16 +8,7 @@ export const useUsers = () => {
     const queryClient = useQueryClient();
     const { data, isLoading, error } = useQuery({
         queryKey: [...QueryKeys.userlist()],
-        queryFn: async () => {
-            const response = await fetch("http://localhost:3000/api/users");
-            if (!response.ok) {
-                throw new Error("Failed to fetch users");
-            }
-            const data = await response.json();
-            return data;
-        },
         gcTime: 30 * 60 * 1000,
-        staleTime: 0,
 
     });
     return { data, isLoading, error };
@@ -38,7 +29,6 @@ export const useUserById = (id: string) => {
         },
         enabled: !!id,
         gcTime: 30 * 60 * 1000,
-        staleTime: 0,
     });
     return { data, isLoading, error, refetch };
 
@@ -81,7 +71,6 @@ export const useSessions = () => {
             return await response.json();
         },
         gcTime: 30 * 60 * 1000,
-        staleTime: 0,
     });
     return { data, isLoading, error, refetch };
 };
@@ -106,7 +95,7 @@ export const useTerminateAllSessions = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async () => {
-            const response = await fetch(`/api/user/sessions?excludeCurrent=true`, {
+            const response = await fetch(`/api/user/sessions`, {
                 method: "DELETE",
             });
             if (!response.ok) throw new Error("Failed to terminate all sessions");
@@ -128,14 +117,12 @@ export const useuserbyrole = (role: string) => {
             return await response.json();
         },
         gcTime: 30 * 60 * 1000,
-        staleTime: 0,
     });
     return { data, isLoading, error, refetch };
 }
 
 export const useUserDetailedProfile = (id: string) => {
     const { data, isLoading, error, refetch, isFetching } = useQuery({
-        staleTime: 0,
         gcTime: 10 * 60 * 1000,
         queryKey: QueryKeys.userDetailedProfile(id),
         queryFn: async () => {

@@ -9,9 +9,13 @@ export async function GET(req: NextRequest) {
     const guard = await requireAuth();
     if (!guard.ok) return guard.response;
     const authUser = guard.user;
-    const userId = authUser.userId || authUser.id || authUser.sub;
-    if (!userId) return errorResponse("Unauthorized", 401);
-    console.log(`[API] GET /api/user/sessions - Fetching sessions for user: ${userId}`);
+    const { searchParams } = new URL(req.url);
+    const targetUserId = searchParams.get("userId");
+
+    // Only Admin can fetch other users' sessions
+    const userId = (targetUserId && authUser.role === 'ADMIN') ? targetUserId : (authUser.userId || authUser.id || authUser.sub);
+    
+    if (!userId) return errorResponse("User ID required", 400);
 
     try {
         const cookieStore = await cookies();
@@ -19,7 +23,8 @@ export async function GET(req: NextRequest) {
 
         const rawSessions = await prisma.session.findMany({
             where: {
-                userId: userId as string
+                userId: userId as string,
+                isActive: true
             },
             orderBy: {
                 lastActive: 'desc'
@@ -31,20 +36,19 @@ export async function GET(req: NextRequest) {
                 lastActive: true,
                 isActive: true,
                 createdAt: true,
-                token: true, // Need token to compare
+                token: true,
             }
         });
 
         const sessions = rawSessions.map(s => ({
             ...s,
             isCurrent: s.token === currentToken,
-            token: undefined, // Don't send token to client
+            token: undefined, 
         }));
 
-        console.log(`[API] GET /api/user/sessions - Found ${sessions.length} sessions for user: ${userId}`);
         return successResponse({ sessions });
     } catch (error) {
-        console.error(`[API] GET /api/user/sessions - Error fetching sessions: ${error}`);
+        console.error(`[API] GET /api/user/sessions - Error: ${error}`);
         return errorResponse("Failed to fetch sessions", 500);
     }
 }
@@ -53,27 +57,48 @@ export async function DELETE(req: NextRequest) {
     const guard = await requireAuth();
     if (!guard.ok) return guard.response;
     const authUser = guard.user;
-    const userId = authUser.userId || authUser.id || authUser.sub;
-    if (!userId) return errorResponse("Unauthorized", 401);
+    
     const { searchParams } = new URL(req.url);
     const sessionId = searchParams.get("sessionId");
+    const targetUserId = searchParams.get("userId");
 
     try {
         if (sessionId) {
-            // Terminate specific session
-            await prisma.session.delete({
-                where: {
-                    id: sessionId,
-                    userId: userId as string
-                }
+            const session = await prisma.session.findUnique({
+                where: { id: sessionId }
             });
+
+            if (!session) return errorResponse("Session not found", 404);
+
+            // Allow if it's own session OR if requester is ADMIN
+            const isOwnSession = session.userId === (authUser.userId || authUser.id || authUser.sub);
+            if (!isOwnSession && authUser.role !== 'ADMIN') {
+                return errorResponse("Forbidden", 403);
+            }
+
+            // Decided to delete instead of just deactivate for cleanliness, 
+            // but we could also do update({ isActive: false })
+            await prisma.session.delete({
+                where: { id: sessionId }
+            });
+            
             return successResponse({ message: "Session terminated" });
+        } else if (targetUserId) {
+            // Terminate all sessions for a specific user (Admin only)
+            if (authUser.role !== 'ADMIN') return errorResponse("Forbidden", 403);
+
+            await prisma.session.deleteMany({
+                where: { userId: targetUserId }
+            });
+
+            return successResponse({ message: `All sessions for user ${targetUserId} terminated` });
         } else {
+            // Self-termination options
+            const userId = authUser.userId || authUser.id || authUser.sub;
             const excludeCurrent = searchParams.get("excludeCurrent") === "true";
             const cookieStore = await cookies();
             const currentToken = cookieStore.get('token')?.value;
 
-            // Terminate other sessions (or all)
             await prisma.session.deleteMany({
                 where: {
                     userId: userId as string,

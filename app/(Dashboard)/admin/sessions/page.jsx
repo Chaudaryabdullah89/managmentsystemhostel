@@ -11,6 +11,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow, format } from 'date-fns';
+import useAuthStore from '@/hooks/Authstate';
+import Link from 'next/link';
+import { ShieldAlert } from 'lucide-react';
 
 function getDeviceIcon(device = '') {
     const d = device.toLowerCase();
@@ -27,6 +30,7 @@ function getDeviceLabel(device = '') {
 export default function SessionsPage() {
     const router = useRouter();
     const queryClient = useQueryClient();
+    const userRole = useAuthStore((state) => state.user?.role);
 
     const { data, isLoading, refetch } = useQuery({
         queryKey: ['user-sessions'],
@@ -78,7 +82,16 @@ export default function SessionsPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                        {userRole === 'ADMIN' && (
+                            <Link href="/admin/sessions/global">
+                                <Button
+                                    size="sm"
+                                    className="h-9 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-[9px] font-black uppercase tracking-widest shadow-sm"
+                                >
+                                    <ShieldAlert className="h-3.5 w-3.5 mr-1.5" /> Global Control
+                                </Button>
+                            </Link>
+                        )}
                         <Button
                             variant="outline"
                             size="sm"

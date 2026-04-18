@@ -144,11 +144,9 @@ export default function RootLayout({
   const user = useAuthStore((state) => state.user)
   const isAuthLoading = useAuthStore((state) => state.isLoading)
 
-  const pathname = usePathname()
-
   useEffect(() => {
     checkAuth()
-  }, [pathname])
+  }, [])
 
   const { data: bookings = [] } = useBookings({ userId: user?.id })
   const isGuest = (user?.role || "").toString().toUpperCase() === "GUEST"

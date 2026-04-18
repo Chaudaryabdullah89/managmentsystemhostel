@@ -16,7 +16,7 @@ export function useBranding(): Branding {
   if (!systemSettings) return DEFAULT_BRANDING;
 
   return {
-    companyName: (systemSettings.companyName as any) || DEFAULT_BRANDING.companyName,
-    companyShortName: (systemSettings.companyShortName as any) || DEFAULT_BRANDING.companyShortName,
+    companyName: (systemSettings.companyName as string) || DEFAULT_BRANDING.companyName,
+    companyShortName: (systemSettings.companyShortName as string) || DEFAULT_BRANDING.companyShortName,
   };
 }

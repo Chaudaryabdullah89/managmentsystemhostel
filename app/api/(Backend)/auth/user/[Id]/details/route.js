@@ -218,6 +218,19 @@ export async function GET(req, { params }) {
                         createdAt: true,
                         updatedAt: true,
                     }
+                },
+                Session: {
+                    orderBy: {
+                        lastActive: 'desc'
+                    },
+                    select: {
+                        id: true,
+                        device: true,
+                        ipAddress: true,
+                        lastActive: true,
+                        isActive: true,
+                        createdAt: true
+                    }
                 }
             },
         });
@@ -244,7 +257,8 @@ export async function GET(req, { params }) {
                 room: b.Room,
                 payments: b.Payment
             })),
-            payments: user.Payment
+            payments: user.Payment,
+            sessions: user.Session
         };
 
         // Remove the long Prisma internal names
@@ -259,6 +273,7 @@ export async function GET(req, { params }) {
         delete formattedUser.Expense_Expense_rejectedByIdToUser;
         delete formattedUser.Booking;
         delete formattedUser.Payment;
+        delete formattedUser.Session;
 
         return NextResponse.json(formattedUser);
     } catch (err) {
