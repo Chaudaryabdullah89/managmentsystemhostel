@@ -99,6 +99,9 @@ export const checkAuth = async () => {
     const response = await fetch("/api/auth/me", { cache: "no-store" });
     const data = await response.json();
     if (!response.ok || !data?.success || !data?.user) {
+      if ((response.status === 401 || response.status === 404) && typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
+        window.location.href = "/auth/login?reason=expired";
+      }
       useAuthStore.setState({ user: null, token: null, isLoggedIn: false, isLoading: false });
       return;
     }

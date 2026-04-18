@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 import { NextRequest } from "next/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/apiAuth";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
@@ -13,7 +14,10 @@ export async function GET(req: NextRequest) {
     console.log(`[API] GET /api/user/sessions - Fetching sessions for user: ${userId}`);
 
     try {
-        const sessions = await prisma.session.findMany({
+        const cookieStore = await cookies();
+        const currentToken = cookieStore.get('token')?.value;
+
+        const rawSessions = await prisma.session.findMany({
             where: {
                 userId: userId as string
             },
@@ -27,8 +31,15 @@ export async function GET(req: NextRequest) {
                 lastActive: true,
                 isActive: true,
                 createdAt: true,
+                token: true, // Need token to compare
             }
         });
+
+        const sessions = rawSessions.map(s => ({
+            ...s,
+            isCurrent: s.token === currentToken,
+            token: undefined, // Don't send token to client
+        }));
 
         console.log(`[API] GET /api/user/sessions - Found ${sessions.length} sessions for user: ${userId}`);
         return successResponse({ sessions });
@@ -58,13 +69,18 @@ export async function DELETE(req: NextRequest) {
             });
             return successResponse({ message: "Session terminated" });
         } else {
-            // Terminate all sessions
+            const excludeCurrent = searchParams.get("excludeCurrent") === "true";
+            const cookieStore = await cookies();
+            const currentToken = cookieStore.get('token')?.value;
+
+            // Terminate other sessions (or all)
             await prisma.session.deleteMany({
                 where: {
-                    userId: userId as string
+                    userId: userId as string,
+                    ...(excludeCurrent && currentToken ? { token: { not: currentToken } } : {})
                 }
             });
-            return successResponse({ message: "All sessions terminated" });
+            return successResponse({ message: excludeCurrent ? "Other sessions terminated" : "All sessions terminated" });
         }
     } catch (error) {
         console.error(`[API] DELETE /api/user/sessions - Error:`, error);

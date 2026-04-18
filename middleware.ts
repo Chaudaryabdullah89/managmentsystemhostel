@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
     const token = request.cookies.get('token')?.value;
 
     if (!token) {
-        return NextResponse.redirect(new URL('/auth/login', request.url));
+        return NextResponse.redirect(new URL('/auth/login?reason=expired', request.url));
     }
 
     // 3️⃣ Verify JWT
@@ -74,9 +74,17 @@ export async function middleware(request: NextRequest) {
         console.error('JWT verification failed:', error);
 
         const response = NextResponse.redirect(
-            new URL('/auth/login', request.url)
+            new URL('/auth/login?reason=expired', request.url)
         );
-        response.cookies.delete('token');
+        response.cookies.set({
+            name: 'token',
+            value: '',
+            maxAge: 0,
+            path: '/',
+            expires: new Date(0),
+            sameSite: 'strict',
+            secure: process.env.NODE_ENV === "production"
+        });
         return response;
     }
 

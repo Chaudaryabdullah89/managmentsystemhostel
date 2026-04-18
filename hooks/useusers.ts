@@ -106,7 +106,7 @@ export const useTerminateAllSessions = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async () => {
-            const response = await fetch(`/api/user/sessions`, {
+            const response = await fetch(`/api/user/sessions?excludeCurrent=true`, {
                 method: "DELETE",
             });
             if (!response.ok) throw new Error("Failed to terminate all sessions");

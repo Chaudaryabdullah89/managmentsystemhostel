@@ -25,6 +25,11 @@ export default function LoginPage() {
   const [branding, setBranding] = useState({ companyName: "Hostel Management", companyShortName: "HMS" });
 
   React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("reason") === "expired") {
+      setError("Your session has expired or was terminated. Please login again.");
+    }
+
     fetch("/api/settings/public")
       .then(res => res.json())
       .then(data => {
