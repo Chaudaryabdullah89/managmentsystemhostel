@@ -182,7 +182,7 @@ export async function GET(req) {
                         { title: { contains: query, mode: 'insensitive' } },
                         { id: { contains: query, mode: 'insensitive' } },
                         {
-                            Maintenance_userIdToUser: {
+                            User: {
                                 OR: [
                                     { name: { contains: query, mode: 'insensitive' } },
                                     { email: { contains: query, mode: 'insensitive' } },
@@ -193,7 +193,7 @@ export async function GET(req) {
                     ]
                 },
                 include: {
-                    Maintenance_userIdToUser: {
+                    User: {
                         select: {
                             id: true,
                             uid: true,

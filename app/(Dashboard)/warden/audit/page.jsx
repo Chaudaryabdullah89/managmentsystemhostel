@@ -650,7 +650,7 @@ const WardenSearchPage = () => {
                             maintenance: [
                                 { label: 'Request', value: selectedItem.title },
                                 { label: 'Status', value: selectedItem.status },
-                                { label: 'By', value: selectedItem.Maintenance_userIdToUser?.name || 'N/A' },
+                                { label: 'By', value: selectedItem.User?.name || 'N/A' },
                                 { label: 'Description', value: selectedItem.description, fullWidth: true },
                             ]
                         }[itemType] || [];

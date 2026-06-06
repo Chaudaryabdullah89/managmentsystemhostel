@@ -192,7 +192,7 @@ export async function GET(req) {
                                 { title: { contains: query, mode: 'insensitive' } },
                                 { id: { contains: query, mode: 'insensitive' } },
                                 {
-                                    Maintenance_userIdToUser: {
+                                    User: {
                                         OR: [
                                             { name: { contains: query, mode: 'insensitive' } },
                                             { email: { contains: query, mode: 'insensitive' } },
@@ -205,7 +205,7 @@ export async function GET(req) {
                     ]
                 },
                 include: {
-                    Maintenance_userIdToUser: { select: { id: true, uid: true, name: true, email: true } },
+                    User: { select: { id: true, uid: true, name: true, email: true } },
                     Hostel: { select: { id: true, name: true } }
                 },
                 take: 10

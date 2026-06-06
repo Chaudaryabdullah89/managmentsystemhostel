@@ -33,7 +33,7 @@ export async function GET(req) {
                 title: { startsWith: '[LEAVE]' }
             },
             include: {
-                Maintenance_userIdToUser: {
+                User: {
                     select: { id: true, name: true, email: true, uid: true, phone: true, image: true }
                 },
                 Hostel: { select: { id: true, name: true } },

@@ -84,7 +84,7 @@ const LeaveManagementPage = () => {
 
     const filteredLeaves = parsedLeaves.filter(l => {
         const matchesStatus = statusFilter === 'ALL' || l.status === statusFilter;
-        const user = l.Maintenance_userIdToUser;
+        const user = l.User;
         const matchesSearch = !searchQuery ||
             user?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -195,7 +195,7 @@ const LeaveManagementPage = () => {
                 {/* Leave List */}
                 <div className="space-y-3">
                     {filteredLeaves.length > 0 ? filteredLeaves.map((leave) => {
-                        const user = leave.Maintenance_userIdToUser;
+                        const user = leave.User;
                         return (
                             <div
                                 key={leave.id}
@@ -264,7 +264,7 @@ const LeaveManagementPage = () => {
             <Dialog open={!!selectedLeave} onOpenChange={(open) => !open && setSelectedLeave(null)}>
                 <DialogContent className="max-w-lg p-0 overflow-hidden border-none rounded-[2.5rem] shadow-2xl bg-white dark:bg-card">
                     {selectedLeave && (() => {
-                        const u = selectedLeave.Maintenance_userIdToUser;
+                        const u = selectedLeave.User;
                         return (
                             <div>
                                 <div className="p-8 border-b border-gray-50 bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex items-center gap-4">

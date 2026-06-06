@@ -1011,7 +1011,7 @@ const SearchPage = () => {
                                 { label: 'Current Status', value: selectedItem.status },
                                 { label: 'Hostel Name', value: selectedItem.Hostel?.name },
                                 { label: 'Room Unit', value: selectedItem.Room?.roomNumber ? `Room ${selectedItem.Room.roomNumber}` : 'N/A' },
-                                { label: 'Submitted By', value: selectedItem.Maintenance_userIdToUser?.name || 'N/A' },
+                                { label: 'Submitted By', value: selectedItem.User?.name || 'N/A' },
                                 { label: 'Problem Details', value: selectedItem.description, fullWidth: true },
                                 { label: 'Creation Date', value: selectedItem.createdAt ? format(new Date(selectedItem.createdAt), 'MMM dd, yyyy') : 'N/A' },
                                 { label: 'Request ID', value: selectedItem.uid || 'N/A' },
