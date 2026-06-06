@@ -615,13 +615,55 @@ const WardenSearchPage = () => {
                         <FullScreenUserTerminal user={selectedItem} onClose={() => setSelectedItem(null)} />
                     ) : selectedItem && (() => {
                         const config = {
-                            bookings: { color: 'text-blue-600', bg: 'bg-blue-50', Icon: Calendar, label: 'Booking Record', link: `/warden/bookings` },
-                            payments: { color: 'text-emerald-600', bg: 'bg-emerald-50', Icon: CreditCard, label: 'Payment Record', link: `/warden/payments` },
-                            complaints: { color: 'text-rose-600', bg: 'bg-rose-50', Icon: AlertTriangle, label: 'Issue Report', link: `/warden/complaints` },
-                            maintenance: { color: 'text-amber-600', bg: 'bg-amber-50', Icon: Wrench, label: 'Maintenance Request', link: `/warden/rooms` },
+                            bookings: { 
+                                color: 'text-blue-600 dark:text-blue-400', 
+                                bg: 'bg-blue-50 dark:bg-blue-950/25', 
+                                Icon: Calendar, 
+                                label: 'Booking Record', 
+                                link: `/warden/bookings`,
+                                gradient: 'from-blue-500/10 via-indigo-500/5 to-transparent',
+                                iconColor: 'text-blue-500 dark:text-blue-400',
+                                borderColor: 'border-blue-100/80 dark:border-blue-950/40',
+                                badgeColor: 'bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300'
+                            },
+                            payments: { 
+                                color: 'text-emerald-600 dark:text-emerald-400', 
+                                bg: 'bg-emerald-50 dark:bg-emerald-950/25', 
+                                Icon: CreditCard, 
+                                label: 'Payment Record', 
+                                link: `/warden/payments`,
+                                gradient: 'from-emerald-500/10 via-teal-500/5 to-transparent',
+                                iconColor: 'text-emerald-500 dark:text-emerald-400',
+                                borderColor: 'border-emerald-100/80 dark:border-emerald-950/40',
+                                badgeColor: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
+                            },
+                            complaints: { 
+                                color: 'text-rose-600 dark:text-rose-400', 
+                                bg: 'bg-rose-50 dark:bg-rose-950/25', 
+                                Icon: AlertTriangle, 
+                                label: 'Issue Report', 
+                                link: `/warden/complaints`,
+                                gradient: 'from-rose-500/10 via-red-500/5 to-transparent',
+                                iconColor: 'text-rose-500 dark:text-rose-400',
+                                borderColor: 'border-rose-100/80 dark:border-rose-950/40',
+                                badgeColor: 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300'
+                            },
+                            maintenance: { 
+                                color: 'text-amber-600 dark:text-amber-400', 
+                                bg: 'bg-amber-50 dark:bg-amber-950/25', 
+                                Icon: Wrench, 
+                                label: 'Maintenance Request', 
+                                link: `/warden/rooms`,
+                                gradient: 'from-amber-500/10 via-orange-500/5 to-transparent',
+                                iconColor: 'text-amber-500 dark:text-amber-400',
+                                borderColor: 'border-amber-100/80 dark:border-amber-950/40',
+                                badgeColor: 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
+                            },
                         }[itemType];
 
                         if (!config) return null;
+                        const { color, bg, Icon, label, link, gradient, iconColor, borderColor, badgeColor } = config;
+
                         const fields = {
                             bookings: [
                                 { label: 'Room No', value: selectedItem.Room?.roomNumber ? `Room ${selectedItem.Room.roomNumber}` : 'N/A' },
@@ -656,34 +698,76 @@ const WardenSearchPage = () => {
                         }[itemType] || [];
 
                         return (
-                            <div className="flex-1 flex flex-col bg-gray-50 dark:bg-muted/10/30">
-                                <div className="bg-white dark:bg-card px-10 py-8 border-b border-gray-100 dark:border-border flex items-center justify-between">
+                            <div className="flex-1 flex flex-col bg-gray-50/50 dark:bg-background/45">
+                                {/* Header Section */}
+                                <div className={`bg-gradient-to-r ${gradient} bg-white dark:bg-card px-10 py-8 border-b border-gray-100 dark:border-border/60 flex items-center justify-between shrink-0`}>
                                     <div className="flex items-center gap-5">
-                                        <div className={`h-12 w-12 rounded-2xl ${config.bg} ${config.color} flex items-center justify-center`}><config.Icon className="h-6 w-6" /></div>
+                                        <div className={`h-14 w-14 rounded-2xl ${bg} border ${borderColor} flex items-center justify-center shadow-sm relative group overflow-hidden`}>
+                                            <Icon className={`h-6 w-6 ${iconColor} relative z-10 transition-transform duration-500 group-hover:scale-110`} />
+                                        </div>
                                         <div>
-                                            <h3 className="text-lg font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Audit Record</h3>
-                                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">{config.label}</p>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground">{label}</span>
+                                                <Badge className={`${badgeColor} border-none text-[8px] font-black uppercase tracking-wider px-2 py-0.5`}>
+                                                    {selectedItem.status}
+                                                </Badge>
+                                            </div>
+                                            <h3 className="text-xl font-bold text-gray-900 dark:text-foreground uppercase tracking-tight mt-1">
+                                                {itemType === 'payments' ? `PKR ${selectedItem.amount?.toLocaleString()}` : selectedItem.title || selectedItem.Room?.Hostel?.name}
+                                            </h3>
                                         </div>
                                     </div>
-                                    <Button variant="ghost" onClick={() => setSelectedItem(null)} className="h-10 w-10 p-0 rounded-xl border-gray-200 dark:border-border text-gray-400 dark:text-muted-foreground"><X className="h-5 w-5" /></Button>
+                                    <Button variant="ghost" onClick={() => setSelectedItem(null)} className="h-10 w-10 p-0 rounded-xl border border-gray-100 dark:border-border text-gray-400 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/10 transition-all group">
+                                        <X className="h-5 w-5 transition-transform duration-300 group-hover:rotate-90" />
+                                    </Button>
                                 </div>
+
+                                {/* Content Section */}
                                 <div className="flex-1 overflow-y-auto p-8">
-                                    <div className="bg-white dark:bg-card rounded-[2rem] p-8 border border-gray-100 dark:border-border shadow-sm grid grid-cols-2 gap-8">
-                                        {fields.map((f, i) => (
-                                            <div key={i} className={f.fullWidth ? 'col-span-2' : ''}>
-                                                <p className="text-[9px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground mb-1.5">{f.label}</p>
-                                                <p className="font-bold text-gray-900 dark:text-foreground text-sm whitespace-pre-wrap">{f.value || '—'}</p>
-                                            </div>
-                                        ))}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {fields.map((f, i) => {
+                                            if (f.fullWidth) {
+                                                return (
+                                                    <div key={i} className={`col-span-1 md:col-span-2 bg-gradient-to-br ${gradient} p-6 rounded-3xl border ${borderColor} relative overflow-hidden group shadow-sm`}>
+                                                        <div className="absolute top-0 right-0 p-6 opacity-[0.03] text-gray-900 dark:text-white pointer-events-none group-hover:scale-115 transition-transform duration-500">
+                                                            <Icon className="h-28 w-28" />
+                                                        </div>
+                                                        <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground mb-3">{f.label}</p>
+                                                        <div className="p-5 bg-white/70 dark:bg-card/70 backdrop-blur-sm rounded-2xl border border-gray-100/50 dark:border-border/40 shadow-inner">
+                                                            <p className="text-sm text-gray-700 dark:text-foreground font-medium italic leading-relaxed whitespace-pre-wrap">
+                                                                "{f.value || 'No details provided.'}"
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }
+
+                                            return (
+                                                <div key={i} className="bg-white dark:bg-card hover:bg-gray-50/50 dark:hover:bg-muted/5 border border-gray-100 dark:border-border/60 hover:border-gray-200 dark:hover:border-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all group flex flex-col justify-between min-h-[90px]">
+                                                    <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground leading-none">{f.label}</p>
+                                                    <p className="font-black text-gray-900 dark:text-foreground text-sm uppercase tracking-tight mt-3 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                                        {f.value || '—'}
+                                                    </p>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
-                                <div className="px-10 py-8 bg-white dark:bg-card border-t border-gray-100 dark:border-border flex items-center justify-end gap-3">
+
+                                {/* Footer Actions */}
+                                <div className="px-10 py-8 bg-white dark:bg-card border-t border-gray-100 dark:border-border flex items-center justify-end gap-3 shrink-0">
                                     {(itemType === 'payments' || itemType === 'bookings') && (
                                         <UnifiedReceipt data={selectedItem} type={itemType === 'payments' ? 'payment' : 'booking'}>
-                                            <Button variant="outline" className="h-12 px-8 rounded-2xl border-gray-200 dark:border-border font-bold text-[10px] uppercase tracking-widest gap-2"><Printer className="h-4 w-4" /> Export</Button>
+                                            <Button variant="outline" className="h-12 px-8 rounded-2xl border border-gray-200 dark:border-border text-gray-600 dark:text-muted-foreground font-bold text-[10px] uppercase tracking-widest gap-2 hover:bg-gray-50 dark:hover:bg-muted/10 transition-all">
+                                                <Printer className="h-4 w-4" /> Export
+                                            </Button>
                                         </UnifiedReceipt>
                                     )}
-                                    <Link href={config.link}><Button variant="ghost" className="h-12 px-8 rounded-2xl text-gray-500 dark:text-muted-foreground font-bold text-[10px] uppercase tracking-widest gap-2">View History <ExternalLink className="h-4 w-4" /></Button></Link>
+                                    <Link href={link}>
+                                        <Button variant="ghost" className="h-12 px-8 rounded-2xl text-gray-500 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/10 font-bold text-[10px] uppercase tracking-widest gap-2 transition-all">
+                                            View History <ExternalLink className="h-4 w-4" />
+                                        </Button>
+                                    </Link>
                                 </div>
                             </div>
                         );
