@@ -75,6 +75,7 @@ export const NAVIGATION_GROUPS: Record<string, NavGroup[]> = {
                 { title: "Salaries (Staff)",  url: "/admin/salaries",       icon: DollarSign, role: "admin", permissionKey: "manage_salaries" },
                 { title: "Salaries (Warden)", url: "/admin/warden-salaries",icon: Users,      role: "admin", permissionKey: "manage_salaries" },
                 { title: "Expenses",          url: "/admin/expenses",       icon: Wallet,     role: "admin", permissionKey: "manage_expenses" },
+                { title: "Financials Dashboard", url: "/admin/financials",  icon: BarChart3,  role: "admin", permissionKey: "view_analytics" },
             ],
         },
         {

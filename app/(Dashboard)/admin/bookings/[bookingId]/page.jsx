@@ -142,22 +142,38 @@ const BookingDetailsPage = () => {
       </div>
     );
 
-  const totalPaid =
-    booking.Payment?.filter((p) => p.status === "PAID").reduce(
-      (acc, curr) => acc + curr.amount,
-      0,
-    ) || 0;
-  // totalAmount already includes securityDeposit + advance rent — do NOT add securityDeposit again
-  const totalPayable = booking.totalAmount || 0;
-  const balance = Math.max(0, totalPayable - totalPaid);
+  // ── Financial Calculations ───────────────────────────────────────────────
+  // totalPayable = sum of all payment records that are NOT voided/refunded.
+  // This is the source of truth — `booking.totalAmount` is only the initial
+  // deposit snapshot and becomes stale as monthly rents are added over time.
+  const allPayments = booking.Payment || [];
+  const voidedStatuses = ["REJECTED", "FAILED", "REFUNDED"];
+  const activePayments = allPayments.filter(
+    (p) => !voidedStatuses.includes(p.status),
+  );
+
+  const totalPayable = activePayments.reduce(
+    (acc, curr) => acc + (curr.amount || 0),
+    0,
+  );
+  const totalPaid = activePayments
+    .filter((p) => p.status === "PAID")
+    .reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+  // Outstanding balance = what is still pending / partially paid
+  const balance = activePayments
+    .filter((p) => p.status === "PENDING" || p.status === "PARTIAL" || p.status === "OVERDUE")
+    .reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
   const paymentProgress =
-    totalPayable > 0 ? ((totalPaid / totalPayable) * 100).toFixed(0) : 0;
-  // Monthly rent: prefer stored booking value, then room's montlyrent field, then derive from totalAmount
+    totalPayable > 0 ? Math.min(100, ((totalPaid / totalPayable) * 100)).toFixed(0) : 0;
+
+  // Monthly rent: prefer stored booking value, then room's monthly rent field
   const monthlyRentDisplay =
     booking.monthlyRent ||
     booking.Room?.montlyrent ||
     booking.Room?.price ||
-    Math.max(0, (booking.totalAmount || 0) - (booking.securityDeposit || 0));
+    0;
   const securityDepositDisplay = booking.securityDeposit || 0;
   const residentDocs = booking?.User?.ResidentProfile?.documents || {};
   const additionalImages = Array.isArray(residentDocs?.galleryImages)
@@ -817,26 +833,26 @@ const BookingDetailsPage = () => {
           <div className="space-y-3">
             <div className="flex justify-between items-center py-3 border-b border-slate-50">
               <span className="text-xs font-bold text-slate-500 uppercase">
-                Monthly Rent Settlement
+                Total Payments Issued
               </span>
               <span className="text-xs font-black text-slate-900 font-mono">
-                PKR {monthlyRentDisplay.toLocaleString()}
+                PKR {totalPayable.toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center py-3 border-b border-slate-50">
               <span className="text-xs font-bold text-slate-500 uppercase">
-                Security Deposit (Refundable)
+                Total Paid
               </span>
               <span className="text-xs font-black text-slate-900 font-mono">
-                PKR {securityDepositDisplay.toLocaleString()}
+                PKR {totalPaid.toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center py-3">
               <span className="text-xs font-black text-slate-900 uppercase">
-                Gross Total Payable
+                Outstanding Balance
               </span>
               <span className="text-xs font-black text-slate-900 font-mono">
-                PKR {totalPayable.toLocaleString()}
+                PKR {balance.toLocaleString()}
               </span>
             </div>
           </div>

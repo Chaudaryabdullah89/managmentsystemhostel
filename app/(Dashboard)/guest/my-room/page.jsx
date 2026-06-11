@@ -13,6 +13,9 @@ import { Separator } from "@/components/ui/separator";
 import useAuthStore from "@/hooks/Authstate";
 import { useBookings } from "@/hooks/useBooking";
 import { useAllPayments } from "@/hooks/usePayment";
+import { useRoomByHostelId } from "@/hooks/useRoom";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import Link from "next/link";
 import { DetailPageSkeleton } from "@/components/ui/skeletons";
@@ -33,9 +36,59 @@ const GuestRoomPage = () => {
     const room = currentBooking?.Room;
     const hostel = room?.Hostel;
 
+    const { data: roomsData } = useRoomByHostelId(hostel?.id);
+    const { data: swapRequests, refetch: refetchSwaps } = useQuery({
+        queryKey: ['roomSwapRequests', user?.id],
+        queryFn: async () => {
+            const res = await fetch('/api/guest/room-swap');
+            if (!res.ok) throw new Error("Failed to fetch swap requests");
+            const json = await res.json();
+            return json.requests || [];
+        },
+        enabled: !!user?.id
+    });
+
+    const [selectedRoom, setSelectedRoom] = useState("");
+    const [reason, setReason] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const availableRooms = roomsData?.success && Array.isArray(roomsData.data) && room
+        ? roomsData.data.filter(r => r.id !== room.id)
+        : [];
+
+    const handleSwapSubmit = async (e) => {
+        e.preventDefault();
+        if (!selectedRoom || !reason.trim()) {
+            toast.error("Please select a target room and provide a reason.");
+            return;
+        }
+        setIsSubmitting(true);
+        try {
+            const res = await fetch('/api/guest/room-swap', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ toRoomId: selectedRoom, reason })
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success("Room swap request submitted successfully!");
+                setSelectedRoom("");
+                setReason("");
+                refetchSwaps();
+            } else {
+                toast.error(data.error || "Failed to submit swap request");
+            }
+        } catch (error) {
+            toast.error("Error submitting request");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const payments = paymentsData?.payments || [];
-    const paidPayments = payments.filter(p => p.status === 'PAID');
-    const pendingPayments = payments.filter(p => ['PENDING', 'OVERDUE'].includes(p.status));
+    const paidPayments = payments.filter(p => p.status === 'PAID' && p.type !== 'SECURITY_REFUND');
+    // Include PARTIAL: these are partially-settled bills that still have an outstanding balance
+    const pendingPayments = payments.filter(p => ['PENDING', 'OVERDUE', 'PARTIAL'].includes(p.status));
     const totalPaid = paidPayments.reduce((s, p) => s + p.amount, 0);
     const totalPending = pendingPayments.reduce((s, p) => s + p.amount, 0);
 
@@ -142,7 +195,7 @@ const GuestRoomPage = () => {
                         </div>
                         <div className="flex flex-col">
                             <span className="text-[9px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest mb-1">Monthly Rent</span>
-                            <span className="text-sm md:text-base font-bold text-white">PKR {(room.monthlyrent || room.montlyrent || room.price || 0).toLocaleString()}</span>
+                            <span className="text-sm md:text-base font-bold text-white">PKR {(room.monthlyRent || room.price || 0).toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
@@ -300,7 +353,7 @@ const GuestRoomPage = () => {
                                     </div>
                                     <div>
                                         <p className="text-[9px] text-indigo-300 uppercase tracking-widest font-bold">Monthly Rent</p>
-                                        <p className="font-bold mt-0.5">PKR {(room.monthlyrent || room.montlyrent || room.price || 0).toLocaleString()}</p>
+                                        <p className="font-bold mt-0.5">PKR {(room.monthlyRent || room.price || 0).toLocaleString()}</p>
                                     </div>
                                     <div>
                                         <p className="text-[9px] text-indigo-300 uppercase tracking-widest font-bold">Security Bond</p>
@@ -311,6 +364,97 @@ const GuestRoomPage = () => {
                                         <p className="font-bold mt-0.5">{currentBooking.status.replace('_', ' ')}</p>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Room Swap Request Card */}
+                        <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-6 shadow-sm">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="h-10 w-10 rounded-xl bg-indigo-50 dark:bg-card/10 flex items-center justify-center text-indigo-600">
+                                    <ArrowRight className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Room Swap Request</h3>
+                                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Change your room assignment</p>
+                                </div>
+                            </div>
+
+                            <form onSubmit={handleSwapSubmit} className="space-y-4 mb-8">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">Select Target Room</label>
+                                    <select
+                                        value={selectedRoom}
+                                        onChange={(e) => setSelectedRoom(e.target.value)}
+                                        className="w-full bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border rounded-xl px-4 py-2.5 text-xs font-bold text-gray-700 dark:text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                    >
+                                        <option value="">-- Choose Room --</option>
+                                        {availableRooms.map((r) => {
+                                            const taken = r.Booking?.length || 0;
+                                            const left = r.capacity - taken;
+                                            const isFull = left <= 0;
+                                            return (
+                                                <option key={r.id} value={r.id} disabled={isFull}>
+                                                    Room {r.roomNumber} - Floor {r.floor} ({r.type} Room, {isFull ? 'Full' : `${left} space left`})
+                                                </option>
+                                            );
+                                        })}
+                                    </select>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">Reason for Swap</label>
+                                    <textarea
+                                        value={reason}
+                                        onChange={(e) => setReason(e.target.value)}
+                                        placeholder="e.g., Prefers lower floor, need study environment..."
+                                        rows={3}
+                                        className="w-full bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border rounded-xl p-3 text-xs text-gray-700 dark:text-foreground placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                    />
+                                </div>
+                                <Button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider"
+                                >
+                                    {isSubmitting ? "Submitting..." : "Submit Request"}
+                                </Button>
+                            </form>
+
+                            {/* Swap History */}
+                            <div className="space-y-3">
+                                <h4 className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-2">Request History</h4>
+                                {swapRequests && swapRequests.length > 0 ? (
+                                    swapRequests.map((req) => (
+                                        <div key={req.id} className="p-4 rounded-2xl border border-gray-50 dark:border-border hover:bg-gray-50 dark:hover:bg-muted/5 transition-colors">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="text-xs font-bold text-gray-900 dark:text-foreground">
+                                                        Room {req.FromRoom?.roomNumber || 'N/A'} &rarr; Room {req.ToRoom?.roomNumber || 'N/A'}
+                                                    </p>
+                                                    <p className="text-[10px] text-gray-400 dark:text-muted-foreground mt-0.5">
+                                                        Requested on {new Date(req.createdAt).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                                <Badge className={`text-[8px] font-bold border-none px-2 ${
+                                                    req.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600' :
+                                                    req.status === 'REJECTED' ? 'bg-rose-50 text-rose-600' :
+                                                    'bg-amber-50 text-amber-600'
+                                                }`}>
+                                                    {req.status}
+                                                </Badge>
+                                            </div>
+                                            {req.reason && (
+                                                <p className="text-[10px] text-gray-500 dark:text-muted-foreground mt-2 italic bg-gray-50 dark:bg-muted/10 p-2 rounded-lg">
+                                                    Reason: {req.reason}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-6 text-gray-300">
+                                        <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                        <p className="text-[9px] font-bold uppercase tracking-widest">No room swap requests submitted yet</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

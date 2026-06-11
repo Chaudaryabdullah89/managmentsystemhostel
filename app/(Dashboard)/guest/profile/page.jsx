@@ -60,6 +60,166 @@ const GuestProfile = () => {
     // Logic: Only show "Checked Out" styling if they have NO active stay but DO have history
     const isCheckedOut = !residency.roomNumber && history.length > 0;
 
+    const downloadSmartCard = async () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 400;
+        canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Draw background gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, 600);
+        grad.addColorStop(0, '#0f172a'); // slate-900
+        grad.addColorStop(0.5, '#1e1b4b'); // indigo-950
+        grad.addColorStop(1, '#020617'); // slate-950
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 400, 600);
+
+        // Draw decor circles/effects
+        ctx.fillStyle = 'rgba(99, 102, 241, 0.08)'; // indigo-500 with opacity
+        ctx.beginPath();
+        ctx.arc(0, 0, 200, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(400, 600, 150, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw card border/header bar
+        ctx.fillStyle = '#6366f1'; // indigo-500
+        ctx.fillRect(0, 0, 400, 12);
+
+        // Draw Title / Hostel Name
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(hostel.name || "HOSTEL PORTAL", 200, 50);
+
+        ctx.fillStyle = '#a5b4fc'; // indigo-300
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText('DIGITAL RESIDENT SMART CARD', 200, 75);
+
+        // Draw Avatar (load image, fallback to initials if CORS/error)
+        const avatarSize = 120;
+        const avatarX = 140;
+        const avatarY = 110;
+
+        try {
+            if (userData.image) {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                await new Promise((resolve, reject) => {
+                    img.onload = () => {
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+                        ctx.clip();
+                        ctx.drawImage(img, avatarX, avatarY, avatarSize, avatarSize);
+                        ctx.restore();
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        reject();
+                    };
+                    img.src = userData.image;
+                });
+            } else {
+                throw new Error("No image");
+            }
+        } catch (e) {
+            // Draw Fallback Initials Circle
+            ctx.fillStyle = '#1e1b4b'; // indigo-950
+            ctx.beginPath();
+            ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 44px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(userData.name?.charAt(0) || 'U', avatarX + avatarSize / 2, avatarY + avatarSize / 2);
+            ctx.textBaseline = 'alphabetic'; // reset
+        }
+
+        // Draw Border around Avatar
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(avatarX + avatarSize / 2, avatarY + avatarSize / 2, avatarSize / 2 + 2, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Draw Resident Info
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 22px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(userData.name || 'Resident Name', 200, 275);
+
+        ctx.fillStyle = '#94a3b8'; // slate-400
+        ctx.font = '12px sans-serif';
+        ctx.fillText(`Reg #: ${userData.regNumber || 'N/A'}`, 200, 300);
+
+        // Draw Details Table (Room, CNIC, Phone)
+        const drawDetail = (label, value, y) => {
+            ctx.fillStyle = '#a5b4fc';
+            ctx.font = 'bold 9px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(label.toUpperCase(), 50, y);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(value || 'N/A', 350, y);
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(50, y + 8);
+            ctx.lineTo(350, y + 8);
+            ctx.stroke();
+        };
+
+        drawDetail('Room Assignment', residency.roomNumber ? `Room ${residency.roomNumber} (Floor ${residency.floor || 0})` : 'Unassigned', 340);
+        drawDetail('CNIC Number', userData.cnic, 375);
+        drawDetail('Phone Number', userData.phone, 410);
+
+        // Draw QR Code
+        const qrSize = 100;
+        const qrX = 150;
+        const qrY = 445;
+
+        try {
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(userData.uid || userData.email || 'guest')}`;
+            const qrImg = new Image();
+            qrImg.crossOrigin = 'anonymous';
+            await new Promise((resolve, reject) => {
+                qrImg.onload = () => {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(qrX - 5, qrY - 5, qrSize + 10, qrSize + 10);
+                    ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+                    resolve();
+                };
+                qrImg.onerror = () => {
+                    reject();
+                };
+                qrImg.src = qrUrl;
+            });
+        } catch (e) {
+            // Draw Fallback QR block
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(qrX, qrY, qrSize, qrSize);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('QR Code Error', 200, qrY + qrSize / 2);
+        }
+
+        // Trigger download
+        const dataUrl = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `${userData.name?.replace(/\s+/g, '_')}_ID_Pass.png`;
+        link.href = dataUrl;
+        link.click();
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
             {/* Header */}
@@ -149,54 +309,55 @@ const GuestProfile = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Stay Details */}
-                    <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden group">
-                        <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 py-4 px-6">
-                            <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
-                                <Building2 className="h-4 w-4 text-gray-500 dark:text-muted-foreground" /> {isCheckedOut ? 'Past Residency' : 'My Stay Details'}
-                            </h3>
-                        </CardHeader>
-                        <CardContent className="p-6">
-                            {residency.roomNumber ? (
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`h-14 w-14 rounded-2xl ${isCheckedOut ? 'bg-rose-600' : 'bg-black'} flex items-center justify-center text-white shadow-lg shrink-0`}>
-                                            <Home className="h-6 w-6" />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Left Column: Stay Details, Guardian Info, Home Address */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Stay Details */}
+                        <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden group">
+                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 py-4 px-6">
+                                <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
+                                    <Building2 className="h-4 w-4 text-gray-500 dark:text-muted-foreground" /> {isCheckedOut ? 'Past Residency' : 'My Stay Details'}
+                                </h3>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                {residency.roomNumber ? (
+                                    <div className="space-y-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`h-14 w-14 rounded-2xl ${isCheckedOut ? 'bg-rose-600' : 'bg-black'} flex items-center justify-center text-white shadow-lg shrink-0`}>
+                                                <Home className="h-6 w-6" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{isCheckedOut ? 'Checked Out From' : 'Current Room'}</p>
+                                                <h4 className="text-xl font-bold text-gray-900 dark:text-foreground tracking-tight">Room {residency.roomNumber}</h4>
+                                                <p className={`text-xs font-bold uppercase tracking-wide ${isCheckedOut ? 'text-rose-500' : 'text-emerald-600'}`}>
+                                                    {isCheckedOut ? 'Residency Inactive' : `Floor ${residency.floor} • ${residency.roomType}`}
+                                                </p>
+                                            </div>
                                         </div>
+
+                                        <Separator className="bg-gray-100" />
+
                                         <div>
-                                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{isCheckedOut ? 'Checked Out From' : 'Current Room'}</p>
-                                            <h4 className="text-xl font-bold text-gray-900 dark:text-foreground tracking-tight">Room {residency.roomNumber}</h4>
-                                            <p className={`text-xs font-bold uppercase tracking-wide ${isCheckedOut ? 'text-rose-500' : 'text-emerald-600'}`}>
-                                                {isCheckedOut ? 'Residency Inactive' : `Floor ${residency.floor} • ${residency.roomType}`}
-                                            </p>
+                                            <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-3">Hostel Name</p>
+                                            <div className="bg-gray-50 dark:bg-muted/10 rounded-xl p-4 border border-gray-100 dark:border-border">
+                                                <h5 className="font-bold text-gray-900 dark:text-foreground">{hostel.name || "Our Hostel"}</h5>
+                                                <p className="text-xs text-gray-500 dark:text-muted-foreground mt-1">{hostel.address || "Address not available"}</p>
+                                                {hostel.phone && <p className="text-xs text-gray-400 dark:text-muted-foreground mt-2 font-mono">{hostel.phone}</p>}
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <Separator className="bg-gray-100" />
-
-                                    <div>
-                                        <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-3">Hostel Name</p>
-                                        <div className="bg-gray-50 dark:bg-muted/10 rounded-xl p-4 border border-gray-100 dark:border-border">
-                                            <h5 className="font-bold text-gray-900 dark:text-foreground">{hostel.name || "Our Hostel"}</h5>
-                                            <p className="text-xs text-gray-500 dark:text-muted-foreground mt-1">{hostel.address || "Address not available"}</p>
-                                            {hostel.phone && <p className="text-xs text-gray-400 dark:text-muted-foreground mt-2 font-mono">{hostel.phone}</p>}
+                                ) : (
+                                    <div className="text-center py-10">
+                                        <div className="h-12 w-12 bg-gray-50 dark:bg-muted/10 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400 dark:text-muted-foreground">
+                                            <Building2 className="h-6 w-6" />
                                         </div>
+                                        <p className="text-xs font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">No active stay found</p>
                                     </div>
-                                </div>
-                            ) : (
-                                <div className="text-center py-10">
-                                    <div className="h-12 w-12 bg-gray-50 dark:bg-muted/10 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400 dark:text-muted-foreground">
-                                        <Building2 className="h-6 w-6" />
-                                    </div>
-                                    <p className="text-xs font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">No active stay found</p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                                )}
+                            </CardContent>
+                        </Card>
 
-                    {/* Guardian Info */}
-                    <div className="space-y-6">
+                        {/* Guardian Info */}
                         <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden">
                             <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 py-4 px-6">
                                 <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
@@ -225,6 +386,7 @@ const GuestProfile = () => {
                             </CardContent>
                         </Card>
 
+                        {/* Home Address */}
                         <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden">
                             <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 py-4 px-6">
                                 <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
@@ -245,6 +407,84 @@ const GuestProfile = () => {
                                         Current Residence: {resident.currentResidence}
                                     </p>
                                 )}
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* Right Column: Digital Smart Card */}
+                    <div className="lg:col-span-1">
+                        <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden sticky top-24">
+                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 py-4 px-6 flex flex-row items-center justify-between">
+                                <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
+                                    <Fingerprint className="h-4 w-4 text-indigo-500" /> Digital ID Card
+                                </h3>
+                                <Badge className={`${isCheckedOut ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-600'} border-none text-[8px] font-bold uppercase tracking-wider px-2 py-0`}>
+                                    {isCheckedOut ? 'Inactive' : 'Active Pass'}
+                                </Badge>
+                            </CardHeader>
+                            <CardContent className="p-6 flex flex-col items-center">
+                                {/* Visual Card */}
+                                <div id="smart-id-card" className="w-[280px] h-[420px] rounded-[1.8rem] bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white p-5 relative overflow-hidden shadow-2xl border border-white/10 flex flex-col justify-between select-none">
+                                    <div className="absolute -top-12 -left-12 w-36 h-36 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+                                    <div className="absolute -bottom-12 -right-12 w-36 h-36 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
+                                    
+                                    {/* Header */}
+                                    <div className="text-center relative z-10 border-b border-white/10 pb-2.5">
+                                        <p className="text-[10px] font-black tracking-widest text-indigo-400 uppercase truncate">{hostel.name || "HOSTEL PORTAL"}</p>
+                                        <p className="text-[7px] font-bold text-slate-400 tracking-[0.2em] uppercase mt-0.5">Resident Smart ID Pass</p>
+                                    </div>
+
+                                    {/* Avatar and Primary Details */}
+                                    <div className="flex flex-col items-center my-3 relative z-10">
+                                        <div className="relative">
+                                            <Avatar className="h-20 w-20 border-2 border-indigo-500/40 shadow-xl">
+                                                <AvatarImage src={userData.image || "/avatar-placeholder.png"} />
+                                                <AvatarFallback className="text-2xl font-bold text-slate-900 bg-white">{userData.name?.charAt(0)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className={`absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-2 border-slate-900 flex items-center justify-center ${isCheckedOut ? 'bg-rose-500' : 'bg-emerald-500'}`}>
+                                                {isCheckedOut ? <LogOut className="h-3 w-3 text-white" /> : <CheckCircle2 className="h-3 w-3 text-white" />}
+                                            </div>
+                                        </div>
+                                        <h4 className="text-sm font-bold tracking-tight mt-2 text-center truncate w-full">{userData.name}</h4>
+                                        <p className="text-[8px] text-indigo-300 font-mono tracking-wider mt-0.5">Reg: {userData.regNumber || "N/A"}</p>
+                                    </div>
+
+                                    {/* Key Fields Grid */}
+                                    <div className="space-y-1.5 text-[10px] border-t border-white/5 pt-2.5 relative z-10">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[7px] text-slate-400 uppercase tracking-wider">Room Assignment</span>
+                                            <span className="font-bold text-indigo-300">{residency.roomNumber ? `Room ${residency.roomNumber} (Fl. ${residency.floor})` : 'Unassigned'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[7px] text-slate-400 uppercase tracking-wider">CNIC Number</span>
+                                            <span className="font-mono font-medium text-slate-200">{userData.cnic || "N/A"}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Footer and QR Code */}
+                                    <div className="flex items-center justify-between border-t border-white/10 pt-2.5 mt-auto relative z-10">
+                                        <div className="text-left">
+                                            <p className="text-[6px] text-slate-400 uppercase tracking-widest">Issued On</p>
+                                            <p className="text-[8px] font-bold text-slate-200">{userData.joinedAt ? new Date(userData.joinedAt).toLocaleDateString() : 'N/A'}</p>
+                                            <p className="text-[6px] text-slate-500 uppercase tracking-widest mt-1">UID</p>
+                                            <p className="text-[7px] font-mono text-slate-400">{userData.uid?.slice(0, 12) || "N/A"}</p>
+                                        </div>
+                                        <div className="bg-white p-1 rounded-lg shadow-md shrink-0">
+                                            <img 
+                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(userData.uid || userData.email || 'guest')}`} 
+                                                alt="QR Pass" 
+                                                className="h-12 w-12"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <Button 
+                                    onClick={downloadSmartCard} 
+                                    className="w-full max-w-[280px] mt-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider py-2 flex items-center justify-center gap-2"
+                                >
+                                    <CreditCard className="h-4 w-4" /> Download ID Pass (PNG)
+                                </Button>
                             </CardContent>
                         </Card>
                     </div>

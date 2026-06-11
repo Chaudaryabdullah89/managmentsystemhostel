@@ -16,10 +16,12 @@ import { useNotices } from "@/hooks/useNotices"
 import { format } from "date-fns"
 import Link from "next/link"
 
-const NoticeWidget = ({ hostelId }) => {
-    const { data: notices, isLoading } = useNotices({ hostelId })
+const NoticeWidget = ({ hostelId, prefetchedNotices }) => {
+    const { data: noticesData, isLoading } = useNotices({ hostelId });
+    const notices = prefetchedNotices || noticesData;
+    const showLoading = !prefetchedNotices && isLoading;
 
-    if (isLoading) return (
+    if (showLoading) return (
         <Card className="rounded-[2.5rem] border-gray-100 shadow-sm overflow-hidden animate-pulse">
             <div className="h-48 bg-gray-50 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-2">

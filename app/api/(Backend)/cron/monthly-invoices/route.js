@@ -73,10 +73,9 @@ export async function GET(req) {
               }
             });
 
-            await prisma.booking.update({
-              where: { id: booking.id },
-              data: { totalAmount: { increment: rentAmount } }
-            });
+            // Note: We do NOT mutate booking.totalAmount here.
+            // All financial totals are derived from Payment records directly.
+            // booking.totalAmount remains the original contract snapshot.
 
             results.rent.created++;
 

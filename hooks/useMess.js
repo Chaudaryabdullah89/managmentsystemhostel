@@ -44,3 +44,38 @@ export const useUpsertMessMenu = () => {
         },
     });
 };
+
+export const useMessFeedback = (hostelId) => {
+    return useQuery({
+        queryKey: ["messFeedback", hostelId],
+        queryFn: async () => {
+            if (!hostelId) return { feedbacks: [], averages: { BREAKFAST: { avg: 0, count: 0 }, LUNCH: { avg: 0, count: 0 }, DINNER: { avg: 0, count: 0 } } };
+            const response = await fetch(`/api/guest/mess/feedback?hostelId=${hostelId}`);
+            if (!response.ok) throw new Error("Failed to fetch mess feedback");
+            const data = await response.json();
+            return data;
+        },
+        enabled: !!hostelId,
+    });
+};
+
+export const useSubmitMessFeedback = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (feedbackData) => {
+            const response = await fetch("/api/guest/mess/feedback", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(feedbackData)
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || "Failed to submit feedback");
+            }
+            return response.json();
+        },
+        onSuccess: (_, variables) => {
+            queryClient.invalidateQueries(["messFeedback", variables.hostelId]);
+        }
+    });
+};

@@ -440,13 +440,15 @@ const PaymentManagementPage = () => {
       if (b.status !== "CHECKED_IN") return false;
 
       // Check if paid for target month
+      // Must match on p.month/p.year (the billing period) NOT payment date
+      // — a resident can pay January rent in February; date-based matching is wrong.
+      const targetMonthName = new Date(targetYear, targetMonth, 1).toLocaleString('default', { month: 'long' });
       const hasPaidForTargetMonth = b.Payment?.some((p) => {
-        const pDate = new Date(p.date || p.createdAt);
         return (
           p.status === "PAID" &&
-          p.type === "RENT" &&
-          pDate.getMonth() === targetMonth &&
-          pDate.getFullYear() === targetYear
+          (p.type === "RENT" || p.type === "MONTHLY_RENT") &&
+          p.month === targetMonthName &&
+          p.year === targetYear
         );
       });
 

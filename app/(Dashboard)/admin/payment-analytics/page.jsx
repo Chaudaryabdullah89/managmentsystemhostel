@@ -155,8 +155,8 @@ export default function PaymentAnalyticsPage() {
                 grossVolume += amount;
                 successfulTx++;
 
-                // Categorization
-                const nType = (type === 'MONTHLY' || type === 'RENT') ? 'Rent' :
+                // Categorization — normalize all rent-like types
+                const nType = (type === 'MONTHLY' || type === 'RENT' || type === 'MONTHLY_RENT') ? 'Rent' :
                     (type === 'SECURITY_DEPOSIT') ? 'Security' : 'Other';
                 typeVolume[nType] = (typeVolume[nType] || 0) + amount;
                 methodVolume[method] = (methodVolume[method] || 0) + amount;
@@ -166,7 +166,7 @@ export default function PaymentAnalyticsPage() {
                     const mKey = format(date, 'MMM yyyy');
                     monthlyRaw[mKey] = (monthlyRaw[mKey] || 0) + amount;
 
-                    // Comparative Period
+                    // Comparative Period (only meaningful for this_month filter)
                     if (isWithinInterval(date, { start: prevPeriodStart, end: prevPeriodEnd })) {
                         previousPeriodVolume += amount;
                     }
@@ -177,7 +177,8 @@ export default function PaymentAnalyticsPage() {
                 if (!residentImpact[uId]) residentImpact[uId] = { name: p.User?.name || 'Resident', total: 0, count: 0 };
                 residentImpact[uId].total += amount;
                 residentImpact[uId].count++;
-            } else if (status === 'PENDING' || status === 'PARTIAL') {
+            } else if (status === 'PENDING' || status === 'PARTIAL' || status === 'OVERDUE') {
+                // All uncollected statuses contribute to pending volume
                 pendingVolume += amount;
             } else if (status === 'REFUNDED') {
                 refundVolume += amount;
@@ -194,8 +195,17 @@ export default function PaymentAnalyticsPage() {
         const methodMix = Object.entries(methodVolume).map(([name, value]) => ({ name, value, percentage: (value / grossVolume) * 100 })).sort((a, b) => b.value - a.value);
         const leadingResidents = Object.values(residentImpact).sort((a, b) => b.total - a.total).slice(0, 5);
 
-        // Trend
-        const growth = previousPeriodVolume > 0 ? ((grossVolume - previousPeriodVolume) / previousPeriodVolume) * 100 : (grossVolume > 0 ? 100 : 0);
+        // Clearance rate: PAID / (PAID + PENDING + OVERDUE + PARTIAL) — excludes REFUNDED/REJECTED
+        // which are completed or voided transactions, not failures to collect
+        const collectable = filteredPayments.filter(p => ['PAID', 'PENDING', 'OVERDUE', 'PARTIAL'].includes(p.status));
+        const clearanceRate = collectable.length > 0
+            ? ((collectable.filter(p => p.status === 'PAID').length / collectable.length) * 100)
+            : 0;
+
+        // Growth trend is only valid when comparing this month vs last month
+        const growth = (timeFilter === 'this_month' || timeFilter === 'all')
+            ? (previousPeriodVolume > 0 ? ((grossVolume - previousPeriodVolume) / previousPeriodVolume) * 100 : (grossVolume > 0 ? 100 : 0))
+            : undefined;
 
         return {
             grossVolume,
@@ -203,6 +213,7 @@ export default function PaymentAnalyticsPage() {
             refundVolume,
             growth,
             successfulTx,
+            clearanceRate,
             totalTx: filteredPayments.length,
             timeline,
             typeMix,
@@ -298,7 +309,7 @@ export default function PaymentAnalyticsPage() {
                     {[
                         { label: 'Gross Volume', value: `PKR ${(financialData.grossVolume / 1000).toFixed(1)}k`, fullValue: formatCurrency(financialData.grossVolume), icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50', trend: financialData.growth },
                         { label: 'Pending', value: `PKR ${(financialData.pendingVolume / 1000).toFixed(1)}k`, fullValue: formatCurrency(financialData.pendingVolume), icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Clearance Rate', value: `${financialData.totalTx > 0 ? ((financialData.successfulTx / financialData.totalTx) * 100).toFixed(1) : 0}%`, fullValue: `${financialData.totalTx > 0 ? ((financialData.successfulTx / financialData.totalTx) * 100).toFixed(1) : 0}%`, icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Clearance Rate', value: `${financialData.clearanceRate.toFixed(1)}%`, fullValue: `${financialData.clearanceRate.toFixed(1)}%`, icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                         { label: 'Refunds', value: `PKR ${(financialData.refundVolume / 1000).toFixed(1)}k`, fullValue: formatCurrency(financialData.refundVolume), icon: Undo2, color: 'text-rose-600', bg: 'bg-rose-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl md:rounded-3xl p-4 md:p-5 flex items-center justify-between shadow-sm group hover:shadow-md transition-shadow min-w-0">

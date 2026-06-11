@@ -5,28 +5,130 @@ import {
     CreditCard,
     MessageSquare,
     ChevronRight,
-    AlertCircle,
-    Activity
+    AlertCircle
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from 'next/link';
 import useAuthStore from "@/hooks/Authstate";
-import { useBookings } from "@/hooks/useBooking";
-import { useAllPayments } from "@/hooks/usePayment";
-import { useComplaints } from "@/hooks/usecomplaints";
+import { useGuestDashboard } from "@/hooks/useGuestDashboard";
 import NoticeWidget from "@/components/Dashboard/NoticeWidget";
+
+const GuestDashboardSkeleton = () => (
+    <div className="min-h-screen bg-gray-50/50 dark:bg-background pb-20 font-sans animate-pulse">
+        {/* Header Skeleton */}
+        <header className="bg-white dark:bg-card border-b sticky top-0 z-40 h-16 flex items-center">
+            <div className="max-w-7xl mx-auto px-6 w-full flex justify-between items-center">
+                <div className="space-y-2">
+                    <div className="h-5 w-40 bg-gray-200 dark:bg-muted/30 rounded-lg animate-pulse" />
+                    <div className="h-3 w-24 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                </div>
+            </div>
+        </header>
+
+        <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+            {/* Info Cards Skeleton */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {[...Array(3)].map((_, i) => (
+                    <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-6 shadow-sm space-y-4">
+                        <div className="flex justify-between items-center border-b border-gray-50 pb-4">
+                            <div className="h-4 w-28 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                            <div className="h-5 w-5 bg-gray-200 dark:bg-muted/30 rounded-full animate-pulse" />
+                        </div>
+                        <div className="space-y-2 pt-2">
+                            <div className="h-8 w-36 bg-gray-200 dark:bg-muted/30 rounded-lg animate-pulse" />
+                            <div className="h-3.5 w-48 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                            <div className="h-5 w-24 bg-gray-200 dark:bg-muted/30 rounded-full mt-2 animate-pulse" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Bulletin & Operations Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Notice Board Widget Skeleton */}
+                <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-[2.5rem] shadow-sm overflow-hidden">
+                    <div className="h-24 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-muted/20 dark:to-muted/30 p-6 flex flex-col justify-end">
+                        <div className="h-4 w-32 bg-white/40 rounded-md animate-pulse" />
+                    </div>
+                    <div className="p-6 space-y-6">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="space-y-2 border-b border-gray-50 pb-4 last:border-0 last:pb-0">
+                                <div className="flex justify-between">
+                                    <div className="h-3 w-16 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                                    <div className="h-3 w-12 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                                </div>
+                                <div className="h-4 w-40 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                                <div className="h-3 w-full bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Recent Activity Grid Skeleton */}
+                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {/* Recent Payments Skeleton */}
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center px-2">
+                            <div className="h-4 w-28 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                            <div className="h-4 w-12 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                        </div>
+                        <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-6 shadow-sm space-y-4">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0 pb-2">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-10 w-10 bg-gray-200 dark:bg-muted/30 rounded-xl animate-pulse" />
+                                        <div className="space-y-2">
+                                            <div className="h-3.5 w-24 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                                            <div className="h-2.5 w-16 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5 text-right">
+                                        <div className="h-3.5 w-20 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                                        <div className="h-3 w-12 bg-gray-200 dark:bg-muted/30 rounded-md ml-auto animate-pulse" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Recent Issues Skeleton */}
+                    <div className="space-y-6">
+                        <div className="flex justify-between items-center px-2">
+                            <div className="h-4 w-28 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                            <div className="h-4 w-20 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                        </div>
+                        <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-6 shadow-sm space-y-4">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0 pb-2">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-10 w-10 bg-gray-200 dark:bg-muted/30 rounded-xl animate-pulse" />
+                                        <div className="space-y-2">
+                                            <div className="h-3.5 w-32 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                                            <div className="h-2.5 w-16 bg-gray-200 dark:bg-muted/30 rounded-md animate-pulse" />
+                                        </div>
+                                    </div>
+                                    <div className="h-4 w-12 bg-gray-200 dark:bg-muted/30 rounded-full animate-pulse" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+);
 
 const GuestDashboard = () => {
     const user = useAuthStore((state) => state.user);
 
-    // Fetch Data
-    const { data: bookingsData, isLoading: bookingsLoading } = useBookings({ userId: user?.id });
-    const { data: paymentsData, isLoading: paymentsLoading } = useAllPayments({ userId: user?.id, limit: 10 });
-    const { data: complaintsData, isLoading: complaintsLoading } = useComplaints({ userId: user?.id });
+    // Fetch Consolidated Data
+    const { data: dashboardData, isLoading } = useGuestDashboard();
 
-    const isLoading = bookingsLoading || paymentsLoading || complaintsLoading;
+    const bookingsData = dashboardData?.bookings;
+    const paymentsData = { payments: dashboardData?.payments };
+    const complaintsData = dashboardData?.complaints;
     const [showWelcome, setShowWelcome] = React.useState(false);
     const [isExiting, setIsExiting] = React.useState(false);
 
@@ -121,9 +223,7 @@ const GuestDashboard = () => {
             )}
 
             {isLoading ? (
-                <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex items-center justify-center">
-                    <Activity className="h-8 w-8 text-gray-400 dark:text-muted-foreground animate-pulse" />
-                </div>
+                <GuestDashboardSkeleton />
             ) : (
                 <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight relative overflow-hidden">
                     {/* Header */}
@@ -247,7 +347,7 @@ const GuestDashboard = () => {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             {/* Notice Board Widget */}
                             <div className="lg:col-span-1 animate-in slide-in-from-bottom-8 fade-in duration-700 fill-mode-both delay-[400ms]">
-                                <NoticeWidget hostelId={user?.hostelId} />
+                                <NoticeWidget hostelId={user?.hostelId} prefetchedNotices={dashboardData?.notices} />
                             </div>
 
                             {/* Recent Activity Grid */}

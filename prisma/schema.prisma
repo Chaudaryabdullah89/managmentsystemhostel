@@ -23,6 +23,9 @@ model Booking {
   Room            Room          @relation(fields: [roomId], references: [id])
   User            User          @relation(fields: [userId], references: [id])
   Payment         Payment[]
+
+  @@index([userId])
+  @@index([roomId])
 }
 
 model Complaint {
@@ -46,6 +49,10 @@ model Complaint {
   Hostel                            Hostel             @relation(fields: [hostelId], references: [id])
   User_Complaint_userIdToUser       User               @relation("Complaint_userIdToUser", fields: [userId], references: [id])
   comments                          ComplaintComment[]
+
+  @@index([userId])
+  @@index([hostelId])
+  @@index([assignedToId])
 }
 
 model Expense {
@@ -69,6 +76,12 @@ model Expense {
   User_Expense_rejectedByIdToUser  User?           @relation("Expense_rejectedByIdToUser", fields: [rejectedById], references: [id])
   User_Expense_submittedByIdToUser User            @relation("Expense_submittedByIdToUser", fields: [submittedById], references: [id])
   User_Expense_userIdToUser        User?           @relation("Expense_userIdToUser", fields: [userId], references: [id])
+
+  @@index([hostelId])
+  @@index([submittedById])
+  @@index([approvedById])
+  @@index([rejectedById])
+  @@index([userId])
 }
 
 model Hostel {
@@ -109,6 +122,8 @@ model Hostel {
   staffTasks                  StaffTask[]
   User_User_hostelIdToHostel  User[]          @relation("User_hostelIdToHostel")
   Maintenance                 Maintenance[]
+  messFeedback                MessFeedback[]
+  messInventory               MessInventory[]
 }
 
 model MessMenu {
@@ -144,6 +159,9 @@ model Notice {
   updatedAt   DateTime  @updatedAt
   author      User      @relation(fields: [authorId], references: [id])
   hostel      Hostel?   @relation(fields: [hostelId], references: [id])
+
+  @@index([authorId])
+  @@index([hostelId])
 }
 
 model OtpVerification {
@@ -176,6 +194,9 @@ model Payment {
   Booking       Booking?        @relation(fields: [bookingId], references: [id])
   User          User            @relation(fields: [userId], references: [id])
   RefundRequest RefundRequest[]
+
+  @@index([userId])
+  @@index([bookingId])
 }
 
 model ResidentProfile {
@@ -216,7 +237,10 @@ model Room {
   LaundryLog       LaundryLog[]
   Hostel           Hostel        @relation(fields: [hostelId], references: [id], onDelete: Cascade)
   Maintenance      Maintenance[]
+  fromSwaps        RoomSwapRequest[] @relation("FromRoom")
+  toSwaps          RoomSwapRequest[] @relation("ToRoom")
 
+  @@index([hostelId])
   @@unique([hostelId, roomNumber])
 }
 
@@ -237,6 +261,8 @@ model Salary {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   StaffProfile   StaffProfile   @relation(fields: [staffProfileId], references: [id])
+
+  @@index([staffProfileId])
 }
 
 model Session {
@@ -250,6 +276,8 @@ model Session {
   isActive   Boolean   @default(true)
   createdAt  DateTime  @default(now())
   User       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model StaffProfile {
@@ -316,6 +344,10 @@ model User {
   WardenPayment                          WardenPayment[]
   Maintenance_assignedToIdToUser         Maintenance[]      @relation("Maintenance_assignedToIdToUser")
   Maintenance_userIdToUser               Maintenance[]      @relation("Maintenance_userIdToUser")
+  messFeedback                           MessFeedback[]
+  roomSwaps                              RoomSwapRequest[]
+
+  @@index([hostelId])
 }
 
 model Maintenance {
@@ -338,6 +370,10 @@ model Maintenance {
   Room            Room?     @relation(fields: [roomId], references: [id])
   User            User?     @relation("Maintenance_userIdToUser", fields: [userId], references: [id])
 
+  @@index([hostelId])
+  @@index([assignedToId])
+  @@index([userId])
+  @@index([roomId])
   @@map("maintanance")
 }
 
@@ -371,6 +407,9 @@ model CleaningLog {
   createdAt   DateTime @default(now())
   Hostel      Hostel   @relation(fields: [hostelId], references: [id], onDelete: Cascade)
   Room        Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@index([hostelId])
 }
 
 model LaundryLog {
@@ -385,6 +424,9 @@ model LaundryLog {
   deliveredAt DateTime?
   Hostel      Hostel    @relation(fields: [hostelId], references: [id], onDelete: Cascade)
   Room        Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@index([roomId])
+  @@index([hostelId])
 }
 
 model WardenPayment {
@@ -404,6 +446,8 @@ model WardenPayment {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   Warden        User     @relation(fields: [wardenId], references: [id])
+
+  @@index([wardenId])
 }
 
 model StaffTask {
@@ -425,6 +469,10 @@ model StaffTask {
   createdBy    User          @relation("Task_CreatedBy", fields: [createdById], references: [id])
   hostel       Hostel        @relation(fields: [hostelId], references: [id])
   comments     TaskComment[]
+
+  @@index([hostelId])
+  @@index([assignedToId])
+  @@index([createdById])
 }
 
 model TaskComment {
@@ -435,6 +483,9 @@ model TaskComment {
   createdAt DateTime  @default(now())
   Task      StaffTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
   User      User      @relation(fields: [userId], references: [id])
+
+  @@index([taskId])
+  @@index([userId])
 }
 
 model RefundRequest {
@@ -451,6 +502,10 @@ model RefundRequest {
   Hostel    Hostel   @relation(fields: [hostelId], references: [id])
   Payment   Payment  @relation(fields: [paymentId], references: [id])
   User      User     @relation(fields: [userId], references: [id])
+
+  @@index([paymentId])
+  @@index([userId])
+  @@index([hostelId])
 }
 
 model ComplaintComment {
@@ -461,6 +516,9 @@ model ComplaintComment {
   createdAt   DateTime  @default(now())
   Complaint   Complaint @relation(fields: [complaintId], references: [id], onDelete: Cascade)
   User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([complaintId])
+  @@index([userId])
 }
 
 enum TaskStatus {
@@ -617,4 +675,53 @@ model RolePermission {
   role        UserRole @unique
   permissions Json // Store mapping of specific permission keys (e.g., "manage_laundry": true)
   updatedAt   DateTime @updatedAt
+}
+
+model MessFeedback {
+  id        String   @id @default(cuid())
+  userId    String
+  hostelId  String
+  date      DateTime @default(now())
+  mealType  String   // BREAKFAST, LUNCH, DINNER
+  rating    Int      // 1 to 5
+  comments  String?
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Hostel    Hostel   @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([hostelId])
+}
+
+model RoomSwapRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  fromRoomId  String
+  toRoomId    String
+  reason      String
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  FromRoom    Room     @relation("FromRoom", fields: [fromRoomId], references: [id], onDelete: Cascade)
+  ToRoom      Room     @relation("ToRoom", fields: [toRoomId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([fromRoomId])
+  @@index([toRoomId])
+}
+
+model MessInventory {
+  id           String    @id @default(cuid())
+  hostelId     String
+  itemName     String
+  quantity     Float
+  unit         String
+  minThreshold Float     @default(10)
+  expiryDate   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  Hostel       Hostel    @relation(fields: [hostelId], references: [id], onDelete: Cascade)
+
+  @@index([hostelId])
 }
