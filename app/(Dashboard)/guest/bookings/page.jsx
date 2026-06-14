@@ -194,7 +194,7 @@ const BookingDetailCard = ({ booking }) => {
             {isExpanded && (
                 <div className="mt-8 pt-8 border-t border-gray-100 dark:border-border space-y-8 animate-in slide-in-from-top-4 relative z-10">
                     <Tabs defaultValue="operations" className="w-full">
-                        <TabsList className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-1 rounded-xl h-11 w-fit mb-8 border border-gray-100 dark:border-border">
+                        <TabsList className="bg-gray-50 dark:bg-background p-1 rounded-xl h-11 w-fit mb-8 border border-gray-100 dark:border-border">
                             {[
                                 { id: 'operations', label: 'Room Services', icon: Blocks },
                                 { id: 'finance', label: 'Payments', icon: CreditCard },
@@ -252,7 +252,7 @@ const BookingDetailCard = ({ booking }) => {
                                     )}
                                 </div>
                             </div>
-                            <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl p-6 border border-gray-100 dark:border-border">
+                            <div className="bg-gray-50 dark:bg-background rounded-2xl p-6 border border-gray-100 dark:border-border">
                                 <h5 className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-6 underline decoration-indigo-600 decoration-2 underline-offset-4">Payment Summary</h5>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center py-2 border-b border-white/50">

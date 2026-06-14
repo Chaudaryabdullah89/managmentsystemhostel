@@ -389,7 +389,7 @@ const ResidentDetailContent = () => {
                                 </div>
 
                                 {user.ResidentProfile && (
-                                    <div className="p-6 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-3xl border border-gray-100 dark:border-border space-y-4">
+                                    <div className="p-6 bg-gray-50 dark:bg-background rounded-3xl border border-gray-100 dark:border-border space-y-4">
                                         <div className="flex items-center gap-3">
                                             <Shield className="h-4 w-4 text-emerald-600" />
                                             <span className="text-[9px] font-black uppercase text-gray-900 dark:text-foreground tracking-widest">Emergency Contact</span>
@@ -499,7 +499,7 @@ const ResidentDetailContent = () => {
                                         <h3 className="text-sm font-black uppercase tracking-widest text-gray-900 dark:text-foreground">Payment History</h3>
                                     </div>
                                     <Table>
-                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                                        <TableHeader className="bg-gray-50 dark:bg-background">
                                             <TableRow className="border-none">
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Date</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Type</TableHead>
@@ -510,7 +510,7 @@ const ResidentDetailContent = () => {
                                         </TableHeader>
                                         <TableBody>
                                             {userDetails?.payments?.map((p) => (
-                                                <TableRow key={p.id} className="border-gray-50 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors group">
+                                                <TableRow key={p.id} className="border-gray-50 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors group">
                                                     <TableCell className="px-8 py-5">
                                                         <span className="text-xs font-bold text-gray-900 dark:text-foreground">{safeFormat(p.date || p.createdAt, 'MMM dd, yyyy')}</span>
                                                     </TableCell>
@@ -627,7 +627,7 @@ const ResidentDetailContent = () => {
                                         {user.ResidentProfile?.documents && Object.keys(user.ResidentProfile.documents).length > 0 ? (
                                             <div className="space-y-6">
                                                 {user?.ResidentProfile?.documents?.currentResidence && (
-                                                    <div className="p-4 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border">
+                                                    <div className="p-4 rounded-2xl bg-gray-50 dark:bg-background border border-gray-100 dark:border-border">
                                                         <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground mb-1">Current Residence</p>
                                                         <p className="text-sm font-bold text-gray-800 dark:text-foreground">{user.ResidentProfile.documents.currentResidence}</p>
                                                     </div>
@@ -726,7 +726,7 @@ const ResidentDetailContent = () => {
                             <Input
                                 type="number"
                                 placeholder="0.00"
-                                className="h-14 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-black text-lg px-6 focus:ring-indigo-600/20"
+                                className="h-14 rounded-2xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-black text-lg px-6 focus:ring-indigo-600/20"
                                 value={invoiceForm.amount}
                                 onChange={(e) => setInvoiceForm({ ...invoiceForm, amount: e.target.value })}
                             />
@@ -735,7 +735,7 @@ const ResidentDetailContent = () => {
                             <div className="space-y-2">
                                 <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Category</Label>
                                 <Select value={invoiceForm.type} onValueChange={(v) => setInvoiceForm({ ...invoiceForm, type: v })}>
-                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold text-xs uppercase px-6">
+                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold text-xs uppercase px-6">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl">
@@ -751,7 +751,7 @@ const ResidentDetailContent = () => {
                                 <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Due Date</Label>
                                 <Input
                                     type="date"
-                                    className="h-14 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold text-xs px-6"
+                                    className="h-14 rounded-2xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold text-xs px-6"
                                     value={invoiceForm.dueDate}
                                     onChange={(e) => setInvoiceForm({ ...invoiceForm, dueDate: e.target.value })}
                                 />
@@ -761,7 +761,7 @@ const ResidentDetailContent = () => {
                             <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Notes</Label>
                             <Textarea
                                 placeholder="Log details for reference..."
-                                className="min-h-[100px] rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-medium p-6 resize-none focus:ring-indigo-600/20"
+                                className="min-h-[100px] rounded-2xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-medium p-6 resize-none focus:ring-indigo-600/20"
                                 value={invoiceForm.notes}
                                 onChange={(e) => setInvoiceForm({ ...invoiceForm, notes: e.target.value })}
                             />
@@ -792,7 +792,7 @@ const ResidentDetailContent = () => {
                             <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Case Subject</Label>
                             <Input
                                 placeholder="Core issue summary..."
-                                className="h-14 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-black text-xs px-6 uppercase focus:ring-indigo-600/20"
+                                className="h-14 rounded-2xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-black text-xs px-6 uppercase focus:ring-indigo-600/20"
                                 value={grievanceForm.title}
                                 onChange={(e) => setGrievanceForm({ ...grievanceForm, title: e.target.value })}
                             />
@@ -801,7 +801,7 @@ const ResidentDetailContent = () => {
                             <div className="space-y-2">
                                 <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Category</Label>
                                 <Select value={grievanceForm.category} onValueChange={(v) => setGrievanceForm({ ...grievanceForm, category: v })}>
-                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold text-xs uppercase px-6">
+                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold text-xs uppercase px-6">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl">
@@ -817,7 +817,7 @@ const ResidentDetailContent = () => {
                             <div className="space-y-2">
                                 <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Priority</Label>
                                 <Select value={grievanceForm.priority} onValueChange={(v) => setGrievanceForm({ ...grievanceForm, priority: v })}>
-                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold text-xs uppercase px-6">
+                                    <SelectTrigger className="h-14 rounded-2xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold text-xs uppercase px-6">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl">
@@ -833,7 +833,7 @@ const ResidentDetailContent = () => {
                             <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Dossier Details</Label>
                             <Textarea
                                 placeholder="Evidence and context..."
-                                className="min-h-[120px] rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-medium p-6 resize-none focus:ring-indigo-600/20"
+                                className="min-h-[120px] rounded-2xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-medium p-6 resize-none focus:ring-indigo-600/20"
                                 value={grievanceForm.description}
                                 onChange={(e) => setGrievanceForm({ ...grievanceForm, description: e.target.value })}
                             />

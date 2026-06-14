@@ -342,7 +342,7 @@ const WardenMessMenu = () => {
                                             { type: 'lunch', label: 'Lunch', icon: Utensils, color: 'text-emerald-500', bg: 'bg-emerald-50', field: 'lunch', startField: 'lunchStart', endField: 'lunchEnd', timeLabel: 'lunchTime' },
                                             { type: 'dinner', label: 'Dinner', icon: Utensils, color: 'text-indigo-500', bg: 'bg-indigo-50', field: 'dinner', startField: 'dinnerStart', endField: 'dinnerEnd', timeLabel: 'dinnerTime' }
                                         ].map((meal) => (
-                                            <div key={meal.type} className={`p-5 md:p-6 transition-all duration-500 ${isEditing ? 'bg-gray-50 dark:bg-muted/10/30' : 'hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background'} rounded-xl`}>
+                                            <div key={meal.type} className={`p-5 md:p-6 transition-all duration-500 ${isEditing ? 'bg-gray-50 dark:bg-muted/10/30' : 'hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background'} rounded-xl`}>
                                                 <div className="flex items-center gap-2 mb-3">
                                                     <meal.icon className={`h-4 w-4 md:h-5 md:w-5 ${meal.color}`} />
                                                     <h4 className="text-xs md:text-sm font-semibold text-gray-800 dark:text-foreground uppercase tracking-wide">{meal.label}</h4>

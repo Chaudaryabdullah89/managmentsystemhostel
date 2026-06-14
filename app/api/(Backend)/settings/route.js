@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { DEFAULT_SETTINGS } from "@/lib/permissions";
 import { requireAuth, requireRoles } from "@/lib/apiAuth";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
+import { revalidateTag } from "next/cache";
 
 export async function GET() {
     // Require authentication — system settings reveal feature flags that shouldn't be public
@@ -44,6 +45,9 @@ export async function PUT(req) {
             update: data,
             create: { id: "global", ...DEFAULT_SETTINGS, ...data },
         });
+
+        // Invalidate settings cache so changes take effect immediately
+        revalidateTag("settings");
 
         return successResponse({ settings });
     } catch (error) {

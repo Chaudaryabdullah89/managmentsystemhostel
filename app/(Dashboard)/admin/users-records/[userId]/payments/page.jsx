@@ -29,13 +29,13 @@ export default function PaymentsPage({ params }) {
         <div className="p-6 max-w-6xl mx-auto space-y-6">
             <SectionHeader title="Resident Payment History" backHref={`/admin/users-records/${userId}`} />
             <Card className="rounded-lg shadow-sm border">
-                <CardHeader className="border-b bg-gray-50 dark:bg-muted/10/50 dark:bg-background py-4">
+                <CardHeader className="border-b bg-gray-50 dark:bg-background py-4">
                     <CardTitle className="text-base font-semibold">Payment Ledger</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>
                         <TableHeader>
-                            <TableRow className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                            <TableRow className="bg-gray-50 dark:bg-background">
                                 <TableHead className="px-6 py-3 text-xs font-bold uppercase tracking-wider">Entry Date</TableHead>
                                 <TableHead className="px-6 py-3 text-xs font-bold uppercase tracking-wider">Classification</TableHead>
                                 <TableHead className="px-6 py-3 text-xs font-bold uppercase tracking-wider">Amount (PKR)</TableHead>

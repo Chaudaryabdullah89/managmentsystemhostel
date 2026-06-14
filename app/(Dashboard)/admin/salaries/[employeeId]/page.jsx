@@ -188,7 +188,7 @@ const EmployeeSalaryHistoryPage = () => {
     };
 
     return (
-        <div className="print:hidden min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
+        <div className="print:hidden min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight">
             {/* Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-40 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
@@ -384,7 +384,7 @@ const EmployeeSalaryHistoryPage = () => {
                                     </div>
 
                                     {/* Middle Financials */}
-                                    <div className="flex-[2] w-full bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl p-4 border border-gray-100 dark:border-border">
+                                    <div className="flex-[2] w-full bg-gray-50 dark:bg-background rounded-2xl p-4 border border-gray-100 dark:border-border">
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                             <div>
                                                 <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest block mb-1">Base Salary</span>

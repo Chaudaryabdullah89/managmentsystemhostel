@@ -863,7 +863,7 @@ const PaymentManagementPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight print:hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight print:hidden">
       {/* Header */}
       <div className="bg-white dark:bg-card border-b sticky top-0 z-50 py-2 md:h-16">
         <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">

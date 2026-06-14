@@ -467,7 +467,7 @@ export default function RegisterUserPage() {
                                             </div>
                                             <div className="space-y-2 md:col-span-2">
                                                 <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Additional Documents (Images)</Label>
-                                                <div className="rounded-2xl border border-dashed border-gray-200 dark:border-border p-4 bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                                                <div className="rounded-2xl border border-dashed border-gray-200 dark:border-border p-4 bg-gray-50 dark:bg-background">
                                                     <label className="h-11 px-4 rounded-xl bg-white dark:bg-card border border-gray-200 dark:border-border inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-600 dark:text-muted-foreground cursor-pointer hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10">
                                                         <Upload className="h-3.5 w-3.5" />
                                                         {uploadingImages ? "Uploading..." : "Upload Images"}
@@ -521,7 +521,7 @@ export default function RegisterUserPage() {
                                     <div className="space-y-2 md:col-span-2">
                                         <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Assigned Hostel *</Label>
                                         {isWarden ? (
-                                            <div className="h-14 rounded-xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex items-center px-4 gap-3">
+                                            <div className="h-14 rounded-xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-background flex items-center px-4 gap-3">
                                                 <Building2 className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />
                                                 <span className="font-bold text-sm text-gray-700 dark:text-foreground">
                                                     {hostels.find(h => h.id === currentUser?.hostelId)?.name || "Your Assigned Hostel"}
@@ -638,7 +638,7 @@ export default function RegisterUserPage() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {/* Role card */}
-                                    <div className="p-6 rounded-3xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border flex items-center gap-4">
+                                    <div className="p-6 rounded-3xl bg-gray-50 dark:bg-background border border-gray-100 dark:border-border flex items-center gap-4">
                                         <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${selectedRole?.bg}`}>
                                             {selectedRole && <selectedRole.icon className={`h-6 w-6 ${selectedRole.color}`} />}
                                         </div>
@@ -649,7 +649,7 @@ export default function RegisterUserPage() {
                                     </div>
 
                                     {/* Name / Email */}
-                                    <div className="p-6 rounded-3xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border flex items-center gap-4">
+                                    <div className="p-6 rounded-3xl bg-gray-50 dark:bg-background border border-gray-100 dark:border-border flex items-center gap-4">
                                         <div className="h-12 w-12 rounded-2xl bg-indigo-50 flex items-center justify-center">
                                             <User className="h-6 w-6 text-indigo-600" />
                                         </div>
@@ -661,7 +661,7 @@ export default function RegisterUserPage() {
                                     </div>
 
                                     {/* Phone / CNIC */}
-                                    <div className="p-6 rounded-3xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border flex items-center gap-4">
+                                    <div className="p-6 rounded-3xl bg-gray-50 dark:bg-background border border-gray-100 dark:border-border flex items-center gap-4">
                                         <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center">
                                             <Phone className="h-6 w-6 text-blue-600" />
                                         </div>
@@ -673,7 +673,7 @@ export default function RegisterUserPage() {
                                     </div>
 
                                     {/* Hostel */}
-                                    <div className="p-6 rounded-3xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border flex items-center gap-4">
+                                    <div className="p-6 rounded-3xl bg-gray-50 dark:bg-background border border-gray-100 dark:border-border flex items-center gap-4">
                                         <div className="h-12 w-12 rounded-2xl bg-emerald-50 flex items-center justify-center">
                                             <Building2 className="h-6 w-6 text-emerald-600" />
                                         </div>
@@ -685,7 +685,7 @@ export default function RegisterUserPage() {
                                     </div>
 
                                     {isStaffLike && (
-                                        <div className="p-6 rounded-3xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border flex items-center gap-4 md:col-span-2">
+                                        <div className="p-6 rounded-3xl bg-gray-50 dark:bg-background border border-gray-100 dark:border-border flex items-center gap-4 md:col-span-2">
                                             <div className="h-12 w-12 rounded-2xl bg-amber-50 flex items-center justify-center">
                                                 <Briefcase className="h-6 w-6 text-amber-600" />
                                             </div>
@@ -709,7 +709,7 @@ export default function RegisterUserPage() {
                     </div>
 
                     {/* Footer Actions */}
-                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-t px-12 py-8 flex items-center justify-between">
+                    <div className="bg-gray-50 dark:bg-background border-t px-12 py-8 flex items-center justify-between">
                         <Button
                             variant="outline"
                             className="h-14 px-10 rounded-2xl border-gray-200 dark:border-border bg-white dark:bg-card font-bold text-xs uppercase tracking-widest hover:bg-gray-100 disabled:opacity-30"

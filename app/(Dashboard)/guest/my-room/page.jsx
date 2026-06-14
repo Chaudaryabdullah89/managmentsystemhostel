@@ -100,7 +100,7 @@ const GuestRoomPage = () => {
 
     if (!currentBooking || !room) {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex flex-col items-center justify-center gap-6 p-8">
+            <div className="min-h-screen bg-gray-50 dark:bg-background flex flex-col items-center justify-center gap-6 p-8">
                 <div className="h-20 w-20 rounded-3xl bg-gray-100 flex items-center justify-center">
                     <Bed className="h-10 w-10 text-gray-300" />
                 </div>

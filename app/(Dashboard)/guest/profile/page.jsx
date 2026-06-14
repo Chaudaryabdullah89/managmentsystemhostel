@@ -221,7 +221,7 @@ const GuestProfile = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight">
             {/* Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-40 h-16">
                 <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
@@ -314,7 +314,7 @@ const GuestProfile = () => {
                     <div className="lg:col-span-2 space-y-6">
                         {/* Stay Details */}
                         <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden group">
-                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 py-4 px-6">
+                            <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-50 py-4 px-6">
                                 <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
                                     <Building2 className="h-4 w-4 text-gray-500 dark:text-muted-foreground" /> {isCheckedOut ? 'Past Residency' : 'My Stay Details'}
                                 </h3>
@@ -359,7 +359,7 @@ const GuestProfile = () => {
 
                         {/* Guardian Info */}
                         <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden">
-                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 py-4 px-6">
+                            <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-50 py-4 px-6">
                                 <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
                                     <Contact className="h-4 w-4 text-gray-500 dark:text-muted-foreground" /> Guardian Info
                                 </h3>
@@ -388,7 +388,7 @@ const GuestProfile = () => {
 
                         {/* Home Address */}
                         <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden">
-                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 py-4 px-6">
+                            <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-50 py-4 px-6">
                                 <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
                                     <MapPin className="h-4 w-4 text-gray-500 dark:text-muted-foreground" /> Home Address
                                 </h3>
@@ -414,7 +414,7 @@ const GuestProfile = () => {
                     {/* Right Column: Digital Smart Card */}
                     <div className="lg:col-span-1">
                         <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden sticky top-24">
-                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 py-4 px-6 flex flex-row items-center justify-between">
+                            <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-50 py-4 px-6 flex flex-row items-center justify-between">
                                 <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
                                     <Fingerprint className="h-4 w-4 text-indigo-500" /> Digital ID Card
                                 </h3>
@@ -493,7 +493,7 @@ const GuestProfile = () => {
                 {/* Residency History Log */}
                 {profile?.history?.length > 0 && (
                     <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden group">
-                        <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 py-4 px-6 flex flex-row items-center justify-between">
+                        <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-50 py-4 px-6 flex flex-row items-center justify-between">
                             <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
                                 <History className="h-4 w-4 text-gray-500 dark:text-muted-foreground" /> Residency Timeline
                             </h3>
@@ -543,7 +543,7 @@ const GuestProfile = () => {
 
                 {additionalImages.length > 0 && (
                     <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden">
-                        <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 py-4 px-6">
+                        <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-50 py-4 px-6">
                             <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest">
                                 Additional Documents
                             </h3>

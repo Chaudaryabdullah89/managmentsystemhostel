@@ -174,7 +174,7 @@ const StaffComplaintDetailPage = ({ params }) => {
                             <div className="p-8 space-y-8">
                                 <div className="space-y-3">
                                     <p className="text-[9px] font-black text-gray-300 uppercase tracking-[0.2em] italic">Intelligence Dispatch</p>
-                                    <div className="text-sm font-medium text-gray-600 dark:text-muted-foreground leading-relaxed bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-6 rounded-[2rem] border border-gray-100 dark:border-border/50">
+                                    <div className="text-sm font-medium text-gray-600 dark:text-muted-foreground leading-relaxed bg-gray-50 dark:bg-background p-6 rounded-[2rem] border border-gray-100 dark:border-border/50">
                                         {complaint.description}
                                     </div>
                                 </div>
@@ -329,7 +329,7 @@ const StaffComplaintDetailPage = ({ params }) => {
                                 <div className="flex gap-2">
                                     <Input
                                         placeholder="Transmit data..."
-                                        className="h-10 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background focus:bg-white dark:bg-card text-[10px] font-black uppercase tracking-widest italic"
+                                        className="h-10 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-background focus:bg-white dark:bg-card text-[10px] font-black uppercase tracking-widest italic"
                                         value={newComment}
                                         onChange={(e) => setNewComment(e.target.value)}
                                         onKeyDown={(e) => {

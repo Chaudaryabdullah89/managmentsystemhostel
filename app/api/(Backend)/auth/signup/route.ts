@@ -8,12 +8,13 @@ interface RegisterData {
     email: string;
     password: string;
     phone: string;
-    role: string;
+    // NOTE: `role` is intentionally excluded — it is hardcoded server-side to "GUEST".
+    // Never accept role from client on public signup.
 }
 
 export async function POST(request: NextRequest) {
     const authService = new AuthService();
-    const rateLimitCheck = rateLimiter(request, 3, 5 * 60 * 1000); // 3 registrations per 5 minutes
+    const rateLimitCheck = await rateLimiter(request, 3, 5 * 60 * 1000); // 3 registrations per 5 minutes
 
     if (!rateLimitCheck.success) {
         return NextResponse.json(
@@ -23,10 +24,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json() as RegisterData;
-    const { name, email, password, phone, role } = body;
-    console.log(`[API] POST /api/auth/signup - Attempting registration for email: ${email}, Role: ${role}`);
+    const { name, email, password, phone } = body;
+    // Security: role is ALWAYS forced to "GUEST" on public signup — never trust the client.
+    console.log(`[API] POST /api/auth/signup - Attempting registration for email: ${email}`);
     try {
-        const response = await authService.register({ name, email, password, phone, role });
+        const response = await authService.register({ name, email, password, phone, role: 'GUEST' });
         console.log(`[API] POST /api/auth/signup - Registration successful for email: ${email}`);
         return NextResponse.json(response);
     } catch (error: any) {

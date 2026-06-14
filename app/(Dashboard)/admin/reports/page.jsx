@@ -407,7 +407,7 @@ const ReportsPage = () => {
                             <div className="border-t border-gray-50">
                                 <table className="w-full text-left">
                                     <thead>
-                                        <tr className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground">
+                                        <tr className="bg-gray-50 dark:bg-background text-[9px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-muted-foreground">
                                             <th className="px-8 py-4">Period</th>
                                             <th className="px-8 py-4 text-right">Revenue</th>
                                             <th className="px-8 py-4 text-right">Expenses</th>
@@ -416,7 +416,7 @@ const ReportsPage = () => {
                                     </thead>
                                     <tbody className="divide-y divide-gray-50 dark:divide-border/20">
                                         {trends.slice().reverse().map((d, i) => (
-                                            <tr key={i} className="hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors">
+                                            <tr key={i} className="hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors">
                                                 <td className="px-8 py-3.5 text-xs font-black text-gray-700 dark:text-foreground uppercase">{d.month}</td>
                                                 <td className="px-8 py-3.5 text-right text-xs font-bold text-indigo-600">PKR {d.revenue?.toLocaleString()}</td>
                                                 <td className="px-8 py-3.5 text-right text-xs font-bold text-rose-500">PKR {d.expenses?.toLocaleString()}</td>

@@ -2,13 +2,22 @@ import { NextResponse } from "next/server";
 import { checkRole } from "@/lib/checkRole";
 import { errorResponse } from "@/lib/apiResponse";
 
+export interface AuthResponse {
+    ok: boolean;
+    success: boolean;
+    user?: any;
+    error?: string;
+    status?: number;
+    response?: any;
+}
+
 /**
  * All helpers return BOTH shapes so routes work regardless of which they check:
  *   - { success, user, error, status }  — used by ~46 existing routes
  *   - { ok, user, response }            — modern pattern
  */
 
-export async function requireAuth() {
+export async function requireAuth(): Promise<AuthResponse> {
     const auth = await checkRole([]);
     if (!auth.success) {
         const errMsg = auth.error || "Unauthorized";
@@ -24,7 +33,7 @@ export async function requireAuth() {
     return { ok: true, success: true, user: auth.user };
 }
 
-export async function requireRoles(roles = []) {
+export async function requireRoles(roles: string[] = []): Promise<AuthResponse> {
     const auth = await checkRole(roles);
     if (!auth.success) {
         const errMsg = auth.error || "Forbidden";
@@ -40,7 +49,7 @@ export async function requireRoles(roles = []) {
     return { ok: true, success: true, user: auth.user };
 }
 
-export async function requireSelfOrRoles(resourceUserId, roles = []) {
+export async function requireSelfOrRoles(resourceUserId: string, roles: string[] = []): Promise<AuthResponse> {
     const auth = await checkRole([]);
     if (!auth.success) {
         const errMsg = auth.error || "Unauthorized";

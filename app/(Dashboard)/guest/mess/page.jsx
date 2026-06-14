@@ -114,7 +114,7 @@ const GuestMessMenu = () => {
 
   if (!hostelId) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex flex-col items-center justify-center p-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-background flex flex-col items-center justify-center p-6">
         <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl p-12 text-center max-w-md w-full shadow-sm">
           <Building2 className="h-16 w-16 text-gray-200 mx-auto mb-6" />
           <h2 className="text-xl font-bold text-gray-900 dark:text-foreground uppercase">
@@ -135,7 +135,7 @@ const GuestMessMenu = () => {
   const otherDays = DAYS.filter((d) => d !== today);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
+    <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight">
       {/* Header */}
       <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-[72px]">
         <div className="max-w-[1000px] mx-auto px-6 h-full flex items-center justify-between">

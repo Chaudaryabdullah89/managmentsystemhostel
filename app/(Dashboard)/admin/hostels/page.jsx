@@ -147,7 +147,7 @@ const HostelsPage = () => {
     if (hostelsloading) return <ListPageSkeleton accentColor="bg-blue-600" />;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+        <div className="min-h-screen bg-gray-50 dark:bg-background">
             <PageHeader
                 title="Hostels"
                 subtitleStart="Stats"
@@ -385,7 +385,7 @@ const HostelsPage = () => {
                                     </div>
 
                                     {/* Room Preview */}
-                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-t border-gray-100 dark:border-border px-4 md:px-6 py-3 flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
+                                    <div className="bg-gray-50 dark:bg-background border-t border-gray-100 dark:border-border px-4 md:px-6 py-3 flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
                                         <div className="flex items-center gap-2 shrink-0">
                                             <LayoutGrid className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
                                             <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Rooms</span>

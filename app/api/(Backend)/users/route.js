@@ -158,7 +158,11 @@ export async function POST(request) {
         const existing = await prisma.user.findUnique({ where: { email } });
         if (existing) return errorResponse("Email already registered", 400, { error: "Email already registered" });
 
-        const hashedPassword = await bcrypt.hash(password || "password123", 10);
+        // Security: never use a predictable default password.
+        // If admin didn't provide one, generate a cryptographically random temp password.
+        // The welcome email directs the user to set their own password via forgot-password flow.
+        const tempPassword = password || crypto.randomBytes(16).toString('hex');
+        const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
         const userId = crypto.randomUUID();
         const uid = generateUID(UID_PREFIXES.USER, userId);

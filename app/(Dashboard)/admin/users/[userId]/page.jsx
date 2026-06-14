@@ -158,7 +158,7 @@ const UserEditPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans">
             {/* Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
@@ -187,7 +187,7 @@ const UserEditPage = () => {
                 <form onSubmit={handleSubmit} className="space-y-8">
                     {/* Basic Info Section */}
                     <Card className="border-none shadow-sm overflow-hidden">
-                        <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b">
+                        <CardHeader className="bg-gray-50 dark:bg-background border-b">
                             <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground flex items-center gap-2">
                                 <User className="h-3.5 w-3.5" /> Identity & Contact
                             </CardTitle>
@@ -196,7 +196,7 @@ const UserEditPage = () => {
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Full Name</Label>
                                 <Input
-                                    className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
+                                    className="h-11 rounded-xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                     value={form.name}
                                     onChange={(e) => handleBaseChange('name', e.target.value)}
                                     required
@@ -206,7 +206,7 @@ const UserEditPage = () => {
                                 <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Email Address</Label>
                                 <Input
                                     type="email"
-                                    className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
+                                    className="h-11 rounded-xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                     value={form.email}
                                     onChange={(e) => handleBaseChange('email', e.target.value)}
                                     required
@@ -215,7 +215,7 @@ const UserEditPage = () => {
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Phone Number</Label>
                                 <Input
-                                    className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
+                                    className="h-11 rounded-xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                     value={form.phone}
                                     onChange={(e) => handleBaseChange('phone', e.target.value)}
                                 />
@@ -223,7 +223,7 @@ const UserEditPage = () => {
                             <div className="space-y-2">
                                 <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">CNIC / ID Number</Label>
                                 <Input
-                                    className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
+                                    className="h-11 rounded-xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                     value={form.cnic}
                                     onChange={(e) => handleBaseChange('cnic', e.target.value)}
                                 />
@@ -231,7 +231,7 @@ const UserEditPage = () => {
                             <div className="col-span-1 md:col-span-2 space-y-2">
                                 <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Current Address</Label>
                                 <Textarea
-                                    className="min-h-[80px] rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-medium resize-none pt-3"
+                                    className="min-h-[80px] rounded-xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-medium resize-none pt-3"
                                     value={form.address}
                                     onChange={(e) => handleBaseChange('address', e.target.value)}
                                 />
@@ -242,7 +242,7 @@ const UserEditPage = () => {
                     {/* Extended Profile Section (Only for Residents/Guests) */}
                     {(user.role === 'GUEST' || user.role === 'RESIDENT') && (
                         <Card className="border-none shadow-sm overflow-hidden">
-                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b">
+                            <CardHeader className="bg-gray-50 dark:bg-background border-b">
                                 <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground flex items-center gap-2">
                                     <FileText className="h-3.5 w-3.5" /> Resident Dossier
                                 </CardTitle>
@@ -251,7 +251,7 @@ const UserEditPage = () => {
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Guardian / Father's Name</Label>
                                     <Input
-                                        className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
+                                        className="h-11 rounded-xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                         value={form.residentProfile.guardianName}
                                         onChange={(e) => handleProfileChange('guardianName', e.target.value)}
                                     />
@@ -259,7 +259,7 @@ const UserEditPage = () => {
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Emergency Contact Number</Label>
                                     <Input
-                                        className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
+                                        className="h-11 rounded-xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                         value={form.residentProfile.emergencyContact}
                                         onChange={(e) => handleProfileChange('emergencyContact', e.target.value)}
                                     />
@@ -270,7 +270,7 @@ const UserEditPage = () => {
                                         value={form.residentProfile.bloodGroup}
                                         onValueChange={(v) => handleProfileChange('bloodGroup', v)}
                                     >
-                                        <SelectTrigger className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold">
+                                        <SelectTrigger className="h-11 rounded-xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold">
                                             <SelectValue placeholder="Select Blood Group" />
                                         </SelectTrigger>
                                         <SelectContent className="rounded-xl">
@@ -284,7 +284,7 @@ const UserEditPage = () => {
                                     <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Date of Birth</Label>
                                     <Input
                                         type="date"
-                                        className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
+                                        className="h-11 rounded-xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                         value={form.residentProfile.dob}
                                         onChange={(e) => handleProfileChange('dob', e.target.value)}
                                     />
@@ -293,7 +293,7 @@ const UserEditPage = () => {
                                     <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Institution</Label>
                                     <Input
                                         placeholder="University or College"
-                                        className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
+                                        className="h-11 rounded-xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                         value={form.residentProfile.institution}
                                         onChange={(e) => handleProfileChange('institution', e.target.value)}
                                     />
@@ -302,7 +302,7 @@ const UserEditPage = () => {
                                     <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-muted-foreground ml-1">Occupation</Label>
                                     <Input
                                         placeholder="Job or Designation"
-                                        className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold"
+                                        className="h-11 rounded-xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold"
                                         value={form.residentProfile.occupation}
                                         onChange={(e) => handleProfileChange('occupation', e.target.value)}
                                     />
@@ -313,7 +313,7 @@ const UserEditPage = () => {
 
                     {/* Role & Access (Admins Only View) */}
                     <Card className="border-none shadow-sm overflow-hidden">
-                        <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b">
+                        <CardHeader className="bg-gray-50 dark:bg-background border-b">
                             <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground flex items-center gap-2">
                                 <Shield className="h-3.5 w-3.5" /> Registry Role
                             </CardTitle>
@@ -325,7 +325,7 @@ const UserEditPage = () => {
                                     value={form.role}
                                     onValueChange={(v) => handleBaseChange('role', v)}
                                 >
-                                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border font-bold">
+                                    <SelectTrigger className="h-11 rounded-xl bg-gray-50 dark:bg-background border-gray-100 dark:border-border font-bold">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-xl">

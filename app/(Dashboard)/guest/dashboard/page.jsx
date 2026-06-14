@@ -225,7 +225,7 @@ const GuestDashboard = () => {
             {isLoading ? (
                 <GuestDashboardSkeleton />
             ) : (
-                <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight relative overflow-hidden">
+                <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight relative overflow-hidden">
                     {/* Header */}
                     <header className="bg-white dark:bg-card border-b sticky top-0 z-40 animate-in slide-in-from-top-4 fade-in duration-700">
                         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">

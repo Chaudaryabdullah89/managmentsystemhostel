@@ -333,7 +333,7 @@ const CreateBookingForm = () => {
                                             <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-muted-foreground" />
                                             <Input
                                                 placeholder="Search by Name, Email, or CNIC..."
-                                                className="h-14 md:h-16 pl-12 md:pl-14 pr-6 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-bold focus:bg-white dark:bg-card focus:border-indigo-600 transition-all text-sm"
+                                                className="h-14 md:h-16 pl-12 md:pl-14 pr-6 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-background font-bold focus:bg-white dark:bg-card focus:border-indigo-600 transition-all text-sm"
                                                 value={existingGuestQuery}
                                                 onChange={(e) => setExistingGuestQuery(e.target.value)}
                                             />
@@ -697,7 +697,7 @@ const CreateBookingForm = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6">
+                                    <div className="bg-gray-50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6">
                                         <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm shrink-0">
                                             <User className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground" />
                                         </div>
@@ -708,7 +708,7 @@ const CreateBookingForm = () => {
                                         </div>
                                     </div>
 
-                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6">
+                                    <div className="bg-gray-50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6">
                                         <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm shrink-0">
                                             <Building2 className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground" />
                                         </div>
@@ -719,7 +719,7 @@ const CreateBookingForm = () => {
                                         </div>
                                     </div>
 
-                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6">
+                                    <div className="bg-gray-50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6">
                                         <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm shrink-0">
                                             <Calendar className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground" />
                                         </div>
@@ -756,7 +756,7 @@ const CreateBookingForm = () => {
                     </div>
 
                     {/* Footer Actions */}
-                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-t p-4 md:p-8 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
+                    <div className="bg-gray-50 dark:bg-background border-t p-4 md:p-8 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
                         <Button
                             variant="outline"
                             className="h-12 md:h-14 px-8 md:px-10 w-full sm:w-auto rounded-2xl border-gray-200 dark:border-border bg-white dark:bg-card font-bold text-xs uppercase tracking-widest hover:bg-gray-100 dark:bg-muted/20 disabled:opacity-30"

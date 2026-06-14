@@ -84,15 +84,18 @@ export async function POST(request) {
                         { AND: [{ role: "WARDEN" }, { hostelId: paymentHostelId }] }
                     ]
                 },
-                select: { email: true, name: true }
+                select: { email: true, name: true, role: true }
             });
 
             const submitterName = paymentDetail?.User?.name || "A resident";
-            const approvalLink = `${baseUrl}/admin/payment-approvals/${payment.id}`;
 
             if (await isServiceEnabled('enablePaymentEmails')) {
-                const emailPromises = managersToNotify.map(manager => 
-                    sendEmail({
+                const emailPromises = managersToNotify.map(manager => {
+                    const isWarden = manager.role === "WARDEN";
+                    const approvalLink = isWarden 
+                        ? `${baseUrl}/warden/payments/${payment.id}` 
+                        : `${baseUrl}/admin/payment-approvals/${payment.id}`;
+                    return sendEmail({
                         to: manager.email,
                         subject: `💳 New Payment Submitted — Approval Required`,
                         html: buildEmailTemplate({
@@ -112,8 +115,8 @@ export async function POST(request) {
                                 </div>
                             `,
                         }),
-                    })
-                );
+                    });
+                });
                 
                 Promise.allSettled(emailPromises)
                     .then(results => {
@@ -188,16 +191,20 @@ export async function GET(request) {
         const requestedUserId = searchParams.get('userId');
 
         // ── GRANULAR PERMISSION CHECK ─────────────────────────────────────
-        // If viewing stats or other users' records, require permission
+        // If viewing stats or other users' records, require permission.
+        // NOTE: `type` is a const — mutating searchParams does NOT affect it,
+        // so we must use an early return instead of the old mutation-based approach.
         const isSelfViewingOnly = requestedUserId === currentUserId && !type;
-        
+
         if (!isSelfViewingOnly && !isAdmin) {
-             const requiredPerm = type === 'stats' ? 'view_analytics' : 'view_payments';
-             if (!await hasPermission(requiredPerm)) {
-                 // Force filter to just their own records 
-                 searchParams.set('userId', currentUserId);
-                 searchParams.delete('type'); 
-             }
+            const requiredPerm = type === 'stats' ? 'view_analytics' : 'view_payments';
+            if (!await hasPermission(requiredPerm)) {
+                if (type === 'stats') {
+                    return errorResponse("Forbidden: You do not have permission to view financial statistics.", 403);
+                }
+                // For non-stats: restrict to own records only (handled by userId filter below)
+                searchParams.set('userId', currentUserId);
+            }
         }
 
         const sanitize = (val) => (val === 'all' || val === 'null' || val === 'undefined' || !val) ? null : val;

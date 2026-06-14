@@ -160,7 +160,7 @@ const StaffPaymentsPage = () => {
                                     </div>
                                 </div>
 
-                                <div className="px-5 py-3.5 bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex items-center justify-between border-t border-gray-100 dark:border-border/50">
+                                <div className="px-5 py-3.5 bg-gray-50 dark:bg-background flex items-center justify-between border-t border-gray-100 dark:border-border/50">
                                     <div className="flex items-center gap-2">
                                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                         <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Digital Auth Verified</span>

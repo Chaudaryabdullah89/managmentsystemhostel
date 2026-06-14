@@ -196,7 +196,7 @@ const ProfilePage = () => {
     if (isLoading) return <ProfileSkeleton />;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight">
             {/* Header: Payment Page Design */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
@@ -381,7 +381,7 @@ const ProfilePage = () => {
 
                             <TabsContent value="security" className="m-0 space-y-4 animate-in fade-in duration-500">
                                 <Card className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-sm overflow-hidden">
-                                    <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors group">
+                                    <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors group">
                                         <div className="flex items-center gap-6">
                                             <div className="h-14 w-14 rounded-xl bg-gray-50 dark:bg-muted/10 text-gray-400 dark:text-muted-foreground flex items-center justify-center border border-gray-100 dark:border-border group-hover:bg-black group-hover:text-white transition-all shadow-sm">
                                                 <Lock className="h-6 w-6" />
@@ -423,7 +423,7 @@ const ProfilePage = () => {
                                         </Dialog>
                                     </div>
                                     <Separator className="bg-gray-100 mx-6 w-auto" />
-                                    <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors group">
+                                    <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors group">
                                         <div className="flex items-center gap-6">
                                             <div className="h-14 w-14 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 shadow-sm">
                                                 <MailCheck className="h-6 w-6" />

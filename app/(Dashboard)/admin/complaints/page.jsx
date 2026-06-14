@@ -510,7 +510,7 @@ const ComplaintsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans">
       <PageHeader
         title="Complaints"
         subtitleStart="Stats"

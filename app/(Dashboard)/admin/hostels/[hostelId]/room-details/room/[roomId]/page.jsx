@@ -40,7 +40,7 @@ const RoomDetailsContent = () => {
     if (isLoading) return <RoomDetailSkeleton />;
 
     if (!room) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background">
             <div className="text-center space-y-4">
                 <Info className="h-10 w-10 text-gray-300 mx-auto" />
                 <h2 className="text-xl font-bold text-gray-900 dark:text-foreground uppercase">Room Not Found</h2>
@@ -59,7 +59,7 @@ const RoomDetailsContent = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans">
             {/* Minimal Premium Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
@@ -129,7 +129,7 @@ const RoomDetailsContent = () => {
                             <div className="space-y-3">
                                 {room.currentGuests?.length > 0 ? (
                                     room.currentGuests.map((guest) => (
-                                        <div key={guest.bookingId} className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-white dark:bg-card hover:shadow-md transition-all group relative overflow-hidden cursor-pointer" onClick={() => router.push(`/admin/users-records/${guest.id}`)}>
+                                        <div key={guest.bookingId} className="bg-gray-50 dark:bg-background border border-gray-100 dark:border-border rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-white dark:bg-card hover:shadow-md transition-all group relative overflow-hidden cursor-pointer" onClick={() => router.push(`/admin/users-records/${guest.id}`)}>
                                             <div className={`absolute left-0 top-0 bottom-0 w-1 ${guest.rentStatus === 'Paid' ? 'bg-emerald-500' : 'bg-amber-500'} opacity-70`} />
                                             <div className="flex items-center gap-4 flex-1">
                                                 <div className="h-10 w-10 rounded-lg bg-white dark:bg-card flex items-center justify-center border border-gray-100 dark:border-border text-gray-400 dark:text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-colors">

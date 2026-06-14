@@ -93,7 +93,7 @@ const AdminStaffPage = () => {
     if (isStaffLoading) return <ListPageSkeleton />;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20">
             {/* Header */}
             <div className="bg-white dark:bg-card border-b border-gray-100 dark:border-border sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
@@ -310,7 +310,7 @@ const AdminStaffPage = () => {
 
                                     {/* Expanded Task List */}
                                     {selectedStaff?.id === staff.id && !isAssignOpen && (
-                                        <div className="border-t border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                                        <div className="border-t border-gray-100 dark:border-border bg-gray-50 dark:bg-background">
                                             <div className="px-6 py-4">
                                                 <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-3">Tasks</p>
                                                 {complaints.filter(c => c.assignedToId === staff.userId && c.status !== "RESOLVED").length === 0 ? (

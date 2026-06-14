@@ -97,6 +97,14 @@ export async function POST(request) {
       }
     }
 
+    // AI Categorization Integration
+    const { categorizeComplaintWithAI } = require("@/lib/services/aiCategorizer");
+    const aiResult = await categorizeComplaintWithAI(body.title, body.description);
+    if (aiResult) {
+      body.category = aiResult.category;
+      body.priority = aiResult.priority;
+    }
+
     const complaint = await complaintServices.createComplaint(body);
     return successResponse({ data: complaint });
   } catch (error) {

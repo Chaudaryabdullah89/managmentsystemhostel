@@ -315,7 +315,7 @@ const UserDetailsPage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight">
             {/* Minimal Premium Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16 shadow-sm">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
@@ -671,7 +671,7 @@ const UserDetailsPage = () => {
                                     <Card className="rounded-[2.5rem] bg-white dark:bg-card p-8 border border-gray-100 dark:border-border shadow-sm">
                                         <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground mb-6">Documents</h3>
                                         <div className="space-y-6">
-                                            <div className="rounded-2xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-4">
+                                            <div className="rounded-2xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-background p-4">
                                                 <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Current Residence</p>
                                                 <p className="text-sm font-bold text-gray-900 dark:text-foreground wrap-break-word">
                                                     {user?.ResidentProfile?.documents?.currentResidence || "—"}
@@ -712,7 +712,7 @@ const UserDetailsPage = () => {
                                             { label: "Approved Expenses", value: userDetails?.approvedExpenses?.length || 0 },
                                             { label: "Rejected Expenses", value: userDetails?.rejectedExpenses?.length || 0 },
                                         ].map((item) => (
-                                            <div key={item.label} className="rounded-2xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-4">
+                                            <div key={item.label} className="rounded-2xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-background p-4">
                                                 <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{item.label}</p>
                                                 <p className="text-2xl font-black text-gray-900 dark:text-foreground mt-1">{item.value}</p>
                                             </div>
@@ -724,7 +724,7 @@ const UserDetailsPage = () => {
                             <TabsContent value="salaries" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <Card className="rounded-[2.5rem] bg-white dark:bg-card overflow-hidden border-none shadow-sm">
                                     <Table>
-                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                                        <TableHeader className="bg-gray-50 dark:bg-background">
                                             <TableRow className="border-none hover:bg-transparent">
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Payroll Month</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Amount</TableHead>
@@ -790,7 +790,7 @@ const UserDetailsPage = () => {
                             <TabsContent value="bookings" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <Card className="rounded-[2.5rem] bg-white dark:bg-card overflow-hidden border-none shadow-sm">
                                     <Table>
-                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                                        <TableHeader className="bg-gray-50 dark:bg-background">
                                             <TableRow className="border-none hover:bg-transparent">
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Stay Period</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Hostel & Room</TableHead>
@@ -849,7 +849,7 @@ const UserDetailsPage = () => {
                             <TabsContent value="payments" className="m-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                 <Card className="rounded-[2.5rem] bg-white dark:bg-card overflow-hidden border-none shadow-sm">
                                     <Table>
-                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                                        <TableHeader className="bg-gray-50 dark:bg-background">
                                             <TableRow className="border-none hover:bg-transparent">
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Transaction Date</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Method</TableHead>
@@ -963,7 +963,7 @@ const UserDetailsPage = () => {
                                         </Button>
                                     </div>
                                     <Table>
-                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                                        <TableHeader className="bg-gray-50 dark:bg-background">
                                             <TableRow className="border-none hover:bg-transparent">
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-8">Device / Client</TableHead>
                                                 <TableHead className="text-[10px] font-black uppercase tracking-widest px-4">Network</TableHead>
@@ -1262,13 +1262,13 @@ const UserDetailsPage = () => {
                                             value={paymentAmount}
                                             onChange={e => setPaymentAmount(e.target.value)}
                                             placeholder="e.g. 5000"
-                                            className="h-12 rounded-xl border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-bold px-4"
+                                            className="h-12 rounded-xl border-gray-200 dark:border-border bg-gray-50 dark:bg-background font-bold px-4"
                                         />
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-[10px] font-bold uppercase tracking-widest pl-1 text-gray-400 dark:text-muted-foreground">Method</Label>
                                         <select
-                                            className="w-full h-12 rounded-xl border border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-bold px-4 text-sm outline-none focus:ring-2 focus:ring-indigo-600"
+                                            className="w-full h-12 rounded-xl border border-gray-200 dark:border-border bg-gray-50 dark:bg-background font-bold px-4 text-sm outline-none focus:ring-2 focus:ring-indigo-600"
                                             value={paymentMethod}
                                             onChange={e => setPaymentMethod(e.target.value)}
                                         >

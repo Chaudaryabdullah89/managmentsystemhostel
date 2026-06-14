@@ -108,7 +108,7 @@ const CreateRoomForm = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+        <div className="min-h-screen bg-gray-50 dark:bg-background">
             {/* Synced Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-40 h-16">
                 <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
@@ -287,7 +287,7 @@ const CreateRoomForm = () => {
                     <div className="space-y-6">
                         {/* Financial Ledger */}
                         <Card className="border border-gray-100 dark:border-border shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] bg-white dark:bg-card overflow-hidden">
-                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-100 dark:border-border px-6 py-5 text-center">
+                            <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-100 dark:border-border px-6 py-5 text-center">
                                 <CardTitle className="text-[10px] font-black text-gray-900 dark:text-foreground tracking-widest uppercase">Rent & Price</CardTitle>
                             </CardHeader>
                             <div className="p-6 space-y-5">
@@ -295,7 +295,7 @@ const CreateRoomForm = () => {
                                     <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center">Base Price *</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-gray-300">PKR</span>
-                                        <Input type="number" className="pl-14 h-11 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border rounded-2xl font-black text-lg text-center focus:bg-white dark:bg-card transition-all" value={price} onChange={(e) => setPrice(e.target.value)} />
+                                        <Input type="number" className="pl-14 h-11 bg-gray-50 dark:bg-background border-gray-100 dark:border-border rounded-2xl font-black text-lg text-center focus:bg-white dark:bg-card transition-all" value={price} onChange={(e) => setPrice(e.target.value)} />
                                     </div>
                                 </div>
                                 <div className="space-y-1.5 flex flex-col">
@@ -327,7 +327,7 @@ const CreateRoomForm = () => {
                                 <div className="space-y-2.5">
                                     <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">Internal Notes</Label>
                                     <Textarea
-                                        className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border text-gray-900 dark:text-foreground text-[11px] font-medium min-h-[120px] rounded-xl focus:bg-white dark:bg-card focus:ring-1 focus:ring-indigo-500/20 transition-all resize-none pt-4 placeholder:text-gray-300"
+                                        className="bg-gray-50 dark:bg-background border-gray-100 dark:border-border text-gray-900 dark:text-foreground text-[11px] font-medium min-h-[120px] rounded-xl focus:bg-white dark:bg-card focus:ring-1 focus:ring-indigo-500/20 transition-all resize-none pt-4 placeholder:text-gray-300"
                                         placeholder="Add any specific notes about this unit..."
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
@@ -337,7 +337,7 @@ const CreateRoomForm = () => {
                                 <div className="space-y-2.5">
                                     <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">Amenities (Comma Separated)</Label>
                                     <Input
-                                        className="h-11 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all placeholder:text-gray-200"
+                                        className="h-11 bg-gray-50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all placeholder:text-gray-200"
                                         placeholder="WiFi, AC, Attached Bath..."
                                         value={amenities}
                                         onChange={(e) => setAmenities(e.target.value)}
@@ -349,7 +349,7 @@ const CreateRoomForm = () => {
                                     <div className="relative">
                                         <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
                                         <Input
-                                            className="h-11 pl-12 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-medium text-[11px] text-gray-600 dark:text-muted-foreground focus:bg-white dark:bg-card transition-all"
+                                            className="h-11 pl-12 bg-gray-50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-medium text-[11px] text-gray-600 dark:text-muted-foreground focus:bg-white dark:bg-card transition-all"
                                             placeholder="Paste image URL here..."
                                             value={imageUrl}
                                             onChange={(e) => setImageUrl(e.target.value)}
@@ -368,7 +368,7 @@ const CreateRoomForm = () => {
 export default function CreateRoomPage() {
     return (
         <Suspense fallback={
-            <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex items-center justify-center">
+            <div className="min-h-screen bg-gray-50 dark:bg-background flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
                     <div className="h-10 w-10 border-[3px] border-gray-200 dark:border-border border-t-black rounded-full animate-spin" />
                     <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Loading Registry Protocol...</p>

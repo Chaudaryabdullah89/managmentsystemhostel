@@ -6,7 +6,7 @@ import { errorResponse, successResponse } from "@/lib/apiResponse";
 
 export async function POST(request: NextRequest) {
     // ── Rate Limit: 10 attempts per 15 minutes per IP ────────────────────
-    const rateLimitCheck = rateLimiter(request, 10, 15 * 60 * 1000);
+    const rateLimitCheck = await rateLimiter(request, 10, 15 * 60 * 1000);
     if (!rateLimitCheck.success) {
         return errorResponse(rateLimitCheck.error, 429);
     }
@@ -31,6 +31,15 @@ export async function POST(request: NextRequest) {
 
         if (!response.success) {
             return errorResponse(response.message || "Unauthorized", 401, response);
+        }
+
+        // ── Handle 2FA Flow ──────────────────────────────────────────────────
+        if (response.requires2FA) {
+            return successResponse({
+                message: response.message,
+                requires2FA: true,
+                tempToken: response.tempToken
+            });
         }
 
         // ── Set httpOnly cookie server-side for XSS protection ─────────────

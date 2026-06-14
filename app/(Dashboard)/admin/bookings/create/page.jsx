@@ -359,7 +359,7 @@ const CreateBookingPage = () => {
                       <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 dark:text-muted-foreground" />
                       <Input
                         placeholder="Search by Name, Email, or CNIC..."
-                        className="h-16 pl-14 pr-6 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-bold focus:bg-white dark:bg-card focus:border-indigo-600 transition-all"
+                        className="h-16 pl-14 pr-6 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-background font-bold focus:bg-white dark:bg-card focus:border-indigo-600 transition-all"
                         value={existingGuestQuery}
                         onChange={(e) => setExistingGuestQuery(e.target.value)}
                       />
@@ -1001,7 +1001,7 @@ const CreateBookingPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-3xl p-8 border border-gray-100 dark:border-border flex items-start gap-6">
+                  <div className="bg-gray-50 dark:bg-background rounded-3xl p-8 border border-gray-100 dark:border-border flex items-start gap-6">
                     <div className="h-12 w-12 rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm">
                       <User className="h-6 w-6 text-gray-400 dark:text-muted-foreground" />
                     </div>
@@ -1018,7 +1018,7 @@ const CreateBookingPage = () => {
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-3xl p-8 border border-gray-100 dark:border-border flex items-start gap-6">
+                  <div className="bg-gray-50 dark:bg-background rounded-3xl p-8 border border-gray-100 dark:border-border flex items-start gap-6">
                     <div className="h-12 w-12 rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm">
                       <Building2 className="h-6 w-6 text-gray-400 dark:text-muted-foreground" />
                     </div>
@@ -1035,7 +1035,7 @@ const CreateBookingPage = () => {
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-3xl p-8 border border-gray-100 dark:border-border flex items-start gap-6">
+                  <div className="bg-gray-50 dark:bg-background rounded-3xl p-8 border border-gray-100 dark:border-border flex items-start gap-6">
                     <div className="h-12 w-12 rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm">
                       <Calendar className="h-6 w-6 text-gray-400 dark:text-muted-foreground" />
                     </div>

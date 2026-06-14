@@ -184,7 +184,7 @@ const PaymentHistoryPage = () => {
     }).sort((a, b) => new Date(b.date) - new Date(a.date));
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight">
             {/* Minimal Premium Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
@@ -223,7 +223,7 @@ const PaymentHistoryPage = () => {
                                 <div className="p-8 bg-white dark:bg-card space-y-6">
                                     <div className="space-y-1.5 text-center">
                                         <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">Total Settlement PKR</Label>
-                                        <Input type="number" className="h-14 rounded-2xl font-black text-2xl text-center border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background" value={reconcileForm.amount} onChange={(e) => setReconcileForm({ ...reconcileForm, amount: e.target.value })} />
+                                        <Input type="number" className="h-14 rounded-2xl font-black text-2xl text-center border-gray-100 dark:border-border bg-gray-50 dark:bg-background" value={reconcileForm.amount} onChange={(e) => setReconcileForm({ ...reconcileForm, amount: e.target.value })} />
                                     </div>
                                     <Button className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl" onClick={handleReconcile}>Initiate Sync</Button>
                                 </div>

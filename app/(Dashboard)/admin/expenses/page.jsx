@@ -110,7 +110,7 @@ const ExpensesPage = () => {
     const stats = statsData?.summary || { totalAmount: 0, paidAmount: 0, pendingAmount: 0, totalCount: 0 };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight">
             <PageHeader
                 title="Expenses"
                 subtitleStart="Overview"
@@ -168,7 +168,7 @@ const ExpensesPage = () => {
                                 className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-[2rem] p-5 flex flex-col gap-4 shadow-sm hover:shadow-md hover:border-gray-200 dark:border-border transition-all group relative overflow-hidden"
                             >
                                 {/* Subtle bg accent — same as dashboard stat cards */}
-                                <div className="absolute top-0 right-0 w-20 h-full bg-gray-50 dark:bg-muted/10/50 dark:bg-background skew-x-12 translate-x-8 group-hover:translate-x-6 transition-transform hidden md:block" />
+                                <div className="absolute top-0 right-0 w-20 h-full bg-gray-50 dark:bg-background skew-x-12 translate-x-8 group-hover:translate-x-6 transition-transform hidden md:block" />
 
                                 {/* Icon — same size/style as dashboard action icons */}
                                 <div className={`relative z-10 h-10 w-10 md:h-11 md:w-11 rounded-xl ${cat.bg} ${cat.color} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform`}>

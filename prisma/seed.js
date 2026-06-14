@@ -17,7 +17,7 @@ async function main() {
         'Complaint',
         'TaskComment',
         'StaffTask',
-        'maintanance',
+        'Maintenance',
         'CleaningLog',
         'LaundryLog',
         'Room',

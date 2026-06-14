@@ -34,7 +34,8 @@ import {
     Info,
     Layers,
     Users,
-    UserCircle2
+    UserCircle2,
+    Download
 } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import {
@@ -84,8 +85,7 @@ const useUpdateLogs = () => {
     });
 };
 
-const RoomsContent = ({ params: paramsPromise }) => {
-    const params = use(paramsPromise);
+const RoomsContent = () => {
     const searchParams = useSearchParams()
     const router = useRouter()
     const queryClient = useQueryClient()
@@ -202,7 +202,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans">
             <PageHeader
                 title={hostel?.name || 'Rooms'}
                 subtitleStart="Rooms"

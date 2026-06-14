@@ -26,10 +26,14 @@ function matchProtectedRoute(pathname: string) {
 }
 
 // ===============================
-// Middleware
+// Middleware (Next.js requires this exact export name)
 // ===============================
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
+
+    // Pass the current pathname to server components
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-pathname", pathname);
 
     // 1️⃣ Skip public paths
     if (
@@ -39,14 +43,22 @@ export async function proxy(request: NextRequest) {
         pathname.startsWith('/auth') ||
         pathname.includes('.')
     ) {
-        return NextResponse.next();
+        return NextResponse.next({
+            request: {
+                headers: requestHeaders,
+            },
+        });
     }
 
     const matchedRoute = matchProtectedRoute(pathname);
 
     // If route is not protected → allow
     if (!matchedRoute) {
-        return NextResponse.next();
+        return NextResponse.next({
+            request: {
+                headers: requestHeaders,
+            },
+        });
     }
 
     // 2️⃣ Check Token
@@ -96,8 +108,7 @@ export async function proxy(request: NextRequest) {
     const allowedRoles = routePermissions[matchedRoute];
 
     if (!allowedRoles.includes(userRole)) {
-        // Redirect to correct dashboard instead of random auth page
-
+        // Redirect to correct dashboard instead of a generic auth page
         const roleDashboardMap: Record<string, string> = {
             ADMIN: '/admin/dashboard',
             WARDEN: '/warden',
@@ -112,7 +123,11 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(new URL(redirectPath, request.url));
     }
 
-    return NextResponse.next();
+    return NextResponse.next({
+        request: {
+            headers: requestHeaders,
+        },
+    });
 }
 
 // ===============================

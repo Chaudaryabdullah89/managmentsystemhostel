@@ -455,7 +455,7 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                 </div>
                                 <div className="bg-white dark:bg-card rounded-[2.5rem] border border-gray-100 dark:border-border shadow-sm overflow-hidden">
                                     <Table>
-                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background h-16">
+                                        <TableHeader className="bg-gray-50 dark:bg-background h-16">
                                             <TableRow className="border-none">
                                                 <TableHead className="px-10 text-[10px] font-black uppercase tracking-[0.2em]">Check-In</TableHead>
                                                 <TableHead className="px-6 text-[10px] font-black uppercase tracking-[0.2em]">Room / Branch</TableHead>
@@ -524,7 +524,7 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                 </div>
                                 <div className="bg-white dark:bg-card rounded-[2.5rem] border border-gray-100 dark:border-border shadow-sm overflow-hidden">
                                     <Table>
-                                        <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background h-16">
+                                        <TableHeader className="bg-gray-50 dark:bg-background h-16">
                                             <TableRow className="border-none">
                                                 <TableHead className="px-10 text-[10px] font-black uppercase tracking-[0.2em]">Transaction Date</TableHead>
                                                 <TableHead className="px-6 text-[10px] font-black uppercase tracking-[0.2em]">Reference / Mode</TableHead>
@@ -669,7 +669,7 @@ const FullScreenUserTerminal = ({ user: initialUser, onClose }) => {
                                     ))}
 
                                     {activities.length === 0 && (
-                                        <div className="flex flex-col items-center justify-center py-20 text-gray-300 gap-4 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-[2.5rem] border-2 border-dashed border-gray-100 dark:border-border">
+                                        <div className="flex flex-col items-center justify-center py-20 text-gray-300 gap-4 bg-gray-50 dark:bg-background rounded-[2.5rem] border-2 border-dashed border-gray-100 dark:border-border">
                                             <Clock className="h-10 w-10" />
                                             <p className="text-[10px] font-black uppercase tracking-widest">No activity yet</p>
                                         </div>

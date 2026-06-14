@@ -182,7 +182,7 @@ const WardenProfilePage = () => {
 
     if (error || !user) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background gap-4 font-sans">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-background gap-4 font-sans">
                 <div className="h-16 w-16 rounded-2xl bg-rose-50 flex items-center justify-center mb-2">
                     <User className="h-8 w-8 text-rose-400" />
                 </div>
@@ -240,7 +240,7 @@ const WardenProfilePage = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight">
 
             <PageHeader
                 title="Profile"
@@ -467,11 +467,11 @@ const WardenProfilePage = () => {
                             <h3 className="text-[11px] md:text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground">Stats</h3>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl p-4 border border-gray-100 dark:border-border">
+                            <div className="bg-gray-50 dark:bg-background rounded-2xl p-4 border border-gray-100 dark:border-border">
                                 <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground block mb-1">Total Paid</span>
                                 <span className="text-sm font-black text-gray-900 dark:text-foreground">PKR {(payments?.reduce((acc, p) => acc + p.amount, 0) || 0).toLocaleString()}</span>
                             </div>
-                            <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl p-4 border border-gray-100 dark:border-border">
+                            <div className="bg-gray-50 dark:bg-background rounded-2xl p-4 border border-gray-100 dark:border-border">
                                 <span className="text-[8px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground block mb-1">Last Pay</span>
                                 <span className="text-sm font-black text-gray-900 dark:text-foreground">{payments?.[0] ? `PKR ${payments[0].amount.toLocaleString()}` : 'N/A'}</span>
                             </div>

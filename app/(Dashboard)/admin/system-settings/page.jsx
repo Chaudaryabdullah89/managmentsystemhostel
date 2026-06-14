@@ -819,7 +819,7 @@ export default function SystemSettingsPage() {
                   key={group.group}
                   className="bg-white dark:bg-card rounded-2xl border border-gray-100 dark:border-border shadow-sm overflow-hidden"
                 >
-                  <div className="px-6 py-4 border-b border-gray-50 bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                  <div className="px-6 py-4 border-b border-gray-50 bg-gray-50 dark:bg-background">
                     <p className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
                       {group.group}
                     </p>

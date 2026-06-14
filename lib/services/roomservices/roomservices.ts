@@ -1,55 +1,104 @@
 import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { getCache, setCache, invalidatePattern } from "@/lib/redis";
+
+export interface RoomCreateData {
+    hostelId: string;
+    roomNumber: string;
+    type: any;
+    capacity?: number | string;
+    floor?: number | string;
+    price?: number | string;
+    pricepernight?: number | string;
+    pernightrent?: number | string;
+    monthlyrent?: number | string;
+    montlyrent?: number | string;
+    status?: string;
+    amenities?: string[];
+    images?: string[];
+    cleaningInterval?: number | string;
+    laundryInterval?: number | string;
+}
+
+export interface RoomUpdateData extends Partial<RoomCreateData> {
+    id: string;
+}
 
 export default class RoomServices {
-    async getRooms(hostelId = null) {
+    async getRooms(hostelId: string | null = null) {
+        const cacheKey = `rooms:hostel:${hostelId || 'all'}`;
+        const cached = await getCache<any[]>(cacheKey);
+        if (cached) return cached;
+
         try {
             const rooms = await prisma.room.findMany({
                 where: hostelId ? { hostelId } : {},
                 include: {
-                    Hostel: true,
+                    Hostel: {
+                        select: {
+                            id: true,
+                            name: true,
+                            type: true,
+                            city: true,
+                        }
+                    },
                     Booking: {
                         where: {
                             status: {
-                                in: ['CONFIRMED', 'COMPLETED']
+                                in: ['CONFIRMED', 'COMPLETED', 'CHECKED_IN']
                             }
                         },
-                        include: {
-                            User: true
+                        select: {
+                            id: true,
+                            checkIn: true,
+                            checkOut: true,
+                            status: true,
+                            totalAmount: true,
+                            User: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    email: true,
+                                    phone: true,
+                                    role: true
+                                }
+                            }
                         }
                     }
                 }
             });
-            return rooms.map(room => ({
+            const result = rooms.map(room => ({
                 ...room,
-                monthlyrent: room.monthlyrent || room.montlyrent || room.price || 0
+                monthlyrent: room.montlyrent || room.price || 0
             }));
+            await setCache(cacheKey, result, 300);
+            return result;
         } catch (error) {
             console.error("Error fetching rooms:", error);
             throw new Error("Failed to fetch rooms");
         }
     }
 
-    async createRoom(data) {
+    async createRoom(data: RoomCreateData) {
         try {
             const room = await prisma.room.create({
                 data: {
                     hostelId: data.hostelId,
                     roomNumber: data.roomNumber,
                     type: data.type,
-                    capacity: parseInt(data.capacity || 3),
-                    floor: parseInt(data.floor || 0),
-                    price: parseFloat(data.price || 0),
-                    pernightrent: parseFloat(data.pricepernight || data.pernightrent || 0),
-                    montlyrent: parseFloat(data.monthlyrent || data.montlyrent || 0),
-                    status: data.status || "AVAILABLE",
+                    capacity: parseInt(String(data.capacity || 3)),
+                    floor: parseInt(String(data.floor || 0)),
+                    price: parseFloat(String(data.price || 0)),
+                    pernightrent: parseFloat(String(data.pernightrent || 0)),
+                    montlyrent: parseFloat(String(data.monthlyrent || data.montlyrent || 0)),
+                    status: (data.status as any) || "AVAILABLE",
                     amenities: data.amenities || [],
                     images: data.images || [],
-                    cleaningInterval: data.cleaningInterval ? parseInt(data.cleaningInterval) : 24,
-                    laundryInterval: data.laundryInterval ? parseInt(data.laundryInterval) : 48,
+                    cleaningInterval: data.cleaningInterval ? parseInt(String(data.cleaningInterval)) : 24,
+                    laundryInterval: data.laundryInterval ? parseInt(String(data.laundryInterval)) : 48,
                     updatedAt: new Date()
                 }
-            })
+            });
+            await invalidatePattern('rooms:*');
             return room;
         } catch (error) {
             console.error("Error creating room:", error);
@@ -60,7 +109,14 @@ export default class RoomServices {
     async syncAutomationLogs() {
         try {
             const rooms = await prisma.room.findMany({
-                include: { Hostel: true }
+                include: {
+                    Hostel: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    }
+                }
             });
 
             const results = { cleaning: 0, laundry: 0 };
@@ -69,14 +125,13 @@ export default class RoomServices {
             for (const room of rooms) {
                 const hostel = room.Hostel;
 
-                // Effective Intervals (Room level wins, then Hostel level, finally fallback defaults)
-
-                const effectiveCleaningInterval = room.cleaningInterval || hostel.cleaningInterval || 24;
-                const effectiveLaundryInterval = room.laundryInterval || hostel.laundryInterval || 48;
+                // Effective Intervals (Room level wins, then fallback defaults)
+                const effectiveCleaningInterval = room.cleaningInterval || 24;
+                const effectiveLaundryInterval = room.laundryInterval || 48;
 
                 // Check Cleaning
                 const lastCleaning = room.lastCleaningAt || room.createdAt;
-                const hoursSinceCleaning = (now - lastCleaning) / (1000 * 60 * 60);
+                const hoursSinceCleaning = (now.getTime() - new Date(lastCleaning).getTime()) / (1000 * 60 * 60);
 
                 if (hoursSinceCleaning >= effectiveCleaningInterval) {
                     await prisma.$transaction([
@@ -99,7 +154,7 @@ export default class RoomServices {
 
                 // Check Laundry
                 const lastLaundry = room.lastLaundryAt || room.createdAt;
-                const hoursSinceLaundry = (now - lastLaundry) / (1000 * 60 * 60);
+                const hoursSinceLaundry = (now.getTime() - new Date(lastLaundry).getTime()) / (1000 * 60 * 60);
 
                 if (hoursSinceLaundry >= effectiveLaundryInterval) {
                     await prisma.$transaction([
@@ -121,6 +176,9 @@ export default class RoomServices {
                     results.laundry++;
                 }
             }
+            if (results.cleaning > 0 || results.laundry > 0) {
+                await invalidatePattern('rooms:*');
+            }
             return results;
         } catch (error) {
             console.error("Automation Sync Error:", error);
@@ -128,26 +186,27 @@ export default class RoomServices {
         }
     }
 
-    async updateRoom(data) {
+    async updateRoom(data: RoomUpdateData) {
         try {
             const room = await prisma.room.update({
                 where: { id: data.id },
                 data: {
                     roomNumber: data.roomNumber,
                     type: data.type,
-                    capacity: parseInt(data.capacity),
-                    floor: parseInt(data.floor),
-                    price: parseFloat(data.price),
-                    pernightrent: parseFloat(data.pricepernight || data.pernightrent),
-                    montlyrent: parseFloat(data.monthlyrent || data.montlyrent),
-                    status: data.status,
-                    cleaningInterval: data.cleaningInterval,
-                    laundryInterval: data.laundryInterval,
+                    capacity: data.capacity ? parseInt(String(data.capacity)) : undefined,
+                    floor: data.floor ? parseInt(String(data.floor)) : undefined,
+                    price: data.price ? parseFloat(String(data.price)) : undefined,
+                    pernightrent: data.pernightrent ? parseFloat(String(data.pernightrent)) : undefined,
+                    montlyrent: (data.monthlyrent || data.montlyrent) ? parseFloat(String(data.monthlyrent || data.montlyrent)) : undefined,
+                    status: data.status as any,
+                    cleaningInterval: data.cleaningInterval ? parseInt(String(data.cleaningInterval)) : undefined,
+                    laundryInterval: data.laundryInterval ? parseInt(String(data.laundryInterval)) : undefined,
                     amenities: data.amenities || [],
                     images: data.images || [],
                     updatedAt: new Date()
                 }
-            })
+            });
+            await invalidatePattern('rooms:*');
             return room;
         } catch (error) {
             console.error("Error updating room:", error);
@@ -155,11 +214,12 @@ export default class RoomServices {
         }
     }
 
-    async deleteRoom(id) {
+    async deleteRoom(id: string) {
         try {
             const room = await prisma.room.delete({
                 where: { id }
-            })
+            });
+            await invalidatePattern('rooms:*');
             return room;
         } catch (error) {
             console.error("Error deleting room:", error);
@@ -167,37 +227,67 @@ export default class RoomServices {
         }
     }
 
-    async getRoomByHostelId(id) {
+    async getRoomByHostelId(id: string) {
+        const cacheKey = `rooms:hostel:${id}`;
+        const cached = await getCache<any[]>(cacheKey);
+        if (cached) return cached;
+
         try {
             const rooms = await prisma.room.findMany({
                 where: {
                     hostelId: id
                 },
                 include: {
-                    Hostel: true,
+                    Hostel: {
+                        select: {
+                            id: true,
+                            name: true,
+                            type: true,
+                            city: true
+                        }
+                    },
                     Booking: {
                         where: {
                             status: {
                                 in: ['CHECKED_IN', 'CONFIRMED']
                             }
                         },
-                        include: {
-                            User: true
+                        select: {
+                            id: true,
+                            checkIn: true,
+                            checkOut: true,
+                            status: true,
+                            totalAmount: true,
+                            User: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    email: true,
+                                    phone: true,
+                                    role: true
+                                }
+                            }
                         }
                     }
                 }
-            })
-            return rooms.map(room => ({
+            });
+            const result = rooms.map(room => ({
                 ...room,
-                monthlyrent: room.monthlyrent || room.montlyrent || room.price || 0
+                monthlyrent: room.montlyrent || room.price || 0
             }));
+            await setCache(cacheKey, result, 300);
+            return result;
         } catch (error) {
             console.error("Error fetching rooms by hostel id:", error);
             throw new Error("Failed to fetch rooms by hostel id");
         }
     }
 
-    async getSingleRoomByHostelId(hostelId, roomid) {
+    async getSingleRoomByHostelId(hostelId: string, roomid: string) {
+        const cacheKey = `rooms:single:${hostelId}:${roomid}`;
+        const cached = await getCache<any>(cacheKey);
+        if (cached) return cached;
+
         try {
             // Strictly match by roomid and (hostelId or hostel Name)
             // No fallback to just roomid to prevent data leakage between hostels
@@ -216,11 +306,31 @@ export default class RoomServices {
                                 in: ['CONFIRMED', 'COMPLETED', 'CHECKED_IN']
                             }
                         },
-                        include: {
-                            User: true
+                        select: {
+                            id: true,
+                            checkIn: true,
+                            checkOut: true,
+                            status: true,
+                            totalAmount: true,
+                            User: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    email: true,
+                                    phone: true,
+                                    role: true
+                                }
+                            }
                         }
                     },
-                    Hostel: true,
+                    Hostel: {
+                        select: {
+                            id: true,
+                            name: true,
+                            type: true,
+                            city: true
+                        }
+                    },
                     CleaningLog: {
                         orderBy: { performedAt: 'desc' },
                         take: 10
@@ -230,11 +340,11 @@ export default class RoomServices {
                         take: 10
                     }
                 }
-            });
+            }) as any;
 
             if (room) {
                 // Derive a simple currentGuests array for the UI
-                room.currentGuests = room.Booking.map(b => ({
+                room.currentGuests = room.Booking.map((b: any) => ({
                     id: b.User.id,
                     bookingId: b.id,
                     name: b.User.name,
@@ -243,9 +353,12 @@ export default class RoomServices {
                     rentStatus: "Paid"
                 }));
 
-                room.monthlyrent = room.monthlyrent || room.montlyrent || room.price || 0;
+                room.monthlyrent = room.montlyrent || room.price || 0;
             }
 
+            if (room) {
+                await setCache(cacheKey, room, 300);
+            }
             return room;
         } catch (error) {
             console.error("Error fetching single room by hostel id:", error);
@@ -253,9 +366,8 @@ export default class RoomServices {
         }
     }
 
-    async createCleaningLog(data) {
+    async createCleaningLog(data: any) {
         try {
-            // Update the room's lastCleaningAt to reset the automation counter
             const isCompleted = (data.status || "COMPLETED") === "COMPLETED";
 
             const [log] = await prisma.$transaction([
@@ -275,6 +387,7 @@ export default class RoomServices {
                     })
                 ] : [])
             ]);
+            await invalidatePattern('rooms:*');
             return log;
         } catch (error) {
             console.error("Error creating cleaning log:", error);
@@ -282,10 +395,9 @@ export default class RoomServices {
         }
     }
 
-    async createLaundryLog(data) {
+    async createLaundryLog(data: any) {
         try {
             const status = data.status || "PENDING";
-            // If it's already completed or delivered, we should update room lastLaundryAt
             const shiftsCounter = ["COMPLETED", "DELIVERED"].includes(status);
 
             const [log] = await prisma.$transaction([
@@ -306,6 +418,7 @@ export default class RoomServices {
                     })
                 ] : [])
             ]);
+            await invalidatePattern('rooms:*');
             return log;
         } catch (error) {
             console.error("Error creating laundry log:", error);
@@ -313,7 +426,7 @@ export default class RoomServices {
         }
     }
 
-    async updateMaintenanceLog(id, data) {
+    async updateMaintenanceLog(id: string, data: any) {
         try {
             const log = await prisma.maintenance.update({
                 where: { id },
@@ -322,7 +435,8 @@ export default class RoomServices {
                     resolutionNotes: data.resolutionNotes,
                     resolvedAt: data.status === 'RESOLVED' ? new Date() : undefined
                 }
-            })
+            });
+            await invalidatePattern('rooms:*');
             return log;
         } catch (error) {
             console.error("Error updating maintenance log:", error);
@@ -330,7 +444,7 @@ export default class RoomServices {
         }
     }
 
-    async updateCleaningLog(id, data) {
+    async updateCleaningLog(id: string, data: any) {
         try {
             const log = await prisma.cleaningLog.update({
                 where: { id },
@@ -338,7 +452,7 @@ export default class RoomServices {
                     status: data.status,
                     notes: data.notes
                 }
-            })
+            });
 
             // Sync room timestamp if completed
             if (data.status === 'COMPLETED') {
@@ -348,6 +462,7 @@ export default class RoomServices {
                 });
             }
 
+            await invalidatePattern('rooms:*');
             return log;
         } catch (error) {
             console.error("Error updating cleaning log:", error);
@@ -355,9 +470,9 @@ export default class RoomServices {
         }
     }
 
-    async updateLaundryLog(id, data) {
+    async updateLaundryLog(id: string, data: any) {
         try {
-            const updateData = {
+            const updateData: any = {
                 status: data.status,
                 notes: data.notes,
                 itemsCount: data.itemsCount ? parseInt(data.itemsCount) : undefined,
@@ -370,7 +485,7 @@ export default class RoomServices {
             const log = await prisma.laundryLog.update({
                 where: { id: id },
                 data: updateData
-            })
+            });
 
             // Sync room timestamp if completed or delivered
             if (data.status === 'DELIVERED' || data.status === 'COMPLETED') {
@@ -380,6 +495,7 @@ export default class RoomServices {
                 });
             }
 
+            await invalidatePattern('rooms:*');
             return log;
         } catch (error) {
             console.error("Error updating laundry log:", error);

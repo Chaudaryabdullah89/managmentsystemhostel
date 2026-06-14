@@ -200,7 +200,7 @@ const ComplaintDetailPage = ({ params }) => {
 
                     {/* Primary Issue Card */}
                     <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden bg-white dark:bg-card">
-                        <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 p-6 flex flex-row items-center justify-between">
+                        <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-50 p-6 flex flex-row items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="h-10 w-10 rounded-xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm">
                                     <FileText className="h-5 w-5 text-gray-400 dark:text-muted-foreground" />
@@ -223,7 +223,7 @@ const ComplaintDetailPage = ({ params }) => {
                         </CardHeader>
                         <CardContent className="p-8">
                             <h2 className="text-xl font-bold text-gray-900 dark:text-foreground leading-tight mb-4">{complaint.title}</h2>
-                            <p className="text-sm text-gray-600 dark:text-muted-foreground leading-relaxed font-medium bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-6 rounded-2xl border border-gray-100 dark:border-border border-dashed">
+                            <p className="text-sm text-gray-600 dark:text-muted-foreground leading-relaxed font-medium bg-gray-50 dark:bg-background p-6 rounded-2xl border border-gray-100 dark:border-border border-dashed">
                                 "{complaint.description}"
                             </p>
 
@@ -250,7 +250,7 @@ const ComplaintDetailPage = ({ params }) => {
 
                     {/* Resolution Protocol */}
                     <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden bg-white dark:bg-card">
-                        <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 p-6">
+                        <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-50 p-6">
                             <CardTitle className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-emerald-500" /> Resolution Protocol
                             </CardTitle>
@@ -274,7 +274,7 @@ const ComplaintDetailPage = ({ params }) => {
                                         <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Update Resolution Notes</Label>
                                         <Textarea
                                             placeholder="Document steps taken or instructions for staff..."
-                                            className="min-h-[120px] rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background focus:bg-white dark:bg-card font-medium text-sm transition-all focus:ring-0 p-4"
+                                            className="min-h-[120px] rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-background focus:bg-white dark:bg-card font-medium text-sm transition-all focus:ring-0 p-4"
                                             value={responseNotes}
                                             onChange={(e) => setResponseNotes(e.target.value)}
                                         />

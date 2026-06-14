@@ -192,7 +192,7 @@ const BookingDetailsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-32 font-sans tracking-tight print:bg-transparent print:pb-0">
+    <div className="min-h-screen bg-gray-50 dark:bg-background pb-32 font-sans tracking-tight print:bg-transparent print:pb-0">
       {/* Header */}
       <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16 shadow-sm shadow-black/5 print:hidden">
         <div className="max-w-[1400px] mx-auto px-8 h-full flex items-center justify-between">
@@ -378,7 +378,7 @@ const BookingDetailsPage = () => {
                 </div>
 
                 <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-border">
-                  <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50 hover:bg-white dark:bg-card transition-colors">
+                  <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50 hover:bg-white dark:bg-card transition-colors">
                     <div className="flex items-center gap-3">
                       <Phone className="h-3.5 w-3.5 text-indigo-500" />
                       <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground">
@@ -389,7 +389,7 @@ const BookingDetailsPage = () => {
                       {booking.User?.phone || "N/A"}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50 hover:bg-white dark:bg-card transition-colors">
+                  <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50 hover:bg-white dark:bg-card transition-colors">
                     <div className="flex items-center gap-3">
                       <Mail className="h-3.5 w-3.5 text-indigo-500" />
                       <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground">
@@ -400,7 +400,7 @@ const BookingDetailsPage = () => {
                       {booking.User?.email || "N/A"}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50 hover:bg-white dark:bg-card transition-colors">
+                  <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50 hover:bg-white dark:bg-card transition-colors">
                     <div className="flex items-center gap-3">
                       <FileText className="h-3.5 w-3.5 text-indigo-500" />
                       <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground">
@@ -412,7 +412,7 @@ const BookingDetailsPage = () => {
                     </span>
                   </div>
                   {currentResidence && (
-                    <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50 hover:bg-white dark:bg-card transition-colors">
+                    <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50 hover:bg-white dark:bg-card transition-colors">
                       <div className="flex items-center gap-3">
                         <MapPin className="h-3.5 w-3.5 text-indigo-500" />
                         <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground">
@@ -462,7 +462,7 @@ const BookingDetailsPage = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50">
+                  <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground">
                       Room Type
                     </span>
@@ -470,7 +470,7 @@ const BookingDetailsPage = () => {
                       {booking.Room?.type || "Standard"}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50">
+                  <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground">
                       Status
                     </span>
@@ -478,7 +478,7 @@ const BookingDetailsPage = () => {
                       Active
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50">
+                  <div className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50">
                     <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground">
                       City
                     </span>
@@ -528,7 +528,7 @@ const BookingDetailsPage = () => {
               ].map((service, i) => (
                 <div
                   key={i}
-                  className="flex flex-col gap-4 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border rounded-2xl p-5 hover:bg-white dark:bg-card hover:border-indigo-100 hover:shadow-md transition-all group cursor-pointer"
+                  className="flex flex-col gap-4 bg-gray-50 dark:bg-background border border-gray-100 dark:border-border rounded-2xl p-5 hover:bg-white dark:bg-card hover:border-indigo-100 hover:shadow-md transition-all group cursor-pointer"
                   onClick={() => router.push(service.link)}
                 >
                   <div

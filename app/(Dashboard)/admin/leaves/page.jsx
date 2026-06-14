@@ -267,7 +267,7 @@ const LeaveManagementPage = () => {
                         const u = selectedLeave.User;
                         return (
                             <div>
-                                <div className="p-8 border-b border-gray-50 bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex items-center gap-4">
+                                <div className="p-8 border-b border-gray-50 bg-gray-50 dark:bg-background flex items-center gap-4">
                                     <div className={`h-14 w-14 rounded-2xl flex items-center justify-center text-xl font-black text-white shadow-lg ${selectedLeave.status === 'APPROVED' ? 'bg-emerald-600' : selectedLeave.status === 'REJECTED' ? 'bg-rose-600' : 'bg-amber-600'}`}>
                                         {u?.name?.charAt(0)?.toUpperCase()}
                                     </div>

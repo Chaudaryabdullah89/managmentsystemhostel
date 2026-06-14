@@ -252,7 +252,7 @@ const AdminMessMenu = () => {
     if (isHostelsLoading) return <ListPageSkeleton />;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight">
             {/* Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-50 py-2 md:h-[72px]">
                 <div className="max-w-[1400px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
@@ -353,7 +353,7 @@ const AdminMessMenu = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100">
 
                                             {/* Breakfast Section */}
-                                            <div className="p-5 md:p-8 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors">
+                                            <div className="p-5 md:p-8 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors">
                                                 <div className="flex items-center justify-between mb-4 md:mb-6">
                                                     <div className="flex items-center gap-2">
                                                         <Coffee className="h-4 w-4 md:h-5 md:w-5 text-amber-500" />
@@ -410,7 +410,7 @@ const AdminMessMenu = () => {
                                             </div>
 
                                             {/* Lunch Section */}
-                                            <div className="p-5 md:p-8 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors">
+                                            <div className="p-5 md:p-8 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors">
                                                 <div className="flex items-center justify-between mb-4 md:mb-6">
                                                     <div className="flex items-center gap-2">
                                                         <Utensils className="h-4 w-4 md:h-5 md:w-5 text-emerald-500" />
@@ -467,7 +467,7 @@ const AdminMessMenu = () => {
                                             </div>
 
                                             {/* Dinner Section */}
-                                            <div className="p-5 md:p-8 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors">
+                                            <div className="p-5 md:p-8 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors">
                                                 <div className="flex items-center justify-between mb-4 md:mb-6">
                                                     <div className="flex items-center gap-2">
                                                         <Utensils className="h-4 w-4 md:h-5 md:w-5 text-indigo-500" />

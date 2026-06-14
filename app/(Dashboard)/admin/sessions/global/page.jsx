@@ -76,7 +76,7 @@ export default function GlobalSessionsPage() {
     const roles = ['all', 'ADMIN', 'WARDEN', 'STAFF', 'RESIDENT'];
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight">
             {/* Header */}
             <header className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16 shadow-sm shadow-black/5">
                 <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between gap-4">

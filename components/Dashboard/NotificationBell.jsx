@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Bell, X, CheckCheck, AlertCircle, Info, Zap, Megaphone } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useNotices } from "@/hooks/useNotices";
 
 const STORAGE_KEY = "mgh_read_notices";
 
@@ -14,10 +15,8 @@ const PRIORITY_CONFIG = {
 };
 
 export default function NotificationBell({ hostelId, userRole }) {
-    const [notices, setNotices]       = useState([]);
     const [readIds, setReadIds]       = useState(new Set());
     const [open, setOpen]             = useState(false);
-    const [loading, setLoading]       = useState(false);
     const dropdownRef                 = useRef(null);
 
     // Load read IDs from localStorage
@@ -28,29 +27,17 @@ export default function NotificationBell({ hostelId, userRole }) {
         } catch { /* ignore */ }
     }, []);
 
-    // Fetch notices
-    const fetchNotices = useCallback(async () => {
-        setLoading(true);
-        try {
-            const params = new URLSearchParams();
-            if (hostelId) params.set("hostelId", hostelId);
-            const res = await fetch(`/api/notices?${params}`);
-            const data = await res.json();
-            if (data.success && Array.isArray(data.data)) {
-                const filtered = data.data.filter(n =>
-                    n.isActive &&
-                    (!userRole || !n.targetRoles?.length || n.targetRoles.includes(userRole))
-                );
-                setNotices(filtered);
-            }
-        } catch (err) {
-            console.error("NotificationBell fetch error:", err);
-        } finally {
-            setLoading(false);
-        }
-    }, [hostelId, userRole]);
+    // Fetch notices with react-query
+    const filters = {};
+    if (hostelId) filters.hostelId = hostelId;
+    const { data: noticesData, isLoading: loading, refetch } = useNotices(filters);
 
-    useEffect(() => { fetchNotices(); }, [fetchNotices]);
+    const notices = Array.isArray(noticesData)
+        ? noticesData.filter(n =>
+            n.isActive &&
+            (!userRole || !n.targetRoles?.length || n.targetRoles.includes(userRole))
+          )
+        : [];
 
     // Close on outside click
     useEffect(() => {
@@ -82,7 +69,7 @@ export default function NotificationBell({ hostelId, userRole }) {
         <div className="relative" ref={dropdownRef}>
             {/* Bell Button */}
             <button
-                onClick={() => { setOpen(v => !v); if (!open) fetchNotices(); }}
+                onClick={() => { setOpen(v => !v); if (!open) refetch(); }}
                 className="relative h-8 w-8 rounded-xl bg-gray-100 hover:bg-blue-50 flex items-center justify-center transition-all duration-150 group"
                 title="Notifications"
             >

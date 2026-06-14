@@ -125,7 +125,7 @@ const CreateHostelPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+        <div className="min-h-screen bg-gray-50 dark:bg-background">
             {/* Slim Premium Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-40 h-16">
                 <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
@@ -306,7 +306,7 @@ const CreateHostelPage = () => {
                     {/* Sidebar: Financials & Capacity */}
                     <div className="space-y-6">
                         <Card className="border border-gray-100 dark:border-border shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] bg-white dark:bg-card overflow-hidden">
-                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-100 dark:border-border px-6 py-5 text-center">
+                            <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-100 dark:border-border px-6 py-5 text-center">
                                 <CardTitle className="text-xs font-black text-gray-900 dark:text-foreground tracking-widest uppercase">Pricing & Details</CardTitle>
                             </CardHeader>
                             <div className="p-6 space-y-5">

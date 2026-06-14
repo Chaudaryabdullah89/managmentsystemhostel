@@ -273,7 +273,7 @@ export default function PaymentAnalyticsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight print:hidden">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight print:hidden">
 
             {/* Premium Header - Synchronized Design */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-50 py-2 md:h-16">

@@ -161,7 +161,7 @@ const WardenRoomLaundryPage = () => {
                         <div className="relative hidden lg:block">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
                             <Input
-                                className="pl-9 h-9 w-48 xl:w-64 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-none text-[10px] font-black uppercase tracking-widest focus:bg-white dark:bg-card transition-all rounded-xl shadow-inner"
+                                className="pl-9 h-9 w-48 xl:w-64 bg-gray-50 dark:bg-background border-none text-[10px] font-black uppercase tracking-widest focus:bg-white dark:bg-card transition-all rounded-xl shadow-inner"
                                 placeholder="Search laundry..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}

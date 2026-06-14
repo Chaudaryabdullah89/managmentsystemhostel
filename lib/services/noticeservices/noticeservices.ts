@@ -4,11 +4,27 @@ import { buildEmailTemplate } from "@/lib/utils/emailTemplates";
 import crypto from "crypto";
 import { getBranding } from "@/lib/permissions";
 import { generateUID, UID_PREFIXES } from "@/lib/uid-generator";
+import { getCache, setCache, invalidatePattern } from "@/lib/redis";
+
+export interface NoticeCreateData {
+    title: string;
+    content: string;
+    priority?: string;
+    category?: string;
+    authorId: string;
+    hostelId?: string | null;
+    expiresAt?: string | Date | null;
+    targetRoles?: string[];
+}
 
 class NoticeService {
-    async getNotices(filter = {}) {
+    async getNotices(filter: any = {}) {
+        const cacheKey = `notices:list:${JSON.stringify(filter)}`;
+        const cached = await getCache<any[]>(cacheKey);
+        if (cached) return cached;
+
         try {
-            return await prisma.notice.findMany({
+            const result = await prisma.notice.findMany({
                 where: {
                     ...filter,
                     isActive: true
@@ -31,12 +47,14 @@ class NoticeService {
                     createdAt: 'desc'
                 }
             });
-        } catch (error) {
+            await setCache(cacheKey, result, 600); // Cache for 10 minutes
+            return result;
+        } catch (error: any) {
             throw new Error(`Failed to fetch notices: ${error.message}`);
         }
     }
 
-    async createNotice(data) {
+    async createNotice(data: NoticeCreateData) {
         try {
             const { title, content, priority, category, authorId, hostelId, expiresAt, targetRoles } = data;
             const newNotice = await prisma.notice.create({
@@ -63,11 +81,14 @@ class NoticeService {
 
             newNotice.uid = noticeUid;
 
+            // Invalidate notices cache
+            await invalidatePattern('notices:*');
+
             // Asynchronously dispatch email alerts to affected residents
             setImmediate(async () => {
                 try {
-                    let usersToEmail = [];
-                    if (hostelId) {
+                    let usersToEmail: any[] = [];
+                    if (hostelId && hostelId !== 'all') {
                         // Send to residents of specific hostel
                         const bookings = await prisma.booking.findMany({
                             where: {
@@ -146,50 +167,60 @@ class NoticeService {
                         });
                     }
                 } catch (e) {
-                    console.error("Failed to disptach notice emails:", e);
+                    console.error("Failed to dispatch notice emails:", e);
                 }
             });
 
             return newNotice;
-        } catch (error) {
+        } catch (error: any) {
             throw new Error(`Failed to create notice: ${error.message}`);
         }
     }
 
-    async updateNotice(id, data) {
+    async updateNotice(id: string, data: any) {
         try {
-            return await prisma.notice.update({
+            const result = await prisma.notice.update({
                 where: { id },
                 data: {
                     ...data,
                     expiresAt: data.expiresAt ? new Date(data.expiresAt) : undefined,
                 }
             });
-        } catch (error) {
+            await invalidatePattern('notices:*');
+            return result;
+        } catch (error: any) {
             throw new Error(`Failed to update notice: ${error.message}`);
         }
     }
 
-    async deleteNotice(id) {
+    async deleteNotice(id: string) {
         try {
-            return await prisma.notice.update({
+            const result = await prisma.notice.update({
                 where: { id },
                 data: { isActive: false }
             });
-        } catch (error) {
+            await invalidatePattern('notices:*');
+            return result;
+        } catch (error: any) {
             throw new Error(`Failed to delete notice: ${error.message}`);
         }
     }
 
-    async getNoticeStats(hostelId = null) {
+    async getNoticeStats(hostelId: string | null = null) {
+        const cacheKey = `notices:stats:${hostelId || 'all'}`;
+        const cached = await getCache<any>(cacheKey);
+        if (cached) return cached;
+
         try {
             const where = hostelId ? { hostelId } : {};
             const [total, active] = await Promise.all([
                 prisma.notice.count({ where }),
                 prisma.notice.count({ where: { ...where, isActive: true } })
             ]);
-            return { total, active };
-        } catch (error) {
+            const result = { total, active };
+            await setCache(cacheKey, result, 600);
+            return result;
+        } catch (error: any) {
             throw new Error(`Failed to fetch notice stats: ${error.message}`);
         }
     }

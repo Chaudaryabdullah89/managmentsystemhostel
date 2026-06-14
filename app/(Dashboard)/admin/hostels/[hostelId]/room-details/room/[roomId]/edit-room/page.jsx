@@ -158,7 +158,7 @@ const EditRoomPage = () => {
                                         <Label className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">Room number *</Label>
                                         <Input
                                             placeholder="e.g. B-102"
-                                            className="h-12 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-black text-xs md:text-sm text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all shadow-inner"
+                                            className="h-12 bg-gray-50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-black text-xs md:text-sm text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all shadow-inner"
                                             value={roomNumber}
                                             onChange={(e) => setRoomNumber(e.target.value)}
                                         />
@@ -168,7 +168,7 @@ const EditRoomPage = () => {
                                         <Input
                                             type="number"
                                             placeholder="0"
-                                            className="h-12 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-black text-xs md:text-sm text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all shadow-inner"
+                                            className="h-12 bg-gray-50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-black text-xs md:text-sm text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all shadow-inner"
                                             value={floor}
                                             onChange={(e) => setFloor(e.target.value)}
                                         />
@@ -179,7 +179,7 @@ const EditRoomPage = () => {
                                         <Label className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">Room type *</Label>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" className="w-full h-12 justify-between rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-black text-[10px] md:text-xs text-gray-900 dark:text-foreground transition-all hover:bg-white dark:bg-card uppercase tracking-widest shadow-inner">
+                                                <Button variant="outline" className="w-full h-12 justify-between rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-background font-black text-[10px] md:text-xs text-gray-900 dark:text-foreground transition-all hover:bg-white dark:bg-card uppercase tracking-widest shadow-inner">
                                                     <span>{type} Suite</span>
                                                     <ChevronDown className="h-4 w-4 opacity-40" />
                                                 </Button>
@@ -195,7 +195,7 @@ const EditRoomPage = () => {
                                         <Label className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">Capacity *</Label>
                                         <Input
                                             type="number"
-                                            className="h-12 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-black text-xs md:text-sm text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all shadow-inner"
+                                            className="h-12 bg-gray-50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-black text-xs md:text-sm text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all shadow-inner"
                                             value={capacity}
                                             onChange={(e) => setCapacity(e.target.value)}
                                         />
@@ -217,7 +217,7 @@ const EditRoomPage = () => {
                                     <Label className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">Current status *</Label>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="outline" className="w-full h-12 justify-between rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-black text-[10px] md:text-xs text-gray-900 dark:text-foreground transition-all hover:bg-white dark:bg-card uppercase tracking-widest shadow-inner">
+                                            <Button variant="outline" className="w-full h-12 justify-between rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-background font-black text-[10px] md:text-xs text-gray-900 dark:text-foreground transition-all hover:bg-white dark:bg-card uppercase tracking-widest shadow-inner">
                                                 <span className="flex items-center gap-2">
                                                     <div className={`h-1.5 w-1.5 rounded-full ${status === 'AVAILABLE' ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`} />
                                                     {status}
@@ -250,7 +250,7 @@ const EditRoomPage = () => {
                                         <Input
                                             type="number"
                                             placeholder="24"
-                                            className="h-12 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-black text-xs md:text-sm text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all shadow-inner"
+                                            className="h-12 bg-gray-50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-black text-xs md:text-sm text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all shadow-inner"
                                             value={cleaningInterval}
                                             onChange={(e) => setCleaningInterval(e.target.value)}
                                         />
@@ -261,7 +261,7 @@ const EditRoomPage = () => {
                                         <Input
                                             type="number"
                                             placeholder="48"
-                                            className="h-12 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-black text-xs md:text-sm text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all shadow-inner"
+                                            className="h-12 bg-gray-50 dark:bg-background border-gray-100 dark:border-border rounded-xl font-black text-xs md:text-sm text-gray-900 dark:text-foreground focus:bg-white dark:bg-card transition-all shadow-inner"
                                             value={laundryInterval}
                                             onChange={(e) => setLaundryInterval(e.target.value)}
                                         />
@@ -285,7 +285,7 @@ const EditRoomPage = () => {
                                     <Label className="text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center">Base price *</Label>
                                     <div className="relative">
                                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-gray-300">PKR</span>
-                                        <Input type="number" className="pl-14 h-12 bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border rounded-2xl font-black text-lg text-center focus:bg-white dark:bg-card transition-all shadow-inner italic" value={price} onChange={(e) => setPrice(e.target.value)} />
+                                        <Input type="number" className="pl-14 h-12 bg-gray-50 dark:bg-background border-gray-100 dark:border-border rounded-2xl font-black text-lg text-center focus:bg-white dark:bg-card transition-all shadow-inner italic" value={price} onChange={(e) => setPrice(e.target.value)} />
                                     </div>
                                 </div>
                                 <div className="space-y-2 flex flex-col">

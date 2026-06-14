@@ -1,7 +1,14 @@
 import transporter from "./transpoter";
 import { prisma } from "@/lib/prisma";
 
-export async function sendEmail({ to, subject, html }) {
+export interface SendEmailOptions {
+    to: string;
+    bcc?: string;
+    subject: string;
+    html: string;
+}
+
+export async function sendEmail({ to, bcc, subject, html }: SendEmailOptions) {
     let fromName = "Hostel Management";
     try {
         // Hard kill-switch via env for emergency shutdowns.
@@ -37,12 +44,13 @@ export async function sendEmail({ to, subject, html }) {
         const info = await transporter.sendMail({
             from: `"${fromName}" <${process.env.EMAIL_USER}>`,
             to,
+            bcc,
             subject,
             html,
         });
 
         return info;
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error sending email:", error);
         return { skipped: true, reason: "send-failed", error: error?.message };
     }

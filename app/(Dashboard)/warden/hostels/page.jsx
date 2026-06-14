@@ -1,449 +1,450 @@
-"use client";
-import React, { useState } from 'react';
-import Link from 'next/link';
+"use client"
+import React, { useState } from 'react'
+import { Skeleton } from "@/components/ui/skeleton"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import {
-    Building2,
+    RefreshCw,
+    Plus,
+    Bed,
     Users,
+    User,
+    Search,
+    Filter,
     MapPin,
-    Layers,
-    Activity,
-    CheckCircle2,
-    DollarSign,
-    Zap,
-    MessageSquare,
-    ShieldCheck,
+    Edit,
+    Trash,
+    ChevronRight,
+    MoreVertical,
+    Building2,
     Sparkles,
+    LayoutGrid,
+    CheckCircle2,
+    Clock,
+    Layers,
+    Download,
+    Navigation,
+    DoorOpen,
+    ArrowLeft,
+    ShieldCheck,
+    Coins,
     Globe,
     Info,
-    RefreshCw,
-    Hash,
-    ChevronRight,
-    LayoutGrid,
-    Phone,
-    Calendar,
-    X,
-    CreditCard,
-    BedDouble,
-    TrendingUp,
-} from 'lucide-react';
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+    Sparkle
+} from "lucide-react"
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import {
-    Dialog,
-    DialogContent,
-} from "@/components/ui/dialog";
-import useAuthStore from '@/hooks/Authstate';
-import { useHostelById } from '@/hooks/usehostel';
-import { DetailPageSkeleton } from "@/components/ui/skeletons";
-import { toast } from "sonner";
-import { format } from "date-fns";
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useQueryClient } from '@tanstack/react-query'
+import { QueryKeys } from '../../../../lib/queryclient'
+import { deletehostel, useHostel } from "../../../../hooks/usehostel"
+import { useuserbyrole } from "../../../../hooks/useusers"
+import Error from '../../../../components/ui/error'
+import WardenNames from '../../../../components/WardenNames'
+import { Badge } from "@/components/ui/badge"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+import { ListPageSkeleton } from "@/components/ui/skeletons";
+import { exportToExcel } from "@/lib/utils/exportToExcel";
+import useAuthStore from "@/hooks/Authstate";
 import PageHeader from "@/components/Dashboard/PageHeader";
+import FilterToolbar from "@/components/Dashboard/FilterToolbar";
+import EmptyState from "@/components/ui/states/EmptyState";
 
-const WardenHostelsPage = () => {
-    const { user } = useAuthStore();
-    const { data: hostelData, isLoading, refetch } = useHostelById(user?.hostelId);
-    const hostel = hostelData?.data;
-    const [showInfo, setShowInfo] = useState(false);
+const HostelsPage = () => {
+    const queryClient = useQueryClient()
+    const router = useRouter()
+    const { data: apiResponse, error: hosteldataerror, isLoading: hostelsloading, isFetching: isFetchingHostels } = useHostel();
+    const userProfile = useAuthStore((state) => state.user);
+    const isAdmin = userProfile?.role === 'ADMIN';
+    const isWarden = userProfile?.role === 'WARDEN';
 
-    if (isLoading) return <DetailPageSkeleton />;
+    const [searchterm, setsearchterm] = useState('');
+    const [filterType, setFilterType] = useState('All');
+    const [deletingHostelId, setDeletingHostelId] = useState(null)
 
-    if (!hostel) {
-        return (
-            <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background flex flex-col items-center justify-center p-6 text-center">
-                <div className="h-12 w-12 rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm mb-4">
-                    <Building2 className="h-5 w-5 text-gray-300" />
-                </div>
-                <h2 className="text-sm font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">Access Denied</h2>
-                <p className="text-[10px] text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-widest mt-1.5 max-w-xs">
-                    Your account is not linked to any hostel.
-                </p>
-                <Link href="/warden" className="mt-6">
-                    <Button variant="outline" className="h-9 px-5 rounded-xl border-gray-200 dark:border-border text-[10px] font-bold uppercase tracking-widest">
-                        Go Home
-                    </Button>
-                </Link>
-            </div>
-        );
+    const hostelsToDisplay = (apiResponse?.data || [])
+        .filter(h => isAdmin || (isWarden && h.id === userProfile?.hostelId))
+        .map(h => ({
+            id: h.id,
+            name: h.name,
+            type: h.type,
+            status: h.status || "ACTIVE",
+            location: {
+                address: h.address,
+                city: h.city,
+                state: h.state,
+                country: h.country,
+                postalCode: h.zip,
+                fullAddress: h.completeaddress || `${h.address}, ${h.city}`
+            },
+            basicInfo: {
+                type: h.type,
+                floors: h.floors,
+                contact: h.phone,
+                wardens: h.wardens || [],
+                wardenUsers: h.User_User_hostelIdToHostel || []
+            },
+            roomStats: {
+                totalRooms: (h.Room || []).length,
+                availableRooms: (h.Room || []).filter(r => r.status === 'AVAILABLE').length,
+                occupiedRooms: (h.Room || []).filter(r => r.status === 'OCCUPIED').length,
+                maintenanceRooms: (h.Room || []).filter(r => r.status === 'MAINTENANCE').length
+            },
+            description: h.description,
+            rooms: h.Room || [],
+            meta: {
+                createdOn: new Date(h.createdAt).toLocaleDateString(),
+                createdBy: "Admin",
+                updatedOn: new Date(h.updatedAt).toLocaleDateString()
+            }
+        }));
+
+    const matchedData = hostelsToDisplay.filter((item) => {
+        const matchesSearch = item.name.toLowerCase().includes(searchterm.toLowerCase()) ||
+            item.location.city.toLowerCase().includes(searchterm.toLowerCase()) ||
+            item.type.toLowerCase().includes(searchterm.toLowerCase());
+        const matchesFilter = filterType === 'All' || item.type === filterType.toUpperCase();
+        return matchesSearch && matchesFilter;
+    })
+
+    const handleRefresh = () => {
+        queryClient.invalidateQueries({ queryKey: QueryKeys.hostellist() });
+        toast.success("Refreshed");
+    };
+
+    const { mutate, isPending: deletehostelloading } = deletehostel()
+
+    const handledelecthostel = async (id) => {
+        setDeletingHostelId(id)
+        mutate(id)
     }
 
-    const roomStats = {
-        total: hostel.totalRooms || hostel.Room?.length || 0,
-        occupied: hostel.Room?.filter(r => r.status === 'OCCUPIED').length || 0,
-        available: hostel.Room?.filter(r => r.status === 'AVAILABLE').length || 0,
-        maintenance: hostel.Room?.filter(r => r.status === 'MAINTENANCE').length || 0,
+    const getStatusTheme = (status) => {
+        switch (status) {
+            case "ACTIVE": return "bg-green-50 text-green-700 border-green-100";
+            case "INACTIVE": return "bg-red-50 text-red-700 border-red-100";
+            default: return "bg-gray-50 dark:bg-muted/10 text-gray-700 dark:text-foreground border-gray-100 dark:border-border";
+        }
     };
 
-    const occupancyRate = roomStats.total > 0 ? Math.round((roomStats.occupied / roomStats.total) * 100) : 0;
-
-    const handleRefresh = async () => {
-        const promise = refetch();
-        toast.promise(promise, {
-            loading: 'Refreshing...',
-            success: 'Updated',
-            error: 'Failed to update'
-        });
-    };
+    if (hostelsloading) return <ListPageSkeleton accentColor="bg-blue-600" />;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-background">
             <PageHeader
-                title="My Hostel"
-                subtitleStart="Manage"
-                subtitleEnd="Live"
+                title="Hostels"
+                subtitleStart="Stats"
+                subtitleEnd="Active"
                 maxWidthClass="max-w-[1600px]"
-                accentColorClass="bg-indigo-600"
+                accentColorClass="bg-blue-600"
                 dotColorClass="bg-emerald-500"
                 subtitleEndClass="text-emerald-600"
+                stickyClassName="bg-white dark:bg-card border-b sticky top-0 z-40 py-2 md:h-16"
                 rightSlot={(
-                    <Button
-                        variant="ghost"
-                        className="h-9 px-4 rounded-xl border border-gray-100 dark:border-border font-bold text-[10px] uppercase tracking-wider text-gray-500 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 flex items-center gap-2"
-                        onClick={handleRefresh}
-                    >
-                        <RefreshCw className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" /> Refresh
-                    </Button>
-                )}
-            />
-
-            <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 space-y-6">
-
-                {/* Hero / Identity Card */}
-                <Card className="bg-white dark:bg-card border-gray-100 dark:border-border rounded-2xl p-5 md:p-6 shadow-sm overflow-hidden">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
-                        <div className="flex items-center gap-4">
-                            <div className="h-11 w-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
-                                <Building2 className="h-5 w-5" />
+                    <div className="flex items-center gap-2 md:gap-4">
+                        <div className="hidden lg:flex items-center gap-8 mr-4">
+                            <div className="flex flex-col items-end">
+                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Status</span>
+                                <span className="text-sm font-bold text-emerald-600 uppercase tracking-tighter">Active</span>
                             </div>
-                            <div className="space-y-1 min-w-0">
-                                <div className="flex flex-wrap items-center gap-1.5">
-                                    <Badge variant="outline" className="bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border text-gray-400 dark:text-muted-foreground font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">{hostel.type}</Badge>
-                                    <Badge variant="outline" className="bg-emerald-50 border-emerald-100 text-emerald-600 font-bold text-[9px] px-2 py-0.5 rounded-full uppercase tracking-widest">Active</Badge>
-                                </div>
-                                <h2 className="text-base font-black text-gray-900 dark:text-foreground tracking-tight uppercase leading-none truncate">{hostel.name}</h2>
-                                <div className="flex items-center gap-1.5 text-gray-400 dark:text-muted-foreground">
-                                    <MapPin className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-                                    <span className="text-[10px] font-bold uppercase tracking-wider truncate">{hostel.address}, {hostel.city}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-6 md:pl-6 md:border-l border-gray-100 dark:border-border">
-                            <div className="space-y-0.5">
-                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest block">Monthly Rent</span>
-                                <span className="text-base font-black text-gray-900 dark:text-foreground tracking-tight">PKR {hostel.montlyrent?.toLocaleString()}</span>
-                            </div>
-                            <div className="space-y-0.5">
-                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest block">Daily Rate</span>
-                                <span className="text-base font-black text-gray-900 dark:text-foreground tracking-tight">PKR {hostel.pernightrent?.toLocaleString()}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Stats Row */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-5 pt-5 border-t border-gray-50">
-                        {[
-                            { label: 'Rooms', value: roomStats.total, sub: 'Total', icon: LayoutGrid, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                            { label: 'Occupancy', value: `${occupancyRate}%`, sub: 'Full', icon: Activity, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                            { label: 'Status', value: 'LIVE', sub: 'Ready', icon: ShieldCheck, color: 'text-blue-600', bg: 'bg-blue-50' },
-                            { label: 'Floors', value: hostel.floors, sub: 'Levels', icon: Layers, color: 'text-amber-600', bg: 'bg-amber-50' }
-                        ].map((stat, i) => (
-                            <div key={i} className="flex items-center gap-3 group/stat">
-                                <div className={`h-10 w-10 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0 shadow-inner group-hover/stat:scale-110 transition-transform`}>
-                                    <stat.icon className="h-[18px] w-[18px]" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-none mb-1">{stat.label}</span>
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-sm font-black text-gray-900 dark:text-foreground tracking-tight uppercase leading-none tabular-nums">{stat.value}</span>
-                                        <span className="text-[9px] font-bold text-gray-300 uppercase italic leading-none">{stat.sub}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </Card>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                    {/* Main Content */}
-                    <div className="lg:col-span-8 space-y-5">
-
-                        {/* Room Status */}
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2 px-1">
-                                <div className="h-4 w-1 bg-indigo-600 rounded-full" />
-                                <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-900 dark:text-foreground">Room Status</h3>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                {[
-                                    { label: 'Available', value: roomStats.available, color: 'bg-indigo-600', icon: CheckCircle2, sub: 'Ready' },
-                                    { label: 'Occupied', value: roomStats.occupied, color: 'bg-emerald-600', icon: Users, sub: 'Stayers' },
-                                    { label: 'Maintenance', value: roomStats.maintenance, color: 'bg-amber-500', icon: Activity, sub: 'Fixing' }
-                                ].map((node, i) => (
-                                    <Card key={i} className="bg-white dark:bg-card border-gray-100 dark:border-border rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group overflow-hidden">
-                                        <div className="flex flex-col gap-3">
-                                            <div className="flex items-center justify-between">
-                                                <div className="h-9 w-9 rounded-xl bg-gray-50 dark:bg-muted/10 flex items-center justify-center text-gray-300 group-hover:bg-indigo-600 group-hover:text-white transition-all">
-                                                    <node.icon className="h-4 w-4" />
-                                                </div>
-                                                <span className="text-xl font-black text-gray-900 dark:text-foreground tracking-tight">{node.value}</span>
-                                            </div>
-                                            <div>
-                                                <p className="text-[10px] font-black text-gray-900 dark:text-foreground uppercase tracking-widest leading-none mb-0.5">{node.label}</p>
-                                                <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest italic">{node.sub}</p>
-                                            </div>
-                                            <div className="h-1 w-full bg-gray-50 dark:bg-muted/10 rounded-full overflow-hidden">
-                                                <div
-                                                    className={`h-full ${node.color} rounded-full`}
-                                                    style={{ width: `${(node.value / (roomStats.total || 1)) * 100}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </Card>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Details */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <Card className="bg-white dark:bg-card border-gray-100 dark:border-border rounded-2xl p-5 shadow-sm relative overflow-hidden group">
-                                <MapPin className="absolute top-4 right-4 h-8 w-8 text-gray-50 transition-colors" />
-                                <div className="space-y-4 relative z-10">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Address</span>
-                                        <p className="text-sm font-bold text-gray-800 dark:text-foreground leading-tight uppercase">{hostel.address}</p>
-                                    </div>
-                                    <div className="pt-4 border-t border-gray-50 flex items-center gap-2">
-                                        <div className="h-7 w-7 rounded-lg bg-gray-50 dark:bg-muted/10 flex items-center justify-center">
-                                            <Globe className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
-                                        </div>
-                                        <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{hostel.city} Branch</span>
-                                    </div>
-                                </div>
-                            </Card>
-
-                            <Card className="bg-slate-900 rounded-2xl p-5 shadow-xl relative overflow-hidden group">
-                                <div className="space-y-4 relative z-10 flex flex-col h-full justify-between">
-                                    <div className="space-y-2">
-                                        <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest">About</span>
-                                        <p className="text-[11px] text-gray-400 dark:text-muted-foreground font-medium leading-relaxed italic border-l-2 border-indigo-500/30 pl-3">
-                                            "{hostel.description || 'A premium hostel facility managed with high-quality service and security standards.'}"
-                                        </p>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-7 w-7 rounded-lg bg-white dark:bg-card/5 border border-white/5 flex items-center justify-center">
-                                            <Info className="h-3.5 w-3.5 text-white/30" />
-                                        </div>
-                                        <p className="text-[9px] font-black text-gray-500 dark:text-muted-foreground uppercase tracking-widest">Info</p>
-                                    </div>
-                                </div>
-                            </Card>
-                        </div>
-
-                        {/* Amenities */}
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between px-1">
-                                <div className="flex items-center gap-2">
-                                    <div className="h-4 w-1 bg-indigo-600 rounded-full" />
-                                    <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-900 dark:text-foreground">Amenities</h3>
-                                </div>
-                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{hostel.amenities?.length || 0} Total</span>
-                            </div>
-                            <Card className="bg-white dark:bg-card border-gray-100 dark:border-border rounded-2xl p-4 shadow-sm">
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                                    {hostel.amenities?.length > 0 ? hostel.amenities.map((amenity, i) => (
-                                        <div key={i} className="p-3 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-50 hover:border-indigo-100 hover:bg-white dark:bg-card hover:shadow-sm transition-all text-center group">
-                                            <div className="h-7 w-7 rounded-lg bg-white dark:bg-card mx-auto mb-2 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                                                <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
-                                            </div>
-                                            <span className="text-[9px] font-black text-gray-600 dark:text-muted-foreground uppercase tracking-tighter group-hover:text-indigo-600 truncate block">{amenity}</span>
-                                        </div>
-                                    )) : (
-                                        <div className="col-span-full py-8 text-center text-[10px] font-black text-gray-300 uppercase tracking-widest">No amenities listed</div>
-                                    )}
-                                </div>
-                            </Card>
-                        </div>
-                    </div>
-
-                    {/* Sidebar */}
-                    <div className="lg:col-span-4 space-y-5">
-                        {/* Management Card */}
-                        <Card className="bg-white dark:bg-card border-gray-100 dark:border-border rounded-2xl p-5 shadow-sm relative overflow-hidden group">
-                            <div className="space-y-5 relative z-10">
-                                <div>
-                                    <span className="text-[9px] font-black text-indigo-400 uppercase tracking-widest block mb-1">Management</span>
-                                    <h3 className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tight">Active Warden</h3>
-                                </div>
-
-                                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-muted/10 rounded-xl border border-gray-100 dark:border-border">
-                                    <div className="h-10 w-10 rounded-xl bg-white dark:bg-card shadow-sm flex items-center justify-center text-indigo-600 font-black text-base uppercase shrink-0">
-                                        {user?.name?.charAt(0) || 'D'}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-0.5">Official Warden</p>
-                                        <p className="text-sm font-black text-gray-900 dark:text-foreground uppercase tracking-tight truncate">{user?.name || 'Administrator'}</p>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3 px-1">
-                                    {[
-                                        { label: 'Hostel ID', value: hostel.id.slice(-8).toUpperCase(), icon: Hash },
-                                        { label: 'Security', value: 'Live', icon: Activity, color: 'text-emerald-500' },
-                                        { label: 'City', value: hostel.city, icon: Globe }
-                                    ].map((item, i) => (
-                                        <div key={i} className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest">
-                                            <div className="flex items-center gap-2 text-gray-400 dark:text-muted-foreground">
-                                                <item.icon className="h-3.5 w-3.5" />
-                                                <span>{item.label}</span>
-                                            </div>
-                                            <span className={item.color || 'text-gray-900 dark:text-foreground'}>{item.value}</span>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <Button
-                                    className="w-full h-10 bg-gray-950 hover:bg-black text-white rounded-xl font-black text-[10px] uppercase tracking-widest transition-all shadow-sm active:scale-95"
-                                    onClick={() => setShowInfo(true)}
-                                >
-                                    Check Info
-                                </Button>
-                            </div>
-                        </Card>
-
-                        {/* Quick Links */}
-                        <div className="space-y-2">
-                            <h3 className="text-[9px] font-black uppercase tracking-widest px-1 text-gray-400 dark:text-muted-foreground">Quick Links</h3>
-                            <div className="grid grid-cols-1 gap-2">
-                                {[
-                                    { title: 'Residents', sub: 'Manage People', icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50', link: '/warden/residents' },
-                                    { title: 'Bookings', sub: 'Room Requests', icon: Zap, color: 'text-indigo-600', bg: 'bg-indigo-50', link: '/warden/bookings' },
-                                    { title: 'Payments', sub: 'Cash Flow', icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50', link: '/warden/payments' },
-                                    { title: 'Complaints', sub: 'Fix Issues', icon: MessageSquare, color: 'text-rose-600', bg: 'bg-rose-50', link: '/warden/complaints' }
-                                ].map((item, i) => (
-                                    <Link href={item.link} key={i}>
-                                        <div className="group bg-white dark:bg-card border border-gray-100 dark:border-border rounded-xl p-3.5 flex items-center justify-between hover:shadow-md hover:shadow-indigo-100/50 transition-all cursor-pointer">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`h-9 w-9 rounded-xl ${item.bg} ${item.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform`}>
-                                                    <item.icon className="h-4 w-4" />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <h4 className="text-[11px] font-black text-gray-900 dark:text-foreground uppercase tracking-tight">{item.title}</h4>
-                                                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">{item.sub}</p>
-                                                </div>
-                                            </div>
-                                            <ChevronRight className="h-3.5 w-3.5 text-gray-300 group-hover:text-indigo-600 transition-colors" />
-                                        </div>
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-
-            {/* ── Hostel Info Dialog ── */}
-            <Dialog open={showInfo} onOpenChange={setShowInfo}>
-                <DialogContent className="!max-w-2xl p-0 border-none shadow-2xl rounded-2xl overflow-hidden [&>button]:hidden">
-                    {/* Modal Header */}
-                    <div className="bg-gray-950 px-6 py-5 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 rounded-xl bg-white dark:bg-card/10 flex items-center justify-center">
-                                <Building2 className="h-4 w-4 text-white" />
-                            </div>
-                            <div>
-                                <h2 className="text-sm font-black text-white uppercase tracking-tight">{hostel.name}</h2>
-                                <p className="text-[9px] font-bold text-white/40 uppercase tracking-widest mt-0.5">Hostel Info</p>
+                            <div className="flex flex-col items-end">
+                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Total</span>
+                                <span className="text-sm font-bold text-gray-900 dark:text-foreground tracking-tighter">{hostelsToDisplay.length} Total</span>
                             </div>
                         </div>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 rounded-xl text-white/40 hover:text-white hover:bg-white dark:bg-card/10"
-                            onClick={() => setShowInfo(false)}
+                            className="rounded-xl hover:bg-gray-100 h-9 w-9 shrink-0"
+                            onClick={handleRefresh}
+                            disabled={isFetchingHostels}
                         >
-                            <X className="h-4 w-4" />
+                            <RefreshCw className={`h-4 w-4 text-gray-500 dark:text-muted-foreground ${isFetchingHostels ? 'animate-spin' : ''}`} />
                         </Button>
+                        <Button
+                            variant="outline"
+                            className="h-9 px-4 rounded-xl border-emerald-200 font-bold text-[9px] md:text-[10px] uppercase tracking-wider text-emerald-700 bg-emerald-50 hover:bg-emerald-100 gap-2 shrink-0 hidden sm:flex"
+                            onClick={() => {
+                                if (!hostelsToDisplay || hostelsToDisplay.length === 0) {
+                                    toast.error("Empty");
+                                    return;
+                                }
+                                const rows = hostelsToDisplay.map(h => ({
+                                    "ID": h.uid || h.id,
+                                    "Name": h.name,
+                                    "Type": h.type,
+                                    "Status": h.status,
+                                    "City": h.location.city,
+                                    "Total Rooms": h.roomStats.totalRooms,
+                                    "Occupied Rooms": h.roomStats.occupiedRooms,
+                                    "Available Rooms": h.roomStats.availableRooms
+                                }));
+                                exportToExcel(rows, `Hostels_Export_${new Date().toISOString().split('T')[0]}`, "Hostels");
+                            }}
+                        >
+                            <Download className="h-4 w-4" />
+                            <span className="hidden md:inline">Excel</span>
+                        </Button>
+                        {isAdmin && (
+                            <Link href="/warden/hostels/createhostel?role=admin">
+                                <Button className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 px-4 rounded-xl font-black text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm gap-2 whitespace-nowrap">
+                                    <Plus className="h-4 w-4" />
+                                    <span>New</span>
+                                </Button>
+                            </Link>
+                        )}
                     </div>
+                )}
+            />
 
-                    {/* Stats Row */}
-                    <div className="grid grid-cols-4 border-b border-gray-100 dark:border-border">
-                        {[
-                            { label: 'Total Rooms', value: roomStats.total, icon: BedDouble, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-                            { label: 'Occupancy', value: `${occupancyRate}%`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                            { label: 'Floors', value: hostel.floors ?? '—', icon: Layers, color: 'text-amber-600', bg: 'bg-amber-50' },
-                            { label: 'Available', value: roomStats.available, icon: CheckCircle2, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        ].map((s, i) => (
-                            <div key={i} className="flex flex-col items-center gap-1.5 py-4 border-r border-gray-100 dark:border-border last:border-r-0">
-                                <div className={`h-8 w-8 rounded-lg ${s.bg} ${s.color} flex items-center justify-center`}>
-                                    <s.icon className="h-3.5 w-3.5" />
-                                </div>
-                                <span className="text-sm font-black text-gray-900 dark:text-foreground tabular-nums">{s.value}</span>
-                                <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center">{s.label}</span>
+            <main className="max-w-[1600px] mx-auto px-4 md:px-6 py-6 md:py-8 space-y-6 md:space-y-8 min-w-0">
+                {/* Statistics Overview */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                    {[
+                        { label: 'Total', value: hostelsToDisplay.length, icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
+                        { label: 'Capacity', value: hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 0), icon: Bed, color: 'text-purple-600', bg: 'bg-purple-50' },
+                        { label: 'Available', value: hostelsToDisplay.reduce((t, h) => t + h.roomStats.availableRooms, 0), icon: DoorOpen, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'Usage', value: `${Math.round((hostelsToDisplay.reduce((t, h) => t + h.roomStats.occupiedRooms, 0) / Math.max(hostelsToDisplay.reduce((t, h) => t + h.rooms.length, 1), 1)) * 100)}%`, icon: Users, color: 'text-amber-600', bg: 'bg-amber-50' },
+                    ].map((s, i) => (
+                        <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">
+                            <div className={`h-10 w-10 md:h-11 md:w-11 rounded-xl ${s.bg} ${s.color} flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform shrink-0`}>
+                                <s.icon className="h-5 w-5" />
                             </div>
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[8px] md:text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{s.label}</span>
+                                <span className="text-sm md:text-xl font-black text-gray-900 dark:text-foreground tracking-tight">{s.value}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Search & Filter */}
+                <FilterToolbar
+                    containerClassName="bg-white dark:bg-card border border-gray-100 dark:border-border p-2 rounded-2xl flex flex-col md:flex-row gap-4 items-center shadow-sm"
+                    searchSlot={(
+                    <div className="relative flex-1 group w-full px-2">
+                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-muted-foreground group-focus-within:text-indigo-600 transition-colors" />
+                        <Input
+                            className="w-full bg-transparent border-none shadow-none h-11 md:h-12 pl-10 text-[11px] md:text-sm font-black text-gray-900 dark:text-foreground placeholder:text-gray-300 focus-visible:ring-0 uppercase tracking-tight"
+                            placeholder="Search"
+                            value={searchterm}
+                            onChange={(e) => setsearchterm(e.target.value)}
+                        />
+                    </div>
+                    )}
+                    filtersSlot={(
+                    <div className="flex items-center gap-1.5 p-1 bg-gray-50 dark:bg-muted/10 rounded-xl w-full md:w-auto overflow-x-auto scrollbar-hide shrink-0">
+                        {['All', 'Boys', 'Girls'].map((type) => (
+                            <button
+                                key={type}
+                                onClick={() => setFilterType(type)}
+                                className={`flex-1 md:flex-none px-6 py-2 rounded-lg text-9px md:text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterType === type ? 'bg-white dark:bg-card text-gray-900 dark:text-foreground shadow-sm border border-gray-100 dark:border-border' : 'text-gray-400 dark:text-muted-foreground hover:text-gray-600 dark:text-muted-foreground'}`}
+                            >
+                                {type === 'All' ? 'All' : type}
+                            </button>
                         ))}
                     </div>
+                    )}
+                />
 
-                    {/* Body */}
-                    <div className="p-6 space-y-4 bg-gray-50 dark:bg-muted/10/30">
-                        {/* Identity */}
-                        <div className="bg-white dark:bg-card rounded-xl border border-gray-100 dark:border-border p-4 grid grid-cols-2 gap-4">
-                            {[
-                                { label: 'Hostel Name', value: hostel.name, icon: Building2 },
-                                { label: 'Type', value: hostel.type, icon: ShieldCheck },
-                                { label: 'City', value: hostel.city, icon: Globe },
-                                { label: 'Phone', value: hostel.phone || '—', icon: Phone },
-                                { label: 'Monthly Rent', value: `PKR ${hostel.montlyrent?.toLocaleString() || '—'}`, icon: CreditCard },
-                                { label: 'Night Rate', value: `PKR ${hostel.pernightrent?.toLocaleString() || '—'}`, icon: CreditCard },
-                                { label: 'Address', value: hostel.address || '—', icon: MapPin },
-                                { label: 'System ID', value: hostel.id.slice(-10).toUpperCase(), icon: Hash },
-                            ].map((f, i) => (
-                                <div key={i} className="flex items-start gap-2.5">
-                                    <div className="h-7 w-7 rounded-lg bg-gray-50 dark:bg-muted/10 flex items-center justify-center shrink-0 mt-0.5">
-                                        <f.icon className="h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground" />
+                {/* Hostel List */}
+                <div className="space-y-4">
+                    {matchedData.length > 0 ? (
+                        matchedData.map((hostel, index) => (
+                            <Link key={hostel.id || index} className='hover:bg-gray-100 block' href={`/warden/hostels/${hostel.id}`}>
+                                <div className="flex flex-col w-full relative group">
+                                    {/* Hostel Item Content */}
+                                    <div className="flex flex-col xl:flex-row items-center gap-6 p-4 md:p-5">
+                                        <div className={`absolute left-0 top-0 bottom-0 w-1 md:w-1.5 rounded-l-2xl ${hostel.type === 'BOYS' ? 'bg-blue-600' : 'bg-pink-500'} opacity-80`} />
+
+                                        {/* Branch Identifier */}
+                                        <div className="flex items-center gap-4 md:gap-5 min-w-0 md:min-w-[300px] w-full xl:w-auto">
+                                            <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl flex items-center justify-center shrink-0 border shadow-sm transition-all group-hover:bg-black group-hover:text-white ${hostel.type === 'BOYS' ? 'bg-blue-50 border-blue-100 text-blue-600' : 'bg-pink-50 border-pink-100 text-pink-600'}`}>
+                                                <Building2 className="h-5 w-5 md:h-6 md:w-6" />
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="text-sm md:text-base font-black text-gray-900 dark:text-foreground tracking-tight uppercase truncate">{hostel.name}</h3>
+                                                    <Badge variant="outline" className={`${getStatusTheme(hostel.status)} text-[8px] font-black px-1.5 py-0 rounded-full border-px shrink-0`}>
+                                                        {hostel.status}
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                    <MapPin className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
+                                                    <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">{hostel.location.city} • {hostel.type}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Performance Metrics */}
+                                        <div className="flex-1 w-full max-w-none md:max-w-sm xl:max-w-md hidden md:block">
+                                            <div className="flex justify-between items-end mb-1.5">
+                                                <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Usage</span>
+                                                <span className="text-xs font-black text-gray-900 dark:text-foreground">{Math.round((hostel.roomStats.occupiedRooms / hostel.roomStats.totalRooms) * 100 || 0)}%</span>
+                                            </div>
+                                            <div className="h-1.5 w-full bg-gray-50 dark:bg-muted/10 rounded-full overflow-hidden border border-gray-100 dark:border-border">
+                                                <div
+                                                    className={`h-full transition-all duration-1000 ${hostel.type === 'BOYS' ? 'bg-blue-600' : 'bg-pink-500'}`}
+                                                    style={{ width: `${(hostel.roomStats.occupiedRooms / hostel.roomStats.totalRooms) * 100 || 0}%` }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* Custodial Info */}
+                                        <div className="hidden lg:flex items-center gap-8 min-w-[200px]">
+                                            <div className="flex flex-col">
+                                                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Staff</span>
+                                                <div className="text-[10px] font-black text-gray-700 dark:text-foreground truncate max-w-[120px] uppercase">
+                                                    <WardenNames wardenIds={hostel.basicInfo.wardens} wardenUsers={hostel.basicInfo.wardenUsers} />
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col text-right">
+                                                <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Rooms</span>
+                                                <span className="text-[10px] font-black text-gray-700 dark:text-foreground uppercase">{hostel.roomStats.totalRooms} Rooms</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="flex items-center gap-2 md:gap-3 w-full xl:w-auto justify-end pt-3 xl:pt-0 border-t xl:border-none border-gray-50">
+                                            {isAdmin && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full hover:bg-gray-100 text-gray-400 dark:text-muted-foreground hidden sm:flex shrink-0">
+                                                            <MoreVertical className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-52 p-1 rounded-xl border-gray-100 dark:border-border shadow-xl">
+                                                        <DropdownMenuItem
+                                                            className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground cursor-pointer"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                router.push(`/warden/hostels/${hostel.id}`);
+                                                            }}
+                                                        >
+                                                            <LayoutGrid className="h-3.5 w-3.5" /> View
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground cursor-pointer"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                router.push(`/warden/hostels/${hostel.id}/edithostel?hostelId=${hostel.id}`);
+                                                            }}
+                                                        >
+                                                            <Edit className="h-3.5 w-3.5" /> Edit
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem className="p-2 gap-3 rounded-lg font-black text-[9px] uppercase tracking-wider text-red-500 focus:bg-red-50 focus:text-red-600 cursor-pointer" onSelect={(e) => e.preventDefault()}>
+                                                            <AlertDialog>
+                                                                <AlertDialogTrigger
+                                                                    className="w-full text-left flex items-center gap-3"
+                                                                    onClick={(e) => e.stopPropagation()}
+                                                                >
+                                                                    <Trash className="h-3.5 w-3.5" /> Delete
+                                                                </AlertDialogTrigger>
+                                                                <AlertDialogContent className="rounded-[2.5rem] border-none shadow-3xl overflow-hidden p-0 max-w-md">
+                                                                    <div className="bg-rose-600 p-8 text-white relative">
+                                                                        <div className="h-12 w-12 rounded-xl bg-white dark:bg-card/20 flex items-center justify-center mb-4"><Trash size={24} /></div>
+                                                                        <AlertDialogTitle className="text-xl font-black uppercase tracking-tight mb-2 text-white">Delete?</AlertDialogTitle>
+                                                                        <AlertDialogDescription className="text-rose-100 text-xs font-medium uppercase tracking-wider">
+                                                                            All data will be lost for {hostel.name}.
+                                                                        </AlertDialogDescription>
+                                                                    </div>
+                                                                    <div className="p-6 flex items-center justify-end gap-3 bg-white dark:bg-card">
+                                                                        <AlertDialogCancel className="rounded-xl border-none bg-gray-50 dark:bg-muted/10 font-black px-6 h-10 uppercase tracking-widest text-[9px] text-gray-400 dark:text-muted-foreground">Cancel</AlertDialogCancel>
+                                                                        <AlertDialogAction className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-black px-6 h-10 uppercase tracking-widest text-[9px] transition-all" onClick={() => handledelecthostel(hostel.id)}>Confirm</AlertDialogAction>
+                                                                    </div>
+                                                                </AlertDialogContent>
+                                                            </AlertDialog>
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            )}
+                                            <Button
+                                                className="h-9 px-4 md:px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-[9px] shadow-sm flex items-center gap-2 group/btn w-full sm:w-auto justify-center"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    router.push(`/warden/rooms`);
+                                                }}
+                                            >
+                                                Open
+                                                <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
+                                            </Button>
+                                        </div>
                                     </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">{f.label}</p>
-                                        <p className="text-[11px] font-black text-gray-900 dark:text-foreground uppercase mt-0.5 truncate">{f.value}</p>
+
+                                    {/* Room Preview */}
+                                    <div className="bg-gray-50 dark:bg-background border-t border-gray-100 dark:border-border px-4 md:px-6 py-3 flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <LayoutGrid className="h-3 w-3 text-gray-400 dark:text-muted-foreground" />
+                                            <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Rooms</span>
+                                        </div>
+                                        <div className="h-px md:h-4 w-full md:w-px bg-gray-200" />
+                                        <div className="flex flex-wrap gap-2">
+                                            {hostel.rooms.slice(0, 8).map((room) => (
+                                                <div
+                                                    key={room.id}
+                                                    className="group/tag flex items-center gap-1.5 bg-white dark:bg-card border border-gray-100 dark:border-border px-2 py-1 rounded-lg hover:border-indigo-300 transition-all cursor-pointer"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        router.push(`/warden/rooms/${room.id}`);
+                                                    }}
+                                                >
+                                                    <div className={`h-1.5 w-1.5 rounded-full ${room.status === 'AVAILABLE' ? 'bg-emerald-500' : 'bg-indigo-500'}`} />
+                                                    <span className="text-[9px] font-black text-gray-700 dark:text-foreground uppercase">{room.roomNumber}</span>
+                                                </div>
+                                            ))}
+                                            {hostel.rooms.length > 8 && (
+                                                <div className="flex items-center px-2 py-1 rounded-lg bg-gray-100 border border-dashed border-gray-200 dark:border-border">
+                                                    <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase">+{hostel.rooms.length - 8}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            </Link>
+                        ))
+                    ) : (
+                        <EmptyState
+                            icon={Search}
+                            title="Empty"
+                            description="Clear"
+                            containerClassName="py-24 flex flex-col items-center justify-center bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl shadow-sm border-dashed"
+                            iconWrapperClassName="bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border"
+                            iconClassName="text-gray-300"
+                            actionSlot={(
+                                <Button
+                                    variant="outline"
+                                    className="rounded-xl border-gray-200 dark:border-border uppercase tracking-widest text-[10px] font-bold h-10 px-8 hover:bg-blue-600 hover:text-white transition-all"
+                                    onClick={() => { setsearchterm(''); setFilterType('All'); }}
+                                >
+                                    Clear Filters
+                                </Button>
+                            )}
+                        />
+                    )}
+                </div>
 
-                        {/* Description */}
-                        {hostel.description && (
-                            <div className="bg-white dark:bg-card rounded-xl border border-gray-100 dark:border-border p-4">
-                                <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-2">Description</p>
-                                <p className="text-[11px] text-gray-600 dark:text-muted-foreground leading-relaxed italic">"{hostel.description}"</p>
-                            </div>
-                        )}
 
-                        {/* Amenities */}
-                        {hostel.amenities?.length > 0 && (
-                            <div className="bg-white dark:bg-card rounded-xl border border-gray-100 dark:border-border p-4">
-                                <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-3">Amenities ({hostel.amenities.length})</p>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {hostel.amenities.map((a, i) => (
-                                        <span key={i} className="text-[9px] font-black text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1 rounded-lg uppercase tracking-tighter">
-                                            {a}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Created At */}
-                        {hostel.createdAt && (
-                            <div className="flex items-center gap-2 text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
-                                <Calendar className="h-3 w-3" />
-                                Registered: {format(new Date(hostel.createdAt), 'MMMM dd, yyyy')}
-                            </div>
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
+            </main>
         </div>
     );
 };
 
-export default WardenHostelsPage;
+export default HostelsPage;

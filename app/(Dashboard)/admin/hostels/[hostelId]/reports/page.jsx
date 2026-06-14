@@ -66,7 +66,7 @@ const ReportContent = () => {
     );
 
     if (!data) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-sans">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background font-sans">
             <div className="text-center space-y-4">
                 <Info className="h-10 w-10 text-gray-300 mx-auto" />
                 <h2 className="text-xl font-bold text-gray-900 dark:text-foreground uppercase">Registry Missing</h2>
@@ -90,7 +90,7 @@ const ReportContent = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight leading-relaxed">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight leading-relaxed">
             {/* Minimal Premium Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
@@ -208,7 +208,7 @@ const ReportContent = () => {
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
                                         {monthlyTrends.map((trend, index) => (
-                                            <tr key={index} className="group hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors">
+                                            <tr key={index} className="group hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors">
                                                 <td className="px-8 py-6 text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-tighter italic">{trend.month}</td>
                                                 <td className="px-8 py-6 text-right text-xs font-bold text-gray-900 dark:text-foreground">PKR {trend.revenue.toLocaleString()}</td>
                                                 <td className="px-8 py-6 text-right text-xs font-black text-emerald-600">PKR {trend.profit.toLocaleString()}</td>

@@ -195,7 +195,7 @@ const EditHostelForm = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+        <div className="min-h-screen bg-gray-50 dark:bg-background">
             {/* Slim Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-40 h-16">
                 <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
@@ -434,7 +434,7 @@ const EditHostelForm = () => {
                     <div className="space-y-8">
                         {/* Financial Ledger */}
                         <Card className="border border-gray-100 dark:border-border shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] bg-white dark:bg-card overflow-hidden">
-                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-100 dark:border-border px-8 py-6 text-center">
+                            <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-100 dark:border-border px-8 py-6 text-center">
                                 <CardTitle className="text-[10px] font-black text-gray-900 dark:text-foreground tracking-[0.2em] uppercase">Asset Commercials</CardTitle>
                             </CardHeader>
                             <div className="p-8 space-y-6">

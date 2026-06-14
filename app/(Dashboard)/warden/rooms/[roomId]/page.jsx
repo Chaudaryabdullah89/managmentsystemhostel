@@ -1,6 +1,6 @@
 "use client"
-import React from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { Suspense } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
     ChevronLeft,
@@ -23,14 +23,16 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useSingleRoomByHostelId } from "@/hooks/useRoom";
-import useAuthStore from "@/hooks/Authstate";
 import { format } from "date-fns";
 import { RoomDetailSkeleton } from "@/components/ui/skeletons";
+import useAuthStore from "@/hooks/Authstate";
 
-const WardenRoomDetailsPage = () => {
+const RoomDetailsContent = () => {
     const params = useParams();
+    const searchParams = useSearchParams();
     const router = useRouter();
     const { roomId } = params;
+    // searchHostelId removed
     const { user } = useAuthStore();
     const hostelId = user?.hostelId;
 
@@ -40,7 +42,7 @@ const WardenRoomDetailsPage = () => {
     if (isLoading) return <RoomDetailSkeleton />;
 
     if (!room) return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background">
             <div className="text-center space-y-4">
                 <Info className="h-10 w-10 text-gray-300 mx-auto" />
                 <h2 className="text-xl font-bold text-gray-900 dark:text-foreground uppercase">Room Not Found</h2>
@@ -59,7 +61,7 @@ const WardenRoomDetailsPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans">
             {/* Minimal Premium Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-6 h-full flex items-center justify-between">
@@ -69,10 +71,10 @@ const WardenRoomDetailsPage = () => {
                         </Button>
                         <div className="h-6 w-px bg-gray-200" />
                         <div className="flex flex-col">
-                            <h1 className="text-lg font-bold text-gray-900 dark:text-foreground tracking-tight">Room {room.roomNumber}</h1>
+                            <h1 className="text-lg font-bold text-gray-900 dark:text-foreground tracking-tight tracking-widest">Room {room.roomNumber}</h1>
                             <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                                 <span className="h-1 w-1 rounded-full bg-indigo-500 animate-pulse" />
-                                {room.Hostel?.name} • Management
+                                {room.Hostel?.name} • Admin Panel
                             </p>
                         </div>
                     </div>
@@ -89,10 +91,10 @@ const WardenRoomDetailsPage = () => {
                 {/* Minimal Metrics Matrix */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
-                        { label: 'Residents', value: `${room.currentGuests?.length || 0}/${room.capacity}`, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                        { label: 'Occupancy', value: `${room.currentGuests?.length || 0}/${room.capacity}`, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                         { label: 'Floor', value: `Level ${room.floor}`, icon: Building2, color: 'text-purple-600', bg: 'bg-purple-50' },
                         { label: 'Room Type', value: room.type, icon: DoorOpen, color: 'text-blue-600', bg: 'bg-blue-50' },
-                        { label: 'Status', value: 'Active', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
+                        { label: 'Safety Check', value: 'Verified', icon: ShieldCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
                     ].map((stat, i) => (
                         <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow cursor-default">
                             <div className={`h-11 w-11 rounded-xl ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}>
@@ -117,19 +119,19 @@ const WardenRoomDetailsPage = () => {
                                         <Users className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <h2 className="text-base font-bold text-gray-900 dark:text-foreground uppercase">Current Residents</h2>
-                                        <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">People living in this room</p>
+                                        <h2 className="text-base font-bold text-gray-900 dark:text-foreground uppercase">Active Residents</h2>
+                                        <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Current occupants in this room</p>
                                     </div>
                                 </div>
                                 <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest border-gray-100 dark:border-border text-gray-400 dark:text-muted-foreground px-3 py-1">
-                                    {room.currentGuests?.length || 0} People
+                                    {room.currentGuests?.length || 0} Occupants
                                 </Badge>
                             </div>
 
                             <div className="space-y-3">
                                 {room.currentGuests?.length > 0 ? (
                                     room.currentGuests.map((guest) => (
-                                        <div key={guest.bookingId} className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-white dark:bg-card hover:shadow-md transition-all group relative overflow-hidden">
+                                        <div key={guest.bookingId} className="bg-gray-50 dark:bg-background border border-gray-100 dark:border-border rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-white dark:bg-card hover:shadow-md transition-all group relative overflow-hidden cursor-pointer" onClick={() => router.push(`/warden/residents/${guest.id}`)}>
                                             <div className={`absolute left-0 top-0 bottom-0 w-1 ${guest.rentStatus === 'Paid' ? 'bg-emerald-500' : 'bg-amber-500'} opacity-70`} />
                                             <div className="flex items-center gap-4 flex-1">
                                                 <div className="h-10 w-10 rounded-lg bg-white dark:bg-card flex items-center justify-center border border-gray-100 dark:border-border text-gray-400 dark:text-muted-foreground group-hover:bg-indigo-600 group-hover:text-white transition-colors">
@@ -143,7 +145,7 @@ const WardenRoomDetailsPage = () => {
 
                                             <div className="flex items-center gap-10">
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Joined</span>
+                                                    <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Enrolled</span>
                                                     <span className="text-[11px] font-bold text-gray-700 dark:text-foreground">{guest.checkInDate}</span>
                                                 </div>
                                                 <div className="flex flex-col items-end">
@@ -156,7 +158,6 @@ const WardenRoomDetailsPage = () => {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="h-8 w-8 rounded-lg text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
-                                                    onClick={() => router.push(`/warden/residents/${guest.id}`)}
                                                 >
                                                     <ArrowUpRight className="h-4 w-4" />
                                                 </Button>
@@ -175,7 +176,7 @@ const WardenRoomDetailsPage = () => {
                         {/* Specs & Configuration */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-8 shadow-sm">
-                                <h3 className="text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2 text-indigo-600">
+                                <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest mb-6 flex items-center gap-2 text-indigo-600">
                                     <Info className="h-3.5 w-3.5" />
                                     Room Details
                                 </h3>
@@ -194,7 +195,7 @@ const WardenRoomDetailsPage = () => {
                             </div>
 
                             <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-8 shadow-sm">
-                                <h3 className="text-xs font-bold uppercase tracking-widest mb-6 flex items-center gap-2 text-blue-500">
+                                <h3 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest mb-6 flex items-center gap-2 text-blue-500">
                                     <Sparkle className="h-3.5 w-3.5" />
                                     Amenities
                                 </h3>
@@ -217,12 +218,33 @@ const WardenRoomDetailsPage = () => {
 
                     {/* Right Column: Service Hub & Logs */}
                     <div className="space-y-6">
-                        {/* Recent Services */}
+                        {/* Operational Services */}
                         <div className="space-y-3">
                             {[
-                                { title: 'Maintenance', sub: `${room.maintanance?.length || 0} Logs`, icon: Wrench, color: 'text-amber-500', bg: 'bg-amber-50', link: `/warden/rooms/${roomId}/maintenance` },
-                                { title: 'Laundry', sub: `${room.LaundryLog?.length || 0} Logs`, icon: Shirt, color: 'text-purple-500', bg: 'bg-purple-50', link: `/warden/rooms/${roomId}/laundry` },
-                                { title: 'Cleaning', sub: `${room.CleaningLog?.length || 0} Logs`, icon: Sparkle, color: 'text-blue-500', bg: 'bg-blue-50', link: `/warden/rooms/${roomId}/cleaning` }
+                                {
+                                    title: 'Maintenance',
+                                    sub: `${room.maintanance?.length || 0} Records`,
+                                    icon: Wrench,
+                                    color: 'text-amber-500',
+                                    bg: 'bg-amber-50',
+                                    link: `/warden/complaints`
+                                },
+                                {
+                                    title: 'Laundry',
+                                    sub: `${room.LaundryLog?.length || 0} Logs`,
+                                    icon: Shirt,
+                                    color: 'text-purple-500',
+                                    bg: 'bg-purple-50',
+                                    link: `/warden/rooms/${room.id}/laundry`
+                                },
+                                {
+                                    title: 'Cleaning',
+                                    sub: `${room.CleaningLog?.length || 0} Logs`,
+                                    icon: Sparkle,
+                                    color: 'text-blue-500',
+                                    bg: 'bg-blue-50',
+                                    link: `/warden/rooms/${room.id}/cleaning`
+                                }
                             ].map((service, i) => (
                                 <Link
                                     key={i}
@@ -244,11 +266,11 @@ const WardenRoomDetailsPage = () => {
                         </div>
 
                         {/* Room Info Card */}
-                        <div className="bg-indigo-900 text-white rounded-4xl p-8 relative overflow-hidden shadow-xl">
+                        <div className="bg-indigo-900 text-white rounded-[2rem] p-8 relative overflow-hidden shadow-xl">
                             <div className="absolute top-0 right-0 p-8 opacity-5">
                                 <ShieldCheck className="h-24 w-24 text-white" />
                             </div>
-                            <h3 className="text-[10px] font-bold text-indigo-300 uppercase tracking-[0.3em] mb-8 border-b border-white/10 pb-4">Information</h3>
+                            <h3 className="text-[10px] font-bold text-indigo-300 uppercase tracking-[0.3em] mb-8 border-b border-white/10 pb-4">Room Info</h3>
                             <div className="space-y-6">
                                 <div className="flex flex-col">
                                     <span className="text-[8px] font-black text-indigo-400 uppercase tracking-[0.2em]">Created On</span>
@@ -273,4 +295,10 @@ const WardenRoomDetailsPage = () => {
     );
 };
 
-export default WardenRoomDetailsPage;
+export default function RoomDetailsPage() {
+    return (
+        <Suspense fallback={<RoomDetailSkeleton />}>
+            <RoomDetailsContent />
+        </Suspense>
+    );
+}

@@ -196,7 +196,7 @@ const GuestSupportPage = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background">
                 <div className="flex flex-col items-center gap-4">
                     <Activity className="h-8 w-8 text-indigo-600 animate-spin" />
                     <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-[0.2em]">Syncing Support Data...</p>
@@ -206,7 +206,7 @@ const GuestSupportPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20">
             {/* Header */}
             <header className="bg-white dark:bg-card border-b sticky top-0 z-40 h-16 shadow-sm">
                 <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">

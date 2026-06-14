@@ -58,7 +58,7 @@ const HostelOverviewPage = () => {
 
   if (!hostel)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-sans">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background font-sans">
         <div className="text-center space-y-4">
           <Info className="h-10 w-10 text-gray-300 mx-auto" />
           <h2 className="text-xl font-bold text-gray-900 dark:text-foreground uppercase">
@@ -100,7 +100,7 @@ const HostelOverviewPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans">
       {/* Minimal Premium Header */}
       <div className="bg-white dark:bg-card border-b sticky top-0 z-50 py-2 md:h-16">
         <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
@@ -265,7 +265,7 @@ const HostelOverviewPage = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
                 <div className="space-y-6">
-                  <div className="flex flex-col gap-1.5 p-4 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border">
+                  <div className="flex flex-col gap-1.5 p-4 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border">
                     <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                       <MapPin className="h-3 w-3" /> Location Trace
                     </span>
@@ -276,7 +276,7 @@ const HostelOverviewPage = () => {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="flex flex-col gap-1 p-4 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border">
+                    <div className="flex flex-col gap-1 p-4 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border">
                       <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                         <Phone className="h-3 w-3" /> Contact
                       </span>
@@ -284,7 +284,7 @@ const HostelOverviewPage = () => {
                         {hostel.phone || "N/A"}
                       </span>
                     </div>
-                    <div className="flex flex-col gap-1 p-4 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border">
+                    <div className="flex flex-col gap-1 p-4 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border">
                       <span className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                         <Calendar className="h-3 w-3" /> Updated
                       </span>
@@ -366,7 +366,7 @@ const HostelOverviewPage = () => {
               <div className="overflow-x-auto scrollbar-hide">
                 <table className="w-full text-left min-w-[600px]">
                   <thead>
-                    <tr className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground border-b">
+                    <tr className="bg-gray-50 dark:bg-background text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground border-b">
                       <th className="px-8 py-4">Block ID</th>
                       <th className="px-8 py-4">Status</th>
                       <th className="px-8 py-4">Category</th>

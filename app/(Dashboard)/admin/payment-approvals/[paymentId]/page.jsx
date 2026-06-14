@@ -105,7 +105,7 @@ const PaymentApprovalDetailPage = () => {
     const isGuestNotification = payment.notes?.includes('[GUEST_NOTIFICATION]');
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-32 font-sans tracking-tight">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-32 font-sans tracking-tight">
             {/* Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16 shadow-sm shadow-black/5">
                 <div className="max-w-[1600px] mx-auto px-8 h-full flex items-center justify-between">
@@ -301,14 +301,14 @@ const PaymentApprovalDetailPage = () => {
                                 </div>
 
                                 <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-border">
-                                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50 hover:bg-white dark:bg-card transition-colors">
+                                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50 hover:bg-white dark:bg-card transition-colors">
                                         <div className="flex items-center gap-3">
                                             <Phone className="h-3.5 w-3.5 text-indigo-500" />
                                             <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground">Phone</span>
                                         </div>
                                         <span className="text-sm font-bold text-gray-900 dark:text-foreground">{payment.User?.phone || 'N/A'}</span>
                                     </div>
-                                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50 hover:bg-white dark:bg-card transition-colors">
+                                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50 hover:bg-white dark:bg-card transition-colors">
                                         <div className="flex items-center gap-3">
                                             <Mail className="h-3.5 w-3.5 text-indigo-500" />
                                             <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground">Email</span>
@@ -348,11 +348,11 @@ const PaymentApprovalDetailPage = () => {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50">
+                                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50">
                                         <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground">Room Type</span>
                                         <span className="text-sm font-bold text-gray-900 dark:text-foreground uppercase">{payment.Booking?.Room?.type || 'Standard'}</span>
                                     </div>
-                                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50">
+                                    <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-background rounded-xl border border-gray-100 dark:border-border/50">
                                         <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-muted-foreground">Status</span>
                                         <span className="text-sm font-bold text-emerald-600 uppercase">Operational</span>
                                     </div>

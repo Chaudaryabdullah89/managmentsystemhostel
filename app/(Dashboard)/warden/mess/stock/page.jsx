@@ -219,7 +219,7 @@ const WardenMessStock = () => {
                     {/* Left & Center: Inventory ledger */}
                     <div className="lg:col-span-2 space-y-6">
                         <Card className="rounded-[2rem] border-gray-100 dark:border-border shadow-sm overflow-hidden">
-                            <CardHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-b border-gray-50 py-4 px-6 flex flex-row items-center justify-between">
+                            <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-50 py-4 px-6 flex flex-row items-center justify-between">
                                 <CardTitle className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest flex items-center gap-2">
                                     <Layers className="h-4 w-4 text-gray-500" /> Stock items ledger
                                 </CardTitle>

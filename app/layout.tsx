@@ -27,18 +27,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  document.documentElement.classList.remove('dark');
-                  localStorage.removeItem('mgh_theme');
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
       </head>
       <body>
         <ReactQueryProvider>

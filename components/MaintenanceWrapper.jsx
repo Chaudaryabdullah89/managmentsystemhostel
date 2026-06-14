@@ -26,10 +26,10 @@ export default async function MaintenanceWrapper({ children }) {
     );
   }
 
-  // Check if we are on the login page (allow access so admins can log in, guest login will be blocked by API)
+  // Check if we are on an authentication page (allow access so admins/users can access auth forms)
   const headersList = await headers();
-  const currentPath = headersList.get('x-invoke-path') || headersList.get('referer') || "";
-  if (currentPath.includes("/auth/login")) {
+  const currentPath = headersList.get('x-pathname') || headersList.get('x-invoke-path') || headersList.get('referer') || "";
+  if (currentPath.includes("/auth") || currentPath.includes("/auth/")) {
      return <>{children}</>;
   }
 

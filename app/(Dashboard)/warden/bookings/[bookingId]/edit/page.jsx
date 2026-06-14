@@ -112,7 +112,7 @@ const EditBookingPage = () => {
     if (bookingLoading) return <DetailPageSkeleton />;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans">
             {/* Minimal Premium Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1200px] mx-auto px-6 h-full flex items-center justify-between">

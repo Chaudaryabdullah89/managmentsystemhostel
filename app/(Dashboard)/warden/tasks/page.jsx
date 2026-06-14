@@ -163,7 +163,7 @@ const TasksPage = () => {
     if (isTasksLoading) return <ListPageSkeleton />;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight leading-relaxed">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight leading-relaxed">
             {/* Minimal Premium Header */}
             <div className="bg-white dark:bg-card border-b sticky top-0 z-50 h-16">
                 <div className="max-w-[1600px] mx-auto px-4 md:px-6 h-full flex items-center justify-between gap-3">
@@ -183,7 +183,7 @@ const TasksPage = () => {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 dark:text-muted-foreground group-focus-within:text-black transition-colors" />
                             <Input
                                 placeholder="Search..."
-                                className="h-9 w-[280px] pl-9 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-bold text-[10px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground shadow-sm transition-all focus:bg-white dark:bg-card focus:ring-0"
+                                className="h-9 w-[280px] pl-9 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-background font-bold text-[10px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground shadow-sm transition-all focus:bg-white dark:bg-card focus:ring-0"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
@@ -467,7 +467,7 @@ const TasksPage = () => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {filteredTasks.map((task) => (
-                                        <tr key={task.id} className="group hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors">
+                                        <tr key={task.id} className="group hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors">
                                             <td className="px-8 py-6">
                                                 <div className="flex flex-col">
                                                     <span className="text-[11px] font-bold text-gray-900 dark:text-foreground uppercase tracking-tight italic line-clamp-1">{task.title}</span>
@@ -644,7 +644,7 @@ const TaskDetailsContent = ({ task }) => {
 
                     <div className="space-y-4 max-h-[300px] md:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                         {task.comments?.map((comment) => (
-                            <div key={comment.id} className="flex flex-col gap-1.5 p-3.5 rounded-2xl bg-gray-50 dark:bg-muted/10/50 dark:bg-background border border-gray-100 dark:border-border shadow-sm">
+                            <div key={comment.id} className="flex flex-col gap-1.5 p-3.5 rounded-2xl bg-gray-50 dark:bg-background border border-gray-100 dark:border-border shadow-sm">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[9px] font-black text-gray-900 dark:text-foreground uppercase tracking-tight truncate max-w-[70%]">{comment.User.name}</span>
                                     <span className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground shrink-0">{format(new Date(comment.createdAt), 'HH:mm')}</span>
@@ -665,7 +665,7 @@ const TaskDetailsContent = ({ task }) => {
                     <div className="relative mt-auto pt-4">
                         <Textarea
                             placeholder="Add a comment..."
-                            className="min-h-[90px] rounded-[1.5rem] border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-medium text-[11px] shadow-sm focus:ring-0 focus:bg-white dark:bg-card transition-all pt-4 pb-12 resize-none"
+                            className="min-h-[90px] rounded-[1.5rem] border-gray-100 dark:border-border bg-gray-50 dark:bg-background font-medium text-[11px] shadow-sm focus:ring-0 focus:bg-white dark:bg-card transition-all pt-4 pb-12 resize-none"
                             value={newComment}
                             onChange={(e) => setNewComment(e.target.value)}
                             onKeyDown={(e) => {

@@ -1,63 +1,48 @@
 import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-const WardenNames = ({ wardenIds, wardenUsers = [] }) => {
-    const [names, setNames] = useState([]);
-    const [loading, setLoading] = useState(true);
+const WardenNameItem = ({ id, wardenUser }) => {
+    const { data: name, isLoading } = useQuery({
+        queryKey: ['warden', 'name', id],
+        queryFn: async () => {
+            if (wardenUser?.name) return wardenUser.name;
+            const response = await fetch(`/api/users/warden/${id}`);
+            const data = await response.json();
+            return data.success ? data.data.name : 'Unknown';
+        },
+        enabled: !!id && !wardenUser?.name,
+        initialData: wardenUser?.name,
+        staleTime: 15 * 60 * 1000, // Keep warden names fresh for 15 minutes
+        gcTime: 30 * 60 * 1000,
+    });
 
-    useEffect(() => {
-        // If we already have user objects, use them immediately
-        if (wardenUsers && wardenUsers.length > 0) {
-            setNames(wardenUsers.map(u => u.name));
-            setLoading(false);
-            return;
-        }
+    if (isLoading) return <span className="text-[10px] text-gray-400 animate-pulse px-2">Loading...</span>;
 
-        const fetchNames = async () => {
-            if (!wardenIds || wardenIds.length === 0) {
-                setNames([]);
-                setLoading(false);
-                return;
-            }
+    return (
+        <Link
+            href={`/admin/wardens/${id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="hover:scale-105 transition-transform"
+        >
+            <span className="text-[10px] font-bold bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg text-indigo-600 uppercase tracking-tight">
+                {name || 'Unknown'}
+            </span>
+        </Link>
+    );
+};
 
-            try {
-                const promises = wardenIds.map(async (id) => {
-                    try {
-                        const response = await fetch(`/api/users/warden/${id}`);
-                        const data = await response.json();
-                        return data.success ? data.data.name : 'Unknown';
-                    } catch (e) {
-                        return 'Error';
-                    }
-                });
-                const fetchedNames = await Promise.all(promises);
-                setNames(fetchedNames);
-            } catch (error) {
-                console.error("Error fetching warden names:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+const WardenNames = ({ wardenIds = [], wardenUsers = [] }) => {
+    const list = wardenUsers && wardenUsers.length > 0
+        ? wardenUsers.map(u => ({ id: u.id, user: u }))
+        : (wardenIds || []).map((id) => ({ id, user: null }));
 
-        fetchNames();
-    }, [wardenIds, wardenUsers]);
-
-    if (loading && (!wardenUsers || wardenUsers.length === 0)) return <span className="text-xs text-gray-400 animate-pulse">Loading...</span>;
-    if (names.length === 0) return <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest italic">No warden assigned</span>;
+    if (list.length === 0) return <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest italic">No warden assigned</span>;
 
     return (
         <div className="flex flex-wrap gap-1">
-            {names.map((name, idx) => (
-                <Link
-                    href={`/admin/wardens/${wardenUsers[idx]?.id || wardenIds?.[idx]}`}
-                    key={idx}
-                    onClick={(e) => e.stopPropagation()}
-                    className="hover:scale-105 transition-transform"
-                >
-                    <span className="text-[10px] font-bold bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-lg text-indigo-600 uppercase tracking-tight">
-                        {name}
-                    </span>
-                </Link>
+            {list.map((item, idx) => (
+                <WardenNameItem key={item.id || idx} id={item.id} wardenUser={item.user} />
             ))}
         </div>
     );

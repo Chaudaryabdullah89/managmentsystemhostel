@@ -19,15 +19,45 @@ export async function GET(request, { params }) {
         if (!userId) {
             return errorResponse("User ID is required", 400);
         }
-        const guard = await requireSelfOrRoles(userId, ['ADMIN']);
+        const guard = await requireSelfOrRoles(userId, ['ADMIN', 'WARDEN']);
         if (!guard.ok) return guard.response;
+        const actor = guard.user;
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: {
+            select: {
+                // ─── Scalar fields (password intentionally excluded) ───
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                cnic: true,
+                role: true,
+                isActive: true,
+                hostelId: true,
+                regNumber: true,
+                uid: true,
+                image: true,
+                createdAt: true,
+                updatedAt: true,
+                lastLogin: true,
+                city: true,
+                address: true,
+                canManageExpenses: true,
+                canManageMess: true,
+                canManageGeneral: true,
+                canManageUtilities: true,
+                canManageMaintenance: true,
+                canManageSalaries: true,
+                basicSalary: true,
+                // ─── Relations ───────────────────────────────────────
                 ResidentProfile: true,
                 StaffProfile: {
-                    include: {
+                    select: {
+                        id: true,
+                        designation: true,
+                        basicSalary: true,
+                        joiningDate: true,
                         Salary: {
                             orderBy: { month: 'desc' },
                             take: 5
@@ -58,6 +88,15 @@ export async function GET(request, { params }) {
 
         if (!user) {
             return errorResponse("User not found", 404);
+        }
+
+        // Additional security check: if actor is WARDEN, they can only view users in their hostel
+        if (actor.role === 'WARDEN' && actor.id !== userId) {
+            const wardenHostelId = actor.hostelId;
+            const userHostelId = user.hostelId || user.ResidentProfile?.currentHostelId;
+            if (wardenHostelId !== userHostelId) {
+                return errorResponse("Access denied: User is not assigned to your hostel", 403);
+            }
         }
 
         const [bookings, totalBookings, payments, totalPayments] = await Promise.all([
@@ -155,10 +194,16 @@ export async function PATCH(request, { params }) {
             }
         }
 
+        // Security: exclude sensitive/structural fields from mass update.
+        // - `password` must go through /api/auth/changepassword (which bcrypt-hashes it)
+        // - `role` should be changed via the explicit role-update endpoint only
+        // eslint-disable-next-line no-unused-vars
+        const { password: _pw, role: _role, ...safeUpdateData } = updateData;
+
         const updatedUser = await prisma.user.update({
             where: { id: userId },
             data: {
-                ...updateData,
+                ...safeUpdateData,
                 updatedAt: new Date()
             },
             include: {

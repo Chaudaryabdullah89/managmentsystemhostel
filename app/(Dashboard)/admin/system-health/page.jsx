@@ -83,7 +83,7 @@ export default function SystemHealthPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-background">
                 <div className="flex flex-col items-center gap-4">
                     <div className="h-12 w-12 rounded-2xl bg-blue-50 flex items-center justify-center animate-pulse">
                         <Activity className="h-6 w-6 text-blue-600" />
@@ -280,7 +280,7 @@ export default function SystemHealthPage() {
                     </div>
                     <div className="divide-y divide-gray-50 dark:divide-border/20">
                         {endpoints.map(([key, val]) => (
-                            <div key={key} className="flex items-center justify-between px-6 py-3 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors">
+                            <div key={key} className="flex items-center justify-between px-6 py-3 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors">
                                 <div className="flex items-center gap-3">
                                     {val.status === "OK"
                                         ? <Wifi className="h-4 w-4 text-emerald-500" />

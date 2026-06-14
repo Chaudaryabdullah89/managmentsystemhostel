@@ -269,7 +269,7 @@ const AddGuestPage = () => {
                                             <Search className="absolute left-5 md:left-6 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400 dark:text-muted-foreground" />
                                             <Input
                                                 placeholder="Search registry by Name, Email, or CNIC..."
-                                                className="h-14 md:h-16 pl-12 md:pl-14 pr-6 rounded-xl md:rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/50 dark:bg-background font-black text-xs md:text-sm focus:bg-white dark:bg-card focus:border-indigo-600 transition-all uppercase placeholder:normal-case"
+                                                className="h-14 md:h-16 pl-12 md:pl-14 pr-6 rounded-xl md:rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-background font-black text-xs md:text-sm focus:bg-white dark:bg-card focus:border-indigo-600 transition-all uppercase placeholder:normal-case"
                                                 value={existingGuestQuery}
                                                 onChange={(e) => setExistingGuestQuery(e.target.value)}
                                             />
@@ -370,7 +370,7 @@ const AddGuestPage = () => {
                                         <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1 flex justify-between">
                                             CNIC Front Fragment {documents.cnicFront && <Badge className="bg-emerald-500 text-white border-none py-0.5 text-[8px]">VERIFIED</Badge>}
                                         </Label>
-                                        <div className="relative h-40 md:h-48 border-2 border-dashed border-gray-100 dark:border-border rounded-2xl md:rounded-[2rem] flex flex-col items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background hover:bg-white dark:bg-card hover:border-indigo-600 transition-all cursor-pointer group overflow-hidden">
+                                        <div className="relative h-40 md:h-48 border-2 border-dashed border-gray-100 dark:border-border rounded-2xl md:rounded-[2rem] flex flex-col items-center justify-center bg-gray-50 dark:bg-background hover:bg-white dark:bg-card hover:border-indigo-600 transition-all cursor-pointer group overflow-hidden">
                                             <input type="file" accept="image/*,.pdf" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={(e) => handleFileChange(e, 'cnicFront')} />
                                             <div className="flex flex-col items-center gap-3">
                                                 <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl ${documents.cnicFront ? 'bg-emerald-500 text-white' : 'bg-white dark:bg-card text-gray-300'} flex items-center justify-center shadow-lg transition-colors`}>
@@ -385,7 +385,7 @@ const AddGuestPage = () => {
                                         <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1 flex justify-between">
                                             CNIC Back Fragment {documents.cnicBack && <Badge className="bg-emerald-500 text-white border-none py-0.5 text-[8px]">VERIFIED</Badge>}
                                         </Label>
-                                        <div className="relative h-40 md:h-48 border-2 border-dashed border-gray-100 dark:border-border rounded-2xl md:rounded-[2rem] flex flex-col items-center justify-center bg-gray-50 dark:bg-muted/10/50 dark:bg-background hover:bg-white dark:bg-card hover:border-indigo-600 transition-all cursor-pointer group overflow-hidden">
+                                        <div className="relative h-40 md:h-48 border-2 border-dashed border-gray-100 dark:border-border rounded-2xl md:rounded-[2rem] flex flex-col items-center justify-center bg-gray-50 dark:bg-background hover:bg-white dark:bg-card hover:border-indigo-600 transition-all cursor-pointer group overflow-hidden">
                                             <input type="file" accept="image/*,.pdf" className="absolute inset-0 opacity-0 cursor-pointer z-10" onChange={(e) => handleFileChange(e, 'cnicBack')} />
                                             <div className="flex flex-col items-center gap-3">
                                                 <div className={`h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl ${documents.cnicBack ? 'bg-emerald-500 text-white' : 'bg-white dark:bg-card text-gray-300'} flex items-center justify-center shadow-lg transition-colors`}>
@@ -423,7 +423,7 @@ const AddGuestPage = () => {
                                             <Label className="text-[10px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">Deployment Date</Label>
                                             <div className="relative">
                                                 <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 text-gray-400 dark:text-muted-foreground" />
-                                                <Input type="date" name="checkIn" value={formData.checkIn} onChange={handleInputChange} className="h-14 md:h-16 pl-12 md:pl-14 rounded-xl md:rounded-2xl border-gray-100 dark:border-border font-black bg-gray-50 dark:bg-muted/10/50 dark:bg-background focus:bg-white dark:bg-card transition-all text-xs md:text-sm" />
+                                                <Input type="date" name="checkIn" value={formData.checkIn} onChange={handleInputChange} className="h-14 md:h-16 pl-12 md:pl-14 rounded-xl md:rounded-2xl border-gray-100 dark:border-border font-black bg-gray-50 dark:bg-background focus:bg-white dark:bg-card transition-all text-xs md:text-sm" />
                                             </div>
                                         </div>
 
@@ -485,7 +485,7 @@ const AddGuestPage = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6 transition-all hover:bg-white dark:bg-card hover:shadow-md">
+                                    <div className="bg-gray-50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6 transition-all hover:bg-white dark:bg-card hover:shadow-md">
                                         <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm shrink-0">
                                             <User className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground" />
                                         </div>
@@ -496,7 +496,7 @@ const AddGuestPage = () => {
                                         </div>
                                     </div>
 
-                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6 transition-all hover:bg-white dark:bg-card hover:shadow-md">
+                                    <div className="bg-gray-50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6 transition-all hover:bg-white dark:bg-card hover:shadow-md">
                                         <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm shrink-0">
                                             <Building2 className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground" />
                                         </div>
@@ -507,7 +507,7 @@ const AddGuestPage = () => {
                                         </div>
                                     </div>
 
-                                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6 transition-all hover:bg-white dark:bg-card hover:shadow-md">
+                                    <div className="bg-gray-50 dark:bg-background rounded-2xl md:rounded-3xl p-6 md:p-8 border border-gray-100 dark:border-border flex items-start gap-4 md:gap-6 transition-all hover:bg-white dark:bg-card hover:shadow-md">
                                         <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl md:rounded-2xl bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shadow-sm shrink-0">
                                             <Calendar className="h-5 w-5 md:h-6 md:w-6 text-gray-400 dark:text-muted-foreground" />
                                         </div>
@@ -534,7 +534,7 @@ const AddGuestPage = () => {
                                     </div>
                                     <AlertCircle className="h-6 w-6 text-amber-500 shrink-0" />
                                     <p className="text-[9px] md:text-[10px] font-bold uppercase tracking-widest leading-loose text-gray-400 dark:text-muted-foreground relative z-10">
-                                        BY AUTHORIZING, YOU COMMITT TO THE REGISTRATION OF THIS GUEST. A DEFAULT PASSWORD <span className="text-white font-black italic">"password123"</span> WILL BE GENERATED FOR NEW USERS. DATA INTEGRITY IS CONTINUOUSLY MONITORED.
+                                        BY AUTHORIZING, YOU COMMITT TO THE REGISTRATION OF THIS GUEST. A SECURE TEMPORARY PASSWORD WILL BE GENERATED AND A WELCOME EMAIL WITH LOGIN INSTRUCTIONS WILL BE SENT TO THE NEW USER. DATA INTEGRITY IS CONTINUOUSLY MONITORED.
                                     </p>
                                 </div>
                             </div>
@@ -542,7 +542,7 @@ const AddGuestPage = () => {
                     </div>
 
                     {/* Footer Actions */}
-                    <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-t p-6 md:p-8 flex items-center justify-between">
+                    <div className="bg-gray-50 dark:bg-background border-t p-6 md:p-8 flex items-center justify-between">
                         <Button
                             variant="ghost"
                             className="h-12 md:h-14 px-6 md:px-10 rounded-xl md:rounded-2xl border-none bg-transparent font-black text-[10px] md:text-xs uppercase tracking-widest hover:bg-gray-100 disabled:opacity-30 transition-all text-gray-500 dark:text-muted-foreground"

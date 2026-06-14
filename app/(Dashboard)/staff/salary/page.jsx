@@ -44,7 +44,7 @@ const StaffSalaryPage = () => {
     const totalEarnings = salaries?.reduce((acc, s) => acc + (s.amount || 0), 0) || 0;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20 font-sans tracking-tight print:hidden">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight print:hidden">
             {/* Header - Consistent with Staff Management */}
             <header className="bg-white dark:bg-card border-b border-gray-100 dark:border-border sticky top-0 z-40 h-16">
                 <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-4">

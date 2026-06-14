@@ -142,7 +142,7 @@ const ResidentsContent = () => {
     if (isLoading) return <ListPageSkeleton />;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+        <div className="min-h-screen bg-gray-50 dark:bg-background">
             <PageHeader
                 title="Resident Registry"
                 subtitleStart={decodeURIComponent(params?.hostelId || hostelId)}
@@ -208,7 +208,7 @@ const ResidentsContent = () => {
                     <div className="hidden md:block overflow-x-auto">
                         <Table>
                             <TableHeader>
-                                <TableRow className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background border-b border-gray-100 dark:border-border">
+                                <TableRow className="bg-gray-50 dark:bg-background hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background border-b border-gray-100 dark:border-border">
                                     <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Resident Details</TableHead>
                                     <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Contact Trace</TableHead>
                                     <TableHead className="py-4 px-6 text-[10px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Access Node</TableHead>

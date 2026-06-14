@@ -3,7 +3,7 @@ import aiPrisma from "@/lib/ai-prisma";
 import { NextResponse } from "next/server";
 import { stringSimilarity } from "string-similarity-js";
 import { isServiceEnabled } from "@/lib/permissions";
-
+import { requireAuth } from "@/lib/apiAuth";
 
 /* =====================================================
    AI BRAIN CONFIGURATION
@@ -150,7 +150,7 @@ const logGemini = (title: string, data?: any) => {
    GROQ AI (Free Fallback — llama-3.1-8b-instant)
 ===================================================== */
 
-async function callGroq(message: string, context: string): Promise<string | null> {
+async function callGroq(message: string, context: string, signal?: AbortSignal): Promise<string | null> {
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey || apiKey.includes("PASTE")) return null;
 
@@ -172,7 +172,8 @@ Give a direct, friendly, concise response (max 3 sentences). Use emojis where ap
                 messages: [{ role: "user", content: prompt }],
                 max_tokens: 150,
                 temperature: 0.7
-            })
+            }),
+            signal: signal || AbortSignal.timeout(5000)
         });
 
         if (!res.ok) {
@@ -191,7 +192,7 @@ Give a direct, friendly, concise response (max 3 sentences). Use emojis where ap
     }
 }
 
-async function callGemini(message: string, context: string): Promise<string | null> {
+async function callGemini(message: string, context: string, signal?: AbortSignal): Promise<string | null> {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey || apiKey.includes("PASTE")) return null;
 
@@ -209,7 +210,8 @@ Instructions: Direct, friendly answer (max 3 sentences). Use emojis where approp
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }]
-            })
+            }),
+            signal: signal || AbortSignal.timeout(5000)
         });
 
         if (!res.ok) {
@@ -224,9 +226,9 @@ Instructions: Direct, friendly answer (max 3 sentences). Use emojis where approp
     }
 }
 
-async function callAI(message: string, context: string, history: string = ""): Promise<string | null> {
+async function callAI(message: string, context: string, history: string = "", signal?: AbortSignal): Promise<string | null> {
     const fullContext = history ? `${context}\n\nCONVERSATION HISTORY:\n${history}` : context;
-    return (await callGemini(message, fullContext)) ?? (await callGroq(message, fullContext));
+    return (await callGemini(message, fullContext, signal)) ?? (await callGroq(message, fullContext, signal));
 }
 
 function detectSentiment(msg: string): string {
@@ -240,10 +242,13 @@ export async function GET(req: Request) {
     if (!await isServiceEnabled('enableAiAssistant')) {
         return NextResponse.json({ success: false, error: "AI Assistant is currently disabled." }, { status: 503 });
     }
+
+    // Security: require valid JWT — never trust userId from query string
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
+    const userId = guard.user.userId || guard.user.id;
+
     try {
-        const { searchParams } = new URL(req.url);
-        const userId = searchParams.get("userId");
-        if (!userId) return NextResponse.json({ success: false, error: "Missing userId" }, { status: 400 });
         if (!aiPrisma) return NextResponse.json({ success: true, messages: [] });
 
         const session = await (aiPrisma as any).aiSession.findFirst({
@@ -269,41 +274,35 @@ export async function POST(req: Request) {
     if (!await isServiceEnabled('enableAiAssistant')) {
         return NextResponse.json({ success: false, error: "AI Assistant is currently disabled." }, { status: 503 });
     }
+
+    // Security: require valid JWT — userId from body is IGNORED
+    const guard = await requireAuth();
+    if (!guard.ok) return guard.response;
+    const userId = guard.user.userId || guard.user.id;
+
     try {
-        const { message, userId } = await req.json();
+        const { message } = await req.json();
         logInfo("Input Received", { userId, message });
 
-        if (!message || !userId) {
+        if (!message) {
             return NextResponse.json(
-                { success: false, error: "Missing fields" },
+                { success: false, error: "Missing message field" },
                 { status: 400 }
             );
         }
 
         /* ===============================
-           LOAD USER DATA
+           LOAD BASE USER DATA (No heavy relations)
         =============================== */
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            include: {
-                Booking: { include: { Room: true } },
-                Payment: {
-                    orderBy: { createdAt: "desc" },
-                    take: 20
-                },
-                Complaint_Complaint_userIdToUser: true,
-                Hostel_User_hostelIdToHostel: {
-                    include: {
-                        MessMenu: true,
-                        Notice: { where: { isActive: true } },
-                        User_Hostel_managerIdToUser: true
-                    }
-                },
-                RefundRequest: {
-                    orderBy: { createdAt: "desc" },
-                    take: 5
-                }
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                hostelId: true
             }
         });
 
@@ -387,7 +386,7 @@ export async function POST(req: Request) {
             }
         }
 
-        // 2. See if we have a learned pattern that's a better match
+        // See if we have a learned pattern that's a better match
         for (const pattern of learnedPatterns) {
             const similarity = stringSimilarity(normalizedMsg, normalizeText(pattern.query));
             if (similarity > 0.85) {
@@ -424,23 +423,22 @@ export async function POST(req: Request) {
             console.error("AI Training Update Failed:", e);
         }
 
-        const hostel = user.Hostel_User_hostelIdToHostel;
-        const activeBooking = user.Booking.find((b: any) =>
-            ["CONFIRMED", "CHECKED_IN"].includes(b.status)
-        );
-
         let reply = "";
         let suggestions: string[] = [];
 
         /* ===============================
-           INTENT ROUTER
+           INTENT ROUTER (Lazy DB Loading)
         =============================== */
 
         switch (intent.name) {
 
             case "GREETING": {
-                const unpaid = user.Payment.filter((p: any) => p.status === "OVERDUE");
-                const activeComplaints = user.Complaint_Complaint_userIdToUser.filter((c: any) => c.status === "PENDING");
+                const unpaid = await prisma.payment.findMany({
+                    where: { userId: user.id, status: "OVERDUE" }
+                });
+                const activeComplaints = await prisma.complaint.findMany({
+                    where: { userId: user.id, status: "PENDING" }
+                });
 
                 let greeting = `Hello ${user.name.split(" ")[0]}! I'm your Hostel AI Assistant. How can I help you today?`;
 
@@ -471,6 +469,11 @@ export async function POST(req: Request) {
                     .toLocaleDateString("en-US", { weekday: "long" })
                     .toUpperCase();
 
+                const hostel = user.hostelId ? await prisma.hostel.findUnique({
+                    where: { id: user.hostelId },
+                    include: { MessMenu: true }
+                }) : null;
+
                 const menu = hostel?.MessMenu.find((m: any) => m.dayOfWeek === targetDayName);
                 const title = isTomorrow ? "Tomorrow's" : "Today's";
 
@@ -488,7 +491,10 @@ export async function POST(req: Request) {
             }
 
             case "FINANCE": {
-                const allPayments = user.Payment as any[];
+                const allPayments = await prisma.payment.findMany({
+                    where: { userId: user.id },
+                    orderBy: { date: 'desc' }
+                });
                 const unpaid = allPayments.filter((p: any) => p.status === "PENDING");
                 const overdue = allPayments.filter((p: any) => p.status === "OVERDUE");
                 const paid = allPayments.filter((p: any) => p.status === "PAID");
@@ -497,7 +503,6 @@ export async function POST(req: Request) {
                 const totalOverdue = overdue.reduce((s: number, p: any) => s + p.amount, 0);
                 const totalPaid = paid.reduce((s: number, p: any) => s + p.amount, 0);
 
-                // Check if there are any imminent due dates (within 3 days)
                 const now = new Date();
                 const soon = unpaid.filter((p: any) => {
                     if (!p.dueDate) return false;
@@ -545,7 +550,10 @@ export async function POST(req: Request) {
             }
 
             case "PAYMENT_HISTORY": {
-                const payments = user.Payment as any[];
+                const payments = await prisma.payment.findMany({
+                    where: { userId: user.id },
+                    orderBy: { date: 'desc' }
+                });
                 if (payments.length === 0) {
                     reply = "No payment records found for your account.";
                     suggestions = ["My bill", "Contact manager"];
@@ -571,11 +579,14 @@ export async function POST(req: Request) {
             }
 
             case "RECEIPT_REQUEST": {
-                const paid = user.Payment.filter((p: any) => p.status === "PAID");
+                const paid = await prisma.payment.findMany({
+                    where: { userId: user.id, status: "PAID" },
+                    orderBy: { date: 'desc' }
+                });
                 if (paid.length === 0) {
                     reply = "No completed payments found on your account to generate a receipt.";
                 } else {
-                    const last = (paid as any).sort((a: any, b: any) => new Date(b.date || b.createdAt).getTime() - new Date(a.date || a.createdAt).getTime())[0];
+                    const last = paid[0];
                     const txId = last.transactionId || last.uid || last.id.slice(-8).toUpperCase();
                     reply = `📄 **Digital Receipt / Voucher**\n\n` +
                         `**Ref:** #${txId}\n` +
@@ -590,7 +601,10 @@ export async function POST(req: Request) {
             }
 
             case "PAYMENT_OVERDUE": {
-                const allPay = user.Payment as any[];
+                const allPay = await prisma.payment.findMany({
+                    where: { userId: user.id },
+                    orderBy: { date: 'desc' }
+                });
                 const overduePay = allPay.filter((p: any) => p.status === "OVERDUE");
                 const pendingPay = allPay.filter((p: any) => p.status === "PENDING");
 
@@ -615,7 +629,6 @@ export async function POST(req: Request) {
                     });
                     overdueLines += `\n⚡ Please contact the office immediately or pay online to avoid further penalties.`;
                 } else {
-                    // No overdue but pending — check upcoming due dates
                     const now = new Date();
                     const upcoming = pendingPay
                         .filter((p: any) => p.dueDate)
@@ -623,8 +636,9 @@ export async function POST(req: Request) {
 
                     if (upcoming.length > 0) {
                         const next = upcoming[0];
-                        const daysLeft = Math.ceil((new Date(next.dueDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-                        overdueLines = `⏰ **Upcoming Deadline**\n\nYour next payment of **PKR ${next.amount.toLocaleString()}** (${next.type || 'Rent'}) is due in **${daysLeft} day${daysLeft !== 1 ? 's' : ''}** on ${new Date(next.dueDate).toLocaleDateString('en-PK')}.\n\n✅ No overdue payments currently. Pay on time to keep your record clean!`;
+                        const nextDueDate = next.dueDate as Date;
+                        const daysLeft = Math.ceil((new Date(nextDueDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                        overdueLines = `⏰ **Upcoming Deadline**\n\nYour next payment of **PKR ${next.amount.toLocaleString()}** (${next.type || 'Rent'}) is due in **${daysLeft} day${daysLeft !== 1 ? 's' : ''}** on ${new Date(nextDueDate).toLocaleDateString('en-PK')}.\n\n✅ No overdue payments currently. Pay on time to keep your record clean!`;
                     } else {
                         overdueLines = `⏳ You have ${pendingPay.length} pending bill${pendingPay.length !== 1 ? 's' : ''} but no overdue dates set yet. Please check with the office.`;
                     }
@@ -636,13 +650,17 @@ export async function POST(req: Request) {
             }
 
             case "REFUND": {
-                const refunds = (user as any).RefundRequest || [];
+                const refunds = await prisma.refundRequest.findMany({
+                    where: { userId: user.id },
+                    orderBy: { createdAt: "desc" },
+                    take: 5
+                });
                 if (refunds.length === 0) {
                     reply = `ℹ️ You have **no active refund requests** on your account.\n\nIf you believe you're owed a refund, please contact the manager or visit the hostel office with your payment receipt.`;
                     suggestions = ["Contact manager", "Payment history", "My bill"];
                 } else {
                     let refundLines = `💸 **Your Refund Requests** (${refunds.length} total)\n\n`;
-                    refunds.slice(0, 3).forEach((r: any, i: number) => {
+                    refunds.forEach((r: any, i: number) => {
                         const statusIcon = r.status === "APPROVED" ? "✅" : r.status === "REJECTED" ? "❌" : "⏳";
                         refundLines += `${i + 1}. ${statusIcon} **PKR ${r.amount.toLocaleString()}** — Status: **${r.status}**\n`;
                         if (r.reason) refundLines += `   Reason: ${r.reason}\n`;
@@ -661,6 +679,14 @@ export async function POST(req: Request) {
             }
 
             case "ROOM": {
+                const activeBooking = await prisma.booking.findFirst({
+                    where: {
+                        userId: user.id,
+                        status: { in: ["CONFIRMED", "CHECKED_IN"] }
+                    },
+                    include: { Room: { include: { Hostel: true } } }
+                });
+
                 if (!activeBooking) {
                     reply = "I couldn't find any active residence record for your account.";
                 } else {
@@ -684,10 +710,7 @@ export async function POST(req: Request) {
                 const complaintData = extractComplaintDetails(message);
                 const msg = normalizeText(message);
 
-                // List of words that trigger the intent but don't provide actual details
                 const genericTriggers = ["complaint", "issue", "problem", "complain", "support", "help", "report", "register", "hi", "hey"];
-
-                // If message is just a generic trigger or too short without a detected category
                 const isGeneric = genericTriggers.includes(msg) || (complaintData.category === "OTHER" && message.split(" ").length < 4);
 
                 if (isGeneric) {
@@ -723,7 +746,7 @@ export async function POST(req: Request) {
                 const newComplaint = await prisma.complaint.create({
                     data: {
                         userId: user.id,
-                        hostelId: (hostel?.id || user.hostelId) as string,
+                        hostelId: user.hostelId as string,
                         title: `${complaintData.category} Issue`,
                         description: message,
                         category: complaintData.category as any,
@@ -743,7 +766,12 @@ export async function POST(req: Request) {
             }
 
             case "NOTICES": {
-                const notices = hostel?.Notice || [];
+                const notices = user.hostelId ? await prisma.notice.findMany({
+                    where: { hostelId: user.hostelId, isActive: true },
+                    orderBy: { createdAt: "desc" },
+                    take: 5
+                }) : [];
+
                 if (notices.length === 0) {
                     reply = "There are no new announcements or notices from the management at the moment.";
                 } else {
@@ -757,7 +785,9 @@ export async function POST(req: Request) {
             }
 
             case "COMPLAINT_STATUS": {
-                const complaints = user.Complaint_Complaint_userIdToUser;
+                const complaints = await prisma.complaint.findMany({
+                    where: { userId: user.id }
+                });
                 if (!complaints || complaints.length === 0) {
                     reply = "You don't have any registered complaints in our records.";
                     suggestions = ["Report a problem", "Management contact"];
@@ -787,7 +817,12 @@ export async function POST(req: Request) {
             }
 
             case "MANAGEMENT": {
+                const hostel = user.hostelId ? await prisma.hostel.findUnique({
+                    where: { id: user.hostelId },
+                    include: { User_Hostel_managerIdToUser: true }
+                }) : null;
                 const manager = hostel?.User_Hostel_managerIdToUser;
+
                 if (!manager) {
                     reply = "Manager contact details are currently not available in our system.";
                 } else {
@@ -814,8 +849,25 @@ export async function POST(req: Request) {
 
         // 4. Gemini Enhancement (If reply is still generic or unknown)
         if (intent.name === "UNKNOWN" || reply === "") {
-            const unpaidContext = user.Payment.filter((p: any) => p.status !== "PAID");
-            const recentPaidContext = user.Payment.filter((p: any) => p.status === "PAID").slice(0, 3);
+            const unpaidContext = await prisma.payment.findMany({
+                where: { userId: user.id, status: { not: "PAID" } }
+            });
+            const recentPaidContext = await prisma.payment.findMany({
+                where: { userId: user.id, status: "PAID" },
+                orderBy: { date: "desc" },
+                take: 3
+            });
+            const activeBooking = await prisma.booking.findFirst({
+                where: { userId: user.id, status: { in: ["CONFIRMED", "CHECKED_IN"] } },
+                include: { Room: true }
+            });
+            const hostel = user.hostelId ? await prisma.hostel.findUnique({
+                where: { id: user.hostelId },
+                include: {
+                    User_Hostel_managerIdToUser: true,
+                    Notice: { where: { isActive: true }, orderBy: { createdAt: "desc" }, take: 1 }
+                }
+            }) : null;
 
             const contextStr = `
                 User Name: ${user.name}
@@ -866,7 +918,7 @@ export async function POST(req: Request) {
         logInfo("Final Response", { intent: intent.name, source, suggestionCount: suggestions.length });
         return NextResponse.json({ success: true, reply, suggestions });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("\x1b[41m\x1b[37m CRITICAL AI ERROR \x1b[0m", error);
         return NextResponse.json(
             { success: false, error: "AI system failure" },

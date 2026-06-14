@@ -217,7 +217,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
     const currentRoom = activeBooking?.room
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-muted/10/50 dark:bg-background pb-20">
+        <div className="min-h-screen bg-gray-50 dark:bg-background pb-20">
             {/* Header */}
             <header className="bg-white dark:bg-card border-b sticky top-0 z-30 py-2 md:h-16">
                 <div className="max-w-7xl mx-auto px-4 md:px-6 h-full flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0">
@@ -408,7 +408,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                     {/* Desktop Table View */}
                                     <div className="hidden md:block overflow-x-auto">
                                         <Table>
-                                            <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                                            <TableHeader className="bg-gray-50 dark:bg-background">
                                                 <TableRow className="hover:bg-transparent border-gray-50">
                                                     <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Date</TableHead>
                                                     <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Type</TableHead>
@@ -443,7 +443,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                                 <span className="text-sm font-black text-gray-900 dark:text-foreground">PKR {p.amount.toLocaleString()}</span>
                                                             </TableCell>
                                                             <TableCell className="py-5 px-6">
-                                                                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest bg-gray-50 dark:bg-muted/10/50 dark:bg-background border-gray-100 dark:border-border px-2 py-0.5 rounded-md">
+                                                                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest bg-gray-50 dark:bg-background border-gray-100 dark:border-border px-2 py-0.5 rounded-md">
                                                                     {p.method}
                                                                 </Badge>
                                                             </TableCell>
@@ -512,11 +512,11 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                         </Badge>
                                                     </div>
                                                     <div className="grid grid-cols-2 gap-3">
-                                                        <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-3 rounded-2xl border border-gray-100 dark:border-border flex flex-col gap-0.5">
+                                                        <div className="bg-gray-50 dark:bg-background p-3 rounded-2xl border border-gray-100 dark:border-border flex flex-col gap-0.5">
                                                             <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Amount</span>
                                                             <span className="text-xs font-black text-gray-900 dark:text-foreground">PKR {p.amount.toLocaleString()}</span>
                                                         </div>
-                                                        <div className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background p-3 rounded-2xl border border-gray-100 dark:border-border flex flex-col gap-0.5">
+                                                        <div className="bg-gray-50 dark:bg-background p-3 rounded-2xl border border-gray-100 dark:border-border flex flex-col gap-0.5">
                                                             <span className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Protocol</span>
                                                             <span className="text-[10px] font-black text-gray-600 dark:text-muted-foreground uppercase">{p.method}</span>
                                                         </div>
@@ -578,7 +578,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                     {/* Desktop Table View */}
                                     <div className="hidden md:block overflow-x-auto">
                                         <Table>
-                                            <TableHeader className="bg-gray-50 dark:bg-muted/10/50 dark:bg-background">
+                                            <TableHeader className="bg-gray-50 dark:bg-background">
                                                 <TableRow className="hover:bg-transparent border-gray-50">
                                                     <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Issue Dossier</TableHead>
                                                     <TableHead className="text-[10px] font-black uppercase tracking-widest py-5 px-6 text-gray-400 dark:text-muted-foreground">Class</TableHead>
@@ -669,7 +669,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                                         </Badge>
                                                     </div>
 
-                                                    <div className="p-3 bg-gray-50 dark:bg-muted/10/50 dark:bg-background rounded-2xl border border-gray-100 dark:border-border">
+                                                    <div className="p-3 bg-gray-50 dark:bg-background rounded-2xl border border-gray-100 dark:border-border">
                                                         <p className="text-[10px] font-black text-gray-500 dark:text-muted-foreground uppercase leading-relaxed line-clamp-2">{c.description}</p>
                                                     </div>
 

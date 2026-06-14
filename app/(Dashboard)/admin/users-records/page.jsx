@@ -76,7 +76,7 @@ const UserRecordPage = () => {
     const resetPassword = useResetPassword();
 
     const [formData, setFormData] = useState({
-        name: "", email: "", password: "password123", phone: "", cnic: "",
+        name: "", email: "", password: "", phone: "", cnic: "",
         role: "RESIDENT", hostelId: "", designation: "", basicSalary: 0,
         canManageExpenses: false, canManageMess: false, canManageGeneral: false,
         canManageUtilities: false, canManageMaintenance: false, canManageSalaries: false
@@ -205,7 +205,7 @@ const UserRecordPage = () => {
             setIsCreateDialogOpen(false);
             // Reset ALL fields including the granular permission checkboxes
             setFormData({
-                name: "", email: "", password: "password123", phone: "", cnic: "",
+                name: "", email: "", password: "", phone: "", cnic: "",
                 role: "RESIDENT", hostelId: "", designation: "", basicSalary: 0,
                 canManageExpenses: false, canManageMess: false, canManageGeneral: false,
                 canManageUtilities: false, canManageMaintenance: false, canManageSalaries: false
@@ -391,7 +391,7 @@ const UserRecordPage = () => {
                                     {filteredUsers.map(user => {
                                         const rc = getRoleConfig(user.role);
                                         return (
-                                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10/50 dark:bg-background transition-colors group">
+                                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors group">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className={`h-9 w-9 rounded-xl ${rc.bg} flex items-center justify-center text-xs font-black ${rc.color} shrink-0`}>
