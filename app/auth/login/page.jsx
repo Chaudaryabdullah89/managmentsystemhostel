@@ -24,6 +24,11 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [branding, setBranding] = useState({ companyName: "Hostel Management", companyShortName: "HMS" });
 
+  const [requires2FA, setRequires2FA] = useState(false);
+  const [tempToken, setTempToken] = useState("");
+  const [otp, setOtp] = useState("");
+  const [verifying2FA, setVerifying2FA] = useState(false);
+
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("reason") === "expired") {
@@ -61,6 +66,14 @@ export default function LoginPage() {
         return;
       }
 
+      if (data.requires2FA) {
+        setTempToken(data.tempToken);
+        setRequires2FA(true);
+        setError("");
+        setIsLoading(false);
+        return;
+      }
+
       // Server sets secure httpOnly cookie; client only hydrates user state
       if (data.User) {
         await setUser({ ...data.User, id: data.User.id });
@@ -86,6 +99,58 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handle2FASubmit = async (e) => {
+    e.preventDefault();
+    if (!otp || otp.length !== 6) {
+      setError("Please enter a valid 6-digit code.");
+      return;
+    }
+    setError("");
+    setVerifying2FA(true);
+    try {
+      const response = await fetch("/api/auth/2fa/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tempToken, otp }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        setError(data.message || "Invalid or expired 2FA code.");
+        return;
+      }
+
+      if (data.User) {
+        await setUser({ ...data.User, id: data.User.id });
+      }
+
+      toast.success("Welcome back!");
+
+      const role = data.User?.role;
+      let redirectPath = "/admin/dashboard";
+
+      if (role === "WARDEN") {
+        redirectPath = "/warden";
+      } else if (role === "STAFF") {
+        redirectPath = "/staff/dashboard";
+      } else if (role === "RESIDENT" || role === "GUEST") {
+        redirectPath = "/guest/dashboard";
+      }
+
+      setTimeout(() => router.push(redirectPath), 400);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setVerifying2FA(false);
+    }
+  };
+
+  const handleBackToLogin = () => {
+    setRequires2FA(false);
+    setTempToken("");
+    setOtp("");
+    setError("");
   };
 
   return (
@@ -127,94 +192,149 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Sign In</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Enter your credentials to continue
-            </p>
-          </div>
-
-          {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 flex items-start gap-3 animate-in fade-in">
-              <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-              <p className="text-sm text-red-900 dark:text-red-200">{error}</p>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
+          {requires2FA ? (
             <div>
-              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                Email Address
-              </label>
-              <div className="relative mt-2">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                  type="email"
-                  placeholder="you@gmail.com"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, email: e.target.value }))
-                  }
-                  className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 dark:bg-muted/30 border border-slate-200 dark:border-border text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                />
-              </div>
-            </div>
-
-            {/* Password */}
-            <div>
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                  Password
-                </label>
-                {/* <Link
-                  href="/auth/forgot-password"
-                  className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Forgot?
-                </Link> */}
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">2-Step Verification</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  Enter the 6-digit code from your authenticator app
+                </p>
               </div>
 
-              <div className="relative mt-2">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, password: e.target.value }))
-                  }
-                  className="w-full h-12 pl-12 pr-12 rounded-xl bg-slate-50 dark:bg-muted/30 border border-slate-200 dark:border-border text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
-                />
+              {error && (
+                <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 flex items-start gap-3 animate-in fade-in">
+                  <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-900 dark:text-red-200">{error}</p>
+                </div>
+              )}
+
+              <form onSubmit={handle2FASubmit} className="space-y-5">
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Verification Code
+                  </label>
+                  <div className="relative mt-2">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="000000"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      maxLength={6}
+                      className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 dark:bg-muted/30 border border-slate-200 dark:border-border text-lg font-bold text-center tracking-[0.4em] dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-normal"
+                    />
+                  </div>
+                </div>
+
                 <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  type="submit"
+                  disabled={verifying2FA}
+                  className="w-full h-12 mt-4 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                  {verifying2FA ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <>
+                      Verify & Sign In <ArrowRight className="h-4 w-4" />
+                    </>
                   )}
                 </button>
-              </div>
-            </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-12 mt-4 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  Authenticate <ArrowRight className="h-4 w-4" />
-                </>
+                <button
+                  type="button"
+                  onClick={handleBackToLogin}
+                  className="w-full text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 text-center font-medium mt-2 block"
+                >
+                  Back to Sign In
+                </button>
+              </form>
+            </div>
+          ) : (
+            <div>
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Sign In</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  Enter your credentials to continue
+                </p>
+              </div>
+
+              {error && (
+                <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 flex items-start gap-3 animate-in fade-in">
+                  <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-900 dark:text-red-200">{error}</p>
+                </div>
               )}
-            </button>
-          </form>
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Email */}
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    Email Address
+                  </label>
+                  <div className="relative mt-2">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <input
+                      type="email"
+                      placeholder="you@gmail.com"
+                      value={formData.email}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, email: e.target.value }))
+                      }
+                      className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 dark:bg-muted/30 border border-slate-200 dark:border-border text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      Password
+                    </label>
+                  </div>
+
+                  <div className="relative mt-2">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData((p) => ({ ...p, password: e.target.value }))
+                      }
+                      className="w-full h-12 pl-12 pr-12 rounded-xl bg-slate-50 dark:bg-muted/30 border border-slate-200 dark:border-border text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-12 mt-4 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      Authenticate <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as otplib from "otplib";
-// @ts-ignore
-const { authenticator } = otplib;
+import { generateSecret, generateURI } from "otplib";
 import qrcode from "qrcode";
 import prisma from "@/lib/prisma";
 import { requireAuth } from "@/lib/apiAuth";
@@ -18,11 +16,10 @@ export async function POST(request: NextRequest) {
         const userEmail = authResult.user.email;
 
         // Generate a new TOTP secret for the user
-        const secret = authenticator.generateSecret();
+        const secret = generateSecret();
         
         // Create the otpauth:// URL
-        // Format: otpauth://totp/Issuer:AccountName?secret=Secret&issuer=Issuer
-        const otpauthUrl = authenticator.keyuri(userEmail, "Hostel Portal", secret);
+        const otpauthUrl = generateURI({ strategy: "totp", secret, label: userEmail, issuer: "Hostel Portal" });
 
         // Generate a QR code as a data URI
         const qrCodeDataUrl = await qrcode.toDataURL(otpauthUrl);
@@ -44,3 +41,4 @@ export async function POST(request: NextRequest) {
         return errorResponse("Failed to generate 2FA setup.", 500);
     }
 }
+

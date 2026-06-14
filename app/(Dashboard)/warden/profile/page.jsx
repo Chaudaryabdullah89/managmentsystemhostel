@@ -50,6 +50,17 @@ import {
     DialogTrigger,
     DialogFooter,
 } from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useAuthStore from "@/hooks/Authstate";
@@ -89,6 +100,12 @@ const ProfilePage = () => {
     const [changingpass, setchangingpass] = useState(false);
 
     const [editedData, setEditedData] = useState({});
+
+    const [show2FADialog, setShow2FADialog] = useState(false);
+    const [qrCodeUrl, setQrCodeUrl] = useState("");
+    const [twoFactorSecret, setTwoFactorSecret] = useState("");
+    const [twoFactorOtp, setTwoFactorOtp] = useState("");
+    const [verifying2FA, setVerifying2FA] = useState(false);
 
     const user = useMemo(() => fetchedUser || {}, [fetchedUser]);
     const additionalImages = Array.isArray(user?.ResidentProfile?.documents?.galleryImages)
@@ -193,6 +210,63 @@ const ProfilePage = () => {
             toast.error(err.message);
         } finally {
             setEmailChangeLoading(false);
+        }
+    };
+
+    const handleEnable2FAInit = async () => {
+        try {
+            const res = await fetch("/api/auth/2fa/setup", { method: "POST" });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || "Failed to generate QR code");
+            setQrCodeUrl(data.qrCodeUrl);
+            setTwoFactorSecret(data.secret);
+            setShow2FADialog(true);
+        } catch (err) {
+            toast.error(err.message);
+        }
+    };
+
+    const handleVerify2FA = async () => {
+        if (!twoFactorOtp || twoFactorOtp.length !== 6) {
+            return toast.error("Please enter a valid 6-digit code");
+        }
+        setVerifying2FA(true);
+        try {
+            const res = await fetch("/api/auth/2fa/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ otp: twoFactorOtp }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || "Invalid code. Please try again.");
+            toast.success("Two-Factor Authentication enabled successfully!");
+            setShow2FADialog(false);
+            setTwoFactorOtp("");
+            if (authUser?.id) {
+                await queryClient.invalidateQueries({
+                    queryKey: ["users", "byid", authUser.id],
+                });
+            }
+        } catch (err) {
+            toast.error(err.message);
+        } finally {
+            setVerifying2FA(false);
+        }
+    };
+
+    const handleDisable2FA = async () => {
+        try {
+            const res = await fetch("/api/auth/2fa/disable", { method: "POST" });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || "Failed to disable Two-Factor Authentication");
+            toast.success("Two-Factor Authentication has been disabled");
+            if (authUser?.id) {
+                await queryClient.invalidateQueries({
+                    queryKey: ["users", "byid", authUser.id],
+                });
+            }
+        } catch (err) {
+            toast.error(err.message);
         }
     };
 
@@ -525,6 +599,104 @@ const ProfilePage = () => {
                                             </DialogContent>
                                         </Dialog>
                                     </div>
+                                    <Separator className="bg-gray-100 mx-6 w-auto" />
+                                    <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors group">
+                                        <div className="flex items-center gap-6">
+                                            <div className="h-14 w-14 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-sm">
+                                                <Shield className="h-6 w-6" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight italic">2-Step Verification (2FA)</h3>
+                                                <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-widest mt-1">
+                                                    {user.twoFactorEnabled ? "Active (using Authenticator App)" : "Off (highly recommended)"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {user.twoFactorEnabled ? (
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-10 px-6 rounded-xl border-gray-200 dark:border-border bg-white dark:bg-card text-red-600 font-bold text-[9px] uppercase tracking-wider shadow-sm hover:bg-red-50 hover:border-red-100"
+                                                    >
+                                                        Disable 2FA
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent className="rounded-xl max-w-sm">
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Disable 2-Step Verification?</AlertDialogTitle>
+                                                        <AlertDialogDescription className="text-xs">
+                                                            This will make your account less secure. Are you sure you want to turn it off?
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel className="rounded-lg text-xs">Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={handleDisable2FA}
+                                                            className="bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs"
+                                                        >
+                                                            Disable
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        ) : (
+                                            <Button
+                                                onClick={handleEnable2FAInit}
+                                                size="sm"
+                                                className="h-10 px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold text-[9px] uppercase tracking-wider shadow-lg transition-all active:scale-95"
+                                            >
+                                                Enable 2FA
+                                            </Button>
+                                        )}
+                                    </div>
+
+                                    <Dialog open={show2FADialog} onOpenChange={(open) => {
+                                        setShow2FADialog(open);
+                                        if (!open) setTwoFactorOtp("");
+                                    }}>
+                                        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-card ring-1 ring-gray-100">
+                                            <div className="bg-indigo-600 p-8 text-white text-center relative overflow-hidden">
+                                                <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
+                                                <div className="h-14 w-14 bg-white dark:bg-card/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10 shadow-lg relative z-10">
+                                                    <Shield className="h-7 w-7" />
+                                                </div>
+                                                <h2 className="text-xl font-bold uppercase tracking-tight italic relative z-10 font-sans">Setup 2FA</h2>
+                                                <p className="text-[9px] text-white/70 font-bold tracking-widest mt-1 uppercase relative z-10">Scan the QR code below</p>
+                                            </div>
+                                            <div className="p-8 space-y-6 text-center font-sans tracking-tight">
+                                                {qrCodeUrl && (
+                                                    <div className="p-2 bg-white border border-gray-100 rounded-xl w-fit mx-auto">
+                                                        <img src={qrCodeUrl} alt="2FA QR Code" className="w-40 h-40" />
+                                                    </div>
+                                                )}
+                                                <div className="space-y-1">
+                                                    <p className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">Secret Key</p>
+                                                    <p className="text-xs font-mono font-bold bg-gray-50 dark:bg-muted/10 px-3 py-1.5 rounded-lg select-all break-all">{twoFactorSecret}</p>
+                                                </div>
+                                                <div className="space-y-4">
+                                                    <div className="space-y-2">
+                                                        <Label className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest block text-left ml-1">Verification Code</Label>
+                                                        <Input
+                                                            value={twoFactorOtp}
+                                                            onChange={e => setTwoFactorOtp(e.target.value)}
+                                                            maxLength={6}
+                                                            className="h-12 text-2xl text-center font-bold tracking-[0.4em] rounded-xl bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border"
+                                                            placeholder="000000"
+                                                        />
+                                                    </div>
+                                                    <Button
+                                                        onClick={handleVerify2FA}
+                                                        disabled={verifying2FA}
+                                                        className="w-full h-12 bg-black text-white rounded-xl font-bold uppercase tracking-[0.1em] text-[9px] shadow-lg active:scale-95"
+                                                    >
+                                                        {verifying2FA ? "Verifying..." : "Verify & Enable"}
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        </DialogContent>
+                                    </Dialog>
                                 </Card>
 
                             </TabsContent>

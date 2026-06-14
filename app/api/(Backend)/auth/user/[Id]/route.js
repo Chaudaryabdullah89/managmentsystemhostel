@@ -35,6 +35,7 @@ export async function GET(req, { params }) {
                 updatedAt: true,
                 hostelId: true,
                 canManageExpenses: true,
+                twoFactorEnabled: true,
                 ResidentProfile: {
                     select: {
                         id: true,

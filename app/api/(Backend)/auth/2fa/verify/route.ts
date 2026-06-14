@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as otplib from "otplib";
-// @ts-ignore
-const { authenticator } = otplib;
+import { verify } from "otplib";
 import prisma from "@/lib/prisma";
 import { requireAuth } from "@/lib/apiAuth";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
@@ -34,11 +32,8 @@ export async function POST(request: NextRequest) {
             return errorResponse("2FA is already enabled.", 400);
         }
 
-        // Verify the token
-        const isValid = authenticator.verify({
-            token: otp,
-            secret: user.twoFactorSecret,
-        });
+        // Verify the token using otplib v13 functional API
+        const isValid = verify({ token: otp, secret: user.twoFactorSecret });
 
         if (!isValid) {
             return errorResponse("Invalid OTP code. Please try again.", 400);
@@ -59,3 +54,4 @@ export async function POST(request: NextRequest) {
         return errorResponse("Failed to verify 2FA token.", 500);
     }
 }
+

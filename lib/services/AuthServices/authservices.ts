@@ -3,6 +3,7 @@ import { SignJWT } from "jose";
 import { randomUUID } from "crypto";
 import prisma from "@/lib/prisma";
 import { generateUID, generateRegNumber, UID_PREFIXES } from "@/lib/uid-generator";
+import { verify as otplibVerify } from "otplib";
 
 
 interface RegisterData {
@@ -269,13 +270,7 @@ export default class AuthService {
                 return { success: false, message: "2FA is not properly configured for this user" };
             }
 
-            const otplib = await import("otplib");
-            // @ts-ignore
-            const { authenticator } = otplib;
-            const isValid = authenticator.verify({
-                token: otp,
-                secret: user.twoFactorSecret,
-            });
+            const isValid = otplibVerify({ token: otp, secret: user.twoFactorSecret });
 
             if (!isValid) {
                 return { success: false, message: "Invalid 2FA code" };
