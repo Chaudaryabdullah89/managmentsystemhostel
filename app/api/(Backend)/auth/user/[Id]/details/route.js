@@ -232,6 +232,13 @@ export async function GET(req, { params }) {
                         isActive: true,
                         createdAt: true
                     }
+                },
+                webauthnCredentials: {
+                    select: {
+                        id: true,
+                        deviceName: true,
+                        createdAt: true,
+                    }
                 }
             },
         });
@@ -259,7 +266,9 @@ export async function GET(req, { params }) {
                 payments: b.Payment
             })),
             payments: user.Payment,
-            sessions: user.Session
+            sessions: user.Session,
+            passkeys: user.webauthnCredentials,
+            passkeyCount: user.webauthnCredentials?.length || 0,
         };
 
         // Remove the long Prisma internal names
@@ -275,6 +284,7 @@ export async function GET(req, { params }) {
         delete formattedUser.Booking;
         delete formattedUser.Payment;
         delete formattedUser.Session;
+        delete formattedUser.webauthnCredentials;
 
         return NextResponse.json(formattedUser);
     } catch (err) {

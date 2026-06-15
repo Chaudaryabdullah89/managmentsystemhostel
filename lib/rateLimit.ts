@@ -10,19 +10,10 @@
  */
 
 import type { NextRequest } from 'next/server';
-import { checkRedisStatus } from '@/lib/redis';
+import { checkRedisStatus, getRedisClient } from '@/lib/redis';
 
-// Lazy-import Redis default to avoid crashing if the module has an init error
-let redisClient: import('ioredis').default | null = null;
 async function getRedis() {
-    if (redisClient !== null) return redisClient;
-    try {
-        const mod = await import('@/lib/redis');
-        redisClient = mod.default;
-    } catch {
-        redisClient = null;
-    }
-    return redisClient;
+    return getRedisClient();
 }
 
 // ── In-memory fallback ────────────────────────────────────────────────────────

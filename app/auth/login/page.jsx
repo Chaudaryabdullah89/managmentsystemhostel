@@ -14,6 +14,7 @@ import {
   Fingerprint,
   KeyRound,
   RefreshCw,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
@@ -34,7 +35,8 @@ export default function LoginPage() {
   const [verifying2FA, setVerifying2FA] = useState(false);
   const [useBackupCode, setUseBackupCode] = useState(false);
   const [emailSending, setEmailSending] = useState(false);
-  const [passkeyLoading, setPasskeyLoading] = useState(false);
+  // True when the top-level "Sign in with Passkey" button is running
+  const [passkeyDirectLoading, setPasskeyDirectLoading] = useState(false);
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -63,6 +65,46 @@ export default function LoginPage() {
     else if (role === "STAFF") redirectPath = "/staff/dashboard";
     else if (role === "RESIDENT" || role === "GUEST") redirectPath = "/guest/dashboard";
     setTimeout(() => router.push(redirectPath), 400);
+  };
+
+  // ── Passwordless passkey login (no password needed) ────────────────────────
+  const handleDirectPasskeyLogin = async () => {
+    setPasskeyDirectLoading(true);
+    setError("");
+    try {
+      // 1. Get challenge — pass email if filled in to narrow credentials
+      const optRes = await fetch("/api/auth/passkey/login-options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email || undefined }),
+      });
+      const optData = await optRes.json();
+      if (!optRes.ok) throw new Error(optData.message || "Could not start passkey login.");
+
+      // 2. Prompt browser passkey UI
+      const { startAuthentication } = await import("@simplewebauthn/browser");
+      const credential = await startAuthentication({ optionsJSON: optData.options });
+
+      // 3. Verify on server and get session
+      const verRes = await fetch("/api/auth/passkey/login-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential, challengeKey: optData.challengeKey }),
+        credentials: "include",
+      });
+      const verData = await verRes.json();
+      if (!verRes.ok) throw new Error(verData.message || "Passkey verification failed.");
+
+      handleRedirect(verData);
+    } catch (err) {
+      if (err.name === "NotAllowedError") {
+        setError("Passkey prompt was cancelled or timed out.");
+      } else {
+        setError(err.message || "Passkey sign-in failed. Try your password instead.");
+      }
+    } finally {
+      setPasskeyDirectLoading(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -97,11 +139,6 @@ export default function LoginPage() {
         if (data.twoFactorMethod === "EMAIL") {
           sendEmailOTP(data.tempToken);
         }
-
-        // Auto-start passkey if method is PASSKEY
-        if (data.twoFactorMethod === "PASSKEY") {
-          handlePasskeyLogin(data.tempToken);
-        }
         return;
       }
 
@@ -131,44 +168,6 @@ export default function LoginPage() {
     }
   };
 
-  const handlePasskeyLogin = async (token) => {
-    setPasskeyLoading(true);
-    setError("");
-    try {
-      // 1. Get auth options
-      const optRes = await fetch("/api/auth/2fa/passkey/auth-options", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tempToken: token || tempToken }),
-      });
-      const optData = await optRes.json();
-      if (!optRes.ok) throw new Error(optData.message);
-
-      // 2. Start WebAuthn authentication
-      const { startAuthentication } = await import("@simplewebauthn/browser");
-      const credential = await startAuthentication({ optionsJSON: optData.options });
-
-      // 3. Verify on server
-      const verRes = await fetch("/api/auth/2fa/passkey/auth-verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tempToken: token || tempToken, credential }),
-        credentials: "include",
-      });
-      const verData = await verRes.json();
-      if (!verRes.ok) throw new Error(verData.message);
-
-      handleRedirect(verData);
-    } catch (err) {
-      if (err.name === "NotAllowedError") {
-        setError("Passkey authentication was cancelled.");
-      } else {
-        setError(err.message || "Passkey authentication failed.");
-      }
-    } finally {
-      setPasskeyLoading(false);
-    }
-  };
 
   const handle2FASubmit = async (e) => {
     e.preventDefault();
@@ -213,7 +212,6 @@ export default function LoginPage() {
     switch (twoFactorMethod) {
       case "TOTP": return "Authenticator App";
       case "EMAIL": return "Email Verification";
-      case "PASSKEY": return "Passkey Verification";
       case "BACKUP_CODES": return "Backup Code";
       default: return "2-Step Verification";
     }
@@ -224,7 +222,6 @@ export default function LoginPage() {
     switch (twoFactorMethod) {
       case "TOTP": return "Enter the 6-digit code from your authenticator app";
       case "EMAIL": return "Enter the 6-digit code sent to your email";
-      case "PASSKEY": return "Use your fingerprint, face, or security key";
       case "BACKUP_CODES": return "Enter one of your backup codes";
       default: return "Enter your verification code";
     }
@@ -285,37 +282,7 @@ export default function LoginPage() {
                 </div>
               )}
 
-              {/* Passkey Auto-flow */}
-              {twoFactorMethod === "PASSKEY" && !useBackupCode && (
-                <div className="space-y-5">
-                  <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl p-6 text-center">
-                    <Fingerprint className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {passkeyLoading ? "Waiting for passkey..." : "Use your passkey to sign in"}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                      Touch your fingerprint sensor, look at your camera, or insert your security key
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handlePasskeyLogin()}
-                    disabled={passkeyLoading}
-                    className="w-full h-12 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
-                  >
-                    {passkeyLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Fingerprint className="h-4 w-4" /> Try Again
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
 
-              {/* TOTP / EMAIL / BACKUP_CODES Input Form */}
-              {(twoFactorMethod !== "PASSKEY" || useBackupCode) && (
                 <form onSubmit={handle2FASubmit} className="space-y-5">
                   {/* Email OTP header */}
                   {twoFactorMethod === "EMAIL" && !useBackupCode && (
@@ -356,7 +323,7 @@ export default function LoginPage() {
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>
-                        Verify & Sign In <ArrowRight className="h-4 w-4" />
+                        Verify &amp; Sign In <ArrowRight className="h-4 w-4" />
                       </>
                     )}
                   </button>
@@ -374,7 +341,6 @@ export default function LoginPage() {
                     </button>
                   )}
                 </form>
-              )}
 
               {/* Toggle Backup Code / Back */}
               <div className="mt-4 space-y-2">
@@ -421,6 +387,34 @@ export default function LoginPage() {
                 </div>
               )}
 
+              {/* ── PASSKEY SIGN-IN BUTTON (prominent, above the form) ── */}
+              <button
+                type="button"
+                id="passkey-login-btn"
+                onClick={handleDirectPasskeyLogin}
+                disabled={passkeyDirectLoading}
+                className="w-full h-12 mb-5 rounded-xl border-2 border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/30 hover:bg-slate-100 dark:hover:bg-muted/50 hover:border-slate-300 dark:hover:border-border/80 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 group"
+              >
+                {passkeyDirectLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                ) : (
+                  <>
+                    <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                      <Fingerprint className="h-4 w-4 text-white" />
+                    </span>
+                    Sign in with Passkey
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 ml-auto" />
+                  </>
+                )}
+              </button>
+
+              {/* Divider */}
+              <div className="flex items-center gap-3 mb-5">
+                <div className="flex-1 h-px bg-slate-200 dark:bg-border" />
+                <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">or sign in with password</span>
+                <div className="flex-1 h-px bg-slate-200 dark:bg-border" />
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Email */}
                 <div>
@@ -447,6 +441,12 @@ export default function LoginPage() {
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                       Password
                     </label>
+                    <Link
+                      href="/auth/forgot-password"
+                      className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                    >
+                      Forgot password?
+                    </Link>
                   </div>
 
                   <div className="relative mt-2">

@@ -1,52 +1,85 @@
-import Redis from "ioredis";
+/**
+ * Redis client — lazy-initialized.
+ *
+ * The client is created on FIRST USE, not at import time.
+ * This prevents connection errors during Next.js build / static page generation,
+ * where no Redis server is available.
+ *
+ * If REDIS_URL is not set, all cache operations are silently skipped (no-op).
+ */
 
-const redisUrl = process.env.REDIS_URL || "redis://127.0.0.1:6379";
+let _redis: import("ioredis").default | null = null;
+let _isAvailable = false;
+let _initialized = false;
 
-let redis: Redis | null = null;
-let isRedisAvailable = false;
+export function getRedisClient(): import("ioredis").default | null {
+  // Already attempted init — return cached result
+  if (_initialized) return _redis;
+  _initialized = true;
 
-try {
-  redis = new Redis(redisUrl, {
-    maxRetriesPerRequest: 1,
-    connectTimeout: 2000,
-    reconnectOnError: () => true,
-    // Avoid crashing on startup if Redis is down
-    retryStrategy(times) {
-      const delay = Math.min(times * 100, 3000);
-      return delay;
-    },
-  });
+  const redisUrl = process.env.REDIS_URL;
 
-  redis.on("connect", () => {
-    isRedisAvailable = true;
-    console.log("Redis connected successfully.");
-  });
+  // No URL configured → skip Redis entirely (safe for build / local dev)
+  if (!redisUrl) {
+    return null;
+  }
 
-  redis.on("error", (error) => {
-    isRedisAvailable = false;
-    console.error("Redis error:", error.message || error);
-  });
-} catch (err) {
-  console.error("Failed to initialize Redis client:", err);
-  redis = null;
-  isRedisAvailable = false;
+  try {
+    const { default: Redis } = require("ioredis") as { default: typeof import("ioredis").default };
+
+    _redis = new Redis(redisUrl, {
+      maxRetriesPerRequest: 1,
+      connectTimeout: 2000,
+      lazyConnect: true, // Don't connect until first command is issued
+      retryStrategy(times) {
+        if (times > 3) return null; // Give up after 3 retries to avoid infinite loops
+        return Math.min(times * 200, 2000);
+      },
+    });
+
+    _redis!.on("connect", () => {
+      _isAvailable = true;
+      console.log("Redis connected successfully.");
+    });
+
+    _redis!.on("error", (error) => {
+      _isAvailable = false;
+      console.error("Redis error:", error.message || error);
+    });
+
+    _redis!.on("close", () => {
+      _isAvailable = false;
+    });
+
+  } catch (err) {
+    console.error("Failed to initialize Redis client:", err);
+    _redis = null;
+    _isAvailable = false;
+  }
+
+  return _redis;
 }
 
 /**
  * Checks if Redis is currently connected and active.
  */
 export function checkRedisStatus(): boolean {
-  return isRedisAvailable && redis !== null;
+  const client = getRedisClient();
+  return _isAvailable && client !== null;
 }
 
 /**
  * Fetch parsed JSON from Redis cache.
- * Falls back to null on any Redis failures.
+ * Falls back to null if Redis is unavailable.
  */
 export async function getCache<T>(key: string): Promise<T | null> {
-  if (!redis || !isRedisAvailable) return null;
+  const client = getRedisClient();
+  if (!client) return null;
   try {
-    const cached = await redis.get(key);
+    // Ensure connected (lazyConnect mode)
+    if (!_isAvailable) await client.connect().catch(() => {});
+    if (!_isAvailable) return null;
+    const cached = await client.get(key);
     if (!cached) return null;
     return JSON.parse(cached) as T;
   } catch (err) {
@@ -56,69 +89,66 @@ export async function getCache<T>(key: string): Promise<T | null> {
 }
 
 /**
- * Set value in Redis cache with string serialization and TTL.
- * Fails silently on Redis errors to prevent breaking caller requests.
+ * Set value in Redis cache with TTL.
+ * Fails silently if Redis is unavailable.
  */
 export async function setCache(
   key: string,
   value: any,
   ttlSeconds: number = 300
 ): Promise<void> {
-  if (!redis || !isRedisAvailable) return;
+  const client = getRedisClient();
+  if (!client) return;
   try {
-    const serialized = JSON.stringify(value);
-    await redis.set(key, serialized, "EX", ttlSeconds);
+    if (!_isAvailable) await client.connect().catch(() => {});
+    if (!_isAvailable) return;
+    await client.set(key, JSON.stringify(value), "EX", ttlSeconds);
   } catch (err) {
     console.error(`Redis setCache failed for key ${key}:`, err);
   }
 }
 
 /**
- * Delete a specific key or list of keys.
+ * Delete specific keys (non-blocking unlink).
  */
 export async function invalidateKeys(keys: string | string[]): Promise<void> {
-  if (!redis || !isRedisAvailable) return;
+  const client = getRedisClient();
+  if (!client || !_isAvailable) return;
   try {
     const keysArray = Array.isArray(keys) ? keys : [keys];
-    if (keysArray.length > 0) {
-      await redis.unlink(keysArray); // unlink is a non-blocking delete
-    }
+    if (keysArray.length > 0) await client.unlink(keysArray);
   } catch (err) {
     console.error(`Redis invalidateKeys failed:`, err);
   }
 }
 
 /**
- * Safely search and delete keys matching a pattern using SCAN to avoid blocking the event loop.
+ * Delete all keys matching a glob pattern using SCAN (non-blocking).
  */
 export async function invalidatePattern(pattern: string): Promise<void> {
-  if (!redis || !isRedisAvailable) return;
+  const client = getRedisClient();
+  if (!client || !_isAvailable) return;
+
   return new Promise<void>((resolve) => {
-    if (!redis) return resolve();
-    const stream = redis.scanStream({
-      match: pattern,
-      count: 100,
-    });
+    const stream = (client as any).scanStream({ match: pattern, count: 100 });
 
     stream.on("data", async (keys: string[]) => {
-      if (keys.length > 0 && redis && isRedisAvailable) {
+      if (keys.length > 0 && _isAvailable) {
         try {
-          await redis.unlink(keys);
+          await client.unlink(keys);
         } catch (unlinkErr) {
           console.error("Failed to unlink scanned keys:", unlinkErr);
         }
       }
     });
 
-    stream.on("end", () => {
-      resolve();
-    });
+    stream.on("end", resolve);
 
-    stream.on("error", (err) => {
+    stream.on("error", (err: Error) => {
       console.error(`Redis SCAN stream error for pattern ${pattern}:`, err);
-      resolve(); // resolve to prevent crashing
+      resolve();
     });
   });
 }
 
-export default redis;
+export default { getRedisClient, checkRedisStatus, getCache, setCache, invalidateKeys, invalidatePattern };

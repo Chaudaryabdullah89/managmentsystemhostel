@@ -22,7 +22,6 @@ import {
   Lock,
   Settings,
   LogOut,
-  Fingerprint,
   Bell,
   MailCheck,
   ShieldCheck,
@@ -42,6 +41,9 @@ import {
   BadgeAlert,
   Server,
   ArrowUpRight,
+  Fingerprint,
+  Trash2,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -146,6 +148,8 @@ const AdminProfilePage = () => {
   const [backupCodes, setBackupCodes] = useState([]);
   const [backupCodesSaved, setBackupCodesSaved] = useState(false);
   const [passkeyRegistering, setPasskeyRegistering] = useState(false);
+  const [passkeyDeleting, setPasskeyDeleting] = useState(null);
+
 
   const user = useMemo(() => fetchedUser || {}, [fetchedUser]);
   const sessions = useMemo(() => user.sessions || sessionsData?.sessions || [], [user, sessionsData]);
@@ -340,11 +344,6 @@ const AdminProfilePage = () => {
     setBackupCodes([]);
     setBackupCodesSaved(false);
 
-    if (method === "PASSKEY") {
-      await handlePasskeyRegister();
-      return;
-    }
-
     try {
       const res = await fetch("/api/auth/2fa/setup", {
         method: "POST",
@@ -426,29 +425,45 @@ const AdminProfilePage = () => {
     }
   };
 
-  const handlePasskeyRegister = async () => {
+  const handleRegisterPasskey = async () => {
     setPasskeyRegistering(true);
     try {
-      const optRes = await fetch("/api/auth/2fa/passkey/register-options", { method: "POST" });
+      const optRes = await fetch("/api/auth/passkey/register-options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
       const optData = await optRes.json();
-      if (!optRes.ok) throw new Error(optData.message || "Failed to get passkey options");
+      if (!optRes.ok) throw new Error(optData.message || "Failed to start registration");
 
       const { startRegistration } = await import("@simplewebauthn/browser");
       const credential = await startRegistration({ optionsJSON: optData.options });
 
-      const verRes = await fetch("/api/auth/2fa/passkey/register-verify", {
+      const getBrowserDeviceName = () => {
+        const ua = navigator.userAgent;
+        let device = "Passkey Device";
+        if (/android/i.test(ua)) device = "Android Device";
+        else if (/iPad|iPhone|iPod/.test(ua)) device = "iOS Device";
+        else if (/macintosh/i.test(ua)) device = "Mac Device";
+        else if (/windows/i.test(ua)) device = "Windows Device";
+        else if (/linux/i.test(ua)) device = "Linux Device";
+        return device;
+      };
+
+      const deviceLabel = prompt("Enter a label for this passkey (e.g., MacBook TouchID, Phone):", getBrowserDeviceName()) || getBrowserDeviceName();
+
+      const verRes = await fetch("/api/auth/passkey/register-verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential, deviceName: navigator.userAgent.includes("Mac") ? "MacBook" : "Device" }),
+        body: JSON.stringify({ credential, deviceName: deviceLabel }),
       });
       const verData = await verRes.json();
-      if (!verRes.ok) throw new Error(verData.message || "Passkey registration failed");
+      if (!verRes.ok) throw new Error(verData.message || "Verification failed");
 
-      toast.success("Passkey registered successfully!");
+      toast.success("Passkey registered successfully as a login method!");
       refetch();
     } catch (err) {
       if (err.name === "NotAllowedError") {
-        toast.error("Passkey registration was cancelled.");
+        toast.error("Passkey registration was cancelled");
       } else {
         toast.error(err.message || "Passkey registration failed");
       }
@@ -456,6 +471,28 @@ const AdminProfilePage = () => {
       setPasskeyRegistering(false);
     }
   };
+
+  const handleDeletePasskey = async (passkeyId) => {
+    setPasskeyDeleting(passkeyId);
+    try {
+      const res = await fetch("/api/auth/passkey/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passkeyId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to delete passkey");
+
+      toast.success("Passkey removed");
+      refetch();
+    } catch (err) {
+      toast.error(err.message || "Failed to delete passkey");
+    } finally {
+      setPasskeyDeleting(null);
+    }
+  };
+
+
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -1238,7 +1275,7 @@ const AdminProfilePage = () => {
                             <p className="text-sm font-bold text-slate-900 dark:text-foreground">Two-Factor Authentication</p>
                             <p className="text-xs text-slate-450 dark:text-muted-foreground mt-0.5 font-bold uppercase tracking-tight">
                               {user.twoFactorEnabled
-                                ? `Active: ${user.twoFactorMethod === "TOTP" ? "Authenticator app" : user.twoFactorMethod === "EMAIL" ? "Email OTP" : user.twoFactorMethod === "PASSKEY" ? "Passkey" : "Backup Codes"}`
+                                ? `Active: ${user.twoFactorMethod === "TOTP" ? "Authenticator app" : user.twoFactorMethod === "EMAIL" ? "Email OTP" : "Backup Codes"}`
                                 : "Add an extra layer of security to your account."}
                             </p>
                           </div>
@@ -1285,15 +1322,6 @@ const AdminProfilePage = () => {
                             iconBg: "bg-blue-100 text-blue-700",
                           },
                           {
-                            method: "PASSKEY",
-                            title: "Passkey",
-                            desc: "Fingerprint or Face lock key",
-                            icon: Fingerprint,
-                            activeColor: "border-emerald-200 bg-emerald-50/10 dark:border-emerald-950/30",
-                            iconBg: "bg-emerald-100 text-emerald-700",
-                            hasCount: user.passkeyCount > 0 ? `${user.passkeyCount} active` : null,
-                          },
-                          {
                             method: "BACKUP_CODES",
                             title: "Backup Codes",
                             desc: "One-time backup codes for recovery",
@@ -1323,33 +1351,108 @@ const AdminProfilePage = () => {
                                 {m.hasCount && <p className="text-[9px] text-indigo-500 font-bold mt-1 uppercase tracking-wider">{m.hasCount}</p>}
                               </div>
                               <div className="mt-3">
-                                {m.method === "PASSKEY" ? (
+                                {!isActive && (
                                   <Button
-                                    onClick={() => handleEnable2FAInit("PASSKEY")}
-                                    disabled={passkeyRegistering}
+                                    onClick={() => handleEnable2FAInit(m.method)}
                                     size="sm"
                                     variant="outline"
                                     className="w-full h-8 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-white dark:bg-card shadow-sm"
                                   >
-                                    {passkeyRegistering ? "Registering..." : user.twoFactorMethod === "PASSKEY" ? "Add Key" : "Enable"}
+                                    {user.twoFactorEnabled ? "Switch" : "Enable"}
                                   </Button>
-                                ) : (
-                                  !isActive && (
-                                    <Button
-                                      onClick={() => handleEnable2FAInit(m.method)}
-                                      size="sm"
-                                      variant="outline"
-                                      className="w-full h-8 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-white dark:bg-card shadow-sm"
-                                    >
-                                      {user.twoFactorEnabled ? "Switch" : "Enable"}
-                                    </Button>
-                                  )
                                 )}
                               </div>
                             </div>
                           );
                         })}
                       </div>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Passkeys (Login Keys) Card */}
+                <Card className="border border-slate-100 dark:border-border rounded-2xl shadow-sm bg-white dark:bg-card overflow-hidden">
+                  <CardHeader className="p-6 pb-2">
+                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-900 dark:text-foreground flex items-center gap-2">
+                      <Fingerprint className="h-4.5 w-4.5 text-indigo-600" /> Passkeys (Login Keys)
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Register your devices (like your phone's fingerprint/face unlock or hardware security keys) to sign in directly without typing a password.
+                    </CardDescription>
+                  </CardHeader>
+                  <div className="p-6 space-y-6">
+                    {/* Add Passkey Button */}
+                    <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-border">
+                      <div>
+                        <p className="text-xs text-slate-450 dark:text-muted-foreground">
+                          Passkeys provide passwordless, cryptographic authentication that is highly secure.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleRegisterPasskey}
+                        disabled={passkeyRegistering}
+                        className="h-9 px-4 rounded-xl text-xs font-bold uppercase tracking-wider bg-slate-900 hover:bg-slate-800 text-white shrink-0"
+                      >
+                        {passkeyRegistering ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                            Registering...
+                          </>
+                        ) : (
+                          "Add Passkey"
+                        )}
+                      </Button>
+                    </div>
+
+                    {/* Registered Passkeys List */}
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900 dark:text-foreground mb-3">Registered Keys</h4>
+                      {user.passkeys && user.passkeys.length > 0 ? (
+                        <div className="space-y-3">
+                          {user.passkeys.map((pk) => (
+                            <div
+                              key={pk.id}
+                              className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 dark:border-border hover:bg-slate-50/50 dark:hover:bg-muted/5 transition-all"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="h-9 w-9 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center text-indigo-650 shrink-0">
+                                  <Fingerprint className="h-4.5 w-4.5" />
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold text-slate-800 dark:text-foreground">{pk.deviceName}</p>
+                                  <p className="text-[10px] text-slate-400 mt-0.5">
+                                    Added on {new Date(pk.createdAt).toLocaleDateString(undefined, {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                onClick={() => handleDeletePasskey(pk.id)}
+                                disabled={passkeyDeleting === pk.id}
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/20 shrink-0"
+                              >
+                                {passkeyDeleting === pk.id ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4.5 w-4.5" />
+                                )}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6 border border-dashed border-slate-200 dark:border-border rounded-xl">
+                          <Fingerprint className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                          <p className="text-xs font-medium text-slate-450 dark:text-muted-foreground">No passkeys registered yet.</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Card>

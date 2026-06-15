@@ -174,6 +174,18 @@ export default class AuthService {
 
             // --- 2FA Check ---
             if (user.twoFactorEnabled) {
+                if (user.twoFactorMethod === "PASSKEY" || user.twoFactorMethod === "passkey") {
+                    // Passkey 2FA is deprecated/removed. Turn it off.
+                    await prisma.user.update({
+                        where: { id: user.id },
+                        data: { twoFactorEnabled: false, twoFactorMethod: null }
+                    });
+                    user.twoFactorEnabled = false;
+                    user.twoFactorMethod = null;
+                }
+            }
+
+            if (user.twoFactorEnabled) {
                 const tempToken = await new SignJWT({
                     userId: user.id,
                     is2FAAuth: true,

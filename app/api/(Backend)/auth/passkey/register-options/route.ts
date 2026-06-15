@@ -6,8 +6,12 @@ import { generateRegistrationOptions } from "@simplewebauthn/server";
 
 const RP_NAME = "Hostel Portal";
 const RP_ID = process.env.WEBAUTHN_RP_ID || "localhost";
-const ORIGIN = process.env.WEBAUTHN_ORIGIN || process.env.NEXTAUTH_URL || "http://localhost:3000";
 
+/**
+ * POST /api/auth/passkey/register-options
+ * Generate WebAuthn registration options for a logged-in user.
+ * Used when the user adds a passkey as a login method from their profile.
+ */
 export async function POST(request: NextRequest) {
     try {
         const authResult = await requireAuth();
@@ -18,12 +22,10 @@ export async function POST(request: NextRequest) {
         const userId = authResult.user.id;
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { email: true, name: true, webauthnCredentials: true }
+            select: { email: true, name: true, webauthnCredentials: true },
         });
 
-        if (!user) {
-            return errorResponse("User not found.", 404);
-        }
+        if (!user) return errorResponse("User not found.", 404);
 
         const existingCredentials = user.webauthnCredentials.map((cred) => ({
             id: cred.credentialId,
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest) {
             attestationType: "none",
             excludeCredentials: existingCredentials,
             authenticatorSelection: {
-                residentKey: "preferred",
+                residentKey: "required",      // required for discoverable/login use
                 userVerification: "preferred",
             },
         });
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest) {
 
         return successResponse({ options });
     } catch (error: any) {
-        console.error("[API] POST /api/auth/2fa/passkey/register-options - Error:", error);
+        console.error("[API] POST /api/auth/passkey/register-options - Error:", error);
         return errorResponse("Failed to generate passkey options.", 500);
     }
 }

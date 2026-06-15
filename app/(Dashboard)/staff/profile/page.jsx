@@ -33,7 +33,9 @@ import {
     CreditCard,
     Zap,
     Boxes,
-    CheckCircle
+    CheckCircle,
+    Trash2,
+    Loader2
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,8 +82,9 @@ const ProfilePage = () => {
     const [showOtpInput, setShowOtpInput] = useState(false);
     const [emailChangeLoading, setEmailChangeLoading] = useState(false);
     const [changingpass, setchangingpass] = useState(false);
-
     const [editedData, setEditedData] = useState({});
+    const [passkeyRegistering, setPasskeyRegistering] = useState(false);
+    const [passkeyDeleting, setPasskeyDeleting] = useState(null);
 
     const user = useMemo(() => fetchedUser || {}, [fetchedUser]);
 
@@ -183,6 +186,75 @@ const ProfilePage = () => {
             toast.error(err.message);
         } finally {
             setEmailChangeLoading(false);
+        }
+    };
+
+    const { refetch } = useUserById(authUser?.id);
+
+    const handleRegisterPasskey = async () => {
+        setPasskeyRegistering(true);
+        try {
+            const optRes = await fetch("/api/auth/passkey/register-options", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+            });
+            const optData = await optRes.json();
+            if (!optRes.ok) throw new Error(optData.message || "Failed to start registration");
+
+            const { startRegistration } = await import("@simplewebauthn/browser");
+            const credential = await startRegistration({ optionsJSON: optData.options });
+
+            const getBrowserDeviceName = () => {
+                const ua = navigator.userAgent;
+                let device = "Passkey Device";
+                if (/android/i.test(ua)) device = "Android Device";
+                else if (/iPad|iPhone|iPod/.test(ua)) device = "iOS Device";
+                else if (/macintosh/i.test(ua)) device = "Mac Device";
+                else if (/windows/i.test(ua)) device = "Windows Device";
+                else if (/linux/i.test(ua)) device = "Linux Device";
+                return device;
+            };
+
+            const deviceLabel = prompt("Enter a label for this passkey (e.g., MacBook TouchID, Phone):", getBrowserDeviceName()) || getBrowserDeviceName();
+
+            const verRes = await fetch("/api/auth/passkey/register-verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ credential, deviceName: deviceLabel }),
+            });
+            const verData = await verRes.json();
+            if (!verRes.ok) throw new Error(verData.message || "Verification failed");
+
+            toast.success("Passkey registered successfully as a login method!");
+            refetch();
+        } catch (err) {
+            if (err.name === "NotAllowedError") {
+                toast.error("Passkey registration was cancelled");
+            } else {
+                toast.error(err.message || "Passkey registration failed");
+            }
+        } finally {
+            setPasskeyRegistering(false);
+        }
+    };
+
+    const handleDeletePasskey = async (passkeyId) => {
+        setPasskeyDeleting(passkeyId);
+        try {
+            const res = await fetch("/api/auth/passkey/delete", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ passkeyId }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || "Failed to delete passkey");
+
+            toast.success("Passkey removed");
+            refetch();
+        } catch (err) {
+            toast.error(err.message || "Failed to delete passkey");
+        } finally {
+            setPasskeyDeleting(null);
         }
     };
 
@@ -472,6 +544,81 @@ const ProfilePage = () => {
                                     </div>
                                 </Card>
 
+                                {/* Passkeys Card */}
+                                <Card className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-sm overflow-hidden mt-6">
+                                    <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-6 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-background transition-colors group">
+                                        <div className="flex items-center gap-6">
+                                            <div className="h-14 w-14 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 flex items-center justify-center border border-indigo-100 shadow-sm shrink-0">
+                                                <Fingerprint className="h-6 w-6" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight italic">Passkeys (Login Keys)</h3>
+                                                <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-bold uppercase tracking-widest mt-1">Register devices to sign in without typing password</p>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            onClick={handleRegisterPasskey}
+                                            disabled={passkeyRegistering}
+                                            className="h-10 px-6 rounded-xl bg-black hover:bg-gray-800 text-white font-bold text-[9px] uppercase tracking-wider shadow-lg transition-all active:scale-95 shrink-0"
+                                        >
+                                            {passkeyRegistering ? (
+                                                <>
+                                                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                                                    Registering...
+                                                </>
+                                            ) : (
+                                                "Add Passkey"
+                                            )}
+                                        </Button>
+                                    </div>
+                                    <Separator className="bg-gray-100 mx-6 w-auto" />
+                                    <div className="p-6">
+                                        <h4 className="text-xs font-bold text-gray-900 dark:text-foreground uppercase tracking-widest mb-4">Registered Keys</h4>
+                                        {user.passkeys && user.passkeys.length > 0 ? (
+                                            <div className="space-y-3">
+                                                {user.passkeys.map((pk) => (
+                                                    <div key={pk.id} className="flex items-center justify-between p-4 rounded-2xl border border-gray-100 dark:border-border hover:bg-gray-50/50 dark:hover:bg-muted/5 transition-all">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-10 w-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center text-indigo-600 shrink-0">
+                                                                <Fingerprint className="h-5 w-5" />
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-bold text-gray-800 dark:text-foreground">{pk.deviceName}</p>
+                                                                <p className="text-[10px] text-gray-400 mt-0.5">
+                                                                    Added on {new Date(pk.createdAt).toLocaleDateString(undefined, {
+                                                                        year: 'numeric',
+                                                                        month: 'short',
+                                                                        day: 'numeric',
+                                                                        hour: '2-digit',
+                                                                        minute: '2-digit'
+                                                                    })}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <Button
+                                                            onClick={() => handleDeletePasskey(pk.id)}
+                                                            disabled={passkeyDeleting === pk.id}
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-9 w-9 rounded-xl text-rose-500 hover:text-rose-750 hover:bg-rose-50 dark:hover:bg-rose-950/20 shrink-0"
+                                                        >
+                                                            {passkeyDeleting === pk.id ? (
+                                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                            ) : (
+                                                                <Trash2 className="h-4.5 w-4.5" />
+                                                            )}
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-8 border border-dashed border-gray-200 dark:border-border rounded-2xl">
+                                                <Fingerprint className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+                                                <p className="text-xs font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">No passkeys registered yet.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </Card>
                             </TabsContent>
 
                             <TabsContent
