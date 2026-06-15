@@ -1,8 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
-import { verify } from "otplib";
+import { NextRequest } from "next/server";
+import { verifySync as otplibVerify } from "otplib";
+import { createHash } from "crypto";
 import prisma from "@/lib/prisma";
 import { requireAuth } from "@/lib/apiAuth";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
+
+function hashCode(code: string): string {
+    return createHash("sha256").update(code.trim().toUpperCase()).digest("hex");
+}
 
 export async function POST(request: NextRequest) {
     try {
@@ -13,45 +18,94 @@ export async function POST(request: NextRequest) {
 
         const userId = authResult.user.id;
         const body = await request.json();
-        const { otp } = body;
+        const { otp, method } = body;
 
         if (!otp || typeof otp !== "string") {
-            return errorResponse("A valid 6-digit OTP is required.", 400);
+            return errorResponse("A valid verification code is required.", 400);
         }
 
         const user = await prisma.user.findUnique({
             where: { id: userId },
-            select: { twoFactorSecret: true, twoFactorEnabled: true }
+            select: { twoFactorSecret: true, twoFactorEnabled: true, email: true }
         });
 
-        if (!user || !user.twoFactorSecret) {
-            return errorResponse("2FA setup has not been initiated for this user.", 400);
+        if (!user) {
+            return errorResponse("User not found.", 404);
         }
 
-        if (user.twoFactorEnabled) {
-            return errorResponse("2FA is already enabled.", 400);
+        const verifyMethod = method || "TOTP";
+
+        // ── TOTP Verification ─────────────────────────────────────────────
+        if (verifyMethod === "TOTP") {
+            if (!user.twoFactorSecret) {
+                return errorResponse("TOTP setup has not been initiated.", 400);
+            }
+            if (user.twoFactorEnabled && user.twoFactorSecret) {
+                return errorResponse("2FA is already enabled.", 400);
+            }
+
+            const result = await otplibVerify({ token: otp, secret: user.twoFactorSecret });
+            if (!result.valid) {
+                return errorResponse("Invalid code. Please try again.", 400);
+            }
+
+            await prisma.user.update({
+                where: { id: userId },
+                data: { twoFactorEnabled: true, twoFactorMethod: "TOTP" }
+            });
+
+            return successResponse({
+                message: "Authenticator App 2FA has been enabled.",
+                method: "TOTP",
+            });
         }
 
-        // Verify the token using otplib v13 functional API
-        const isValid = verify({ token: otp, secret: user.twoFactorSecret });
+        // ── Email OTP Verification ────────────────────────────────────────
+        if (verifyMethod === "EMAIL") {
+            const record = await prisma.otpVerification.findUnique({
+                where: { id: `2fa-setup-${userId}` }
+            });
 
-        if (!isValid) {
-            return errorResponse("Invalid OTP code. Please try again.", 400);
+            if (!record || record.expiresAt < new Date()) {
+                return errorResponse("Code expired or not found. Please request a new one.", 400);
+            }
+
+            const hashed = hashCode(otp);
+            if (hashed !== record.otp) {
+                return errorResponse("Invalid code. Please try again.", 400);
+            }
+
+            // Clean up and enable
+            await prisma.otpVerification.delete({ where: { id: `2fa-setup-${userId}` } });
+            await prisma.user.update({
+                where: { id: userId },
+                data: { twoFactorEnabled: true, twoFactorMethod: "EMAIL" }
+            });
+
+            return successResponse({
+                message: "Email OTP 2FA has been enabled.",
+                method: "EMAIL",
+            });
         }
 
-        // Enable 2FA
-        await prisma.user.update({
-            where: { id: userId },
-            data: { twoFactorEnabled: true }
-        });
+        // ── Backup Codes Verification ─────────────────────────────────────
+        if (verifyMethod === "BACKUP_CODES") {
+            // For setup verification, just enable it (codes were already saved in setup)
+            await prisma.user.update({
+                where: { id: userId },
+                data: { twoFactorEnabled: true, twoFactorMethod: "BACKUP_CODES" }
+            });
 
-        return successResponse({
-            message: "Two-Factor Authentication has been successfully enabled.",
-        });
+            return successResponse({
+                message: "Backup Codes 2FA has been enabled.",
+                method: "BACKUP_CODES",
+            });
+        }
+
+        return errorResponse("Invalid 2FA method.", 400);
 
     } catch (error: any) {
         console.error("[API] POST /api/auth/2fa/verify - Error:", error);
-        return errorResponse("Failed to verify 2FA token.", 500);
+        return errorResponse("Failed to verify 2FA.", 500);
     }
 }
-

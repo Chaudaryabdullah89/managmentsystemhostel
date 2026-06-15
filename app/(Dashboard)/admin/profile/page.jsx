@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import {
   User,
   Mail,
@@ -32,26 +32,24 @@ import {
   Boxes,
   CheckCircle,
   RefreshCw,
-  Trash2,
   AlertTriangle,
   Activity,
-  Wifi,
-  ChevronDown,
+  ChevronRight,
   Eye,
   EyeOff,
   IdCard,
-  Hash,
-  Home,
-  BadgeCheck,
-  Power,
-  PowerOff,
+  Check,
+  BadgeAlert,
+  Server,
+  ArrowUpRight,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -76,7 +74,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useAuthStore from "@/hooks/Authstate";
 import {
-  useUserById,
+  useUserDetailedProfile,
   useUserUpdate,
   useSessions,
   useTerminateSessions,
@@ -99,117 +97,20 @@ function getDeviceIcon(device = "") {
 
 function getDeviceLabel(device = "") {
   if (!device) return "Unknown Device";
-  if (device.length > 60) return device.slice(0, 60) + "…";
+  if (device.length > 50) return device.slice(0, 50) + "…";
   return device;
 }
 
-// ─── Stat Card ───────────────────────────────────────────────────────────────
+// ─── Main Component ─────────────────────────────────────────────────────────
 
-function StatCard({ icon: Icon, label, value }) {
-  return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-3">
-      <div className="h-9 w-9 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
-        <Icon className="h-4 w-4 text-gray-500" />
-      </div>
-      <div>
-        <p className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
-          {label}
-        </p>
-        <p className="text-sm font-bold text-gray-900">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Session Card ────────────────────────────────────────────────────────────
-
-function SessionCard({ session, isCurrent, onTerminate, isPending }) {
-  const DeviceIcon = getDeviceIcon(session.device);
-  return (
-    <div
-      className={`rounded-xl border p-4 transition-all ${
-        isCurrent
-          ? "border-blue-200 bg-blue-50/30"
-          : "border-gray-100 bg-white"
-      }`}
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <div
-            className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${isCurrent ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400"}`}
-          >
-            <DeviceIcon className="h-5 w-5" />
-          </div>
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[12px] font-black text-gray-900 uppercase tracking-tight">
-                {getDeviceLabel(session.device)}
-              </span>
-              {isCurrent && (
-                <Badge className="bg-blue-600 text-white border-none text-[8px] font-bold rounded-full px-2">
-                  Current
-                </Badge>
-              )}
-              {session.isActive && (
-                <span className="flex items-center gap-1">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-                  <span className="text-[9px] font-black text-emerald-600 uppercase">
-                    Live
-                  </span>
-                </span>
-              )}
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-[9px] font-black text-gray-400 uppercase tracking-widest">
-              <span className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
-                {session.ipAddress || "Unknown IP"}
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {session.lastActive
-                  ? formatDistanceToNow(new Date(session.lastActive), {
-                      addSuffix: true,
-                    })
-                  : "Now"}
-              </span>
-            </div>
-            <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">
-              Started{" "}
-              {session.createdAt
-                ? format(new Date(session.createdAt), "MMM dd, yyyy • HH:mm")
-                : "N/A"}
-            </p>
-          </div>
-        </div>
-        {!isCurrent && (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-8 px-3 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 text-[10px] font-bold uppercase tracking-tight shrink-0"
-            onClick={() => onTerminate(session.id)}
-            disabled={isPending}
-          >
-            Sign Out
-          </Button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── Main Page ───────────────────────────────────────────────────────────────
-
-const ProfilePage = () => {
+const AdminProfilePage = () => {
   const authUser = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
-  const { data: fetchedUser, isLoading } = useUserById(authUser?.id);
-  const { mutateAsync: updateUserData, isPending: updateLoading } =
-    useUserUpdate();
-  const {
-    data: sessionsData,
-    isLoading: sessionsLoading,
-    refetch: refetchSessions,
-  } = useSessions();
+  
+  const { data: fetchedUser, isLoading, refetch } = useUserDetailedProfile(authUser?.id);
+  const { mutateAsync: updateUserData, isPending: updateLoading } = useUserUpdate();
+  const { data: sessionsData, refetch: refetchSessions } = useSessions();
+  
   const terminateSession = useTerminateSessions();
   const terminateAllSessions = useTerminateAllSessions();
   const queryClient = useQueryClient();
@@ -237,21 +138,94 @@ const ProfilePage = () => {
   const [editedData, setEditedData] = useState({});
 
   const [show2FADialog, setShow2FADialog] = useState(false);
+  const [active2FAMethod, setActive2FAMethod] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
   const [twoFactorSecret, setTwoFactorSecret] = useState("");
   const [twoFactorOtp, setTwoFactorOtp] = useState("");
   const [verifying2FA, setVerifying2FA] = useState(false);
+  const [backupCodes, setBackupCodes] = useState([]);
+  const [backupCodesSaved, setBackupCodesSaved] = useState(false);
+  const [passkeyRegistering, setPasskeyRegistering] = useState(false);
 
   const user = useMemo(() => fetchedUser || {}, [fetchedUser]);
-  const sessions = useMemo(() => sessionsData?.sessions || [], [sessionsData]);
+  const sessions = useMemo(() => user.sessions || sessionsData?.sessions || [], [user, sessionsData]);
+  
   const activeSessions = useMemo(
     () => sessions.filter((s) => s.isActive),
-    [sessions],
+    [sessions]
   );
   const inactiveSessions = useMemo(
     () => sessions.filter((s) => !s.isActive),
-    [sessions],
+    [sessions]
   );
+
+  // Password strength logic
+  const passwordStrength = useMemo(() => {
+    const pass = passwordData.newPassword;
+    if (!pass) return { score: 0, label: "", color: "bg-gray-200" };
+    let score = 0;
+    if (pass.length >= 6) score += 25;
+    if (pass.length >= 10) score += 25;
+    if (/[A-Z]/.test(pass)) score += 25;
+    if (/[0-9!@#$%^&*]/.test(pass)) score += 25;
+
+    if (score <= 25) return { score, label: "Weak", color: "bg-rose-500" };
+    if (score <= 50) return { score, label: "Fair", color: "bg-amber-500" };
+    if (score <= 75) return { score, label: "Good", color: "bg-indigo-500" };
+    return { score, label: "Strong", color: "bg-emerald-500" };
+  }, [passwordData.newPassword]);
+
+  // Compute a live activity timeline from actual user associations
+  const timelineItems = useMemo(() => {
+    const items = [];
+    if (Array.isArray(sessions)) {
+      sessions.forEach((s) => {
+        items.push({
+          type: "session",
+          title: "Logged In",
+          description: `Logged in from device: ${getDeviceLabel(s.device)} (IP: ${s.ipAddress || "Unknown"})`,
+          date: new Date(s.createdAt || s.lastActive || Date.now()),
+          icon: Monitor,
+          color: "text-indigo-600 bg-indigo-50 dark:bg-indigo-950/40 border-indigo-100 dark:border-indigo-900/40",
+        });
+      });
+    }
+    if (Array.isArray(user.createdExpenses)) {
+      user.createdExpenses.forEach((e) => {
+        items.push({
+          type: "expense_created",
+          title: `Added Expense: ${e.title}`,
+          description: `Submitted expense of Rs. ${Number(e.amount).toLocaleString()} for ${e.category}.`,
+          date: new Date(e.createdAt || Date.now()),
+          icon: CreditCard,
+          color: "text-amber-600 bg-amber-50 dark:bg-amber-950/40 border-amber-100 dark:border-amber-900/40",
+        });
+      });
+    }
+    if (Array.isArray(user.approvedExpenses)) {
+      user.approvedExpenses.forEach((e) => {
+        items.push({
+          type: "expense_approved",
+          title: `Approved Expense: ${e.title}`,
+          description: `Approved payment of Rs. ${Number(e.amount).toLocaleString()}.`,
+          date: new Date(e.updatedAt || Date.now()),
+          icon: CheckCircle,
+          color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-100 dark:border-emerald-900/40",
+        });
+      });
+    }
+    return items.sort((a, b) => b.date - a.date).slice(0, 10);
+  }, [sessions, user]);
+
+  // Admin access permissions list
+  const adminPermissions = [
+    { label: "Manage Expenses", desc: "View, submit, and approve hostel expenses and bills.", key: "canManageExpenses" },
+    { label: "Manage Maintenance", desc: "Oversee repairs, plumbing, electrical, and room fixes.", key: "canManageMaintenance" },
+    { label: "Manage Salaries", desc: "Track and approve monthly salaries for staff and wardens.", key: "canManageSalaries" },
+    { label: "Manage Mess & Meals", desc: "Update daily food menus and handle mess feedback.", key: "canManageMess" },
+    { label: "Manage Utilities", desc: "Record electricity, water, gas bills, and utility settings.", key: "canManageUtilities" },
+    { label: "General Admin Access", desc: "Access registrations, bookings, and general notices.", key: "canManageGeneral" },
+  ];
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -266,6 +240,7 @@ const ProfilePage = () => {
     try {
       await updateUserData({ id: authUser?.id, data: editedData });
       setIsEditing(false);
+      refetch();
       toast.success("Profile updated successfully");
     } catch {
       toast.error("Failed to update profile");
@@ -287,7 +262,7 @@ const ProfilePage = () => {
         body: JSON.stringify({
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
-          logoutAll: passwordData.logoutAll
+          logoutAll: passwordData.logoutAll,
         }),
       });
       const data = await res.json();
@@ -302,7 +277,7 @@ const ProfilePage = () => {
       });
 
       if (passwordData.logoutAll) {
-         useAuthStore.getState().logout();
+        useAuthStore.getState().logout();
       }
     } catch (err) {
       toast.error(err.message);
@@ -344,12 +319,14 @@ const ProfilePage = () => {
       setShowEmailDialog(false);
       setOtp("");
       setShowOtpInput(false);
-      if (authUser?.id)
+      if (authUser?.id) {
         await queryClient.invalidateQueries({
           queryKey: ["users", "byid", authUser.id],
         });
+      }
       if (authUser)
         useAuthStore.getState().setUser({ ...authUser, email: newEmail });
+      refetch();
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -357,13 +334,32 @@ const ProfilePage = () => {
     }
   };
 
-  const handleEnable2FAInit = async () => {
+  const handleEnable2FAInit = async (method) => {
+    setActive2FAMethod(method);
+    setTwoFactorOtp("");
+    setBackupCodes([]);
+    setBackupCodesSaved(false);
+
+    if (method === "PASSKEY") {
+      await handlePasskeyRegister();
+      return;
+    }
+
     try {
-      const res = await fetch("/api/auth/2fa/setup", { method: "POST" });
+      const res = await fetch("/api/auth/2fa/setup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ method }),
+      });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to generate QR code");
-      setQrCodeUrl(data.qrCodeUrl);
-      setTwoFactorSecret(data.secret);
+      if (!res.ok) throw new Error(data.message || "Failed to start setup");
+
+      if (method === "TOTP") {
+        setQrCodeUrl(data.qrCodeUrl);
+        setTwoFactorSecret(data.secret);
+      } else if (method === "BACKUP_CODES") {
+        setBackupCodes(data.codes || []);
+      }
       setShow2FADialog(true);
     } catch (err) {
       toast.error(err.message);
@@ -371,6 +367,30 @@ const ProfilePage = () => {
   };
 
   const handleVerify2FA = async () => {
+    if (active2FAMethod === "BACKUP_CODES") {
+      if (!backupCodesSaved) {
+        return toast.error("Please confirm you have saved the backup codes");
+      }
+      setVerifying2FA(true);
+      try {
+        const res = await fetch("/api/auth/2fa/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ otp: "confirmed", method: "BACKUP_CODES" }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed");
+        toast.success("Backup Codes 2FA enabled!");
+        setShow2FADialog(false);
+        refetch();
+      } catch (err) {
+        toast.error(err.message);
+      } finally {
+        setVerifying2FA(false);
+      }
+      return;
+    }
+
     if (!twoFactorOtp || twoFactorOtp.length !== 6) {
       return toast.error("Please enter a valid 6-digit code");
     }
@@ -379,18 +399,14 @@ const ProfilePage = () => {
       const res = await fetch("/api/auth/2fa/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ otp: twoFactorOtp }),
+        body: JSON.stringify({ otp: twoFactorOtp, method: active2FAMethod }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Invalid code. Please try again.");
-      toast.success("Two-Factor Authentication enabled successfully!");
+      if (!res.ok) throw new Error(data.message || "Invalid code.");
+      toast.success(`${active2FAMethod === "TOTP" ? "Authenticator App" : "Email OTP"} 2FA enabled!`);
       setShow2FADialog(false);
       setTwoFactorOtp("");
-      if (authUser?.id) {
-        await queryClient.invalidateQueries({
-          queryKey: ["users", "byid", authUser.id],
-        });
-      }
+      refetch();
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -402,15 +418,42 @@ const ProfilePage = () => {
     try {
       const res = await fetch("/api/auth/2fa/disable", { method: "POST" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to disable Two-Factor Authentication");
-      toast.success("Two-Factor Authentication has been disabled");
-      if (authUser?.id) {
-        await queryClient.invalidateQueries({
-          queryKey: ["users", "byid", authUser.id],
-        });
-      }
+      if (!res.ok) throw new Error(data.message || "Failed");
+      toast.success("All 2-Step Verification methods have been disabled");
+      refetch();
     } catch (err) {
       toast.error(err.message);
+    }
+  };
+
+  const handlePasskeyRegister = async () => {
+    setPasskeyRegistering(true);
+    try {
+      const optRes = await fetch("/api/auth/2fa/passkey/register-options", { method: "POST" });
+      const optData = await optRes.json();
+      if (!optRes.ok) throw new Error(optData.message || "Failed to get passkey options");
+
+      const { startRegistration } = await import("@simplewebauthn/browser");
+      const credential = await startRegistration({ optionsJSON: optData.options });
+
+      const verRes = await fetch("/api/auth/2fa/passkey/register-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential, deviceName: navigator.userAgent.includes("Mac") ? "MacBook" : "Device" }),
+      });
+      const verData = await verRes.json();
+      if (!verRes.ok) throw new Error(verData.message || "Passkey registration failed");
+
+      toast.success("Passkey registered successfully!");
+      refetch();
+    } catch (err) {
+      if (err.name === "NotAllowedError") {
+        toast.error("Passkey registration was cancelled.");
+      } else {
+        toast.error(err.message || "Passkey registration failed");
+      }
+    } finally {
+      setPasskeyRegistering(false);
     }
   };
 
@@ -419,13 +462,16 @@ const ProfilePage = () => {
     try {
       await logout();
     } catch {
-      // logout() handles redirect internally
+      // Handled internally
     }
   };
 
   const handleTerminateSession = (sessionId) => {
     terminateSession.mutate(sessionId, {
-      onSuccess: () => refetchSessions(),
+      onSuccess: () => {
+        refetchSessions();
+        refetch();
+      },
     });
   };
 
@@ -434,11 +480,10 @@ const ProfilePage = () => {
       onSuccess: () => {
         toast.success("Other sessions terminated");
         refetchSessions();
+        refetch();
       },
     });
   };
-
-  // ── Avatar initials ───────────────────────────────────────────────────────
 
   const initials = useMemo(() => {
     const name = user.name || authUser?.name || "A";
@@ -452,21 +497,23 @@ const ProfilePage = () => {
 
   if (isLoading) return <ProfileSkeleton />;
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-white pb-24 font-sans">
-      {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="bg-gray-50 border-b border-gray-100 h-32 relative">
-        <div className="absolute inset-0 bg-linear-to-b from-gray-100/50 to-transparent" />
+    <div className="min-h-screen bg-slate-50/50 dark:bg-background pb-20 font-sans tracking-tight">
+      
+      {/* ── Banner Header (Obsidian themed) ── */}
+      <div className="bg-gradient-to-br from-slate-950 via-indigo-950 to-neutral-950 h-56 relative overflow-hidden flex items-end">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] opacity-20" />
+        <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-indigo-500/10 blur-3xl" />
+        <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-violet-500/10 blur-3xl" />
 
-        {/* ── Sticky Action Bar ─────────────────────────────────────── */}
-        <div className="absolute top-0 left-0 right-0 h-14 flex items-center justify-between px-6">
+        {/* Action Header bar */}
+        <div className="absolute top-0 left-0 right-0 h-16 flex items-center justify-between px-6 z-10">
           <div className="flex items-center gap-3">
-            <div className="h-7 w-7 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
-              <Shield className="h-4 w-4 text-white" />
+            <div className="h-8 w-8 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+              <Shield className="h-4.5 w-4.5 text-indigo-200" />
             </div>
-            <span className="text-white/80 text-[11px] font-black uppercase tracking-widest">
-              Admin Profile
+            <span className="text-white/90 text-xs font-black uppercase tracking-widest">
+              Admin Settings
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -474,10 +521,9 @@ const ProfilePage = () => {
               <Button
                 onClick={handleEdit}
                 size="sm"
-                variant="outline"
-                className="h-8 px-4 rounded-lg bg-white text-gray-700 text-[10px] font-bold uppercase tracking-tight"
+                className="h-9 px-5 rounded-xl bg-white text-slate-950 hover:bg-slate-100 text-[11px] font-bold uppercase tracking-wider shadow-md transition-all active:scale-95 flex items-center gap-2"
               >
-                <Edit3 className="h-3.5 w-3.5 mr-1.5" /> Edit Profile
+                <Edit3 className="h-3.5 w-3.5" /> Edit Profile
               </Button>
             ) : (
               <div className="flex items-center gap-2">
@@ -485,757 +531,944 @@ const ProfilePage = () => {
                   onClick={handleCancel}
                   size="sm"
                   variant="ghost"
-                  className="h-8 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[9px] font-black uppercase tracking-widest"
+                  className="h-9 px-5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-2 border border-white/10"
                 >
-                  <X className="h-3.5 w-3.5 mr-1.5" /> Cancel
+                  <X className="h-3.5 w-3.5" /> Cancel
                 </Button>
                 <Button
                   onClick={handleSave}
                   disabled={updateLoading}
                   size="sm"
-                  className="h-8 px-4 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white text-[9px] font-black uppercase tracking-widest"
+                  className="h-9 px-5 rounded-xl bg-indigo-650 hover:bg-indigo-600 text-white text-[11px] font-bold uppercase tracking-wider shadow-lg transition-all active:scale-95 flex items-center gap-2"
                 >
-                  <Save className="h-3.5 w-3.5 mr-1.5" />
-                  {updateLoading ? "Saving…" : "Save Changes"}
+                  <Save className="h-3.5 w-3.5" />
+                  {updateLoading ? "Saving" : "Save Changes"}
                 </Button>
               </div>
             )}
           </div>
         </div>
-      </div>
 
-      {/* ── Profile Identity ─────────────────────────────────────────── */}
-      <div className="max-w-5xl mx-auto px-6">
-        <div className="relative -mt-10 flex items-end gap-5 mb-8">
-          {/* Avatar */}
-          <div className="relative shrink-0">
-            <div className="h-24 w-24 rounded-2xl bg-gray-900 flex items-center justify-center border-4 border-white text-white text-2xl font-bold">
-              {initials}
+        {/* User Identity Container */}
+        <div className="max-w-7xl mx-auto w-full px-6 pb-6 flex items-end gap-6 relative z-10">
+          <div className="relative shrink-0 group">
+            <div className="h-28 w-28 rounded-3xl bg-slate-900 flex items-center justify-center border-4 border-slate-950 text-white text-3xl font-black shadow-2xl relative overflow-hidden group-hover:scale-105 transition-transform duration-300">
+              {user.image ? (
+                <img src={user.image} alt={user.name} className="h-full w-full object-cover" />
+              ) : (
+                initials
+              )}
             </div>
-            <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center shadow-sm">
+            <div className="absolute -bottom-1 -right-1 h-6.5 w-6.5 rounded-full bg-emerald-500 border-3 border-slate-950 flex items-center justify-center shadow-lg">
               <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
             </div>
           </div>
-          {/* Identity text */}
-          <div className="pb-2">
-            <h1 className="text-2xl font-black text-gray-900 tracking-tight">
-              {user.name || authUser?.name || "Admin"}
-            </h1>
-            <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <Badge className="bg-gray-100 text-gray-600 border-none text-[9px] font-bold rounded px-3">
-                <ShieldCheck className="h-3 w-3 mr-1" />
-                {user.role || "ADMIN"}
+          <div className="flex-1 pb-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-black text-white tracking-tight uppercase">
+                {user.name || "Administrator"}
+              </h1>
+              <Badge className="bg-indigo-500/20 text-indigo-200 border border-indigo-500/30 text-[10px] font-black rounded px-2.5 py-0.5 uppercase tracking-wider">
+                {user.role}
               </Badge>
               <Badge
-                className={`border-none text-[9px] font-bold rounded px-3 ${
+                className={`border text-[10px] font-black rounded px-2.5 py-0.5 uppercase tracking-wider ${
                   user.isActive
-                    ? "bg-emerald-50 text-emerald-600"
-                    : "bg-red-50 text-red-600"
+                    ? "bg-emerald-500/20 text-emerald-200 border-emerald-500/30"
+                    : "bg-rose-500/20 text-rose-200 border-rose-500/30"
                 }`}
               >
-                {user.isActive ? "Active" : "Inactive"}
+                {user.isActive ? "ACTIVE" : "INACTIVE"}
               </Badge>
-              <span className="text-[10px] text-gray-400 font-semibold">
-                {user.email || authUser?.email}
-              </span>
             </div>
+            <p className="text-white/60 text-xs mt-1.5 font-medium flex items-center gap-1.5">
+              <Mail className="h-3.5 w-3.5" /> {user.email}
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* ── Stats Row ────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <StatCard
-            icon={Activity}
-            label="Active Sessions"
-            value={activeSessions.length}
-            color="indigo"
-          />
-          <StatCard
-            icon={History}
-            label="Total Sessions"
-            value={sessions.length}
-            color="amber"
-          />
-          <StatCard
-            icon={BadgeCheck}
-            label="Role"
-            value={user.role || "ADMIN"}
-            color="emerald"
-          />
-          <StatCard
-            icon={Calendar}
-            label="Account Status"
-            value={user.isActive ? "Active" : "Inactive"}
-            color={user.isActive ? "emerald" : "rose"}
-          />
+      {/* ── Dashboard Metrics Row ── */}
+      <main className="max-w-7xl mx-auto px-6 mt-8 space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[
+            {
+              label: "Security Status",
+              value: user.twoFactorEnabled ? "2FA Active" : "Unprotected",
+              desc: "Two-step verification status",
+              icon: ShieldCheck,
+              color: user.twoFactorEnabled ? "text-emerald-600 bg-emerald-50 border-emerald-100" : "text-rose-600 bg-rose-50 border-rose-100",
+            },
+            {
+              label: "Logged-in Devices",
+              value: `${activeSessions.length} Devices`,
+              desc: "Active logins in system",
+              icon: Monitor,
+              color: "text-blue-600 bg-blue-50 border-blue-100",
+            },
+            {
+              label: "Your Activity",
+              value: `${(user.approvedExpenses?.length || 0) + (user.createdExpenses?.length || 0)} Logs`,
+              desc: "Recent ledger and system actions",
+              icon: History,
+              color: "text-amber-600 bg-amber-50 border-amber-100",
+            },
+            {
+              label: "System Clearance",
+              value: "Master Access",
+              desc: "Your clearance level",
+              icon: Zap,
+              color: "text-indigo-600 bg-indigo-50 border-indigo-100",
+            },
+          ].map((stat, i) => (
+            <div
+              key={i}
+              className="bg-white dark:bg-card border border-slate-100 dark:border-border rounded-2xl p-5 flex items-center gap-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] hover:shadow-md transition-all duration-300"
+            >
+              <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 border ${stat.color}`}>
+                <stat.icon className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-slate-400 dark:text-muted-foreground uppercase tracking-widest">
+                  {stat.label}
+                </p>
+                <p className="text-lg font-bold text-slate-900 dark:text-foreground mt-0.5 tracking-tight">
+                  {stat.value}
+                </p>
+                <p className="text-[9px] font-medium text-slate-400 dark:text-muted-foreground mt-0.5">
+                  {stat.desc}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* ── Tabs ─────────────────────────────────────────────────── */}
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-6"
-        >
-          <TabsList className="bg-gray-100/50 border border-gray-200 rounded-lg p-1 h-auto gap-1">
-            {[
-              { value: "overview", label: "Overview", icon: User },
-              { value: "sessions", label: "Sessions", icon: Monitor },
-              { value: "security", label: "Security", icon: Lock },
-            ].map(({ value, label, icon: Icon }) => (
-              <TabsTrigger
-                key={value}
-                value={value}
-                className="rounded-lg text-[10px] font-bold uppercase tracking-tight px-5 py-2 data-[state=active]:bg-gray-900 data-[state=active]:text-white flex items-center gap-1.5 transition-all"
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {label}
-                {value === "sessions" && activeSessions.length > 0 && (
-                  <span className="ml-1 bg-indigo-500 data-[state=active]:bg-white/30 text-white rounded-full text-[8px] px-1.5 py-0.5 font-black">
-                    {activeSessions.length}
-                  </span>
-                )}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {/* ── Overview Tab ─────────────────────────────────────── */}
-          <TabsContent value="overview" className="space-y-6">
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-              <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50 flex items-center gap-3">
-                <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                  Personal Information
-                </h2>
-              </div>
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* ── Main Tabbed Layout ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Navigation Cockpit */}
+          <div className="lg:col-span-3">
+            <Card className="border border-slate-100 dark:border-border rounded-2xl shadow-sm p-4 bg-white dark:bg-card">
+              <div className="space-y-1">
                 {[
-                  {
-                    label: "Full Name",
-                    key: "name",
-                    icon: User,
-                    type: "input",
-                  },
-                  {
-                    label: "Email Address",
-                    key: "email",
-                    icon: Mail,
-                    type: "readonly",
-                  },
-                  {
-                    label: "Phone Number",
-                    key: "phone",
-                    icon: Phone,
-                    type: "input",
-                  },
-                  {
-                    label: "CNIC / ID",
-                    key: "cnic",
-                    icon: IdCard,
-                    type: "input",
-                  },
-                  { label: "City", key: "city", icon: MapPin, type: "input" },
-                  {
-                    label: "Role",
-                    key: "role",
-                    icon: Shield,
-                    type: "readonly",
-                  },
-                ].map(({ label, key, icon: Icon, type }) => (
-                  <div key={key} className="space-y-2">
-                    <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
-                      <Icon className="h-3 w-3" />
-                      {label}
-                    </Label>
-                    {isEditing && type === "input" ? (
-                      <Input
-                        value={editedData[key] || ""}
-                        onChange={(e) =>
-                          setEditedData({
-                            ...editedData,
-                            [key]: e.target.value,
-                          })
-                        }
-                        className="h-9 rounded-lg border-gray-200 text-sm font-medium"
-                      />
-                    ) : (
-                      <p className="text-sm font-semibold text-gray-900 py-1.5">
-                        {user[key] || "—"}
-                      </p>
+                  { value: "overview", label: "Profile Info", icon: User },
+                  { value: "timeline", label: "Recent Activity", icon: Clock },
+                  { value: "sessions", label: "Devices", icon: Monitor, count: activeSessions.length },
+                  { value: "security", label: "Security Settings", icon: Lock },
+                ].map((tab) => (
+                  <button
+                    key={tab.value}
+                    onClick={() => setActiveTab(tab.value)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-200 ${
+                      activeTab === tab.value
+                        ? "bg-slate-950 text-white shadow-lg shadow-slate-900/10"
+                        : "text-slate-500 hover:text-slate-950 hover:bg-slate-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <tab.icon className="h-4 w-4" />
+                      <span>{tab.label}</span>
+                    </div>
+                    {tab.count !== undefined && tab.count > 0 && (
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                        activeTab === tab.value ? "bg-indigo-500 text-white" : "bg-slate-100 text-slate-600"
+                      }`}>
+                        {tab.count}
+                      </span>
                     )}
-                  </div>
-                ))}
-
-                <div className="space-y-2 md:col-span-2">
-                  <Label className="text-[9px] font-black uppercase tracking-widest text-gray-400 flex items-center gap-1.5">
-                    <Home className="h-3 w-3" />
-                    Address
-                  </Label>
-                  {isEditing ? (
-                    <Textarea
-                      value={editedData.address || ""}
-                      onChange={(e) =>
-                        setEditedData({
-                          ...editedData,
-                          address: e.target.value,
-                        })
-                      }
-                      className="rounded-xl border-gray-200 text-sm font-semibold resize-none"
-                      rows={2}
-                    />
-                  ) : (
-                    <p className="text-sm font-bold text-gray-900 py-1.5">
-                      {user.address || "—"}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* ── Sessions Tab ─────────────────────────────────────── */}
-          <TabsContent value="sessions" className="space-y-6">
-            <div className="bg-white border border-gray-200 rounded-lg p-5 flex items-center justify-between">
-              <div>
-                <h3 className="text-gray-900 font-bold text-sm">
-                  Active Sessions
-                </h3>
-                <p className="text-gray-400 text-xs mt-0.5">
-                  Manage your active login sessions across devices
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => refetchSessions()}
-                  className="h-8 px-3 rounded-lg text-xs font-medium"
-                >
-                  <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-                  Refresh
-                </Button>
-                {activeSessions.length > 1 && (
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={handleTerminateAll}
-                    disabled={terminateAllSessions.isPending}
-                    className="h-8 px-3 rounded-lg text-xs font-medium bg-red-600 hover:bg-red-700"
-                  >
-                    Sign Out Others
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {sessionsLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="bg-white border border-gray-100 rounded-2xl p-5 animate-pulse"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="h-11 w-11 rounded-2xl bg-gray-100" />
-                      <div className="space-y-2 flex-1">
-                        <div className="h-3.5 bg-gray-100 rounded-full w-1/3" />
-                        <div className="h-2.5 bg-gray-100 rounded-full w-1/2" />
-                      </div>
-                    </div>
-                  </div>
+                  </button>
                 ))}
               </div>
-            ) : sessions.length === 0 ? (
-              <div className="bg-white border border-gray-100 rounded-2xl p-16 text-center">
-                <div className="h-14 w-14 rounded-2xl bg-gray-50 flex items-center justify-center mx-auto mb-4">
-                  <Activity className="h-7 w-7 text-gray-300" />
-                </div>
-                <p className="text-sm font-black text-gray-900 uppercase">
-                  No Sessions
-                </p>
-                <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">
-                  Nothing to show
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Active */}
-                {activeSessions.length > 0 && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-4 w-1 bg-emerald-500 rounded-full" />
-                      <h3 className="text-[10px] font-black text-gray-900 uppercase tracking-widest">
-                        Active Sessions
-                      </h3>
-                      <Badge className="bg-emerald-100 text-emerald-700 border-none text-[8px] font-black rounded-full">
-                        {activeSessions.length}
-                      </Badge>
-                    </div>
-                    {activeSessions.map((session) => (
-                      <SessionCard
-                        key={session.id}
-                        session={session}
-                        isCurrent={session.isCurrent}
-                        onTerminate={handleTerminateSession}
-                        isPending={terminateSession.isPending}
-                      />
-                    ))}
-                  </div>
-                )}
+              <Separator className="my-4" />
+              <button
+                onClick={() => setShowLogoutConfirm(true)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider text-rose-500 hover:bg-rose-50/50 hover:text-rose-600 transition-all"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            </Card>
+          </div>
 
-                {/* Inactive */}
-                {inactiveSessions.length > 0 && (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="h-4 w-1 bg-gray-300 rounded-full" />
-                      <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                        Past Sessions
-                      </h3>
-                      <Badge
-                        variant="outline"
-                        className="text-gray-400 text-[8px] font-black rounded-full"
-                      >
-                        {inactiveSessions.length}
-                      </Badge>
-                    </div>
-                    {inactiveSessions.slice(0, 8).map((session) => {
-                      const DeviceIcon = getDeviceIcon(session.device);
-                      return (
-                        <div
-                          key={session.id}
-                          className="bg-white border border-gray-100 rounded-2xl p-4 opacity-60 hover:opacity-100 transition-opacity"
-                        >
-                          <div className="flex items-center gap-4">
-                            <div className="h-9 w-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400">
-                              <DeviceIcon className="h-4 w-4" />
+          {/* Workspace Views */}
+          <div className="lg:col-span-9 space-y-6">
+            
+            {/* Overview / Personal Info & Scope */}
+            {activeTab === "overview" && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <Card className="border border-slate-100 dark:border-border rounded-2xl shadow-sm bg-white dark:bg-card">
+                  <CardHeader className="p-6 pb-2">
+                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-900 dark:text-foreground flex items-center gap-2">
+                      <User className="h-4.5 w-4.5 text-indigo-600" /> Personal Details
+                    </CardTitle>
+                    <CardDescription className="text-xs">Your system contact details and information.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {[
+                        { label: "Full Name", key: "name", type: "input", icon: User },
+                        { label: "Email Address", key: "email", type: "readonly", icon: Mail },
+                        { label: "Phone Number", key: "phone", type: "input", icon: Phone },
+                        { label: "CNIC / ID Number", key: "cnic", type: "input", icon: IdCard },
+                        { label: "City", key: "city", type: "input", icon: MapPin },
+                        { label: "System Role", key: "role", type: "readonly", icon: Shield },
+                      ].map((field) => (
+                        <div key={field.key} className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                            <field.icon className="h-3.5 w-3.5" /> {field.label}
+                          </Label>
+                          {isEditing && field.type === "input" ? (
+                            <Input
+                              value={editedData[field.key] || ""}
+                              onChange={(e) =>
+                                setEditedData({ ...editedData, [field.key]: e.target.value })
+                              }
+                              className="h-11 rounded-xl border-slate-200 dark:border-border text-sm font-medium focus:ring-slate-900 bg-slate-50/50"
+                            />
+                          ) : (
+                            <div className="h-11 flex items-center px-4 rounded-xl border border-transparent bg-slate-50/50 dark:bg-muted/5 text-sm font-bold text-slate-950 dark:text-foreground">
+                              {user[field.key] || "—"}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[11px] font-black text-gray-600 uppercase truncate">
-                                {getDeviceLabel(session.device)}
-                              </p>
-                              <div className="flex items-center gap-3 text-[9px] font-black text-gray-400 uppercase tracking-widest mt-0.5">
-                                <span>{session.ipAddress || "Unknown"}</span>
-                                <span>·</span>
-                                <span>
-                                  {session.lastActive
-                                    ? formatDistanceToNow(
-                                        new Date(session.lastActive),
-                                        { addSuffix: true },
-                                      )
-                                    : "Unknown"}
-                                </span>
-                              </div>
-                            </div>
-                            <Badge
-                              variant="outline"
-                              className="text-[8px] font-black text-gray-400 rounded-full shrink-0"
-                            >
-                              Expired
-                            </Badge>
-                          </div>
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                        <Building2 className="h-3.5 w-3.5" /> Address
+                      </Label>
+                      {isEditing ? (
+                        <Textarea
+                          value={editedData.address || ""}
+                          onChange={(e) =>
+                            setEditedData({ ...editedData, address: e.target.value })
+                          }
+                          className="rounded-xl border-slate-200 dark:border-border text-sm font-medium bg-slate-50/50"
+                          rows={3}
+                        />
+                      ) : (
+                        <div className="p-4 rounded-xl border border-transparent bg-slate-50/50 dark:bg-muted/5 text-sm font-bold text-slate-950 dark:text-foreground leading-relaxed">
+                          {user.address || "—"}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Access Permissions Matrix */}
+                <Card className="border border-slate-100 dark:border-border rounded-2xl shadow-sm bg-white dark:bg-card overflow-hidden">
+                  <CardHeader className="p-6 pb-2">
+                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-900 dark:text-foreground flex items-center gap-2">
+                      <ShieldCheck className="h-4.5 w-4.5 text-emerald-600" /> Access Permissions
+                    </CardTitle>
+                    <CardDescription className="text-xs">Modules you have permission to manage in this system.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {adminPermissions.map((perm, i) => {
+                        const hasAccess = user[perm.key] === true;
+                        return (
+                          <div
+                            key={i}
+                            className={`p-4 rounded-xl border flex items-start gap-4 transition-all ${
+                              hasAccess
+                                ? "bg-emerald-500/5 border-emerald-100 dark:border-emerald-900/30"
+                                : "bg-slate-50 border-slate-100 dark:bg-muted/5 dark:border-border"
+                            }`}
+                          >
+                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
+                              hasAccess ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-400"
+                            }`}>
+                              {hasAccess ? <Check className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                            </div>
+                            <div className="space-y-0.5">
+                              <p className="text-xs font-bold text-slate-900 dark:text-foreground">{perm.label}</p>
+                              <p className="text-[10px] text-slate-400 dark:text-muted-foreground leading-relaxed">{perm.desc}</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Managed Hostels Grid */}
+                {user.managedHostels && user.managedHostels.length > 0 && (
+                  <Card className="border border-slate-100 dark:border-border rounded-2xl shadow-sm bg-white dark:bg-card">
+                    <CardHeader className="p-6 pb-2">
+                      <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-900 dark:text-foreground flex items-center gap-2">
+                        <Building2 className="h-4.5 w-4.5 text-indigo-600" /> Managed Hostels
+                      </CardTitle>
+                      <CardDescription className="text-xs">Residential properties under your control.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {user.managedHostels.map((hostel) => (
+                          <div
+                            key={hostel.id}
+                            className="p-5 rounded-2xl border border-slate-100 dark:border-border bg-slate-50/50 dark:bg-muted/5 flex flex-col justify-between"
+                          >
+                            <div>
+                              <div className="flex items-start justify-between">
+                                <h4 className="text-sm font-bold text-slate-900 dark:text-foreground uppercase">{hostel.name}</h4>
+                                <Badge className="bg-slate-950 text-white text-[9px] uppercase tracking-wider px-2 py-0.5">{hostel.type}</Badge>
+                              </div>
+                              <p className="text-[11px] text-slate-400 dark:text-muted-foreground mt-2 flex items-center gap-1">
+                                <MapPin className="h-3.5 w-3.5 shrink-0" /> {hostel.address}, {hostel.city}
+                              </p>
+                              <p className="text-[11px] text-slate-400 dark:text-muted-foreground mt-1 flex items-center gap-1">
+                                <Phone className="h-3.5 w-3.5 shrink-0" /> {hostel.phone || "—"}
+                              </p>
+                            </div>
+                            <Separator className="my-3" />
+                            <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-muted-foreground uppercase font-black tracking-wider">
+                              <span>Floors: {hostel.floors}</span>
+                              <span className="flex items-center gap-0.5 text-indigo-600">
+                                View <ArrowUpRight className="h-3.5 w-3.5" />
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             )}
-          </TabsContent>
 
-          <TabsContent value="security" className="space-y-6">
-            <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-              <div className="px-5 py-3 border-b border-gray-100 bg-gray-50/50">
-                <h2 className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                  Account Security
-                </h2>
-              </div>
-              <div className="divide-y divide-gray-100">
-                <Dialog
-                  open={showPasswordDialog}
-                  onOpenChange={setShowPasswordDialog}
-                >
-                  <DialogTrigger asChild>
-                    <button className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors group">
-                      <div className="flex items-center gap-4">
-                        <div className="h-9 w-9 rounded-lg bg-amber-50 flex items-center justify-center border border-amber-100">
-                          <Key className="h-4 w-4 text-amber-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">
-                            Update Password
-                          </p>
-                          <p className="text-[11px] text-gray-400 mt-0.5">
-                            Last changed: Never
-                          </p>
-                        </div>
+            {/* Timeline */}
+            {activeTab === "timeline" && (
+              <Card className="border border-slate-100 dark:border-border rounded-2xl shadow-sm bg-white dark:bg-card animate-in fade-in duration-300">
+                <CardHeader className="p-6 pb-2">
+                  <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-900 dark:text-foreground flex items-center gap-2">
+                    <Clock className="h-4.5 w-4.5 text-indigo-600" /> Recent Activity
+                  </CardTitle>
+                  <CardDescription className="text-xs">A log of recent actions done on this account.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  {timelineItems.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center mx-auto mb-4">
+                        <History className="h-6 w-6 text-slate-300" />
                       </div>
-                      <ChevronDown className="h-4 w-4 text-gray-300 group-hover:text-gray-400 -rotate-90" />
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md rounded-2xl">
-                    <DialogHeader>
-                      <DialogTitle className="flex items-center gap-2">
-                        <Key className="h-4 w-4 text-amber-600" />
-                        Change Password
-                      </DialogTitle>
-                      <DialogDescription>
-                        Keep it at least 6 characters long
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-3">
-                      <div className="relative">
-                        <Input
-                          type={showCurrentPass ? "text" : "password"}
-                          placeholder="Current password"
-                          value={passwordData.currentPassword}
-                          onChange={(e) =>
-                            setPasswordData({
-                              ...passwordData,
-                              currentPassword: e.target.value,
-                            })
-                          }
-                          className="rounded-xl pr-10"
-                        />
-                        <button
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                          onClick={() => setShowCurrentPass((v) => !v)}
-                        >
-                          {showCurrentPass ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                      <div className="relative">
-                        <Input
-                          type={showNewPass ? "text" : "password"}
-                          placeholder="New password"
-                          value={passwordData.newPassword}
-                          onChange={(e) =>
-                            setPasswordData({
-                              ...passwordData,
-                              newPassword: e.target.value,
-                            })
-                          }
-                          className="rounded-xl pr-10"
-                        />
-                        <button
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                          onClick={() => setShowNewPass((v) => !v)}
-                        >
-                          {showNewPass ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                      <Input
-                        type="password"
-                        placeholder="Confirm new password"
-                        value={passwordData.confirmPassword}
-                        onChange={(e) =>
-                          setPasswordData({
-                            ...passwordData,
-                            confirmPassword: e.target.value,
-                          })
-                        }
-                        className="rounded-xl"
-                      />
-                      {passwordData.newPassword &&
-                        passwordData.confirmPassword &&
-                        passwordData.newPassword !==
-                          passwordData.confirmPassword && (
-                          <p className="text-[11px] text-rose-500 flex items-center gap-1">
-                            <AlertTriangle className="h-3.5 w-3.5" /> Passwords
-                            do not match
-                          </p>
-                        )}
+                      <p className="text-sm font-bold text-slate-900 dark:text-foreground">No recent actions</p>
                     </div>
-                    <DialogFooter>
-                      <Button
-                        onClick={handlePasswordChange}
-                        disabled={changingPass}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
-                      >
-                        {changingPass ? "Updating…" : "Update Password"}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-
-                <Separator className="mx-4" />
-
-                {/* Change Email */}
-                <Dialog
-                  open={showEmailDialog}
-                  onOpenChange={(open) => {
-                    setShowEmailDialog(open);
-                    if (!open) {
-                      setShowOtpInput(false);
-                      setOtp("");
-                      setNewEmail("");
-                    }
-                  }}
-                >
-                  <DialogTrigger asChild>
-                    <button className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors group">
-                      <div className="flex items-center gap-4">
-                        <div className="h-9 w-9 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100">
-                          <MailCheck className="h-4 w-4 text-blue-600" />
+                  ) : (
+                    <div className="relative pl-6 border-l border-slate-100 dark:border-border space-y-8 py-3 ml-3">
+                      {timelineItems.map((item, i) => (
+                        <div key={i} className="relative">
+                          <div className={`absolute -left-[37px] top-0 h-8.5 w-8.5 rounded-full border-4 border-white dark:border-card flex items-center justify-center shadow-sm shrink-0 ${item.color}`}>
+                            <item.icon className="h-3.5 w-3.5" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between flex-wrap gap-2">
+                              <p className="text-xs font-bold text-slate-900 dark:text-foreground">{item.title}</p>
+                              <span className="text-[10px] font-bold text-slate-450 uppercase tracking-widest">
+                                {format(item.date, "MMM dd, yyyy · HH:mm")}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-400 dark:text-muted-foreground leading-relaxed">{item.description}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">
-                            Change Email
-                          </p>
-                          <p className="text-[11px] text-gray-400 mt-0.5">
-                             {user.email || authUser?.email || "—"}
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronDown className="h-4 w-4 text-gray-300 group-hover:text-gray-400 -rotate-90" />
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md rounded-2xl">
-                    <DialogHeader>
-                      <DialogTitle className="flex items-center gap-2">
-                        <MailCheck className="h-4 w-4 text-blue-600" />
-                        Change Email
-                      </DialogTitle>
-                      <DialogDescription>
-                        {!showOtpInput
-                          ? "Enter your new email address"
-                          : `Enter the code sent to ${newEmail}`}
-                      </DialogDescription>
-                    </DialogHeader>
-                    {!showOtpInput ? (
-                      <div className="space-y-3">
-                        <Input
-                          type="email"
-                          value={newEmail}
-                          onChange={(e) => setNewEmail(e.target.value)}
-                          placeholder="New email address"
-                          className="rounded-xl"
-                        />
-                        <Button
-                          onClick={handleSendOtp}
-                          disabled={emailChangeLoading}
-                          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
-                        >
-                          {emailChangeLoading
-                            ? "Sending…"
-                            : "Send Verification Code"}
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <Input
-                          value={otp}
-                          onChange={(e) => setOtp(e.target.value)}
-                          placeholder="6-digit verification code"
-                          className="rounded-xl text-center text-lg font-bold tracking-widest"
-                          maxLength={6}
-                        />
-                        <Button
-                          onClick={handleVerifyOtp}
-                          disabled={emailChangeLoading}
-                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl"
-                        >
-                          {emailChangeLoading
-                            ? "Verifying…"
-                            : "Verify & Update Email"}
-                        </Button>
-                        <button
-                          className="w-full text-[11px] text-gray-400 hover:text-gray-600 font-semibold"
-                          onClick={() => setShowOtpInput(false)}
-                        >
-                          ← Back
-                        </button>
-                      </div>
-                    )}
-                  </DialogContent>
-                </Dialog>
-
-                <Separator className="mx-4" />
-
-                {/* Two-Factor Authentication */}
-                <div className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors group">
-                  <div className="flex items-center gap-4">
-                    <div className="h-9 w-9 rounded-lg bg-indigo-50 flex items-center justify-center border border-indigo-100">
-                      <Shield className="h-4 w-4 text-indigo-600" />
+                      ))}
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Sessions / Devices */}
+            {activeTab === "sessions" && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <Card className="border border-slate-100 dark:border-border rounded-2xl shadow-sm bg-white dark:bg-card">
+                  <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div>
-                      <p className="text-sm font-bold text-gray-900">
-                        2-Step Verification (2FA)
-                      </p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">
-                        {user.twoFactorEnabled ? "Active (using Authenticator App)" : "Off (highly recommended for admins)"}
-                      </p>
+                      <h3 className="text-slate-900 dark:text-foreground font-bold text-sm">Logged-in Devices</h3>
+                      <p className="text-slate-400 text-xs mt-0.5">Manage the devices currently logged into your account.</p>
+                    </div>
+                    <div className="flex items-center gap-2 w-full md:w-auto">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => refetchSessions()}
+                        className="h-9 px-4 rounded-xl text-xs font-medium bg-white dark:bg-card"
+                      >
+                        <RefreshCw className="h-3.5 w-3.5 mr-2" /> Refresh
+                      </Button>
+                      {activeSessions.length > 1 && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={handleTerminateAll}
+                          disabled={terminateAllSessions.isPending}
+                          className="h-9 px-4 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white uppercase tracking-wider"
+                        >
+                          Sign Out Others
+                        </Button>
+                      )}
                     </div>
                   </div>
-                  {user.twoFactorEnabled ? (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 px-3 rounded-lg text-xs font-medium border-red-200 text-red-600 hover:bg-red-50"
-                        >
-                          Disable
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="rounded-xl max-w-sm">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Disable 2-Step Verification?</AlertDialogTitle>
-                          <AlertDialogDescription className="text-xs">
-                            This will make your account less secure. Are you sure you want to turn it off?
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="rounded-lg text-xs">Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={handleDisable2FA}
-                            className="bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs"
+                </Card>
+
+                <div className="space-y-4">
+                  {/* Active list */}
+                  {activeSessions.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-3 w-1 bg-emerald-500 rounded-full" />
+                        <h4 className="text-[10px] font-black text-slate-955 dark:text-foreground uppercase tracking-wider">Active Device</h4>
+                      </div>
+                      {activeSessions.map((session) => {
+                        const DeviceIcon = getDeviceIcon(session.device);
+                        return (
+                          <div
+                            key={session.id}
+                            className={`p-5 rounded-2xl border bg-white dark:bg-card shadow-sm transition-all ${
+                              session.isCurrent
+                                ? "border-indigo-100 bg-indigo-50/10 dark:border-indigo-950/30"
+                                : "border-slate-100 dark:border-border"
+                            }`}
                           >
-                            Disable
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  ) : (
-                    <Button
-                      onClick={handleEnable2FAInit}
-                      size="sm"
-                      className="h-8 px-3 rounded-lg text-xs font-medium bg-indigo-600 text-white hover:bg-indigo-700"
-                    >
-                      Enable
-                    </Button>
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex items-start gap-4">
+                                <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                                  session.isCurrent ? "bg-indigo-650 text-white border-indigo-500" : "bg-slate-100 text-slate-400 border-slate-200"
+                                }`}>
+                                  <DeviceIcon className="h-5 w-5" />
+                                </div>
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-xs font-bold text-slate-900 dark:text-foreground">
+                                      {getDeviceLabel(session.device)}
+                                    </span>
+                                    {session.isCurrent && (
+                                      <Badge className="bg-indigo-600 hover:bg-indigo-600 text-white border-none text-[8px] font-bold rounded-full px-2">
+                                        This Device
+                                      </Badge>
+                                    )}
+                                    <span className="flex items-center gap-1">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                      <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">LIVE</span>
+                                    </span>
+                                  </div>
+                                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-slate-400 dark:text-muted-foreground font-medium">
+                                    <span className="flex items-center gap-1"><Globe className="h-3.5 w-3.5 text-slate-300" /> {session.ipAddress || "—"}</span>
+                                    <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5 text-slate-300" /> Active: Just Now</span>
+                                  </div>
+                                </div>
+                              </div>
+                              {!session.isCurrent && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 text-[10px] font-bold uppercase tracking-wider"
+                                  onClick={() => handleTerminateSession(session.id)}
+                                  disabled={terminateSession.isPending}
+                                >
+                                  Sign Out Device
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Inactive Sessions */}
+                  {inactiveSessions.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-3 w-1 bg-slate-300 rounded-full" />
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Previous Devices</h4>
+                      </div>
+                      {inactiveSessions.slice(0, 5).map((session) => {
+                        const DeviceIcon = getDeviceIcon(session.device);
+                        return (
+                          <div
+                            key={session.id}
+                            className="bg-white dark:bg-card border border-slate-100 dark:border-border rounded-2xl p-4 opacity-70 hover:opacity-100 transition-all shadow-sm"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="h-9 w-9 rounded-lg bg-slate-50 border border-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                                  <DeviceIcon className="h-4.5 w-4.5" />
+                                </div>
+                                <div>
+                                  <p className="text-xs font-bold text-slate-700 dark:text-foreground">
+                                    {getDeviceLabel(session.device)}
+                                  </p>
+                                  <div className="flex items-center gap-3 text-[10px] text-slate-400 mt-0.5 flex-wrap">
+                                    <span>IP: {session.ipAddress || "—"}</span>
+                                    <span>·</span>
+                                    <span>
+                                      {session.lastActive
+                                        ? formatDistanceToNow(new Date(session.lastActive), { addSuffix: true })
+                                        : "—"}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className="text-[8px] font-black text-slate-450 rounded-full uppercase tracking-widest shrink-0">Expired</Badge>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
+              </div>
+            )}
 
-                <Dialog
-                  open={show2FADialog}
-                  onOpenChange={(open) => {
-                    setShow2FADialog(open);
-                    if (!open) setTwoFactorOtp("");
-                  }}
-                >
-                  <DialogContent className="max-w-md rounded-2xl">
-                    <DialogHeader>
-                      <DialogTitle className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-indigo-600" />
-                        Setup 2-Step Verification
-                      </DialogTitle>
-                      <DialogDescription className="text-xs">
-                        Scan this QR code with your authenticator app (like Google Authenticator) and enter the 6-digit code to complete setup.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 flex flex-col items-center py-2">
-                      {qrCodeUrl && (
-                        <div className="p-2 bg-white border border-gray-100 rounded-xl">
-                          <img src={qrCodeUrl} alt="2FA QR Code" className="w-44 h-44" />
+            {/* Security tab */}
+            {activeTab === "security" && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <Card className="border border-slate-100 dark:border-border rounded-2xl shadow-sm bg-white dark:bg-card overflow-hidden">
+                  <CardHeader className="p-6 pb-2">
+                    <CardTitle className="text-sm font-bold uppercase tracking-widest text-gray-900 dark:text-foreground flex items-center gap-2">
+                      <Lock className="h-4.5 w-4.5 text-indigo-600" /> Security Settings
+                    </CardTitle>
+                    <CardDescription className="text-xs">Manage passwords, email verification, and two-factor authentication.</CardDescription>
+                  </CardHeader>
+                  <div className="divide-y divide-slate-100 dark:divide-border">
+                    
+                    {/* Password change panel */}
+                    <div className="p-6 flex items-center justify-between gap-6 hover:bg-slate-50/50 dark:hover:bg-muted/5 transition-colors">
+                      <div className="flex items-start gap-4">
+                        <div className="h-10 w-10 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 flex items-center justify-center text-amber-600 shrink-0">
+                          <Key className="h-5 w-5" />
                         </div>
-                      )}
-                      <div className="w-full text-center">
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Secret Key</p>
-                        <p className="text-xs font-mono font-bold bg-gray-50 px-3 py-1 rounded-md mt-1 select-all break-all">{twoFactorSecret}</p>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-foreground">Update Password</p>
+                          <p className="text-xs text-slate-450 dark:text-muted-foreground mt-0.5">Regularly change your password to keep your account safe.</p>
+                        </div>
                       </div>
-                      <div className="w-full space-y-2">
-                        <Label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Verification Code</Label>
-                        <Input
-                          value={twoFactorOtp}
-                          onChange={(e) => setTwoFactorOtp(e.target.value)}
-                          placeholder="6-digit code"
-                          className="rounded-xl text-center text-lg font-bold tracking-widest h-12"
-                          maxLength={6}
-                        />
-                        <Button
-                          onClick={handleVerify2FA}
-                          disabled={verifying2FA}
-                          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11 text-xs font-semibold"
-                        >
-                          {verifying2FA ? "Verifying..." : "Verify and Enable"}
-                        </Button>
+                      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline" className="h-9 rounded-xl text-xs font-bold uppercase tracking-wider bg-white dark:bg-card">Change Password</Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md rounded-2xl">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 font-bold uppercase tracking-wider">
+                              <Key className="h-4.5 w-4.5 text-amber-600" /> Change Password
+                            </DialogTitle>
+                            <DialogDescription>Enter your new password below (at least 6 characters).</DialogDescription>
+                          </DialogHeader>
+                          
+                          <div className="space-y-4 py-3">
+                            <div className="relative">
+                              <Input
+                                type={showCurrentPass ? "text" : "password"}
+                                placeholder="Current Password"
+                                value={passwordData.currentPassword}
+                                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                                className="rounded-xl h-11 pr-10"
+                              />
+                              <button
+                                type="button"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-450"
+                                onClick={() => setShowCurrentPass(!showCurrentPass)}
+                              >
+                                {showCurrentPass ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                              </button>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="relative">
+                                <Input
+                                  type={showNewPass ? "text" : "password"}
+                                  placeholder="New Password"
+                                  value={passwordData.newPassword}
+                                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                                  className="rounded-xl h-11 pr-10"
+                                />
+                                <button
+                                  type="button"
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-455"
+                                  onClick={() => setShowNewPass(!showNewPass)}
+                                >
+                                  {showNewPass ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                                </button>
+                              </div>
+
+                              {/* Strength bar */}
+                              {passwordData.newPassword && (
+                                <div className="space-y-1">
+                                  <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider">
+                                    <span className="text-slate-400">Strength:</span>
+                                    <span className={passwordStrength.color.replace("bg-", "text-")}>{passwordStrength.label}</span>
+                                  </div>
+                                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                    <div className={`h-full ${passwordStrength.color} transition-all duration-300`} style={{ width: `${passwordStrength.score}%` }} />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            <Input
+                              type="password"
+                              placeholder="Confirm Password"
+                              value={passwordData.confirmPassword}
+                              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                              className="rounded-xl h-11"
+                            />
+
+                            {passwordData.newPassword && passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
+                              <p className="text-[11px] text-rose-500 font-bold flex items-center gap-1">
+                                <AlertTriangle className="h-3.5 w-3.5" /> Passwords do not match
+                              </p>
+                            )}
+
+                            <label className="flex items-center gap-2.5 cursor-pointer mt-1">
+                              <input
+                                type="checkbox"
+                                checked={passwordData.logoutAll}
+                                onChange={(e) => setPasswordData({ ...passwordData, logoutAll: e.target.checked })}
+                                className="rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                              />
+                              <span className="text-xs text-slate-450 font-bold select-none">Log out other devices</span>
+                            </label>
+                          </div>
+
+                          <DialogFooter>
+                            <Button
+                              onClick={handlePasswordChange}
+                              disabled={changingPass || (passwordData.newPassword !== passwordData.confirmPassword)}
+                              className="w-full bg-slate-950 hover:bg-slate-900 text-white rounded-xl h-11 font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95"
+                            >
+                              {changingPass ? "Updating..." : "Update Password"}
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+
+                    {/* Email configuration */}
+                    <div className="p-6 flex items-center justify-between gap-6 hover:bg-slate-50/50 dark:hover:bg-muted/5 transition-colors">
+                      <div className="flex items-start gap-4">
+                        <div className="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-950/20 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                          <MailCheck className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-foreground">Email Address</p>
+                          <p className="text-xs text-slate-450 dark:text-muted-foreground mt-0.5">Your current email address: {user.email}</p>
+                        </div>
                       </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
+                      <Dialog
+                        open={showEmailDialog}
+                        onOpenChange={(open) => {
+                          setShowEmailDialog(open);
+                          if (!open) {
+                            setShowOtpInput(false);
+                            setOtp("");
+                            setNewEmail("");
+                          }
+                        }}
+                      >
+                        <DialogTrigger asChild>
+                          <Button size="sm" variant="outline" className="h-9 rounded-xl text-xs font-bold uppercase tracking-wider bg-white dark:bg-card">Change Email</Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md rounded-2xl">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 font-bold uppercase tracking-wider">
+                              <MailCheck className="h-4.5 w-4.5 text-blue-600" /> Change Email
+                            </DialogTitle>
+                            <DialogDescription>
+                              {!showOtpInput ? "Enter your new email address below." : `Enter the code sent to ${newEmail}.`}
+                            </DialogDescription>
+                          </DialogHeader>
 
-                <Separator className="mx-4" />
-
-                {/* Sign Out All Devices */}
-                <button
-                  disabled={terminateAllSessions.isPending}
-                  onClick={handleTerminateAll}
-                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="h-9 w-9 rounded-lg bg-red-50 flex items-center justify-center border border-red-100">
-                      <PowerOff className="h-4 w-4 text-red-600" />
+                          <div className="py-2">
+                            {!showOtpInput ? (
+                              <div className="space-y-4">
+                                <Input
+                                  type="email"
+                                  value={newEmail}
+                                  onChange={(e) => setNewEmail(e.target.value)}
+                                  placeholder="New Email Address"
+                                  className="rounded-xl h-11 text-center font-bold"
+                                />
+                                <Button
+                                  onClick={handleSendOtp}
+                                  disabled={emailChangeLoading}
+                                  className="w-full bg-slate-950 hover:bg-slate-900 text-white rounded-xl h-11 font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95"
+                                >
+                                  {emailChangeLoading ? "Sending..." : "Send Code"}
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="space-y-4">
+                                <Input
+                                  value={otp}
+                                  onChange={(e) => setOtp(e.target.value)}
+                                  placeholder="000000"
+                                  className="rounded-xl text-center text-xl font-black tracking-[0.4em] h-12"
+                                  maxLength={6}
+                                />
+                                <Button
+                                  onClick={handleVerifyOtp}
+                                  disabled={emailChangeLoading}
+                                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-11 font-black uppercase tracking-widest text-[10px] shadow-lg active:scale-95"
+                                >
+                                  {emailChangeLoading ? "Verifying..." : "Verify & Apply"}
+                                </Button>
+                                <button
+                                  type="button"
+                                  className="w-full text-center text-[9px] text-slate-400 font-black uppercase tracking-wider hover:text-slate-650"
+                                  onClick={() => setShowOtpInput(false)}
+                                >
+                                  ← Back
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">
-                        Sign Out All Other Devices
-                      </p>
-                      <p className="text-[11px] text-gray-400 mt-0.5">
-                         Logout from every browser except this one
-                      </p>
+
+                    {/* Two-step verification methods */}
+                    <div className="p-6 space-y-5">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-start gap-4">
+                          <div className="h-10 w-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                            <Shield className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-slate-900 dark:text-foreground">Two-Factor Authentication</p>
+                            <p className="text-xs text-slate-450 dark:text-muted-foreground mt-0.5 font-bold uppercase tracking-tight">
+                              {user.twoFactorEnabled
+                                ? `Active: ${user.twoFactorMethod === "TOTP" ? "Authenticator app" : user.twoFactorMethod === "EMAIL" ? "Email OTP" : user.twoFactorMethod === "PASSKEY" ? "Passkey" : "Backup Codes"}`
+                                : "Add an extra layer of security to your account."}
+                            </p>
+                          </div>
+                        </div>
+
+                        {user.twoFactorEnabled && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="h-9 px-4 rounded-xl text-xs font-bold border-rose-200 text-rose-600 hover:bg-rose-50/50 uppercase tracking-wider">
+                                Disable 2FA
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="rounded-2xl max-w-sm">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Disable 2FA?</AlertDialogTitle>
+                                <AlertDialogDescription className="text-xs">This will remove verification checks. Your account will be less secure.</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="rounded-xl text-xs">Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDisable2FA} className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold">Disable</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
+
+                      {/* Modular verification options grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        {[
+                          {
+                            method: "TOTP",
+                            title: "Authenticator App",
+                            desc: "Google Authenticator or Authy App",
+                            icon: Smartphone,
+                            activeColor: "border-indigo-200 bg-indigo-50/10 dark:border-indigo-950/30",
+                            iconBg: "bg-indigo-100 text-indigo-700",
+                          },
+                          {
+                            method: "EMAIL",
+                            title: "Email Code",
+                            desc: "Get verification codes sent to email",
+                            icon: MailCheck,
+                            activeColor: "border-blue-200 bg-blue-50/10 dark:border-blue-950/30",
+                            iconBg: "bg-blue-100 text-blue-700",
+                          },
+                          {
+                            method: "PASSKEY",
+                            title: "Passkey",
+                            desc: "Fingerprint or Face lock key",
+                            icon: Fingerprint,
+                            activeColor: "border-emerald-200 bg-emerald-50/10 dark:border-emerald-950/30",
+                            iconBg: "bg-emerald-100 text-emerald-700",
+                            hasCount: user.passkeyCount > 0 ? `${user.passkeyCount} active` : null,
+                          },
+                          {
+                            method: "BACKUP_CODES",
+                            title: "Backup Codes",
+                            desc: "One-time backup codes for recovery",
+                            icon: Key,
+                            activeColor: "border-amber-200 bg-amber-50/10 dark:border-amber-950/30",
+                            iconBg: "bg-amber-100 text-amber-700",
+                            hasCount: user.hasBackupCodes ? `${user.backupCodesRemaining} left` : null,
+                          },
+                        ].map((m) => {
+                          const isActive = user.twoFactorMethod === m.method;
+                          return (
+                            <div
+                              key={m.method}
+                              className={`p-4 rounded-xl border flex flex-col justify-between transition-all ${
+                                isActive ? m.activeColor : "border-slate-100 dark:border-border hover:border-slate-200"
+                              }`}
+                            >
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${m.iconBg}`}>
+                                    <m.icon className="h-4 w-4" />
+                                  </div>
+                                  {isActive && <Badge className="bg-slate-900 text-white text-[8px] font-black uppercase tracking-wider rounded">Active</Badge>}
+                                </div>
+                                <h5 className="text-xs font-bold text-slate-800 dark:text-foreground">{m.title}</h5>
+                                <p className="text-[10px] text-slate-450 mt-0.5 leading-relaxed">{m.desc}</p>
+                                {m.hasCount && <p className="text-[9px] text-indigo-500 font-bold mt-1 uppercase tracking-wider">{m.hasCount}</p>}
+                              </div>
+                              <div className="mt-3">
+                                {m.method === "PASSKEY" ? (
+                                  <Button
+                                    onClick={() => handleEnable2FAInit("PASSKEY")}
+                                    disabled={passkeyRegistering}
+                                    size="sm"
+                                    variant="outline"
+                                    className="w-full h-8 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-white dark:bg-card shadow-sm"
+                                  >
+                                    {passkeyRegistering ? "Registering..." : user.twoFactorMethod === "PASSKEY" ? "Add Key" : "Enable"}
+                                  </Button>
+                                ) : (
+                                  !isActive && (
+                                    <Button
+                                      onClick={() => handleEnable2FAInit(m.method)}
+                                      size="sm"
+                                      variant="outline"
+                                      className="w-full h-8 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-white dark:bg-card shadow-sm"
+                                    >
+                                      {user.twoFactorEnabled ? "Switch" : "Enable"}
+                                    </Button>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
-                  <ChevronDown className="h-4 w-4 text-gray-300 group-hover:text-gray-400 -rotate-90" />
-                </button>
+                </Card>
               </div>
-            </div>
+            )}
 
-            {/* Logout */}
-            <div className="bg-white border border-gray-200 rounded-lg p-5 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-bold text-gray-900">Sign Out</p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                   End your current session on this device
-                </p>
+          </div>
+        </div>
+      </main>
+
+      {/* 2FA SETUP MODALS */}
+      <Dialog open={show2FADialog} onOpenChange={(open) => { setShow2FADialog(open); if (!open) { setTwoFactorOtp(""); setBackupCodes([]); setBackupCodesSaved(false); } }}>
+        <DialogContent className="max-w-md rounded-xl bg-white dark:bg-card">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 font-bold uppercase tracking-wider text-sm">
+              <Shield className="h-4.5 w-4.5 text-indigo-600" />
+              {active2FAMethod === "TOTP" && "App Setup"}
+              {active2FAMethod === "EMAIL" && "Email Setup"}
+              {active2FAMethod === "BACKUP_CODES" && "Backup Codes"}
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              {active2FAMethod === "TOTP" && "Scan this QR code with Google Authenticator to get your login codes."}
+              {active2FAMethod === "EMAIL" && "We sent a 6-digit verification code to your email."}
+              {active2FAMethod === "BACKUP_CODES" && "Save these backup codes in a safe place. Each can be used once."}
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Authenticator App setup */}
+          {active2FAMethod === "TOTP" && (
+            <div className="space-y-4 flex flex-col items-center py-2">
+              {qrCodeUrl && (
+                <div className="p-2.5 bg-white border border-slate-100 rounded-xl shadow-sm">
+                  <img src={qrCodeUrl} alt="2FA Setup Code" className="w-40 h-40" />
+                </div>
+              )}
+              <div className="w-full text-center">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Secret Key</p>
+                <p className="text-xs font-mono font-bold bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-lg mt-1 select-all break-all">{twoFactorSecret}</p>
               </div>
-              <AlertDialog
-                open={showLogoutConfirm}
-                onOpenChange={setShowLogoutConfirm}
-              >
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="h-9 px-4 rounded-lg border-gray-200 text-red-600 hover:bg-red-50 hover:border-red-100 text-xs font-medium"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Logout
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-xl max-w-sm">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="flex items-center gap-2">
-                       Logout of your account?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-xs">
-                      You will be redirected to the login page.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="rounded-lg text-xs">
-                      Cancel
-                    </AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleLogout}
-                      disabled={loggingOut}
-                      className="bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs"
-                    >
-                      {loggingOut ? "Signing out…" : "Logout Now"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <div className="w-full space-y-2">
+                <Label className="text-[10px] font-bold text-slate-450 uppercase tracking-widest ml-1">Enter Code</Label>
+                <Input value={twoFactorOtp} onChange={(e) => setTwoFactorOtp(e.target.value)} placeholder="000000" className="rounded-lg text-center text-base font-bold tracking-[0.2em] h-11" maxLength={6} />
+                <Button onClick={handleVerify2FA} disabled={verifying2FA} className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg h-10 text-xs font-bold uppercase tracking-wider">
+                  {verifying2FA ? "Verifying..." : "Verify & Enable"}
+                </Button>
+              </div>
             </div>
-          </TabsContent>
-        </Tabs>
-      </div>
+          )}
+
+          {/* Email OTP Verification */}
+          {active2FAMethod === "EMAIL" && (
+            <div className="space-y-3 py-2">
+              <div className="bg-blue-50/50 dark:bg-blue-950/10 border border-blue-100/50 rounded-xl p-4 text-center">
+                <MailCheck className="h-7 w-7 text-blue-500 mx-auto mb-1.5" />
+                <p className="text-xs font-bold text-slate-800 dark:text-foreground">Code sent to your email</p>
+                <p className="text-[10px] text-slate-450 font-bold uppercase mt-0.5">Enter the 6-digit code sent to your inbox.</p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-bold text-slate-450 uppercase tracking-widest ml-1">Enter Code</Label>
+                <Input value={twoFactorOtp} onChange={(e) => setTwoFactorOtp(e.target.value)} placeholder="000000" className="rounded-lg text-center text-base font-bold tracking-[0.2em] h-11" maxLength={6} />
+                <Button onClick={handleVerify2FA} disabled={verifying2FA} className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-lg h-10 text-xs font-bold uppercase tracking-wider">
+                  {verifying2FA ? "Checking..." : "Verify & Enable"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Backup codes panel */}
+          {active2FAMethod === "BACKUP_CODES" && (
+            <div className="space-y-4 py-2">
+              <div className="bg-amber-50/50 dark:bg-amber-950/10 border border-amber-100/50 rounded-xl p-3.5">
+                <div className="grid grid-cols-2 gap-2">
+                  {backupCodes.map((code, i) => (
+                    <div key={i} className="bg-white dark:bg-card border border-amber-200/50 rounded-lg px-2.5 py-1.5 text-center font-mono text-xs font-bold text-slate-800 dark:text-foreground select-all shadow-sm">
+                      {code}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5 p-3.5 bg-rose-50 dark:bg-rose-950/10 border border-rose-100/50 rounded-xl">
+                <AlertTriangle className="h-4.5 w-4.5 text-rose-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-rose-700 dark:text-rose-350 font-bold leading-relaxed">Save these codes. You will not be able to see them again.</p>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={backupCodesSaved} onChange={(e) => setBackupCodesSaved(e.target.checked)} className="rounded border-slate-355 text-slate-900 focus:ring-slate-900" />
+                <span className="text-xs text-slate-700 font-semibold select-none">I have saved these backup codes.</span>
+              </label>
+              <Button onClick={handleVerify2FA} disabled={verifying2FA || !backupCodesSaved} className="w-full bg-slate-950 hover:bg-slate-800 text-white rounded-lg h-10 text-xs font-bold uppercase tracking-wider">
+                {verifying2FA ? "Activating..." : "Confirm & Enable"}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* LOGOUT CONFIRM DIALOG */}
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogContent className="rounded-xl max-w-sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-sm font-bold uppercase tracking-widest text-slate-900">Logout?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs">
+              You will be redirected back to the login page.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-lg text-xs font-semibold">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLogout}
+              disabled={loggingOut}
+              className="bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold uppercase tracking-wider"
+            >
+              {loggingOut ? "Signing Out..." : "Sign Out"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 };
 
-export default ProfilePage;
+export default AdminProfilePage;

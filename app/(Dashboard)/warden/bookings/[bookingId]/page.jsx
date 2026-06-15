@@ -153,7 +153,7 @@ const BookingDetailsPage = () => {
 
   const totalPaid =
     booking.Payment?.filter((p) => p.status === "PAID").reduce(
-      (acc, curr) => acc + curr.amount,
+      (acc, curr) => acc + Number(curr.amount || 0),
       0,
     ) || 0;
   // totalAmount already includes securityDeposit + advance rent — do NOT add securityDeposit again

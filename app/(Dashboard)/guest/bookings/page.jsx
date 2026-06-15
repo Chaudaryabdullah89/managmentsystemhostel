@@ -76,7 +76,7 @@ const BookingDetailCard = ({ booking }) => {
     const [isExpanded, setIsExpanded] = useState(false);
 
     const financialData = useMemo(() => {
-        const totalPaid = booking.Payment?.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + curr.amount, 0) || 0;
+        const totalPaid = booking.Payment?.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + Number(curr.amount || 0), 0) || 0;
         // totalAmount in DB already stores monthlyRent + securityDeposit — do NOT add securityDeposit again
         const totalDue = booking.totalAmount || 0;
         const balance = Math.max(0, totalDue - totalPaid);
@@ -349,7 +349,7 @@ const GuestBookings = () => {
     }
 
     const activeCount = bookings?.filter(b => b.status === 'Active' || b.status === 'CHECKED_IN').length || 0;
-    const totalPayments = bookings?.reduce((acc, b) => acc + (b.Payment?.filter(p => p.status === 'PAID').reduce((s, p) => s + p.amount, 0) || 0), 0) || 0;
+    const totalPayments = bookings?.reduce((acc, b) => acc + (b.Payment?.filter(p => p.status === 'PAID').reduce((s, p) => s + Number(p.amount || 0), 0) || 0), 0) || 0;
 
     return (
         <div className="min-h-screen bg-slate-50/50 pb-20 font-sans print:hidden">

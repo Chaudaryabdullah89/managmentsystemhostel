@@ -153,17 +153,17 @@ const BookingDetailsPage = () => {
   );
 
   const totalPayable = activePayments.reduce(
-    (acc, curr) => acc + (curr.amount || 0),
+    (acc, curr) => acc + Number(curr.amount || 0),
     0,
   );
   const totalPaid = activePayments
     .filter((p) => p.status === "PAID")
-    .reduce((acc, curr) => acc + (curr.amount || 0), 0);
+    .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
 
   // Outstanding balance = what is still pending / partially paid
   const balance = activePayments
     .filter((p) => p.status === "PENDING" || p.status === "PARTIAL" || p.status === "OVERDUE")
-    .reduce((acc, curr) => acc + (curr.amount || 0), 0);
+    .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
 
   const paymentProgress =
     totalPayable > 0 ? Math.min(100, ((totalPaid / totalPayable) * 100)).toFixed(0) : 0;

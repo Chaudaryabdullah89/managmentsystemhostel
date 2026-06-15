@@ -36,6 +36,8 @@ export async function GET(req, { params }) {
                 hostelId: true,
                 canManageExpenses: true,
                 twoFactorEnabled: true,
+                twoFactorMethod: true,
+                backupCodes: true,
                 ResidentProfile: {
                     select: {
                         id: true,
@@ -58,6 +60,13 @@ export async function GET(req, { params }) {
                         phone: true,
                         email: true
                     }
+                },
+                webauthnCredentials: {
+                    select: {
+                        id: true,
+                        deviceName: true,
+                        createdAt: true,
+                    }
                 }
             },
         });
@@ -66,7 +75,15 @@ export async function GET(req, { params }) {
             return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        return NextResponse.json(user);
+        // Transform response — don't expose raw backup codes
+        const { backupCodes, webauthnCredentials, ...rest } = user;
+        return NextResponse.json({
+            ...rest,
+            hasBackupCodes: backupCodes.length > 0,
+            backupCodesRemaining: backupCodes.length,
+            passkeys: webauthnCredentials,
+            passkeyCount: webauthnCredentials.length,
+        });
     } catch (err) {
         console.error("Error fetching user:", err);
         return NextResponse.json({ error: "Internal server error" });

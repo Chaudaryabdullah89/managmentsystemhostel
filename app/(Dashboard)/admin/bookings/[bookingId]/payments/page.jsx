@@ -149,11 +149,11 @@ const PaymentHistoryPage = () => {
     const payments = booking.Payment || [];
     const voidedStatuses = ["REJECTED", "FAILED", "REFUNDED"];
     const activePayments = payments.filter((p) => !voidedStatuses.includes(p.status));
-    const totalContractValue = activePayments.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-    const totalPaid = activePayments.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + (curr.amount || 0), 0);
+    const totalContractValue = activePayments.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+    const totalPaid = activePayments.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
     const outstanding = activePayments
         .filter(p => p.status === 'PENDING' || p.status === 'PARTIAL' || p.status === 'OVERDUE')
-        .reduce((acc, curr) => acc + (curr.amount || 0), 0);
+        .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
     const completionRate = totalContractValue > 0 ? Math.min(100, Math.round((totalPaid / totalContractValue) * 100)) : 0;
 
     const filteredPayments = payments.filter(p => {

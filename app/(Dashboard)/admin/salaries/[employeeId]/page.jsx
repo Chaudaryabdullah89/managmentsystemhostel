@@ -133,9 +133,9 @@ const EmployeeSalaryHistoryPage = () => {
     const stats = {
         totalPaid: unformattedSalaryHistory.filter(s => s.status === "PAID").length,
         totalPending: unformattedSalaryHistory.filter(s => s.status === "PENDING").length,
-        totalEarned: unformattedSalaryHistory.filter(s => s.status === "PAID").reduce((sum, s) => sum + s.amount, 0),
-        pendingAmount: unformattedSalaryHistory.filter(s => s.status === "PENDING").reduce((sum, s) => sum + s.amount, 0),
-        averageSalary: unformattedSalaryHistory.length ? Math.round(unformattedSalaryHistory.reduce((sum, s) => sum + s.amount, 0) / unformattedSalaryHistory.length) : 0
+        totalEarned: unformattedSalaryHistory.filter(s => s.status === "PAID").reduce((sum, s) => sum + Number(s.amount || 0), 0),
+        pendingAmount: unformattedSalaryHistory.filter(s => s.status === "PENDING").reduce((sum, s) => sum + Number(s.amount || 0), 0),
+        averageSalary: unformattedSalaryHistory.length ? Math.round(unformattedSalaryHistory.reduce((sum, s) => sum + Number(s.amount || 0), 0) / unformattedSalaryHistory.length) : 0
     };
 
     const handleMarkAsPaid = async () => {

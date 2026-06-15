@@ -252,7 +252,7 @@ const RoomsContent = () => {
                     {[
                         { label: 'Total', value: rooms.length, icon: Building2, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                         { label: 'Beds', value: rooms.reduce((acc, r) => acc + r.capacity, 0), icon: Bed, color: 'text-purple-600', bg: 'bg-purple-50' },
-                        { label: 'All Rooms Rent', value: `PKR ${rooms.reduce((acc, r) => acc + (r.monthlyrent || r.montlyrent || r.price || 0), 0).toLocaleString()}`, icon: Coins, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                        { label: 'All Rooms Rent', value: `PKR ${rooms.reduce((acc, r) => acc + Number(r.monthlyrent || r.montlyrent || r.price || 0), 0).toLocaleString()}`, icon: Coins, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                         { label: 'Status', value: 'Active', icon: ShieldCheck, color: 'text-amber-600', bg: 'bg-amber-50' },
                     ].map((stat, i) => (
                         <div key={i} className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-4 md:p-5 flex flex-col sm:flex-row items-center sm:items-center gap-2 md:gap-4 shadow-sm hover:shadow-md transition-all group text-center sm:text-left">

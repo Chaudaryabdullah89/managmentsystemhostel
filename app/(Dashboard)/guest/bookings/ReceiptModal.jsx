@@ -34,7 +34,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 
 const ReceiptModal = ({ children, booking }) => {
-    const totalPaid = booking.Payment?.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + curr.amount, 0) || 0;
+    const totalPaid = booking.Payment?.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + Number(curr.amount || 0), 0) || 0;
     const isAdvancePaid = totalPaid >= (booking.totalAmount || 0);
 
     const generateReceiptHTML = () => {

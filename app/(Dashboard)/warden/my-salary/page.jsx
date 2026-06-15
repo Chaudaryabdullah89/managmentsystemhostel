@@ -60,7 +60,7 @@ const WardenSalaryPortal = () => {
     if (isLoading) return <ListPageSkeleton />;
 
     const latest = salaries?.[0];
-    const totalEarnings = salaries?.reduce((acc, s) => acc + (s.amount || 0), 0) || 0;
+    const totalEarnings = salaries?.reduce((acc, s) => acc + Number(s.amount || 0), 0) || 0;
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-background pb-20 font-sans tracking-tight print:hidden">

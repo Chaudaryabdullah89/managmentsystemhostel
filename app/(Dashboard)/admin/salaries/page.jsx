@@ -152,9 +152,9 @@ const SalariesPage = () => {
 
     const stats = useMemo(() => {
         const data = salaries || [];
-        const total = data.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-        const paidVolume = data.filter(s => s.status === 'PAID').reduce((acc, curr) => acc + (curr.amount || 0), 0);
-        const pendingReserve = data.filter(s => s.status === 'PENDING').reduce((acc, curr) => acc + (curr.amount || 0), 0);
+        const total = data.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+        const paidVolume = data.filter(s => s.status === 'PAID').reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+        const pendingReserve = data.filter(s => s.status === 'PENDING').reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
         const appealCount = data.filter(s => s.appealStatus === 'PENDING').length;
         return { total, paidVolume, pendingReserve, count: data.length, appealCount };
     }, [salaries]);

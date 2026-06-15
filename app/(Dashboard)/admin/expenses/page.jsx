@@ -157,7 +157,7 @@ const ExpensesPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 md:gap-4">
                     {allowedCategories.map(cat => {
                         const catExpenses = expenses.filter(e => e.category === cat.key);
-                        const catTotal = catExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+                        const catTotal = catExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
                         const catCount = catExpenses.length;
                         const catPending = catExpenses.filter(e => e.status === 'PENDING').length;
 

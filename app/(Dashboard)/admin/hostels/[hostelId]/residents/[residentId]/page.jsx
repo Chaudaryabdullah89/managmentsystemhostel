@@ -363,7 +363,7 @@ const ResidentDetailPage = ({ params: paramsPromise }) => {
                                     </div>
                                     <div className="flex flex-col min-w-0">
                                         <p className="text-[8px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest truncate">Capital yield</p>
-                                        <p className="text-sm font-black text-gray-900 dark:text-foreground truncate">PKR {resident.payments?.reduce((acc, p) => acc + (p.status === 'PAID' ? p.amount : 0), 0).toLocaleString()}</p>
+                                        <p className="text-sm font-black text-gray-900 dark:text-foreground truncate">PKR {resident.payments?.reduce((acc, p) => acc + (p.status === 'PAID' ? Number(p.amount || 0) : 0), 0).toLocaleString()}</p>
                                     </div>
                                 </CardContent>
                             </Card>

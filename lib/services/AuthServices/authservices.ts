@@ -3,7 +3,8 @@ import { SignJWT } from "jose";
 import { randomUUID } from "crypto";
 import prisma from "@/lib/prisma";
 import { generateUID, generateRegNumber, UID_PREFIXES } from "@/lib/uid-generator";
-import { verify as otplibVerify } from "otplib";
+import { verifySync as otplibVerify } from "otplib";
+import { createHash } from "crypto";
 
 
 interface RegisterData {
@@ -27,6 +28,7 @@ interface AuthResponse {
     token?: string;
     tempToken?: string;
     requires2FA?: boolean;
+    twoFactorMethod?: string;
     User?: {
         id: string;
         name: string;
@@ -185,6 +187,7 @@ export default class AuthService {
                     success: true,
                     requires2FA: true,
                     tempToken,
+                    twoFactorMethod: user.twoFactorMethod || "TOTP",
                     message: "2FA verification required"
                 };
             }
@@ -251,7 +254,11 @@ export default class AuthService {
         }
     }
 
-    async login2FA(tempToken: string, otp: string, ipAddress: string, userAgent: string): Promise<AuthResponse> {
+    private hashCode(code: string): string {
+        return createHash("sha256").update(code.trim().toUpperCase()).digest("hex");
+    }
+
+    async login2FA(tempToken: string, otp: string, ipAddress: string, userAgent: string, method?: string): Promise<AuthResponse> {
         try {
             const { jwtVerify } = await import("jose");
             const { payload } = await jwtVerify(tempToken, this.JWT_SECRET);
@@ -266,14 +273,52 @@ export default class AuthService {
                 where: { id: userId }
             });
 
-            if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
-                return { success: false, message: "2FA is not properly configured for this user" };
+            if (!user || !user.twoFactorEnabled) {
+                return { success: false, message: "2FA is not configured for this user" };
             }
 
-            const isValid = otplibVerify({ token: otp, secret: user.twoFactorSecret });
+            const activeMethod = method || user.twoFactorMethod || "TOTP";
+            let isValid = false;
+
+            // ── TOTP Verification ─────────────────────────────────────
+            if (activeMethod === "TOTP") {
+                if (!user.twoFactorSecret) {
+                    return { success: false, message: "TOTP not configured" };
+                }
+                const result = await otplibVerify({ token: otp, secret: user.twoFactorSecret });
+                isValid = result.valid;
+            }
+            // ── Email OTP Verification ────────────────────────────────
+            else if (activeMethod === "EMAIL") {
+                const record = await prisma.otpVerification.findUnique({
+                    where: { id: `2fa-login-${userId}` }
+                });
+                if (!record || record.expiresAt < new Date()) {
+                    return { success: false, message: "Code expired. Please request a new one." };
+                }
+                isValid = this.hashCode(otp) === record.otp;
+                if (isValid) {
+                    await prisma.otpVerification.delete({ where: { id: `2fa-login-${userId}` } });
+                }
+            }
+            // ── Backup Code Verification ──────────────────────────────
+            else if (activeMethod === "BACKUP_CODES") {
+                const hashed = this.hashCode(otp);
+                const codeIndex = user.backupCodes.indexOf(hashed);
+                if (codeIndex >= 0) {
+                    isValid = true;
+                    // Remove used code
+                    const updatedCodes = [...user.backupCodes];
+                    updatedCodes.splice(codeIndex, 1);
+                    await prisma.user.update({
+                        where: { id: userId },
+                        data: { backupCodes: updatedCodes }
+                    });
+                }
+            }
 
             if (!isValid) {
-                return { success: false, message: "Invalid 2FA code" };
+                return { success: false, message: "Invalid verification code" };
             }
 
             await prisma.user.update({

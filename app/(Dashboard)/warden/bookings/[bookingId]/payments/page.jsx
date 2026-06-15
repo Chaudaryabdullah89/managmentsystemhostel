@@ -173,7 +173,7 @@ const PaymentHistoryPage = () => {
 
     const payments = booking.Payment || [];
     const totalContractValue = (booking.totalAmount || 0);
-    const totalPaid = payments.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + curr.amount, 0);
+    const totalPaid = payments.filter(p => p.status === 'PAID').reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
     const outstanding = Math.max(0, totalContractValue - totalPaid);
     const completionRate = totalContractValue > 0 ? Math.round((totalPaid / totalContractValue) * 100) : 0;
 

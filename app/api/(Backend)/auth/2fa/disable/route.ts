@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 import { requireAuth } from "@/lib/apiAuth";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
@@ -12,14 +12,31 @@ export async function POST(request: NextRequest) {
 
         const userId = authResult.user.id;
 
-        // Disable 2FA
+        // Clear all 2FA data
         await prisma.user.update({
             where: { id: userId },
-            data: { twoFactorEnabled: false, twoFactorSecret: null }
+            data: {
+                twoFactorEnabled: false,
+                twoFactorMethod: null,
+                twoFactorSecret: null,
+                backupCodes: [],
+            }
         });
 
+        // Remove any passkey credentials
+        await prisma.webAuthnCredential.deleteMany({
+            where: { userId }
+        });
+
+        // Clean up any pending OTP records
+        try {
+            await prisma.otpVerification.delete({ where: { id: `2fa-setup-${userId}` } });
+        } catch {
+            // Ignore if not found
+        }
+
         return successResponse({
-            message: "Two-Factor Authentication has been successfully disabled.",
+            message: "All 2-Step Verification methods have been disabled.",
         });
 
     } catch (error: any) {

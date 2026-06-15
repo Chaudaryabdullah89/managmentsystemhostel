@@ -26,6 +26,20 @@ const amenityIcons = {
     'Electricity': Zap, 'Power': Zap,
 };
 
+const parseReason = (reason) => {
+    if (reason?.startsWith("[DIRECT_TRANSFER]")) {
+        const cleaned = reason.replace("[DIRECT_TRANSFER]", "").trim();
+        return {
+            isDirect: true,
+            displayReason: cleaned || "Direct room transfer by management"
+        };
+    }
+    return {
+        isDirect: false,
+        displayReason: reason || "No reason specified"
+    };
+};
+
 const GuestRoomPage = () => {
     const router = useRouter();
     const user = useAuthStore((state) => state.user);
@@ -89,8 +103,8 @@ const GuestRoomPage = () => {
     const paidPayments = payments.filter(p => p.status === 'PAID' && p.type !== 'SECURITY_REFUND');
     // Include PARTIAL: these are partially-settled bills that still have an outstanding balance
     const pendingPayments = payments.filter(p => ['PENDING', 'OVERDUE', 'PARTIAL'].includes(p.status));
-    const totalPaid = paidPayments.reduce((s, p) => s + p.amount, 0);
-    const totalPending = pendingPayments.reduce((s, p) => s + p.amount, 0);
+    const totalPaid = paidPayments.reduce((s, p) => s + Number(p.amount || 0), 0);
+    const totalPending = pendingPayments.reduce((s, p) => s + Number(p.amount || 0), 0);
 
     const checkInDate = currentBooking?.checkIn ? new Date(currentBooking.checkIn) : null;
     const today = new Date();
@@ -442,11 +456,29 @@ const GuestRoomPage = () => {
                                                     {req.status}
                                                 </Badge>
                                             </div>
-                                            {req.reason && (
-                                                <p className="text-[10px] text-gray-500 dark:text-muted-foreground mt-2 italic bg-gray-50 dark:bg-muted/10 p-2 rounded-lg">
-                                                    Reason: {req.reason}
-                                                </p>
-                                            )}
+                                            {(() => {
+                                                const { isDirect, displayReason } = parseReason(req.reason);
+                                                return (
+                                                    <>
+                                                        <div className="flex items-center gap-1.5 mt-2">
+                                                            {isDirect ? (
+                                                                <Badge className="bg-violet-50 text-violet-600 dark:bg-violet-950/30 dark:text-violet-400 border-none text-[8px] font-bold uppercase px-2 py-0.5 rounded-md">
+                                                                    Direct Transfer
+                                                                </Badge>
+                                                            ) : (
+                                                                <Badge className="bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400 border-none text-[8px] font-bold uppercase px-2 py-0.5 rounded-md">
+                                                                    Self Requested
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                        {displayReason && (
+                                                            <p className="text-[10px] text-gray-500 dark:text-muted-foreground mt-2 italic bg-gray-50 dark:bg-muted/10 p-2 rounded-lg">
+                                                                Reason: {displayReason}
+                                                            </p>
+                                                        )}
+                                                    </>
+                                                );
+                                            })()}
                                         </div>
                                     ))
                                 ) : (

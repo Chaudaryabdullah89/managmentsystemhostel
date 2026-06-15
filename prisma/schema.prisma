@@ -319,6 +319,8 @@ model User {
   regNumber                              String?            @unique
   twoFactorSecret                        String?
   twoFactorEnabled                       Boolean            @default(false)
+  twoFactorMethod                        String?            // TOTP, EMAIL, BACKUP_CODES, PASSKEY
+  backupCodes                            String[]           // Hashed one-time backup codes
   canManageExpenses                      Boolean            @default(false)
   canManageGeneral                       Boolean            @default(false)
   canManageMaintenance                   Boolean            @default(false)
@@ -350,8 +352,23 @@ model User {
   Maintenance_userIdToUser               Maintenance[]      @relation("Maintenance_userIdToUser")
   messFeedback                           MessFeedback[]
   roomSwaps                              RoomSwapRequest[]
+  webauthnCredentials                    WebAuthnCredential[]
 
   @@index([hostelId])
+}
+
+model WebAuthnCredential {
+  id                  String   @id @default(cuid())
+  userId              String
+  credentialId        String   @unique // base64url encoded credential ID
+  publicKey           String   // base64url encoded public key
+  counter             BigInt   @default(0)
+  deviceName          String?  // e.g. "Touch ID on MacBook", "YubiKey"
+  transports          String[] // e.g. ["internal", "usb"]
+  createdAt           DateTime @default(now())
+  User                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Maintenance {

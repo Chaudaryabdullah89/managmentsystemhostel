@@ -62,6 +62,7 @@ export const NAVIGATION_GROUPS: Record<string, NavGroup[]> = {
             icon: Calendar,
             items: [
                 { title: "Bookings",     url: "/admin/bookings",   icon: Calendar,      role: "admin", permissionKey: "manage_bookings",  featureKey: "enableGuestBookings" },
+                { title: "Room Swaps",   url: "/admin/room-swaps", icon: Sparkles,      role: "admin", permissionKey: "manage_bookings" },
                 { title: "Complaints",   url: "/admin/complaints", icon: MessageSquare, role: "admin", permissionKey: "manage_complaints", featureKey: "enableComplaintsSystem" },
                 { title: "Notice Board", url: "/admin/notices",    icon: Megaphone,     role: "admin", permissionKey: "manage_notices",    featureKey: "enableNoticeBoard" },
                 { title: "Mess Menu",    url: "/admin/mess",       icon: Utensils,      role: "admin", permissionKey: "manage_mess",       featureKey: "enableMess" },
@@ -125,6 +126,7 @@ export const NAVIGATION_GROUPS: Record<string, NavGroup[]> = {
             items: [
                 { title: "Bookings",     url: "/warden/bookings",   icon: Calendar,      role: "warden", permissionKey: "view_bookings" },
                 { title: "Residents",    url: "/warden/residents",  icon: Users,         role: "warden", permissionKey: "view_users" },
+                { title: "Room Swaps",   url: "/warden/room-swaps", icon: Sparkles,      role: "warden", permissionKey: "view_bookings" },
                 { title: "Complaints",   url: "/warden/complaints", icon: MessageSquare, role: "warden", permissionKey: "manage_complaints", featureKey: "enableComplaintsSystem" },
                 { title: "Notice Board", url: "/warden/notices",    icon: Megaphone,     role: "warden", permissionKey: "manage_notices",    featureKey: "enableNoticeBoard" },
                 { title: "Mess Menu",    url: "/warden/mess",       icon: Utensils,      role: "warden", permissionKey: "manage_mess",       featureKey: "enableMess" },

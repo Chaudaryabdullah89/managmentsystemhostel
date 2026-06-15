@@ -248,7 +248,7 @@ const GlobalBookingsPage = () => {
   ).length;
   const pendingBookings = bookings.filter((b) => b.status === "PENDING").length;
   const totalRevenue = bookings.reduce(
-    (sum, b) => sum + (b.totalAmount || 0),
+    (sum, b) => sum + Number(b.totalAmount || 0),
     0,
   );
 

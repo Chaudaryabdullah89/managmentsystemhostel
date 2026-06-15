@@ -90,14 +90,14 @@ const GuestPayments = () => {
         // Voided = REJECTED, FAILED, REFUNDED (money returned; not a real liability)
         const voidedStatuses = ['REJECTED', 'FAILED', 'REFUNDED'];
         const activePayments = payments.filter(p => !voidedStatuses.includes(p.status) && p.type !== 'SECURITY_REFUND');
-        const total = activePayments.reduce((sum, p) => sum + (p.amount || 0), 0);
-        const paid = payments.filter(p => p.status === 'PAID' && p.type !== 'SECURITY_REFUND').reduce((sum, p) => sum + (p.amount || 0), 0);
-        const refunded = payments.filter(p => p.status === 'REFUNDED' || p.type === 'SECURITY_REFUND').reduce((sum, p) => sum + (p.amount || 0), 0);
-        const pending = payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + (p.amount || 0), 0);
+        const total = activePayments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+        const paid = payments.filter(p => p.status === 'PAID' && p.type !== 'SECURITY_REFUND').reduce((sum, p) => sum + Number(p.amount || 0), 0);
+        const refunded = payments.filter(p => p.status === 'REFUNDED' || p.type === 'SECURITY_REFUND').reduce((sum, p) => sum + Number(p.amount || 0), 0);
+        const pending = payments.filter(p => p.status === 'PENDING').reduce((sum, p) => sum + Number(p.amount || 0), 0);
         // Balance = what is still owed: sum of PENDING + PARTIAL + OVERDUE records
         const balance = payments
             .filter(p => p.status === 'PENDING' || p.status === 'PARTIAL' || p.status === 'OVERDUE')
-            .reduce((sum, p) => sum + (p.amount || 0), 0);
+            .reduce((sum, p) => sum + Number(p.amount || 0), 0);
         return { total, paid, refunded, balance, pending };
     }, [activeBooking, payments]);
 

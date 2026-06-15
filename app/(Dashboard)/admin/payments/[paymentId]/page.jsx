@@ -52,6 +52,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 const PaymentApprovalDetailPage = () => {
@@ -179,82 +180,86 @@ const PaymentApprovalDetailPage = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Reject Dialog */}
-            <Dialog
-              open={isRejectDialogOpen}
-              onOpenChange={setIsRejectDialogOpen}
-            >
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="h-9 px-5 rounded-xl border-rose-100 text-rose-600 font-bold text-[9px] uppercase tracking-widest hover:bg-rose-50 transition-all bg-white dark:bg-card"
-                >
-                  <XCircle className="h-3.5 w-3.5 mr-2" />
-                  Reject
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md rounded-2xl border-none shadow-2xl p-0 overflow-hidden">
-                <div className="bg-rose-600 p-8 text-white text-center">
-                  <div className="h-14 w-14 bg-white dark:bg-card/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <XCircle className="h-7 w-7" />
+          {payment.status === "PENDING" && (
+            <div className="flex items-center gap-3">
+              {/* Reject Dialog */}
+              <Dialog
+                open={isRejectDialogOpen}
+                onOpenChange={setIsRejectDialogOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-9 px-5 rounded-xl border-rose-100 text-rose-600 font-bold text-[9px] uppercase tracking-widest hover:bg-rose-50 transition-all bg-white dark:bg-card"
+                  >
+                    <XCircle className="h-3.5 w-3.5 mr-2" />
+                    Reject
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-zinc-950 ring-1 ring-zinc-100 dark:ring-zinc-900">
+                  <div className="bg-gradient-to-br from-red-500 via-rose-600 to-rose-700 p-8 text-white text-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_60%)]" />
+                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+                    <div className="h-14 w-14 bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+                      <XCircle className="h-7 w-7 text-white stroke-[1.75]" />
+                    </div>
+                    <DialogTitle className="text-xl font-extrabold uppercase tracking-tight text-white">
+                      Reject Payment
+                    </DialogTitle>
+                    <DialogDescription className="text-[10px] text-rose-100 font-extrabold tracking-widest mt-1.5 uppercase">
+                      Provide a reason for rejection
+                    </DialogDescription>
                   </div>
-                  <h2 className="text-lg font-bold uppercase tracking-tight">
-                    Reject Payment
-                  </h2>
-                  <p className="text-[10px] text-rose-200 uppercase font-bold tracking-widest mt-1">
-                    Provide a reason for rejection
-                  </p>
-                </div>
-                <div className="p-8 bg-white dark:bg-card space-y-5">
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-muted-foreground ml-1">
-                      Rejection Reason
-                    </Label>
-                    <Textarea
-                      placeholder="Why is this payment being rejected? (Visible to resident)"
-                      className="rounded-xl border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/10 min-h-[120px] font-medium text-sm p-4 focus:ring-indigo-500 placeholder:text-gray-300 resize-none"
-                      value={rejectionReason}
-                      onChange={(e) => setRejectionReason(e.target.value)}
-                    />
+                  <div className="p-8 space-y-6">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
+                        Rejection Reason
+                      </Label>
+                      <Textarea
+                        placeholder="Why is this payment being rejected? (Visible to resident)"
+                        className="rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 p-4 font-medium text-xs min-h-[120px] focus:border-rose-500 focus:ring-1 focus:ring-rose-500/20 transition-all text-zinc-800 dark:text-zinc-200 resize-none placeholder:text-zinc-450 dark:placeholder:text-zinc-500"
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex gap-3">
+                      <Button
+                        variant="outline"
+                        className="flex-1 rounded-xl h-13 font-bold text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                        onClick={() => setIsRejectDialogOpen(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        className="flex-1 h-13 bg-rose-600 hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 text-white dark:text-zinc-950 font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-rose-600/10 hover:shadow-rose-600/20 transition-all duration-300 flex items-center justify-center gap-2 hover:-translate-y-0.5"
+                        onClick={() => handleAction("REJECTED")}
+                        disabled={updatePayment.isPending || !rejectionReason}
+                      >
+                        {updatePayment.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Confirm Reject"
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-3">
-                    <Button
-                      variant="ghost"
-                      className="flex-1 rounded-xl font-bold text-[10px] uppercase tracking-widest h-11"
-                      onClick={() => setIsRejectDialogOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-rose-600/20"
-                      onClick={() => handleAction("REJECTED")}
-                      disabled={updatePayment.isPending || !rejectionReason}
-                    >
-                      {updatePayment.isPending ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        "Confirm Reject"
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
 
-            <Button
-              className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] uppercase tracking-widest shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2"
-              onClick={() => handleAction("PAID")}
-              disabled={updatePayment.isPending}
-            >
-              {updatePayment.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <ShieldCheck className="h-4 w-4" />
-              )}
-              Approve Payment
-            </Button>
-          </div>
+              <Button
+                className="h-9 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[9px] uppercase tracking-widest shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2"
+                onClick={() => handleAction("PAID")}
+                disabled={updatePayment.isPending}
+              >
+                {updatePayment.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ShieldCheck className="h-4 w-4" />
+                )}
+                Approve Payment
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -702,31 +707,33 @@ const PaymentApprovalDetailPage = () => {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-6 shadow-sm space-y-3">
-            <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 dark:text-muted-foreground mb-4">
-              Actions
-            </h3>
-            <Button
-              className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-600/20 flex items-center gap-2"
-              onClick={() => handleAction("PAID")}
-              disabled={updatePayment.isPending}
-            >
-              {updatePayment.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <CheckCircle className="h-4 w-4" />
-              )}
-              Approve
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full h-11 border-rose-100 text-rose-600 hover:bg-rose-50 font-bold text-[10px] uppercase tracking-widest rounded-xl flex items-center gap-2"
-              onClick={() => setIsRejectDialogOpen(true)}
-            >
-              <XCircle className="h-4 w-4" />
-              Reject
-            </Button>
-          </div>
+          {payment.status === "PENDING" && (
+            <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-2xl p-6 shadow-sm space-y-3">
+              <h3 className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-400 dark:text-muted-foreground mb-4">
+                Actions
+              </h3>
+              <Button
+                className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-600/20 flex items-center gap-2"
+                onClick={() => handleAction("PAID")}
+                disabled={updatePayment.isPending}
+              >
+                {updatePayment.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="h-4 w-4" />
+                )}
+                Approve
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full h-11 border-rose-100 text-rose-600 hover:bg-rose-50 font-bold text-[10px] uppercase tracking-widest rounded-xl flex items-center gap-2"
+                onClick={() => setIsRejectDialogOpen(true)}
+              >
+                <XCircle className="h-4 w-4" />
+                Reject
+              </Button>
+            </div>
+          )}
         </div>
       </main>
     </div>

@@ -156,7 +156,7 @@ const PaymentApprovalPage = () => {
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {[
                         { label: 'Pending', value: filteredPayments.length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                        { label: 'Total Value', value: `PKR ${(filteredPayments.reduce((acc, p) => acc + p.amount, 0) / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                        { label: 'Total Value', value: `PKR ${(filteredPayments.reduce((acc, p) => acc + Number(p.amount || 0), 0) / 1000).toFixed(1)}k`, icon: DollarSign, color: 'text-indigo-600', bg: 'bg-indigo-50' },
                         { label: 'Hostels', value: hostelsData?.hostels?.length || 0, icon: Building2, color: 'text-slate-900', bg: 'bg-slate-100' },
                         { label: 'Status', value: 'Live', icon: Activity, color: 'text-emerald-600', bg: 'bg-emerald-50' }
                     ].map((stat, i) => (
@@ -320,7 +320,7 @@ const PaymentApprovalPage = () => {
                         <div className="flex-1 flex items-center gap-16 px-8">
                             <div className="flex flex-col">
                                 <span className="text-[8px] font-bold uppercase text-indigo-100 tracking-[0.2em]">Pending</span>
-                                <span className="text-[10px] font-bold text-white uppercase mt-1 tracking-widest">PKR {filteredPayments.reduce((acc, p) => acc + p.amount, 0).toLocaleString()}</span>
+                                <span className="text-[10px] font-bold text-white uppercase mt-1 tracking-widest">PKR {filteredPayments.reduce((acc, p) => acc + Number(p.amount || 0), 0).toLocaleString()}</span>
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[8px] font-bold uppercase text-indigo-100 tracking-[0.2em]">Last Sync</span>

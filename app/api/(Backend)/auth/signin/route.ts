@@ -38,7 +38,8 @@ export async function POST(request: NextRequest) {
             return successResponse({
                 message: response.message,
                 requires2FA: true,
-                tempToken: response.tempToken
+                tempToken: response.tempToken,
+                twoFactorMethod: response.twoFactorMethod || "TOTP",
             });
         }
 

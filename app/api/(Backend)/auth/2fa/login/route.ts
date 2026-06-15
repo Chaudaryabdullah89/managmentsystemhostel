@@ -14,16 +14,16 @@ export async function POST(request: NextRequest) {
     
     try {
         const data = await request.json();
-        const { tempToken, otp } = data;
+        const { tempToken, otp, method } = data;
 
         if (!tempToken || !otp) {
-            return errorResponse("Temporary token and OTP are required.", 400);
+            return errorResponse("Temporary token and verification code are required.", 400);
         }
 
         const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1";
         const userAgent = request.headers.get("user-agent") || "Unknown";
 
-        const response = await authService.login2FA(tempToken, otp, ipAddress, userAgent);
+        const response = await authService.login2FA(tempToken, otp, ipAddress, userAgent, method);
 
         if (!response.success) {
             return errorResponse(response.message || "Unauthorized", 401, response);

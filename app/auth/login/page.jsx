@@ -11,6 +11,9 @@ import {
   Building2,
   ArrowRight,
   AlertCircle,
+  Fingerprint,
+  KeyRound,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
@@ -25,9 +28,13 @@ export default function LoginPage() {
   const [branding, setBranding] = useState({ companyName: "Hostel Management", companyShortName: "HMS" });
 
   const [requires2FA, setRequires2FA] = useState(false);
+  const [twoFactorMethod, setTwoFactorMethod] = useState("TOTP");
   const [tempToken, setTempToken] = useState("");
   const [otp, setOtp] = useState("");
   const [verifying2FA, setVerifying2FA] = useState(false);
+  const [useBackupCode, setUseBackupCode] = useState(false);
+  const [emailSending, setEmailSending] = useState(false);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -44,6 +51,19 @@ export default function LoginPage() {
       })
       .catch((err) => console.error("Branding fetch error:", err));
   }, []);
+
+  const handleRedirect = (data) => {
+    if (data.User) {
+      setUser({ ...data.User, id: data.User.id });
+    }
+    toast.success("Welcome back!");
+    const role = data.User?.role;
+    let redirectPath = "/admin/dashboard";
+    if (role === "WARDEN") redirectPath = "/warden";
+    else if (role === "STAFF") redirectPath = "/staff/dashboard";
+    else if (role === "RESIDENT" || role === "GUEST") redirectPath = "/guest/dashboard";
+    setTimeout(() => router.push(redirectPath), 400);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,32 +88,24 @@ export default function LoginPage() {
 
       if (data.requires2FA) {
         setTempToken(data.tempToken);
+        setTwoFactorMethod(data.twoFactorMethod || "TOTP");
         setRequires2FA(true);
         setError("");
         setIsLoading(false);
+
+        // Auto-send email OTP if method is EMAIL
+        if (data.twoFactorMethod === "EMAIL") {
+          sendEmailOTP(data.tempToken);
+        }
+
+        // Auto-start passkey if method is PASSKEY
+        if (data.twoFactorMethod === "PASSKEY") {
+          handlePasskeyLogin(data.tempToken);
+        }
         return;
       }
 
-      // Server sets secure httpOnly cookie; client only hydrates user state
-      if (data.User) {
-        await setUser({ ...data.User, id: data.User.id });
-      }
-
-      toast.success("Welcome back!");
-
-      // Role-based redirection
-      const role = data.User?.role;
-      let redirectPath = "/admin/dashboard";
-
-      if (role === "WARDEN") {
-        redirectPath = "/warden";
-      } else if (role === "STAFF") {
-        redirectPath = "/staff/dashboard";
-      } else if (role === "RESIDENT" || role === "GUEST") {
-        redirectPath = "/guest/dashboard";
-      }
-
-      setTimeout(() => router.push(redirectPath), 400);
+      handleRedirect(data);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -101,44 +113,85 @@ export default function LoginPage() {
     }
   };
 
+  const sendEmailOTP = async (token) => {
+    setEmailSending(true);
+    try {
+      const res = await fetch("/api/auth/2fa/send-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tempToken: token || tempToken }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      toast.success("Verification code sent to your email");
+    } catch (err) {
+      toast.error(err.message || "Failed to send email code");
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
+  const handlePasskeyLogin = async (token) => {
+    setPasskeyLoading(true);
+    setError("");
+    try {
+      // 1. Get auth options
+      const optRes = await fetch("/api/auth/2fa/passkey/auth-options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tempToken: token || tempToken }),
+      });
+      const optData = await optRes.json();
+      if (!optRes.ok) throw new Error(optData.message);
+
+      // 2. Start WebAuthn authentication
+      const { startAuthentication } = await import("@simplewebauthn/browser");
+      const credential = await startAuthentication({ optionsJSON: optData.options });
+
+      // 3. Verify on server
+      const verRes = await fetch("/api/auth/2fa/passkey/auth-verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tempToken: token || tempToken, credential }),
+        credentials: "include",
+      });
+      const verData = await verRes.json();
+      if (!verRes.ok) throw new Error(verData.message);
+
+      handleRedirect(verData);
+    } catch (err) {
+      if (err.name === "NotAllowedError") {
+        setError("Passkey authentication was cancelled.");
+      } else {
+        setError(err.message || "Passkey authentication failed.");
+      }
+    } finally {
+      setPasskeyLoading(false);
+    }
+  };
+
   const handle2FASubmit = async (e) => {
     e.preventDefault();
-    if (!otp || otp.length !== 6) {
-      setError("Please enter a valid 6-digit code.");
+    if (!otp || otp.length < 6) {
+      setError("Please enter a valid code.");
       return;
     }
     setError("");
     setVerifying2FA(true);
     try {
+      const method = useBackupCode ? "BACKUP_CODES" : twoFactorMethod;
       const response = await fetch("/api/auth/2fa/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tempToken, otp }),
+        body: JSON.stringify({ tempToken, otp, method }),
+        credentials: "include",
       });
       const data = await response.json();
       if (!response.ok || !data.success) {
-        setError(data.message || "Invalid or expired 2FA code.");
+        setError(data.message || "Invalid verification code.");
         return;
       }
-
-      if (data.User) {
-        await setUser({ ...data.User, id: data.User.id });
-      }
-
-      toast.success("Welcome back!");
-
-      const role = data.User?.role;
-      let redirectPath = "/admin/dashboard";
-
-      if (role === "WARDEN") {
-        redirectPath = "/warden";
-      } else if (role === "STAFF") {
-        redirectPath = "/staff/dashboard";
-      } else if (role === "RESIDENT" || role === "GUEST") {
-        redirectPath = "/guest/dashboard";
-      }
-
-      setTimeout(() => router.push(redirectPath), 400);
+      handleRedirect(data);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -151,6 +204,30 @@ export default function LoginPage() {
     setTempToken("");
     setOtp("");
     setError("");
+    setUseBackupCode(false);
+    setTwoFactorMethod("TOTP");
+  };
+
+  const getMethodTitle = () => {
+    if (useBackupCode) return "Use Backup Code";
+    switch (twoFactorMethod) {
+      case "TOTP": return "Authenticator App";
+      case "EMAIL": return "Email Verification";
+      case "PASSKEY": return "Passkey Verification";
+      case "BACKUP_CODES": return "Backup Code";
+      default: return "2-Step Verification";
+    }
+  };
+
+  const getMethodDescription = () => {
+    if (useBackupCode) return "Enter one of your 8-character backup codes";
+    switch (twoFactorMethod) {
+      case "TOTP": return "Enter the 6-digit code from your authenticator app";
+      case "EMAIL": return "Enter the 6-digit code sent to your email";
+      case "PASSKEY": return "Use your fingerprint, face, or security key";
+      case "BACKUP_CODES": return "Enter one of your backup codes";
+      default: return "Enter your verification code";
+    }
   };
 
   return (
@@ -195,9 +272,9 @@ export default function LoginPage() {
           {requires2FA ? (
             <div>
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">2-Step Verification</h2>
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{getMethodTitle()}</h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                  Enter the 6-digit code from your authenticator app
+                  {getMethodDescription()}
                 </p>
               </div>
 
@@ -208,46 +285,125 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <form onSubmit={handle2FASubmit} className="space-y-5">
-                <div>
-                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Verification Code
-                  </label>
-                  <div className="relative mt-2">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <input
-                      type="text"
-                      placeholder="000000"
-                      value={otp}
-                      onChange={(e) => setOtp(e.target.value)}
-                      maxLength={6}
-                      className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 dark:bg-muted/30 border border-slate-200 dark:border-border text-lg font-bold text-center tracking-[0.4em] dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-normal"
-                    />
+              {/* Passkey Auto-flow */}
+              {twoFactorMethod === "PASSKEY" && !useBackupCode && (
+                <div className="space-y-5">
+                  <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-xl p-6 text-center">
+                    <Fingerprint className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                      {passkeyLoading ? "Waiting for passkey..." : "Use your passkey to sign in"}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      Touch your fingerprint sensor, look at your camera, or insert your security key
+                    </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => handlePasskeyLogin()}
+                    disabled={passkeyLoading}
+                    className="w-full h-12 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
+                  >
+                    {passkeyLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Fingerprint className="h-4 w-4" /> Try Again
+                      </>
+                    )}
+                  </button>
                 </div>
+              )}
 
-                <button
-                  type="submit"
-                  disabled={verifying2FA}
-                  className="w-full h-12 mt-4 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
-                >
-                  {verifying2FA ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      Verify & Sign In <ArrowRight className="h-4 w-4" />
-                    </>
+              {/* TOTP / EMAIL / BACKUP_CODES Input Form */}
+              {(twoFactorMethod !== "PASSKEY" || useBackupCode) && (
+                <form onSubmit={handle2FASubmit} className="space-y-5">
+                  {/* Email OTP header */}
+                  {twoFactorMethod === "EMAIL" && !useBackupCode && (
+                    <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-xl p-4 text-center">
+                      <Mail className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">Code sent to your email</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Check your inbox for the verification code</p>
+                    </div>
                   )}
-                </button>
 
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      {useBackupCode ? "Backup Code" : "Verification Code"}
+                    </label>
+                    <div className="relative mt-2">
+                      {useBackupCode ? (
+                        <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      ) : (
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      )}
+                      <input
+                        type="text"
+                        placeholder={useBackupCode ? "8-character code" : "000000"}
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        maxLength={useBackupCode ? 8 : 6}
+                        className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 dark:bg-muted/30 border border-slate-200 dark:border-border text-lg font-bold text-center tracking-[0.4em] dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-normal"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={verifying2FA}
+                    className="w-full h-12 mt-4 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
+                  >
+                    {verifying2FA ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        Verify & Sign In <ArrowRight className="h-4 w-4" />
+                      </>
+                    )}
+                  </button>
+
+                  {/* Resend Email OTP */}
+                  {twoFactorMethod === "EMAIL" && !useBackupCode && (
+                    <button
+                      type="button"
+                      onClick={() => sendEmailOTP()}
+                      disabled={emailSending}
+                      className="w-full text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-center font-medium flex items-center justify-center gap-1"
+                    >
+                      <RefreshCw className={`h-3 w-3 ${emailSending ? "animate-spin" : ""}`} />
+                      {emailSending ? "Sending..." : "Resend Code"}
+                    </button>
+                  )}
+                </form>
+              )}
+
+              {/* Toggle Backup Code / Back */}
+              <div className="mt-4 space-y-2">
+                {!useBackupCode && twoFactorMethod !== "BACKUP_CODES" && (
+                  <button
+                    type="button"
+                    onClick={() => { setUseBackupCode(true); setOtp(""); setError(""); }}
+                    className="w-full text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 text-center font-medium flex items-center justify-center gap-1"
+                  >
+                    <KeyRound className="h-3 w-3" /> Use a backup code instead
+                  </button>
+                )}
+                {useBackupCode && (
+                  <button
+                    type="button"
+                    onClick={() => { setUseBackupCode(false); setOtp(""); setError(""); }}
+                    className="w-full text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 text-center font-medium"
+                  >
+                    ← Back to {twoFactorMethod === "TOTP" ? "authenticator" : twoFactorMethod === "EMAIL" ? "email" : "passkey"} verification
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={handleBackToLogin}
-                  className="w-full text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 text-center font-medium mt-2 block"
+                  className="w-full text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 text-center font-medium block"
                 >
                   Back to Sign In
                 </button>
-              </form>
+              </div>
             </div>
           ) : (
             <div>

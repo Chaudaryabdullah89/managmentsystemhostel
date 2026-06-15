@@ -62,6 +62,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -89,6 +90,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
 import SecurityRefundModal from "./SecurityRefundModal";
+import CreateDueModal from "./CreateDueModal";
 import { useBookings } from "@/hooks/useBooking";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -144,6 +146,7 @@ const PaymentManagementPage = () => {
   });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCreateDueOpen, setIsCreateDueOpen] = useState(false);
   const [editFormData, setEditFormData] = useState({
     amount: 0,
     status: "",
@@ -296,13 +299,13 @@ const PaymentManagementPage = () => {
   const dynamicStats = useMemo(() => {
     const totalRevenue = filteredPayments
       .filter((p) => p.status === "PAID")
-      .reduce((sum, p) => sum + p.amount, 0);
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
     const pendingValue = filteredPayments
       .filter((p) => p.status === "PENDING" || p.status === "PARTIAL")
-      .reduce((sum, p) => sum + p.amount, 0);
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
     const overdueValue = filteredPayments
       .filter((p) => p.status === "OVERDUE")
-      .reduce((sum, p) => sum + p.amount, 0);
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
     const totalReceivable = totalRevenue + pendingValue + overdueValue;
     const collectionRate =
       totalReceivable > 0 ? (totalRevenue / totalReceivable) * 100 : 0;
@@ -944,7 +947,7 @@ const PaymentManagementPage = () => {
             </Button>
             <Button
               className="h-8 md:h-9 px-4 md:px-6 cursor-pointer rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-[9px] md:text-[10px] uppercase tracking-wider shadow-sm transition-all active:scale-95 flex-1 md:flex-none justify-center"
-              onClick={() => router.push("/admin/bookings")}
+              onClick={() => setIsCreateDueOpen(true)}
             >
               <Plus className="h-3.5 w-3.5 mr-1.5 " />{" "}
               <span className="truncate">Create New Dues</span>
@@ -1393,23 +1396,25 @@ const PaymentManagementPage = () => {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-full w-full relative z-10 hover:bg-black/20"
+                                className="h-full w-full relative z-10 hover:bg-black/20 transition-all duration-300"
                               >
-                                <Scan className="h-6 w-6 text-white drop-shadow-md" />
+                                <Scan className="h-6 w-6 text-white drop-shadow-md hover:scale-110 transition-transform" />
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-4xl bg-white dark:bg-card p-0 border-gray-200 dark:border-border overflow-hidden rounded-3xl shadow-2xl">
-                              <div className="relative aspect-16/10 bg-gray-50 dark:bg-muted/10">
+                            <DialogContent className="max-w-4xl bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl p-0 border-zinc-200/80 dark:border-zinc-800/80 overflow-hidden rounded-3xl shadow-2xl ring-1 ring-black/5 dark:ring-white/5">
+                              <DialogTitle className="sr-only">Receipt Preview</DialogTitle>
+                              <DialogDescription className="sr-only">Preview of payment receipt/proof</DialogDescription>
+                              <div className="relative aspect-16/10 bg-zinc-50 dark:bg-zinc-900/50 flex items-center justify-center p-8">
                                 <img
                                   src={payment.receiptUrl}
                                   alt="Proof of Payment"
-                                  className="w-full h-full object-contain p-8"
+                                  className="max-h-full max-w-full object-contain rounded-2xl shadow-lg border border-zinc-200/50 dark:border-zinc-800/50 transition-all duration-300 hover:scale-[1.01]"
                                 />
-                                <div className="absolute top-6 left-6 flex flex-col gap-2">
-                                  <Badge className="bg-blue-600 text-white font-bold uppercase text-[9px] tracking-widest px-3">
-                                    CHECK
+                                <div className="absolute top-6 left-6 flex items-center gap-3 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm">
+                                  <Badge className="bg-blue-600 hover:bg-blue-700 text-white font-bold uppercase text-[9px] tracking-widest px-2.5 py-0.5 rounded-lg border-none">
+                                    PROOF
                                   </Badge>
-                                  <span className="text-[10px] text-gray-500 dark:text-muted-foreground font-bold uppercase tracking-widest">
+                                  <span className="text-[10px] text-zinc-650 dark:text-zinc-400 font-extrabold uppercase tracking-widest">
                                     {payment.uid
                                       ? `REF: ${payment.uid}`
                                       : `ID: ${payment.id.slice(-8)}`}
@@ -1420,9 +1425,9 @@ const PaymentManagementPage = () => {
                                   target="_blank"
                                   className="absolute bottom-6 right-6"
                                 >
-                                  <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 h-10 font-bold uppercase text-[10px] tracking-wider shadow-lg">
-                                    <ExternalLink className="h-3.5 w-3.5 mr-2" />{" "}
-                                    Open
+                                  <Button className="bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-xl px-5 h-11 font-bold uppercase text-[10px] tracking-widest shadow-lg transition-all hover:-translate-y-0.5 flex items-center gap-2">
+                                    <ExternalLink className="h-3.5 w-3.5" />{" "}
+                                    Open Fullscreen
                                   </Button>
                                 </Link>
                               </div>
@@ -1768,27 +1773,28 @@ const PaymentManagementPage = () => {
         open={isDefaulterOptionsOpen}
         onOpenChange={setIsDefaulterOptionsOpen}
       >
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-white dark:bg-card ring-1 ring-gray-100">
-          <div className="bg-rose-600 p-10 text-white text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
-            <div className="h-16 w-16 bg-white dark:bg-card/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
-              <Clock className="h-8 w-8 text-white stroke-[1.5]" />
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-zinc-950 ring-1 ring-zinc-100 dark:ring-zinc-900">
+          <div className="bg-gradient-to-br from-rose-500 via-rose-600 to-red-700 p-8 text-white text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_60%)]" />
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+            <div className="h-14 w-14 bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+              <Clock className="h-7 w-7 text-white stroke-[1.75]" />
             </div>
-            <h2 className="text-2xl font-black uppercase tracking-tight">
+            <DialogTitle className="text-xl font-extrabold uppercase tracking-tight text-white">
               Late Fee Options
-            </h2>
-            <p className="text-[10px] text-rose-100 font-bold tracking-widest mt-2 uppercase">
-              Configure Defaulters Report
-            </p>
+            </DialogTitle>
+            <DialogDescription className="text-[10px] text-rose-100 font-extrabold tracking-widest mt-1.5 uppercase">
+              Configure Defaulters & Fees
+            </DialogDescription>
           </div>
 
-          <div className="p-10 space-y-6">
-            <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
+          <div className="p-8 space-y-6">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                 Rent Due Day (from 1st)
               </Label>
               <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
+                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                 <Input
                   type="number"
                   min="1"
@@ -1801,21 +1807,20 @@ const PaymentManagementPage = () => {
                       dueDay: Number(e.target.value),
                     })
                   }
-                  className="h-14 pl-12 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-gray-900 dark:text-foreground focus:ring-rose-500"
+                  className="h-13 pl-12 rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 font-bold text-xs text-zinc-800 dark:text-zinc-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/20 transition-all"
                 />
               </div>
-              <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-medium italic ml-1">
-                Residents who haven't paid rent by this day will be marked as
-                defaulters.
+              <p className="text-[9px] text-zinc-400 dark:text-zinc-500 font-medium italic ml-1">
+                Residents who haven't paid rent by this day will be marked as defaulters.
               </p>
             </div>
 
-            <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                 Late Fee (per day)
               </Label>
               <div className="relative">
-                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-muted-foreground" />
+                <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                 <Input
                   type="number"
                   min="0"
@@ -1827,21 +1832,21 @@ const PaymentManagementPage = () => {
                       lateFeePerDay: Number(e.target.value),
                     })
                   }
-                  className="h-14 pl-12 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-gray-900 dark:text-foreground focus:ring-rose-500"
+                  className="h-13 pl-12 rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 font-bold text-xs text-zinc-800 dark:text-zinc-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/20 transition-all"
                 />
               </div>
-              <p className="text-[9px] text-gray-400 dark:text-muted-foreground font-medium italic ml-1">
+              <p className="text-[9px] text-zinc-400 dark:text-zinc-500 font-medium italic ml-1">
                 Added to the total for each day past the due date.
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                   Target Month
                 </Label>
                 <select
-                  className="w-full h-14 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-gray-900 dark:text-foreground px-4 focus:ring-rose-500"
+                  className="w-full h-13 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 font-bold text-xs text-zinc-800 dark:text-zinc-200 px-4 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/20 transition-all outline-none"
                   value={defaulterOptions.month}
                   onChange={(e) =>
                     setDefaulterOptions({
@@ -1870,12 +1875,12 @@ const PaymentManagementPage = () => {
                   ))}
                 </select>
               </div>
-              <div className="space-y-3">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                   Target Year
                 </Label>
                 <select
-                  className="w-full h-14 rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-gray-900 dark:text-foreground px-4 focus:ring-rose-500"
+                  className="w-full h-13 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 font-bold text-xs text-zinc-800 dark:text-zinc-200 px-4 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/20 transition-all outline-none"
                   value={defaulterOptions.year}
                   onChange={(e) =>
                     setDefaulterOptions({
@@ -1897,16 +1902,16 @@ const PaymentManagementPage = () => {
               </div>
             </div>
 
-            <div className="flex gap-4 pt-4">
+            <div className="flex gap-3 pt-4">
               <Button
-                variant="ghost"
-                className="flex-1 rounded-2xl h-14 font-bold text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10"
+                variant="outline"
+                className="flex-1 rounded-xl h-13 font-bold text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900"
                 onClick={() => setIsDefaulterOptionsOpen(false)}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1 h-14 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-2xl shadow-lg shadow-rose-600/20 transition-all flex items-center justify-center gap-2"
+                className="flex-1 h-13 bg-rose-600 hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 text-white dark:text-zinc-950 font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-rose-600/10 hover:shadow-rose-600/20 transition-all duration-300 flex items-center justify-center gap-2 hover:-translate-y-0.5"
                 onClick={handleExportDefaultersList}
               >
                 <Download className="h-4 w-4" /> Export PDF
@@ -1917,29 +1922,30 @@ const PaymentManagementPage = () => {
       </Dialog>
 
       <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2.5rem] border-none shadow-2xl bg-white dark:bg-card ring-1 ring-gray-100">
-          <div className="bg-indigo-600 p-10 text-white text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
-            <div className="h-16 w-16 bg-white dark:bg-card/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
-              <FileText className="h-8 w-8 text-white stroke-[1.5]" />
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-zinc-950 ring-1 ring-zinc-100 dark:ring-zinc-900">
+          <div className="bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-800 p-8 text-white text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_60%)]" />
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+            <div className="h-14 w-14 bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+              <FileText className="h-7 w-7 text-white stroke-[1.75]" />
             </div>
-            <h2 className="text-2xl font-black uppercase tracking-tight">
+            <DialogTitle className="text-xl font-extrabold uppercase tracking-tight text-white">
               Export Payments
-            </h2>
-            <p className="text-[10px] text-indigo-100 font-bold tracking-widest mt-2 uppercase">
+            </DialogTitle>
+            <DialogDescription className="text-[10px] text-indigo-100 font-extrabold tracking-widest mt-1.5 uppercase">
               Custom Payment Report
-            </p>
+            </DialogDescription>
           </div>
 
-          <div className="p-10 space-y-6">
+          <div className="p-8 space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
+                <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                   From Date
                 </Label>
                 <Input
                   type="date"
-                  className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold"
+                  className="h-13 rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 font-bold text-xs text-zinc-800 dark:text-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 transition-all outline-none"
                   value={paymentExportOptions.fromDate}
                   onChange={(e) =>
                     setPaymentExportOptions({
@@ -1950,12 +1956,12 @@ const PaymentManagementPage = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
+                <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                   To Date
                 </Label>
                 <Input
                   type="date"
-                  className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold"
+                  className="h-13 rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 font-bold text-xs text-zinc-800 dark:text-zinc-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 transition-all outline-none"
                   value={paymentExportOptions.toDate}
                   onChange={(e) =>
                     setPaymentExportOptions({
@@ -1968,11 +1974,11 @@ const PaymentManagementPage = () => {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
+              <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                 Hostel
               </Label>
               <select
-                className="w-full h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-sm px-4 focus:ring-indigo-500"
+                className="w-full h-13 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 font-bold text-xs text-zinc-800 dark:text-zinc-200 px-4 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 transition-all outline-none"
                 value={paymentExportOptions.hostel}
                 onChange={(e) =>
                   setPaymentExportOptions({
@@ -1992,11 +1998,11 @@ const PaymentManagementPage = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
+                <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                   Status
                 </Label>
                 <select
-                  className="w-full h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-sm px-4 focus:ring-indigo-500"
+                  className="w-full h-13 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 font-bold text-xs text-zinc-800 dark:text-zinc-200 px-4 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 transition-all outline-none"
                   value={paymentExportOptions.status}
                   onChange={(e) =>
                     setPaymentExportOptions({
@@ -2016,11 +2022,11 @@ const PaymentManagementPage = () => {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
+                <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                   Type
                 </Label>
                 <select
-                  className="w-full h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold text-sm px-4 focus:ring-indigo-500"
+                  className="w-full h-13 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 font-bold text-xs text-zinc-800 dark:text-zinc-200 px-4 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 transition-all outline-none"
                   value={paymentExportOptions.type}
                   onChange={(e) =>
                     setPaymentExportOptions({
@@ -2041,22 +2047,22 @@ const PaymentManagementPage = () => {
               </div>
             </div>
 
-            <div className="flex gap-4 pt-4">
+            <div className="flex gap-3 pt-4">
               <Button
-                variant="ghost"
-                className="flex-1 rounded-2xl h-14 font-bold text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10"
+                variant="outline"
+                className="flex-1 rounded-xl h-13 font-bold text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900"
                 onClick={() => setIsExportDialogOpen(false)}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1 h-14 border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[10px] uppercase tracking-widest rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2"
+                className="flex-1 h-13 border border-emerald-250 bg-emerald-50 dark:bg-emerald-950/20 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-sm transition-all duration-305 flex items-center justify-center gap-2 hover:-translate-y-0.5"
                 onClick={handleExportPaymentsExcel}
               >
                 <Download className="h-4 w-4" /> Excel
               </Button>
               <Button
-                className="flex-1 h-14 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-widest rounded-2xl shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-2"
+                className="flex-1 h-13 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white dark:text-zinc-950 font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-indigo-600/10 hover:shadow-indigo-600/20 transition-all duration-305 flex items-center justify-center gap-2 hover:-translate-y-0.5"
                 onClick={handleExportPaymentsList}
               >
                 <Download className="h-4 w-4" /> PDF
@@ -2068,41 +2074,42 @@ const PaymentManagementPage = () => {
 
       {/* Modals */}
       <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-card ring-1 ring-gray-100">
-          <div className="bg-rose-600 p-10 text-white text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
-            <div className="h-16 w-16 bg-black/20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-black/10 shadow-lg">
-              <XCircle className="h-8 w-8" />
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-zinc-950 ring-1 ring-zinc-100 dark:ring-zinc-900">
+          <div className="bg-gradient-to-br from-red-500 via-rose-600 to-rose-700 p-8 text-white text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_60%)]" />
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+            <div className="h-14 w-14 bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+              <XCircle className="h-7 w-7 text-white stroke-[1.75]" />
             </div>
-            <h2 className="text-2xl font-bold uppercase tracking-tight">
+            <DialogTitle className="text-xl font-extrabold uppercase tracking-tight text-white">
               Reject Payment
-            </h2>
-            <p className="text-[10px] text-white/70 font-bold tracking-widest mt-2 uppercase">
+            </DialogTitle>
+            <DialogDescription className="text-[10px] text-rose-100 font-extrabold tracking-widest mt-1.5 uppercase">
               Stop this payment
-            </p>
+            </DialogDescription>
           </div>
-          <div className="p-10 space-y-8">
-            <div className="space-y-3">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground ml-1">
+          <div className="p-8 space-y-6">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                 Why reject this?
               </Label>
               <Textarea
                 placeholder="Write reason..."
-                className="rounded-2xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 p-6 font-medium text-sm min-h-[120px] focus:ring-rose-500 text-gray-900 dark:text-foreground resize-none pt-4 placeholder:text-gray-300"
+                className="rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 p-4 font-medium text-xs min-h-[120px] focus:border-rose-500 focus:ring-1 focus:ring-rose-500/20 transition-all text-zinc-800 dark:text-zinc-200 resize-none placeholder:text-zinc-450 dark:placeholder:text-zinc-500"
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
               />
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <Button
-                variant="ghost"
-                className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground"
+                variant="outline"
+                className="flex-1 rounded-xl h-13 font-bold text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900"
                 onClick={() => setIsRejectDialogOpen(false)}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1 h-11 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-wider rounded-xl shadow-lg transition-all"
+                className="flex-1 h-13 bg-rose-600 hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 text-white dark:text-zinc-950 font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-rose-600/10 hover:shadow-rose-600/20 transition-all duration-300 flex items-center justify-center gap-2 hover:-translate-y-0.5"
                 onClick={handleReject}
                 disabled={updatePayment.isPending || !rejectionReason}
               >
@@ -2118,23 +2125,24 @@ const PaymentManagementPage = () => {
       </Dialog>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md p-0 overflow-hidden rounded-3xl border-none shadow-2xl bg-white dark:bg-card ring-1 ring-gray-100">
-          <div className="bg-blue-600 p-10 text-white text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
-            <div className="h-16 w-16 bg-white dark:bg-card/10 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/10 shadow-lg">
-              <Settings2 className="h-8 w-8 text-white" />
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-zinc-950 ring-1 ring-zinc-100 dark:ring-zinc-900">
+          <div className="bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-800 p-8 text-white text-center relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.15),transparent_60%)]" />
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+            <div className="h-14 w-14 bg-white/10 dark:bg-black/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+              <Settings2 className="h-7 w-7 text-white stroke-[1.75]" />
             </div>
-            <h2 className="text-2xl font-bold uppercase tracking-tight">
+            <DialogTitle className="text-xl font-extrabold uppercase tracking-tight text-white">
               Edit Payment
-            </h2>
-            <p className="text-[10px] text-blue-100 font-bold tracking-widest mt-2 uppercase">
+            </DialogTitle>
+            <DialogDescription className="text-[10px] text-blue-100 font-extrabold tracking-widest mt-1.5 uppercase">
               Update payment details
-            </p>
+            </DialogDescription>
           </div>
-          <div className="p-10 space-y-6">
+          <div className="p-8 space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
+                <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                   Amount (PKR)
                 </Label>
                 <Input
@@ -2146,15 +2154,15 @@ const PaymentManagementPage = () => {
                       amount: Number(e.target.value),
                     })
                   }
-                  className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold"
+                  className="h-13 rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 font-bold text-xs text-zinc-800 dark:text-zinc-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all outline-none"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
+                <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                   Status
                 </Label>
                 <select
-                  className="w-full h-10 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 text-[10px] font-bold uppercase px-3"
+                  className="w-full h-13 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 font-bold text-xs text-zinc-800 dark:text-zinc-200 px-4 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all outline-none"
                   value={editFormData.status}
                   onChange={(e) =>
                     setEditFormData({ ...editFormData, status: e.target.value })
@@ -2171,7 +2179,7 @@ const PaymentManagementPage = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
+              <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                 Payment Method
               </Label>
               <Input
@@ -2179,11 +2187,11 @@ const PaymentManagementPage = () => {
                 onChange={(e) =>
                   setEditFormData({ ...editFormData, method: e.target.value })
                 }
-                className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold"
+                className="h-13 rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 font-bold text-xs text-zinc-800 dark:text-zinc-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all outline-none"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
+              <Label className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 dark:text-zinc-500 ml-1">
                 Notes
               </Label>
               <Textarea
@@ -2191,20 +2199,20 @@ const PaymentManagementPage = () => {
                 onChange={(e) =>
                   setEditFormData({ ...editFormData, notes: e.target.value })
                 }
-                className="rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-medium text-xs resize-none h-24"
-                placeholder="..."
+                className="rounded-xl border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 p-4 font-medium text-xs resize-none h-24 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400"
+                placeholder="Write notes..."
               />
             </div>
-            <div className="flex gap-4 pt-4">
+            <div className="flex gap-3 pt-4">
               <Button
-                variant="ghost"
-                className="flex-1 rounded-xl h-11 font-bold text-[10px] uppercase tracking-wider text-gray-400 dark:text-muted-foreground"
+                variant="outline"
+                className="flex-1 rounded-xl h-13 font-bold text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-900"
                 onClick={() => setIsEditDialogOpen(false)}
               >
                 Cancel
               </Button>
               <Button
-                className="flex-1 h-11 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+                className="flex-1 h-13 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white dark:text-zinc-950 font-bold text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-blue-600/10 hover:shadow-blue-600/20 transition-all duration-300 flex items-center justify-center gap-2 hover:-translate-y-0.5"
                 onClick={handleEditSubmit}
                 disabled={updatePayment.isPending}
               >
@@ -2225,31 +2233,40 @@ const PaymentManagementPage = () => {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
       >
-        <AlertDialogContent className="rounded-[2.5rem] border-none p-10 max-w-md">
-          <AlertDialogHeader>
-            <div className="h-16 w-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 border border-rose-100">
-              <Trash2 className="h-8 w-8 text-rose-600" />
+        <AlertDialogContent className="rounded-[2rem] border-none p-8 max-w-md bg-white dark:bg-zinc-950 ring-1 ring-zinc-100 dark:ring-zinc-900 shadow-2xl">
+          <AlertDialogHeader className="flex flex-col items-center text-center">
+            <div className="h-14 w-14 bg-rose-50 dark:bg-rose-950/20 rounded-2xl flex items-center justify-center mb-4 border border-rose-100 dark:border-rose-900/30 animate-pulse">
+              <Trash2 className="h-6 w-6 text-rose-600 dark:text-rose-400" />
             </div>
-            <AlertDialogTitle className="text-xl font-bold uppercase tracking-tight">
+            <AlertDialogTitle className="text-xl font-extrabold uppercase tracking-tight text-zinc-900 dark:text-foreground">
               Delete Payment?
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest leading-relaxed mt-2">
-              Are you sure you want to permanently delete this payment record?
+            <AlertDialogDescription className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest leading-relaxed mt-2 max-w-xs">
+              Are you sure you want to permanently delete this payment record? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-10 gap-3">
-            <AlertDialogCancel className="h-12 px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest border-gray-100 dark:border-border">
+          <AlertDialogFooter className="mt-8 flex gap-3 w-full">
+            <AlertDialogCancel className="flex-1 h-13 rounded-xl font-bold text-[10px] uppercase tracking-widest border border-zinc-200 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900">
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="h-12 px-8 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-rose-600/20"
+              className="flex-1 h-13 rounded-xl bg-rose-600 hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 text-white dark:text-zinc-950 font-bold text-[10px] uppercase tracking-widest shadow-lg shadow-rose-600/10 hover:shadow-rose-600/20 transition-all duration-300 flex items-center justify-center gap-2 hover:-translate-y-0.5"
             >
               Confirm Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Create Due Modal */}
+      <CreateDueModal
+        isOpen={isCreateDueOpen}
+        onOpenChange={setIsCreateDueOpen}
+        isAdmin={isAdmin}
+        user={user}
+        hostels={hostels}
+      />
     </div>
   );
 };

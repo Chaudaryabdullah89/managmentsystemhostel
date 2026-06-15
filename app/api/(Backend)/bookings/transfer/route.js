@@ -109,6 +109,17 @@ export async function POST(req) {
                 data: { status: 'OCCUPIED' }
             });
 
+            // Create a RoomSwapRequest record to log this direct transfer
+            await tx.roomSwapRequest.create({
+                data: {
+                    userId: booking.userId,
+                    fromRoomId: oldRoomId,
+                    toRoomId: newRoomId,
+                    reason: reason ? `[DIRECT_TRANSFER] ${reason}` : "[DIRECT_TRANSFER] Direct room transfer by management",
+                    status: "APPROVED"
+                }
+            });
+
             return updatedBooking;
         });
 

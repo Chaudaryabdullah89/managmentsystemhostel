@@ -293,13 +293,13 @@ const PaymentManagementPage = () => {
   const dynamicStats = useMemo(() => {
     const totalRevenue = filteredPayments
       .filter((p) => p.status === "PAID")
-      .reduce((sum, p) => sum + p.amount, 0);
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
     const pendingValue = filteredPayments
       .filter((p) => p.status === "PENDING" || p.status === "PARTIAL")
-      .reduce((sum, p) => sum + p.amount, 0);
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
     const overdueValue = filteredPayments
       .filter((p) => p.status === "OVERDUE")
-      .reduce((sum, p) => sum + p.amount, 0);
+      .reduce((sum, p) => sum + Number(p.amount || 0), 0);
     const totalReceivable = totalRevenue + pendingValue + overdueValue;
     const collectionRate =
       totalReceivable > 0 ? (totalRevenue / totalReceivable) * 100 : 0;

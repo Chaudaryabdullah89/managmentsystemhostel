@@ -239,7 +239,7 @@ const UserDetailsPage = () => {
     const stats = useMemo(() => {
         if (!userDetails) return { totalPaid: 0, compl: 0, maint: 0 };
         return {
-            totalPaid: userDetails.payments?.reduce((acc, curr) => acc + (curr.amount || 0), 0) || 0,
+            totalPaid: userDetails.payments?.reduce((acc, curr) => acc + Number(curr.amount || 0), 0) || 0,
             compl: userDetails.complaints?.length || 0,
             maint: userDetails.maintenanceTasks?.length || 0
         };
