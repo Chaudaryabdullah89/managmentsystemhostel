@@ -299,21 +299,19 @@ const HostelOverviewPage = () => {
 
                 <div className="space-y-6">
                   <div className="bg-indigo-600 text-white rounded-[1.5rem] p-5 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-white dark:bg-card/10 rounded-full -mr-10 -mt-10" />
+                    {/* <div className="absolute top-0 right-0 w-24 h-24 bg-white dark:bg-card/10 rounded-full -mr-10 -mt-10" /> */}
                     <div className="relative z-10 space-y-3">
                       <div className="flex items-center gap-2">
                         <Zap className="h-3.5 w-3.5 text-indigo-200" />
                         <span className="text-[9px] font-black uppercase tracking-[0.2em] text-indigo-100">
-                          Registry Deck
+                          Quick Panel
                         </span>
                       </div>
-                      <h4 className="text-xs font-black uppercase tracking-tight italic">
-                        Quick Panel
-                      </h4>
+
                       <div className="grid grid-cols-2 gap-2 mt-4">
                         <Button
                           size="sm"
-                          className="h-9 bg-white dark:bg-card/10 hover:bg-white dark:bg-card/20 text-[9px] font-black text-black uppercase tracking-widest rounded-lg border-none"
+                          className="h-9 bg-white cursor-pointer dark:bg-card/10 hover:bg-white dark:bg-card/20 text-[9px] font-black text-black uppercase tracking-widest rounded-lg border-none"
                           onClick={() =>
                             router.push(
                               `/admin/hostels/${encodeURIComponent(hostel.name)}/residents?hostelId=${hostelId}`,
@@ -324,7 +322,7 @@ const HostelOverviewPage = () => {
                         </Button>
                         <Button
                           size="sm"
-                          className="h-9 bg-white dark:bg-card text-indigo-600 hover:bg-indigo-50 text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg border-none"
+                          className="h-9 bg-white cursor-pointer dark:bg-card text-indigo-600 hover:bg-indigo-50 text-[9px] font-black uppercase tracking-widest rounded-lg shadow-lg border-none"
                           onClick={() =>
                             router.push(
                               `/admin/hostels/${encodeURIComponent(hostel.name)}/rooms?hostelId=${hostelId}`,

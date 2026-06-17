@@ -37,6 +37,9 @@ export function useCreateNotice() {
         onSuccess: () => {
             toast.success("Notice published successfully");
         },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["notices"] });
+        },
     });
 }
 

@@ -5,7 +5,7 @@ import { sendEmail } from "@/lib/utils/sendmail";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import { sign } from "jsonwebtoken";
-import { buildEmailTemplate } from "@/lib/utils/emailTemplates";
+import { buildEmailTemplate, getBaseUrl } from "@/lib/utils/emailTemplates";
 
 export async function POST(req) {
   // Guard: Check if password reset emails are enabled globally
@@ -46,7 +46,7 @@ export async function POST(req) {
     const token = sign({ id: user.id, email: user.email }, secret, { expiresIn: "1h" });
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    const baseUrl = getBaseUrl();
     const resetLink = `${baseUrl}/auth/reset-password?token=${hashedToken}&email=${user.email}&userId=${user.id}`;
 
     const bodyHtml = `

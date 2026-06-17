@@ -1,11 +1,11 @@
-"use client"
-import React, { useState } from 'react'
-import WardenNoticePage from "../../warden/notices/page"
+"use client";
+import React from "react";
+import NoticePage from "../../warden/notices/page";
 
+// Admin reuses the full notice board — which handles both hostel-specific
+// and global notices via the API's permission + filter logic.
 const AdminNoticePage = () => {
-    // We can reuse the Warden page as it handles the logic based on the user's hostelId
-    // and for admin, hostelId is usually null or they can manage all
-    return <WardenNoticePage />
-}
+  return <NoticePage />;
+};
 
-export default AdminNoticePage
+export default AdminNoticePage;

@@ -1,7 +1,7 @@
 import { isServiceEnabled, hasPermission } from '@/lib/permissions';
 import PaymentServices from "@/lib/services/paymentservices/paymentservices";
 import { sendEmail } from "@/lib/utils/sendmail";
-import { monthlyRentEmail, buildEmailTemplate } from "@/lib/utils/emailTemplates";
+import { monthlyRentEmail, buildEmailTemplate, getBaseUrl } from "@/lib/utils/emailTemplates";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/apiAuth";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
@@ -72,7 +72,7 @@ export async function POST(request) {
 
         // ── NOTIFY ADMIN & WARDENS: A new payment needs approval ─────────
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "";
+            const baseUrl = getBaseUrl();
             const managersToNotify = await prisma.user.findMany({
                 where: {
                     role: { in: ["ADMIN", "WARDEN"] },

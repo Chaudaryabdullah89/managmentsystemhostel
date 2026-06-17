@@ -469,8 +469,8 @@ const ProfilePage = () => {
                                             </DialogTrigger>
                                             <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-card ring-1 ring-gray-100">
                                                 <div className="bg-black p-8 text-white text-center relative overflow-hidden">
-                                                    <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
-                                                    <div className="h-14 w-14 bg-white dark:bg-card/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10 shadow-lg relative z-10">
+                                                    <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                                                    <div className="h-14 w-14 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10 shadow-lg relative z-10">
                                                         <Key className="h-7 w-7" />
                                                     </div>
                                                     <h2 className="text-xl font-bold uppercase tracking-tight italic relative z-10">Password</h2>
@@ -511,8 +511,8 @@ const ProfilePage = () => {
                                             </DialogTrigger>
                                             <DialogContent className="max-w-md p-0 overflow-hidden rounded-[2rem] border-none shadow-2xl bg-white dark:bg-card ring-1 ring-gray-100">
                                                 <div className="bg-emerald-600 p-8 text-white text-center relative overflow-hidden">
-                                                    <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
-                                                    <div className="h-14 w-14 bg-white dark:bg-card/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10 shadow-lg relative z-10">
+                                                    <div className="absolute inset-0 bg-white/10 skew-x-12 translate-x-20" />
+                                                    <div className="h-14 w-14 bg-white/10 rounded-xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/10 shadow-lg relative z-10">
                                                         <Fingerprint className="h-7 w-7" />
                                                     </div>
                                                     <h2 className="text-xl font-bold uppercase tracking-tight italic relative z-10">Email</h2>

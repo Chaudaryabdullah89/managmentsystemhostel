@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { generateUID, generateRegNumber, UID_PREFIXES } from "@/lib/uid-generator";
 import { sendEmail } from "@/lib/utils/sendmail";
-import { welcomeEmail } from "@/lib/utils/emailTemplates";
+import { welcomeEmail, getBaseUrl } from "@/lib/utils/emailTemplates";
 import { requireAuth, requireRoles } from "@/lib/apiAuth";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
 import { getBranding } from "@/lib/permissions";
@@ -231,7 +231,7 @@ export async function POST(request) {
 
         // Send welcome email with a password-reset link (never send raw passwords via email)
         const branding = await getBranding();
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+        const baseUrl = getBaseUrl();
         const resetLinkNote = `${baseUrl}/auth/login`;
         sendEmail({
             to: email,

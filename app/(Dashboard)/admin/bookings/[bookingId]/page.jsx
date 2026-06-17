@@ -162,18 +162,22 @@ const BookingDetailsPage = () => {
 
   // Outstanding balance = what is still pending / partially paid
   const balance = activePayments
-    .filter((p) => p.status === "PENDING" || p.status === "PARTIAL" || p.status === "OVERDUE")
+    .filter(
+      (p) =>
+        p.status === "PENDING" ||
+        p.status === "PARTIAL" ||
+        p.status === "OVERDUE",
+    )
     .reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
 
   const paymentProgress =
-    totalPayable > 0 ? Math.min(100, ((totalPaid / totalPayable) * 100)).toFixed(0) : 0;
+    totalPayable > 0
+      ? Math.min(100, (totalPaid / totalPayable) * 100).toFixed(0)
+      : 0;
 
   // Monthly rent: prefer stored booking value, then room's monthly rent field
   const monthlyRentDisplay =
-    booking.monthlyRent ||
-    booking.Room?.montlyrent ||
-    booking.Room?.price ||
-    0;
+    booking.monthlyRent || booking.Room?.montlyrent || booking.Room?.price || 0;
   const securityDepositDisplay = booking.securityDeposit || 0;
   const residentDocs = booking?.User?.ResidentProfile?.documents || {};
   const additionalImages = Array.isArray(residentDocs?.galleryImages)
@@ -455,7 +459,7 @@ const BookingDetailsPage = () => {
                 <div className="p-5 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-600/20 group-hover:scale-[1.01] transition-transform duration-300">
                   <div className="flex items-center gap-4 mb-4">
                     <div className="h-10 w-10 rounded-xl bg-white dark:bg-card/10 flex items-center justify-center backdrop-blur-md">
-                      <Home className="h-5 w-5 text-white" />
+                      <Home className="h-5 w-5 text-black" />
                     </div>
                     <div>
                       <p className="text-[10px] font-bold text-indigo-100 uppercase tracking-widest">
@@ -472,7 +476,7 @@ const BookingDetailsPage = () => {
                         ROOM {booking.Room?.roomNumber}
                       </span>
                     </div>
-                    <Badge className="bg-white dark:bg-card/20 text-white border-none rounded-lg px-2 py-0.5 text-[9px] font-bold uppercase">
+                    <Badge className="bg-white  dark:bg-card/20 text-indigo-500 border-white border rounded-lg px-3 py-1 text-[9px] font-bold uppercase">
                       Floor {booking.Room?.floor}
                     </Badge>
                   </div>
@@ -602,7 +606,7 @@ const BookingDetailsPage = () => {
         <div className="space-y-8">
           {/* Financial Summary */}
           <div className="bg-indigo-600 text-white rounded-2xl p-8 shadow-2xl shadow-indigo-600/20 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-white dark:bg-card/5 rounded-full blur-3xl -mr-24 -mt-24 transition-transform duration-700 group-hover:scale-125" />
+            {/* <div className="absolute top-0 right-0 w-48 h-48 bg-white dark:bg-card/5 rounded-full blur-3xl -mr-24 -mt-24 transition-transform duration-700 group-hover:scale-125" /> */}
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-indigo-100 mb-8 flex items-center gap-2">
               <TrendingUp className="h-3.5 w-3.5" /> Financial Summary
             </h3>
