@@ -161,11 +161,11 @@ const GuestMessMenu = () => {
       <main className="max-w-[1000px] mx-auto px-6 py-8 space-y-8">
         {/* Introduction Banner */}
         <div className="bg-indigo-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-lg shadow-indigo-600/20">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white dark:bg-card/10 rounded-full blur-3xl -mr-20 -mt-20" />
-          <div className="absolute bottom-0 left-0 w-40 h-40 bg-indigo-500/50 rounded-full blur-2xl -ml-10 -mb-10" />
+          {/* <div className="absolute top-0 right-0 w-64 h-64 bg-white dark:bg-card/10 rounded-full blur-3xl -mr-20 -mt-20" />
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-indigo-500/50 rounded-full blur-2xl -ml-10 -mb-10" /> */}
 
           <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-card/20 text-[10px] font-bold uppercase tracking-widest text-white mb-4 border border-white/10 backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-card/20 text-[10px] font-bold uppercase tracking-widest text-black mb-4 border border-white/10 backdrop-blur-md">
               <Calendar className="h-3.5 w-3.5" /> This Week's Menu
             </div>
             <h2 className="text-3xl font-bold tracking-tight mb-2">
