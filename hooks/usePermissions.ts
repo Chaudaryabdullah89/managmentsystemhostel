@@ -44,7 +44,6 @@ export function usePermissions() {
    * @param featureKey - e.g. 'enableMess', 'enablePaymentProcessing'
    */
   function featureEnabled(featureKey: string): boolean {
-    if (isAdmin) return true;
     return systemSettings[featureKey] !== false; // default true if undefined
   }
 

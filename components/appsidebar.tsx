@@ -23,10 +23,10 @@ import { useBranding } from "@/hooks/useBranding"
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function filterItem(item: NavItem, isAdmin: boolean, user: any): boolean {
-    if (isAdmin) return true;
-    const rolePerms = user?.rolePermissions || {};
     const sysSettings = user?.systemSettings || {};
     if (item.featureKey && sysSettings[item.featureKey] === false) return false;
+    if (isAdmin) return true;
+    const rolePerms = user?.rolePermissions || {};
     if (item.permissionKey && !rolePerms[item.permissionKey]) return false;
     return true;
 }

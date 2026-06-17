@@ -97,10 +97,19 @@ const useAuthStore = create<AuthState>((set) => ({
 
 // ─── checkAuth ────────────────────────────────────────────────────────────────
 
+/** Timestamp of the last successful background refresh — throttles to 1 call/30s */
+let _lastBgRefresh = 0;
+const BG_REFRESH_INTERVAL_MS = 30_000;
+
 /**
- * Called once on dashboard mount. Reads the JWT from the cookie, decodes
- * it client-side (no secret needed — verifyToken uses decodeJwt, not verify),
- * then fetches the full profile with permissions from the server.
+ * Called on dashboard mount and on every route change. Reads the JWT from the
+ * cookie, decodes it client-side, then fetches the full profile with permissions
+ * and system settings from the server.
+ *
+ * When the user is already logged in, a non-blocking background refresh is
+ * performed (throttled to once every 30 s) so that admin system-setting changes
+ * (feature toggles, email service switches, etc.) propagate to all active
+ * sessions without requiring a page reload or re-login.
  *
  * NOTE: We do NOT call logout() if there is no token — that would redirect
  * users who land on a public page. The middleware handles unauthenticated
@@ -109,9 +118,26 @@ const useAuthStore = create<AuthState>((set) => ({
 export const checkAuth = async (force: boolean = false) => {
   const store = useAuthStore.getState();
   
-  // 1. If we already have a full user and are logged in, we can skip or do a background re-verify
+  // 1. If already logged in with full profile, do a throttled silent background refresh.
+  //    force=true bypasses the throttle and awaits the result (e.g., right after saving settings).
   if (!force && store.isLoggedIn && store.user?.rolePermissions) {
-    // Optional: maybe do a silent fetch here if you want to ensure session is still valid
+    const now = Date.now();
+    if (now - _lastBgRefresh < BG_REFRESH_INTERVAL_MS) return; // Throttle
+    _lastBgRefresh = now;
+
+    // Silent background refresh — updates systemSettings without blocking navigation
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && data?.user) {
+          // Merge fresh systemSettings + rolePermissions into store without touching isLoading
+          useAuthStore.setState((state) => ({
+            user: { ...state.user, ...data.user },
+            isLoggedIn: true,
+          }));
+        }
+      })
+      .catch(() => {/* Silent — don't interrupt the user's session on network blip */});
     return;
   }
 
@@ -143,7 +169,8 @@ export const checkAuth = async (force: boolean = false) => {
       return;
     }
     
-    // Update store with full user from API
+    // Update store with full user from API + reset throttle clock
+    _lastBgRefresh = Date.now();
     await useAuthStore.getState().setUser(data.user);
   } catch (err) {
     console.error("[AuthStore] checkAuth failed:", err);
