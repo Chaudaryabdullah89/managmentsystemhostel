@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkRole } from "@/lib/checkRole";
 import { DEFAULT_ROLE_PERMISSIONS, buildDefaultPermissionsPayload, ALL_PERMISSION_KEYS } from "@/lib/permissions";
+import { revalidateTag } from "next/cache";
 
 // ─── GET /api/permissions ─────────────────────────────────────────────────────
 // Returns all role permission rows from DB, merged with defaults so callers
@@ -90,6 +91,8 @@ export async function PUT(req) {
 
     console.log(`[Permissions] Role '${role}' permissions updated by admin '${auth.user?.email}'`);
 
+    revalidateTag("permissions");
+
     return NextResponse.json({ success: true, rolePermission: updated });
   } catch (error) {
     console.error("PUT /api/permissions error:", error);
@@ -137,6 +140,8 @@ export async function POST(req) {
     });
 
     console.log(`[Permissions] Role '${role}' reset to defaults by admin '${auth.user?.email}'`);
+
+    revalidateTag("permissions");
 
     return NextResponse.json({ success: true, message: `'${role}' permissions reset to defaults.`, rolePermission: reset });
   } catch (error) {

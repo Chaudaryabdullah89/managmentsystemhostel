@@ -106,11 +106,11 @@ const useAuthStore = create<AuthState>((set) => ({
  * users who land on a public page. The middleware handles unauthenticated
  * redirects for protected routes.
  */
-export const checkAuth = async () => {
+export const checkAuth = async (force: boolean = false) => {
   const store = useAuthStore.getState();
   
   // 1. If we already have a full user and are logged in, we can skip or do a background re-verify
-  if (store.isLoggedIn && store.user?.rolePermissions) {
+  if (!force && store.isLoggedIn && store.user?.rolePermissions) {
     // Optional: maybe do a silent fetch here if you want to ensure session is still valid
     return;
   }

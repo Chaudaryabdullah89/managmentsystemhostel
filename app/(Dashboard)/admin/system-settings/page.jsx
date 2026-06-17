@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { checkAuth } from "@/hooks/Authstate";
 import {
   Loader2,
   Settings,
@@ -285,8 +286,12 @@ export default function SystemSettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(settings),
       });
-      if (res.ok) toast.success("Settings saved successfully");
-      else toast.error("Failed to save settings");
+      if (res.ok) {
+        toast.success("Settings saved successfully");
+        await checkAuth(true);
+      } else {
+        toast.error("Failed to save settings");
+      }
     } catch {
       toast.error("An error occurred");
     } finally {
@@ -324,8 +329,12 @@ export default function SystemSettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role: selectedRole, permissions: getPermObj() }),
       });
-      if (res.ok) toast.success(`${selectedRole} permissions saved`);
-      else toast.error("Failed to save permissions");
+      if (res.ok) {
+        toast.success(`${selectedRole} permissions saved`);
+        await checkAuth(true);
+      } else {
+        toast.error("Failed to save permissions");
+      }
     } catch {
       toast.error("An error occurred");
     } finally {
