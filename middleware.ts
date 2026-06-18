@@ -65,7 +65,7 @@ export async function middleware(request: NextRequest) {
     const token = request.cookies.get('token')?.value;
 
     if (!token) {
-        return NextResponse.redirect(new URL('/auth/login?reason=expired', request.url));
+        return NextResponse.redirect(new URL('/auth/login', request.url));
     }
 
     // 3️⃣ Verify JWT

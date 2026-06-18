@@ -393,17 +393,14 @@ export default function LoginPage() {
                 id="passkey-login-btn"
                 onClick={handleDirectPasskeyLogin}
                 disabled={passkeyDirectLoading}
-                className="w-full h-12 mb-5 rounded-xl border-2 border-slate-200 dark:border-border bg-slate-50 dark:bg-muted/30 hover:bg-slate-100 dark:hover:bg-muted/50 hover:border-slate-300 dark:hover:border-border/80 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 group"
+                className="w-full h-12 mb-6 rounded-xl border border-violet-200 dark:border-violet-900/50 bg-gradient-to-r from-violet-50/50 via-white/50 to-indigo-50/50 dark:from-violet-950/20 dark:via-card/50 dark:to-indigo-950/20 hover:from-violet-100/60 hover:via-white/60 hover:to-indigo-100/60 dark:hover:from-violet-950/30 dark:hover:via-card/60 dark:hover:to-indigo-950/30 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3 text-sm font-semibold text-violet-700 dark:text-violet-300 shadow-sm hover:shadow-[0_4px_20px_rgba(124,58,237,0.08)] cursor-pointer group"
               >
                 {passkeyDirectLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                  <Loader2 className="h-4 w-4 animate-spin text-violet-500 dark:text-violet-400" />
                 ) : (
                   <>
-                    <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                      <Fingerprint className="h-4 w-4 text-white" />
-                    </span>
-                    Sign in with Passkey
-                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 ml-auto" />
+                    <Fingerprint className="h-5 w-5 text-violet-600 dark:text-violet-400 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300" />
+                    <span>Sign in with Passkey</span>
                   </>
                 )}
               </button>
