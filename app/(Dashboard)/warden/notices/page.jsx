@@ -191,23 +191,21 @@ const NoticePage = () => {
 
   const getWhatsAppShareUrl = (notice) => {
     if (!notice) return "";
-    const priorityLabel = notice.priority || "NORMAL";
-    const categoryLabel = notice.category || "GENERAL";
-    const dateStr = format(new Date(notice.createdAt || Date.now()), "PPP");
-    const expiryStr = notice.expiresAt ? format(new Date(notice.expiresAt), "PPP") : "";
+    const hostelName = notice.hostel?.name || (notice.hostelId ? "Assigned Hostel" : "All Hostels");
+    const senderName = notice.author?.name || authUser?.name || "Hostel Management";
+    const signTime = format(new Date(notice.createdAt || Date.now()), "PPP p");
 
-    const text = `📢 *Notice: ${notice.title}*\n\n${notice.content}\n\n━━━━━━━━━━━━━━━━━━━━\n📌 *Priority:* ${priorityLabel}\n🏷️ *Category:* ${categoryLabel}\n📅 *Date:* ${dateStr}${expiryStr ? `\n⏳ *Expires:* ${expiryStr}` : ""}\n🏢 *Scope:* ${notice.hostelId ? "Hostel-Specific" : "Global"}`;
+    const text = `📢 *Notice: ${notice.title}*\n\n${notice.content}\n\n━━━━━━━━━━━━━━━━━━━━\n🏢 *Hostel:* ${hostelName}\n✍️ *Sender:* ${senderName}\n🕒 *Signed At:* ${signTime}`;
     return `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
   };
 
   const handleCopyNoticeText = (notice) => {
     if (!notice) return;
-    const priorityLabel = notice.priority || "NORMAL";
-    const categoryLabel = notice.category || "GENERAL";
-    const dateStr = format(new Date(notice.createdAt || Date.now()), "PPP");
-    const expiryStr = notice.expiresAt ? format(new Date(notice.expiresAt), "PPP") : "";
+    const hostelName = notice.hostel?.name || (notice.hostelId ? "Assigned Hostel" : "All Hostels");
+    const senderName = notice.author?.name || authUser?.name || "Hostel Management";
+    const signTime = format(new Date(notice.createdAt || Date.now()), "PPP p");
 
-    const text = `📢 *Notice: ${notice.title}*\n\n${notice.content}\n\n━━━━━━━━━━━━━━━━━━━━\n📌 *Priority:* ${priorityLabel}\n🏷️ *Category:* ${categoryLabel}\n📅 *Date:* ${dateStr}${expiryStr ? `\n⏳ *Expires:* ${expiryStr}` : ""}\n🏢 *Scope:* ${notice.hostelId ? "Hostel-Specific" : "Global"}`;
+    const text = `📢 *Notice: ${notice.title}*\n\n${notice.content}\n\n━━━━━━━━━━━━━━━━━━━━\n🏢 *Hostel:* ${hostelName}\n✍️ *Sender:* ${senderName}\n🕒 *Signed At:* ${signTime}`;
     navigator.clipboard.writeText(text);
     toast.success("Notice text copied in WhatsApp format!");
   };
@@ -808,11 +806,9 @@ const NoticePage = () => {
                     📢 *Notice: {broadcastNotice.title}*{"\n\n"}
                     {broadcastNotice.content}{"\n\n"}
                     ━━━━━━━━━━━━━━━━━━━━{"\n"}
-                    📌 *Priority:* {broadcastNotice.priority || "NORMAL"}{"\n"}
-                    🏷️ *Category:* {broadcastNotice.category || "GENERAL"}{"\n"}
-                    📅 *Date:* {format(new Date(broadcastNotice.createdAt || Date.now()), "PPP")}
-                    {broadcastNotice.expiresAt && `\n⏳ *Expires:* ${format(new Date(broadcastNotice.expiresAt), "PPP")}`}
-                    {`\n🏢 *Scope:* ${broadcastNotice.hostelId ? "Hostel-Specific" : "Global"}`}
+                    🏢 *Hostel:* {broadcastNotice.hostel?.name || (broadcastNotice.hostelId ? "Assigned Hostel" : "All Hostels")}{"\n"}
+                    ✍️ *Sender:* {broadcastNotice.author?.name || authUser?.name || "Hostel Management"}{"\n"}
+                    🕒 *Signed At:* {format(new Date(broadcastNotice.createdAt || Date.now()), "PPP p")}
                   </>
                 )}
               </div>

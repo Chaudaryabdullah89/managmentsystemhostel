@@ -76,12 +76,24 @@ class NoticeService {
 
             // Generate and assign UID
             const noticeUid = generateUID(UID_PREFIXES.NOTICE, crypto.randomUUID());
-            await prisma.notice.update({
+            const updatedNotice = await prisma.notice.update({
                 where: { id: newNotice.id },
-                data: { uid: noticeUid }
+                data: { uid: noticeUid },
+                include: {
+                    author: {
+                        select: {
+                            name: true,
+                            role: true,
+                            image: true
+                        }
+                    },
+                    hostel: {
+                        select: {
+                            name: true
+                        }
+                    }
+                }
             });
-
-            newNotice.uid = noticeUid;
 
             // Invalidate notices cache
             await invalidatePattern('notices:*');
@@ -180,7 +192,31 @@ class NoticeService {
                 const webhookUrl = process.env.WHATSAPP_WEBHOOK_URL;
                 setImmediate(async () => {
                     try {
-                        const formattedText = `📢 *Notice: ${title}*\n\n${content}\n\n━━━━━━━━━━━━━━━━━━━━\n📌 *Priority:* ${priority || "NORMAL"}\n🏷️ *Category:* ${category || "GENERAL"}\n📅 *Date:* ${new Date().toLocaleDateString()}`;
+                        const author = await prisma.user.findUnique({
+                            where: { id: authorId },
+                            select: { name: true }
+                        });
+                        const authorName = author?.name || "Hostel Management";
+
+                        let hostelName = "All Hostels";
+                        if (hostelId && hostelId !== 'all') {
+                            const hostel = await prisma.hostel.findUnique({
+                                where: { id: hostelId },
+                                select: { name: true }
+                            });
+                            hostelName = hostel?.name || "Hostel Sector";
+                        }
+
+                        const signTime = new Date().toLocaleString('en-US', {
+                            month: 'long',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                        });
+
+                        const formattedText = `📢 *Notice: ${title}*\n\n${content}\n\n━━━━━━━━━━━━━━━━━━━━\n🏢 *Hostel:* ${hostelName}\n✍️ *Sender:* ${authorName}\n🕒 *Signed At:* ${signTime}`;
                         await fetch(webhookUrl, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
@@ -203,7 +239,7 @@ class NoticeService {
                 });
             }
 
-            return newNotice;
+            return updatedNotice;
         } catch (error: any) {
             throw new Error(`Failed to create notice: ${error.message}`);
         }
@@ -216,6 +252,20 @@ class NoticeService {
                 data: {
                     ...data,
                     expiresAt: data.expiresAt ? new Date(data.expiresAt) : undefined,
+                },
+                include: {
+                    author: {
+                        select: {
+                            name: true,
+                            role: true,
+                            image: true
+                        }
+                    },
+                    hostel: {
+                        select: {
+                            name: true
+                        }
+                    }
                 }
             });
             await invalidatePattern('notices:*');
