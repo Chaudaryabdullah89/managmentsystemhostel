@@ -13,7 +13,7 @@ export async function GET(req, { params }) {
         return NextResponse.json({ error: "User ID is required" });
     }
 
-    const guard = await requireSelfOrRoles(Id, ["ADMIN"]);
+    const guard = await requireSelfOrRoles(Id, ["ADMIN", "WARDEN", "STAFF"]);
     if (!guard.ok) return guard.response;
 
     try {
