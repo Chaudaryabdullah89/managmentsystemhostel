@@ -136,6 +136,69 @@ const EMPTY_FORM = {
   broadcastWhatsApp: false,
 };
 
+const NOTICE_TEMPLATES = [
+  {
+    title: "📢 No Mess Today",
+    form: {
+      title: "No Mess Today",
+      content:
+        "The chef is absent today, so there will be no mess service today. We apologize for the inconvenience.",
+      category: "MESS",
+      priority: "HIGH",
+      sendEmail: true,
+      broadcastWhatsApp: true,
+    },
+  },
+  {
+    title: "⏰ Mess Timing Update",
+    form: {
+      title: "Mess Timing Update",
+      content:
+        "Please note that mess timings for today have been updated. Lunch: 1:30 PM - 3:00 PM, Dinner: 8:30 PM - 10:00 PM.",
+      category: "MESS",
+      priority: "NORMAL",
+      sendEmail: true,
+      broadcastWhatsApp: false,
+    },
+  },
+  {
+    title: "💧 Water Disruption",
+    form: {
+      title: "Water Supply Disruption",
+      content:
+        "Due to maintenance work, water supply will be suspended today from 2:00 PM to 5:00 PM. Please store water beforehand.",
+      category: "MAINTENANCE",
+      priority: "URGENT",
+      sendEmail: true,
+      broadcastWhatsApp: true,
+    },
+  },
+  {
+    title: "💳 Dues Reminder",
+    form: {
+      title: "Hostel Dues Reminder",
+      content:
+        "This is a reminder that monthly rent and mess dues are now generated. Please clear your outstanding dues by the 10th to avoid late fees.",
+      category: "FEES",
+      priority: "HIGH",
+      sendEmail: true,
+      broadcastWhatsApp: false,
+    },
+  },
+  {
+    title: "🗣️ Resident Meeting",
+    form: {
+      title: "General Resident Meeting",
+      content:
+        "A general resident meeting with the warden will be held today in the hostel lounge at 9:00 PM. Attendance is mandatory.",
+      category: "GENERAL",
+      priority: "NORMAL",
+      sendEmail: true,
+      broadcastWhatsApp: false,
+    },
+  },
+];
+
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 const NoticePage = () => {
@@ -679,6 +742,33 @@ const NoticePage = () => {
           </div>
 
           <div className="p-7 space-y-5 overflow-y-auto max-h-[60vh]">
+            {/* Quick Templates Section */}
+            {!editingNotice && (
+              <div className="space-y-2 p-3 bg-indigo-50/50 dark:bg-muted/10 rounded-2xl border border-indigo-100/50 dark:border-border">
+                <span className="text-[9px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 ml-0.5 block">
+                  ✨ Quick Broadcast Templates
+                </span>
+                <div className="flex flex-wrap gap-2 max-h-28 overflow-y-auto p-0.5 scrollbar-hide">
+                  {NOTICE_TEMPLATES.map((tmpl, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setFormData((prev) => ({
+                          ...prev,
+                          ...tmpl.form,
+                        }));
+                        toast.success(`Loaded template: "${tmpl.form.title}"`);
+                      }}
+                      className="h-8 px-3 rounded-lg border border-indigo-100 dark:border-border bg-white dark:bg-card text-[9px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-muted/20 transition-all shadow-sm cursor-pointer"
+                    >
+                      {tmpl.title}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Title */}
             <div className="space-y-1.5">
               <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
