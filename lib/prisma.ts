@@ -1,4 +1,10 @@
 import { PrismaClient } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
+
+// Override Decimal serialization globally so they serialize as numbers instead of strings
+Decimal.prototype.toJSON = function() {
+    return this.toNumber() as any;
+};
 
 const prismaClientSingleton = () => {
     return new PrismaClient();

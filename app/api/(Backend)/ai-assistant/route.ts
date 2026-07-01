@@ -499,9 +499,9 @@ export async function POST(req: Request) {
                 const overdue = allPayments.filter((p: any) => p.status === "OVERDUE");
                 const paid = allPayments.filter((p: any) => p.status === "PAID");
 
-                const totalPending = unpaid.reduce((s: number, p: any) => s + p.amount, 0);
-                const totalOverdue = overdue.reduce((s: number, p: any) => s + p.amount, 0);
-                const totalPaid = paid.reduce((s: number, p: any) => s + p.amount, 0);
+                const totalPending = unpaid.reduce((s: number, p: any) => s + Number(p.amount), 0);
+                const totalOverdue = overdue.reduce((s: number, p: any) => s + Number(p.amount), 0);
+                const totalPaid = paid.reduce((s: number, p: any) => s + Number(p.amount), 0);
 
                 const now = new Date();
                 const soon = unpaid.filter((p: any) => {
@@ -570,7 +570,7 @@ export async function POST(req: Request) {
                     if (p.receiptUrl) historyLines += `   🔗 [Download Receipt](${p.receiptUrl})\n`;
                 });
 
-                const totalAll = payments.reduce((s: number, p: any) => s + p.amount, 0);
+                const totalAll = payments.reduce((s: number, p: any) => s + Number(p.amount), 0);
                 historyLines += `\n📊 **Total Transacted:** PKR ${totalAll.toLocaleString()} across ${payments.length} records.`;
 
                 reply = historyLines;
@@ -616,7 +616,7 @@ export async function POST(req: Request) {
 
                 let overdueLines = ``;
                 if (overduePay.length > 0) {
-                    const totalOD = overduePay.reduce((s: number, p: any) => s + p.amount, 0);
+                    const totalOD = overduePay.reduce((s: number, p: any) => s + Number(p.amount), 0);
                     overdueLines = `🚨 **Overdue Bills — Immediate Action Required!**\n\n`;
                     overdueLines += `You have **${overduePay.length} overdue bill${overduePay.length !== 1 ? 's' : ''}** totaling **PKR ${totalOD.toLocaleString()}**.\n\n`;
                     overduePay.forEach((p: any, i: number) => {
@@ -669,7 +669,7 @@ export async function POST(req: Request) {
 
                     const approved = refunds.filter((r: any) => r.status === "APPROVED");
                     if (approved.length > 0) {
-                        const total = approved.reduce((s: number, r: any) => s + r.amount, 0);
+                        const total = approved.reduce((s: number, r: any) => s + Number(r.amount), 0);
                         refundLines += `\n✅ **Approved Refunds:** PKR ${total.toLocaleString()} — Contact the office for collection.`;
                     }
                     reply = refundLines;
@@ -876,7 +876,7 @@ export async function POST(req: Request) {
                 Manager: ${hostel?.User_Hostel_managerIdToUser?.name || 'Hostel Staff'}
                 
                 FINANCIAL STATUS:
-                - Unpaid Bills: ${unpaidContext.length} (Total: PKR ${unpaidContext.reduce((s: number, p: any) => s + p.amount, 0)})
+                - Unpaid Bills: ${unpaidContext.length} (Total: PKR ${unpaidContext.reduce((s: number, p: any) => s + Number(p.amount), 0)})
                 - Recent Receipts: ${recentPaidContext.map((p: any) => `${p.type} on ${new Date(p.date || p.createdAt).toLocaleDateString()}: ${p.receiptUrl || 'No link'}`).join("; ")}
                 
                 Recent Notice: ${hostel?.Notice?.[0]?.title || 'Stay tuned for updates'}

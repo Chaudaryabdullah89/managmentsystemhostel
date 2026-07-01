@@ -165,8 +165,8 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
     }, [filteredExpenses]);
 
     const stats = useMemo(() => {
-        const total = filteredExpenses.reduce((s, e) => s + (e.amount || 0), 0);
-        const paid = filteredExpenses.filter(e => e.status === 'PAID').reduce((s, e) => s + (e.amount || 0), 0);
+        const total = filteredExpenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+        const paid = filteredExpenses.filter(e => e.status === 'PAID').reduce((s, e) => s + Number(e.amount || 0), 0);
         const pending = filteredExpenses.filter(e => e.status === 'PENDING').length;
         const count = filteredExpenses.length;
         return { total, paid, pending, count };

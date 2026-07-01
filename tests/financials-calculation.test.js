@@ -52,17 +52,17 @@ describe("GET /api/admin/financials calculations", () => {
         expect(body.success).toBe(true);
 
         // Verify summary values are proper numbers and not concatenated strings
-        expect(body.data.summary.totalRevenue).toBe(22000);
-        expect(body.data.summary.totalExpenses).toBe(25000);
-        expect(body.data.summary.netProfit).toBe(-3000);
-        expect(body.data.summary.profitMargin).toBeCloseTo(-13.636, 3);
+        expect(body.summary.totalRevenue).toBe(22000);
+        expect(body.summary.totalExpenses).toBe(25000);
+        expect(body.summary.netProfit).toBe(-3000);
+        expect(body.summary.profitMargin).toBeCloseTo(-13.636, 3);
 
         // Verify breakdown lists have numeric values
-        expect(body.data.collectionsBreakdown.RENT).toBe(22000);
-        expect(body.data.collectionsBreakdown.SECURITY_DEPOSIT).toBe(0);
+        expect(body.collectionsBreakdown.RENT).toBe(22000);
+        expect(body.collectionsBreakdown.SECURITY_DEPOSIT).toBe(0);
         
         // Verify timeline contains parsed numeric values
-        const juneTimeline = body.data.timeline.find(t => t.name === "Jun 2026");
+        const juneTimeline = body.timeline.find(t => t.name === "Jun 2026");
         expect(juneTimeline).toBeDefined();
         expect(juneTimeline.revenue).toBe(22000);
         expect(juneTimeline.expenses).toBe(25000);
