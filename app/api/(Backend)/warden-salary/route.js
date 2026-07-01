@@ -75,7 +75,8 @@ export async function POST(request) {
             paymentMethod = "BANK_TRANSFER",
             paymentDate,
             notes = "",
-            hostelId
+            hostelId,
+            status = "PENDING"
         } = body;
 
         if (!month) {
@@ -117,7 +118,7 @@ export async function POST(request) {
                     paymentMethod,
                     paymentDate: paymentDate ? new Date(paymentDate) : new Date(),
                     notes: notes || "Manual Entry",
-                    status: "PAID",
+                    status,
                     type: "WARDEN_SALARY",
                     updatedAt: new Date()
                 },
@@ -135,8 +136,8 @@ export async function POST(request) {
 
             payment.uid = wardenPaymentUid;
 
-            // Email Notification
-            if (warden.email) {
+            // Email Notification only if status is PAID
+            if (status === "PAID" && warden.email) {
                 const [mName, yName] = month.split(" ");
                 const branding = await getBranding();
                 sendEmail({
@@ -156,7 +157,9 @@ export async function POST(request) {
 
             return NextResponse.json({
                 success: true,
-                message: `Salary of PKR ${Number(totalAmount).toLocaleString()} paid to ${warden.name}`,
+                message: status === "PAID" 
+                    ? `Salary of PKR ${Number(totalAmount).toLocaleString()} paid to ${warden.name}`
+                    : `Salary of PKR ${Number(totalAmount).toLocaleString()} initiated for ${warden.name}`,
                 payment
             });
         }
@@ -187,7 +190,7 @@ export async function POST(request) {
 
             const bSalary = warden.basicSalary || 0;
             const allow = warden.allowances || 0;
-            const totalAmount = bSalary + allow;
+            const totalAmount = Number(bSalary) + Number(allow);
 
             const newPayment = await prisma.wardenPayment.create({
                 data: {
@@ -196,7 +199,7 @@ export async function POST(request) {
                     amount: totalAmount,
                     basicSalary: bSalary,
                     month,
-                    status: "PAID",
+                    status: "PENDING",
                     type: "WARDEN_SALARY",
                     notes: "Automated Payroll Generation",
                     updatedAt: new Date()
@@ -208,24 +211,6 @@ export async function POST(request) {
                 where: { id: newPayment.id },
                 data: { uid: wardenPaymentUid }
             });
-
-            if (warden.email) {
-                const [mName, yName] = month.split(" ");
-                const branding = await getBranding();
-                sendEmail({
-                    to: warden.email,
-                    subject: `Salary Disbursed — ${month} — ${branding.companyName}`,
-                    html: monthlyRentEmail({
-                        name: warden.name,
-                        amount: totalAmount,
-                        month: mName || month,
-                        year: yName || new Date().getFullYear(),
-                        hostelName: null,
-                        type: "SALARY",
-                        branding,
-                    }),
-                }).catch(err => console.error("[Email] Bulk Warden salary email failed:", err));
-            }
 
             createdCount++;
         }
@@ -260,19 +245,72 @@ export async function DELETE(request) {
 
 // PATCH /api/warden-salary (Update for Appeals, etc.)
 export async function PATCH(request) {
+    const auth = await checkRole(['WARDEN', 'ADMIN']);
+    if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
+
     try {
         const body = await request.json();
         const { id, ...data } = body;
 
         if (!id) return NextResponse.json({ success: false, error: "ID required" }, { status: 400 });
 
+        const currentPayment = await prisma.wardenPayment.findUnique({
+            where: { id },
+            include: { Warden: true }
+        });
+
+        if (!currentPayment) {
+            return NextResponse.json({ success: false, error: "Record not found" }, { status: 404 });
+        }
+
+        const basicSalary = data.basicSalary !== undefined ? Number(data.basicSalary) : Number(currentPayment.basicSalary);
+        const bonuses = data.bonuses !== undefined ? Number(data.bonuses) : Number(currentPayment.bonuses);
+        const deductions = data.deductions !== undefined ? Number(data.deductions) : Number(currentPayment.deductions);
+        const allowances = Number(currentPayment.Warden?.allowances || 0);
+
+        const totalAmount = data.amount !== undefined ? Number(data.amount) : (basicSalary + allowances + bonuses - deductions);
+
         const updated = await prisma.wardenPayment.update({
             where: { id },
-            data: data
+            data: {
+                ...data,
+                amount: totalAmount,
+                basicSalary,
+                bonuses,
+                deductions,
+                updatedAt: new Date()
+            },
+            include: {
+                Warden: true
+            }
         });
+
+        // Trigger email notification if status is updated to PAID
+        if (data.status === 'PAID' && currentPayment.status !== 'PAID') {
+            const warden = updated.Warden;
+            if (warden && warden.email) {
+                const month = updated.month;
+                const [mName, yName] = month.split(" ");
+                const branding = await getBranding();
+                sendEmail({
+                    to: warden.email,
+                    subject: `Salary Disbursed — ${month} — ${branding.companyName}`,
+                    html: monthlyRentEmail({
+                        name: warden.name,
+                        amount: Number(updated.amount),
+                        month: mName || month,
+                        year: yName || new Date().getFullYear(),
+                        hostelName: null,
+                        type: "SALARY",
+                        branding,
+                    }),
+                }).catch(err => console.error("[Email] Warden salary patch email failed:", err));
+            }
+        }
 
         return NextResponse.json({ success: true, payment: updated });
     } catch (error) {
+        console.error("Warden Salary PATCH Error:", error);
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }

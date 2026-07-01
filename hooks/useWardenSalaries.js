@@ -93,9 +93,9 @@ export function useDeleteWardenSalary() {
             return data;
         },
         onMutate: async (newRecord) => {
-            await queryClient.cancelQueries({ queryKey: ["salaries"] });
-            const previousData = queryClient.getQueryData(["salaries"]);
-            queryClient.setQueryData(["salaries"], (old) => {
+            await queryClient.cancelQueries({ queryKey: ["warden-salaries"] });
+            const previousData = queryClient.getQueryData(["warden-salaries"]);
+            queryClient.setQueryData(["warden-salaries"], (old) => {
                 if (!old || !Array.isArray(old)) return old;
                 // Basic snapshot fallback
                 return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
@@ -104,11 +104,11 @@ export function useDeleteWardenSalary() {
         },
         onError: (err, newRecord, context) => {
             if (context?.previousData) {
-                queryClient.setQueryData(["salaries"], context.previousData);
+                queryClient.setQueryData(["warden-salaries"], context.previousData);
             }
         },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["salaries"] });
+            queryClient.invalidateQueries({ queryKey: ["warden-salaries"] });
         },
         onSuccess: () => {
             toast.success("Salary record removed");
@@ -130,9 +130,9 @@ export function useUpdateWardenSalary() {
             return resData;
         },
         onMutate: async (newRecord) => {
-            await queryClient.cancelQueries({ queryKey: ["salaries"] });
-            const previousData = queryClient.getQueryData(["salaries"]);
-            queryClient.setQueryData(["salaries"], (old) => {
+            await queryClient.cancelQueries({ queryKey: ["warden-salaries"] });
+            const previousData = queryClient.getQueryData(["warden-salaries"]);
+            queryClient.setQueryData(["warden-salaries"], (old) => {
                 if (!old || !Array.isArray(old)) return old;
                 // Basic snapshot fallback
                 return old.map(item => item.id === newRecord.id ? { ...item, ...newRecord } : item);
@@ -141,11 +141,11 @@ export function useUpdateWardenSalary() {
         },
         onError: (err, newRecord, context) => {
             if (context?.previousData) {
-                queryClient.setQueryData(["salaries"], context.previousData);
+                queryClient.setQueryData(["warden-salaries"], context.previousData);
             }
         },
         onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ["salaries"] });
+            queryClient.invalidateQueries({ queryKey: ["warden-salaries"] });
         },
         onSuccess: () => {
             toast.success("Salary updated successfully");

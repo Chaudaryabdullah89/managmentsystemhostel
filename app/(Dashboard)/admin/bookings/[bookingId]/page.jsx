@@ -636,7 +636,9 @@ const BookingDetailsPage = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/10">
+                {" "}
                 <div className="space-y-1">
+                  {" "}
                   <span className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest block">
                     Total Payable
                   </span>
