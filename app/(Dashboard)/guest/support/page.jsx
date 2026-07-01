@@ -149,6 +149,8 @@ const GuestSupportPage = () => {
         issue.description.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const activeIssue = selectedIssue ? (issues.find(i => i.id === selectedIssue.id) || selectedIssue) : null;
+
     const handleSendComment = (complaintId) => {
         if (!newComment.trim() || isCheckedOut) return;
         addCommentMutation.mutate({
@@ -472,31 +474,31 @@ const GuestSupportPage = () => {
             {/* Detailed Issue Modal (Same as existing complaint logic but updated style) */}
             <Dialog open={!!selectedIssue} onOpenChange={(open) => !open && setSelectedIssue(null)}>
                 <DialogContent className="max-w-xl p-0 overflow-hidden border-none rounded-[3rem] shadow-2xl bg-white dark:bg-card">
-                    {selectedIssue && (
+                    {activeIssue && (
                         <div>
                             <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/20">
                                 <div className="flex items-center gap-4">
-                                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center text-white shadow-lg ${selectedIssue.type === 'MAINTENANCE' ? 'bg-amber-600 shadow-amber-100' : 'bg-indigo-600 shadow-indigo-100'}`}>
-                                        {selectedIssue.type === 'MAINTENANCE' ? <Wrench className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
+                                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center text-white shadow-lg ${activeIssue.type === 'MAINTENANCE' ? 'bg-amber-600 shadow-amber-100' : 'bg-indigo-600 shadow-indigo-100'}`}>
+                                        {activeIssue.type === 'MAINTENANCE' ? <Wrench className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Issue #{selectedIssue.id.slice(-6).toUpperCase()}</h3>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">{selectedIssue.category?.replace('_', ' ') || 'GENERAL'} • {selectedIssue.status}</p>
+                                        <h3 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Issue #{activeIssue.id.slice(-6).toUpperCase()}</h3>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">{activeIssue.category?.replace('_', ' ') || 'GENERAL'} • {activeIssue.status}</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="p-8 space-y-8">
                                 <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-3">
-                                    <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-widest">{selectedIssue.title}</h4>
-                                    <p className="text-sm text-slate-600 font-medium leading-relaxed italic">"{selectedIssue.description}"</p>
+                                    <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-widest">{activeIssue.title}</h4>
+                                    <p className="text-sm text-slate-600 font-medium leading-relaxed italic">"{activeIssue.description}"</p>
                                 </div>
 
                                 <div className="space-y-6">
                                     <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] pl-2">Timeline Details</h4>
 
                                     <div className="space-y-4 max-h-[350px] overflow-y-auto pr-3 custom-scrollbar">
-                                        {selectedIssue.comments?.map((comment) => (
+                                        {activeIssue.comments?.map((comment) => (
                                             <div key={comment.id} className={`flex gap-3 ${comment.User.id === user?.id ? 'flex-row-reverse' : ''}`}>
                                                 <div className={`h-8 w-8 rounded-xl flex items-center justify-center shrink-0 border ${comment.User.id === user?.id ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-100 border-slate-200 text-slate-500'}`}>
                                                     <span className="text-xs font-bold leading-none">{comment.User.name?.charAt(0)}</span>
@@ -510,7 +512,7 @@ const GuestSupportPage = () => {
                                                 </div>
                                             </div>
                                         ))}
-                                        {(!selectedIssue.comments || selectedIssue.comments.length === 0) && (
+                                        {(!activeIssue.comments || activeIssue.comments.length === 0) && (
                                             <div className="text-center py-10 opacity-30 select-none">
                                                 <ClipboardList className="h-10 w-10 mx-auto mb-2" />
                                                 <p className="text-[10px] font-bold uppercase tracking-widest">Awaiting interaction</p>
@@ -527,14 +529,14 @@ const GuestSupportPage = () => {
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter' && !e.shiftKey) {
                                                     e.preventDefault();
-                                                    handleSendComment(selectedIssue.id);
+                                                    handleSendComment(activeIssue.id);
                                                 }
                                             }}
                                         />
                                         <Button
                                             size="icon"
                                             className="h-14 w-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 shrink-0 shadow-lg shadow-indigo-100 transition-all hover:scale-105"
-                                            onClick={() => handleSendComment(selectedIssue.id)}
+                                            onClick={() => handleSendComment(activeIssue.id)}
                                             disabled={addCommentMutation.isPending || !newComment.trim()}
                                         >
                                             <Send className="h-5 w-5 text-white" />

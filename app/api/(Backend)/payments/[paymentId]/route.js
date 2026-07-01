@@ -47,9 +47,14 @@ export async function GET(request, { params }) {
 }
 
 export async function PATCH(request, { params }) {
-    const guard = await requireRoles(['ADMIN', 'WARDEN']);
+    // Guests and Residents can submit payment notifications (receipt upload).
+    // ADMIN and WARDEN can perform full status updates.
+    const guard = await requireRoles(['ADMIN', 'WARDEN', 'GUEST', 'RESIDENT']);
     if (!guard.ok) return guard.response;
     const auth = { user: guard.user };
+
+    const isPrivileged = ['ADMIN', 'WARDEN'].includes(auth.user.role);
+    const isGuest = ['GUEST', 'RESIDENT'].includes(auth.user.role);
 
     try {
         const { paymentId } = await params;
@@ -66,6 +71,14 @@ export async function PATCH(request, { params }) {
             },
         });
         if (!existingPayment) return errorResponse("Payment not found", 404, { error: "Payment not found" });
+
+        // Security: Guests/Residents can only update their OWN payments
+        if (isGuest) {
+            const callerId = auth.user.userId || auth.user.id || auth.user.sub;
+            if (existingPayment.userId !== callerId) {
+                return errorResponse("Access Denied: You can only update your own payments.", 403, { error: "Access Denied: You can only update your own payments." });
+            }
+        }
 
         // Security: If warden, verify payment belongs to their hostel before update
         if (auth.user.role === 'WARDEN') {
@@ -96,6 +109,17 @@ export async function PATCH(request, { params }) {
 
         const body = await request.json();
         const { status, notes, amount, type, method, receiptUrl } = body;
+
+        // Guests/Residents can ONLY submit receipt proof — block privileged fields
+        if (isGuest) {
+            if (status !== undefined && status !== 'PENDING') {
+                return errorResponse("Access Denied: Guests cannot change payment status.", 403, { error: "Access Denied: Guests cannot change payment status." });
+            }
+            if (amount !== undefined || type !== undefined) {
+                return errorResponse("Access Denied: Guests cannot modify payment amount or type.", 403, { error: "Access Denied: Guests cannot modify payment amount or type." });
+            }
+        }
+
         const normalizedStatus = normalizePaymentStatusInput(status);
         if (normalizedStatus && !isValidPaymentTransition(existingPayment.status, normalizedStatus)) {
             return errorResponse(
@@ -107,10 +131,11 @@ export async function PATCH(request, { params }) {
 
         // Build update data dynamically
         const updateData = {};
-        if (normalizedStatus !== undefined) updateData.status = normalizedStatus;
+        // Only ADMIN/WARDEN can change status
+        if (isPrivileged && normalizedStatus !== undefined) updateData.status = normalizedStatus;
         if (notes !== undefined) updateData.notes = notes;
-        if (amount !== undefined) updateData.amount = parseFloat(amount);
-        if (type !== undefined) updateData.type = type;
+        if (isPrivileged && amount !== undefined) updateData.amount = parseFloat(amount);
+        if (isPrivileged && type !== undefined) updateData.type = type;
         if (method !== undefined) updateData.method = method;
         if (receiptUrl !== undefined) updateData.receiptUrl = receiptUrl;
         updateData.updatedAt = new Date();

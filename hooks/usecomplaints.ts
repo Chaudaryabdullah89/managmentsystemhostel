@@ -104,9 +104,11 @@ export function useUpdateComplaint() {
             }
             toast.error(error.message || "Failed to update complaint");
         },
-        onSettled: () => {
+        onSettled: (data, error, variables) => {
             // Always refetch after error or success to ensure strict synchronization
             queryClient.invalidateQueries({ queryKey: ComplaintQueryKeys.all });
+            queryClient.invalidateQueries({ queryKey: ["complaints", variables.id] });
+            queryClient.invalidateQueries({ queryKey: ["users", "detailed"] });
         },
         onSuccess: () => {
             toast.success("Complaint status updated");
@@ -127,8 +129,11 @@ export function useAddComplaintComment() {
             if (!data.success) throw new Error(data.error);
             return data.data;
         },
-        onSuccess: () => {
+        onSuccess: (data, variables) => {
             toast.success("Message sent");
+            queryClient.invalidateQueries({ queryKey: ComplaintQueryKeys.all });
+            queryClient.invalidateQueries({ queryKey: ["complaints", variables.complaintId] });
+            queryClient.invalidateQueries({ queryKey: ["users", "detailed"] });
         },
     });
 }

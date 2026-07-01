@@ -107,7 +107,7 @@ describe("RBAC regression coverage", () => {
 
         expect(response.status).toBe(401);
         expect(body.success).toBe(false);
-        expect(mockRequireRoles).toHaveBeenCalledWith(["ADMIN", "WARDEN"]);
+        expect(mockRequireRoles).toHaveBeenCalledWith(["ADMIN", "WARDEN", "GUEST", "RESIDENT"]);
     });
 
     it("blocks non-admin expense status mutations", async () => {

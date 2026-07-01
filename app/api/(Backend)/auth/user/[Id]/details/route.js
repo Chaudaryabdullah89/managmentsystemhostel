@@ -93,6 +93,16 @@ export async function GET(req, { params }) {
                         images: true,
                         createdAt: true,
                         updatedAt: true,
+                        comments: {
+                            include: {
+                                User: {
+                                    select: { id: true, name: true, image: true, role: true }
+                                }
+                            },
+                            orderBy: {
+                                createdAt: 'asc'
+                            }
+                        }
                     }
                 },
                 Maintenance_userIdToUser: {
@@ -145,6 +155,16 @@ export async function GET(req, { params }) {
                         images: true,
                         createdAt: true,
                         updatedAt: true,
+                        comments: {
+                            include: {
+                                User: {
+                                    select: { id: true, name: true, image: true, role: true }
+                                }
+                            },
+                            orderBy: {
+                                createdAt: 'asc'
+                            }
+                        }
                     }
                 },
                 Expense_Expense_submittedByIdToUser: {

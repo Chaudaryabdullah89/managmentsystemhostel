@@ -236,12 +236,12 @@ const ComplaintDetailPage = ({ params }) => {
                                         <p className="text-[10px] font-bold text-gray-500 dark:text-muted-foreground uppercase mt-0.5">Room {complaint.roomNumber || 'N/A'}</p>
                                     </div>
                                 </div>
-                                <div className="flex gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border">
-                                    <ShieldCheck className="h-5 w-5 text-gray-400 dark:text-muted-foreground mt-0.5" />
+                                <div className="flex gap-4 p-4 rounded-2xl bg-indigo-50/30 dark:bg-indigo-950/10 border border-indigo-100/50 dark:border-indigo-900/20">
+                                    <ShieldCheck className="h-5 w-5 text-indigo-400 mt-0.5" />
                                     <div>
-                                        <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mb-1">Assigned To</p>
-                                        <p className="text-xs font-bold text-gray-900 dark:text-foreground uppercase">{complaint.User_Complaint_assignedToIdToUser?.name || 'Unassigned'}</p>
-                                        <p className="text-[10px] font-bold text-gray-500 dark:text-muted-foreground uppercase mt-0.5">{complaint.User_Complaint_assignedToIdToUser ? 'Staff Member' : 'Pending Assignment'}</p>
+                                        <p className="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Assigned Handler</p>
+                                        <p className="text-xs font-bold text-gray-900 dark:text-foreground uppercase">{complaint.User_Complaint_assignedToIdToUser?.name || 'Auto-Assigned'}</p>
+                                        <p className="text-[10px] font-bold text-gray-500 dark:text-muted-foreground uppercase mt-0.5">Hostel Warden</p>
                                     </div>
                                 </div>
                             </div>

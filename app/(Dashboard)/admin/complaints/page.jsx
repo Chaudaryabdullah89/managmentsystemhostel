@@ -117,9 +117,6 @@ const ComplaintDetailDialog = ({
   user,
 }) => {
   const [notes, setNotes] = useState(complaint.resolutionNotes ?? "");
-  const [assignedStaffId, setAssignedStaffId] = useState(
-    complaint.assignedToId ?? "",
-  );
   const [newComment, setNewComment] = useState("");
 
   const handleUpdate = (status) => {
@@ -128,7 +125,6 @@ const ComplaintDetailDialog = ({
         id: complaint.id,
         status,
         resolutionNotes: notes,
-        assignedToId: assignedStaffId || undefined,
       },
       { onSuccess: () => toast.success(`Complaint marked as ${status}`) },
     );
@@ -147,20 +143,20 @@ const ComplaintDetailDialog = ({
   );
 
   return (
-    <DialogContent className="max-w-2xl p-0 overflow-hidden border-none rounded-3xl shadow-2xl">
-      <div className="bg-white dark:bg-card">
+    <DialogContent className="max-w-2xl p-0 overflow-hidden border-none rounded-[2.5rem] shadow-2xl bg-white dark:bg-card">
+      <div>
         {/* Modal Header */}
-        <div className="p-7 border-b border-gray-50 flex items-center gap-4 bg-gray-50 dark:bg-muted/10/40">
+        <div className="p-8 border-b border-gray-50 dark:border-border/50 flex items-center gap-4 bg-gray-50/50 dark:bg-muted/5">
           <div
-            className={`h-10 w-10 rounded-xl flex items-center justify-center text-white shadow-lg ${getRibbonColor(complaint.status)}`}
+            className={`h-12 w-12 rounded-2xl flex items-center justify-center text-white shadow-lg ${getRibbonColor(complaint.status)}`}
           >
-            <MessageSquare className="h-4.5 w-4.5 h-5 w-5" />
+            <MessageSquare className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight truncate">
+            <h3 className="text-lg font-black text-gray-900 dark:text-foreground uppercase tracking-tight truncate italic">
               {complaint.title}
             </h3>
-            <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-0.5">
+            <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">
               #{complaint.uid ?? complaint.id.slice(-8).toUpperCase()}{" "}
               &nbsp;·&nbsp; {complaint.category}
             </p>
@@ -168,20 +164,20 @@ const ComplaintDetailDialog = ({
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
-              className={`${getPriorityStyle(complaint.priority)} px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border`}
+              className={`${getPriorityStyle(complaint.priority)} px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border`}
             >
               {complaint.priority}
             </Badge>
             <Badge
               variant="outline"
-              className={`${getStatusStyle(complaint.status)} px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border`}
+              className={`${getStatusStyle(complaint.status)} px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border`}
             >
               {complaint.status.replace("_", " ")}
             </Badge>
           </div>
         </div>
 
-        <div className="p-7 space-y-6 max-h-[70vh] overflow-y-auto">
+        <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
           {/* Meta Grid */}
           <div className="grid grid-cols-2 gap-4">
             {[
@@ -192,28 +188,28 @@ const ComplaintDetailDialog = ({
               },
               {
                 icon: Calendar,
-                label: "Filed",
+                label: "Filed Date",
                 value: format(new Date(complaint.createdAt), "MMM dd, yyyy"),
               },
               {
                 icon: Building2,
-                label: "Hostel",
+                label: "Hostel Name",
                 value: complaint.Hostel?.name ?? "N/A",
               },
               {
                 icon: Clock,
-                label: "Age",
+                label: "Ticket Age",
                 value: age === 0 ? "Today" : `${age} days ago`,
               },
             ].map(({ icon: Icon, label, value }) => (
               <div
                 key={label}
-                className="flex flex-col gap-1 p-4 bg-gray-50 dark:bg-muted/10/60 rounded-2xl border border-gray-100 dark:border-border"
+                className="flex flex-col gap-1 p-4 bg-gray-50/50 dark:bg-muted/10/40 rounded-2xl border border-gray-100 dark:border-border/50"
               >
                 <span className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground flex items-center gap-1.5">
-                  <Icon className="h-3 w-3" /> {label}
+                  <Icon className="h-3.5 w-3.5" /> {label}
                 </span>
-                <span className="text-sm font-bold text-gray-900 dark:text-foreground truncate">
+                <span className="text-xs font-bold text-gray-900 dark:text-foreground truncate uppercase">
                   {value}
                 </span>
               </div>
@@ -221,133 +217,126 @@ const ComplaintDetailDialog = ({
           </div>
 
           {/* Description */}
-          <div className="p-5 bg-gray-50 dark:bg-muted/10 rounded-2xl border border-gray-100 dark:border-border">
-            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground mb-2">
-              Description
+          <div className="p-6 bg-gray-50 dark:bg-muted/10 rounded-[2rem] border border-gray-100 dark:border-border/50">
+            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground mb-2 italic">
+              Student Statement
             </p>
-            <p className="text-sm text-gray-600 dark:text-muted-foreground font-medium leading-relaxed">
+            <p className="text-sm text-gray-600 dark:text-muted-foreground font-medium leading-relaxed italic">
               "{complaint.description}"
             </p>
           </div>
 
-          {/* Resolution notes (read‑only) */}
+          {/* Handler Info */}
+          <div className="flex items-center gap-3 p-4 bg-indigo-50/30 dark:bg-indigo-950/10 rounded-2xl border border-indigo-100/50 dark:border-indigo-900/20">
+            <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xs font-black">
+              {complaint.User_Complaint_assignedToIdToUser?.name?.charAt(0) || "W"}
+            </div>
+            <div>
+              <p className="text-[8px] font-black uppercase tracking-widest text-indigo-400">Assigned Handler</p>
+              <p className="text-xs font-bold text-gray-900 dark:text-foreground">
+                {complaint.User_Complaint_assignedToIdToUser?.name || "Auto-Assigned to Warden"}
+              </p>
+            </div>
+          </div>
+
+          {/* Resolution notes (read‑only if resolved/rejected) */}
           {complaint.resolutionNotes && (
-            <div className="p-5 bg-emerald-50 rounded-2xl border border-emerald-100">
+            <div className="p-6 bg-emerald-50 dark:bg-emerald-950/10 rounded-[2rem] border border-emerald-100 dark:border-emerald-900/20">
               <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700">
-                  Fix
+                <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
+                  Resolution Protocol Notes
                 </span>
               </div>
-              <p className="text-sm text-emerald-800 font-medium leading-relaxed">
-                {complaint.resolutionNotes}
+              <p className="text-sm text-emerald-800 dark:text-emerald-300 font-medium leading-relaxed italic">
+                "{complaint.resolutionNotes}"
               </p>
             </div>
           )}
 
           {/* Action Controls */}
-          {(complaint.status === "PENDING" ||
-            complaint.status === "IN_PROGRESS") && (
-            <div className="space-y-4 pt-2 border-t border-gray-100 dark:border-border">
+          {(complaint.status === "PENDING" || complaint.status === "IN_PROGRESS") && (
+            <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-border/50">
               <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
-                Status
+                Resolution Input
               </p>
               <div className="space-y-2">
-                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400 dark:text-muted-foreground">
-                  Assign
-                </Label>
-                <Select
-                  defaultValue={complaint.assignedToId}
-                  onValueChange={setAssignedStaffId}
-                >
-                  <SelectTrigger className="h-10 rounded-xl border-gray-100 dark:border-border text-xs font-bold uppercase tracking-wider shadow-sm focus:ring-indigo-300">
-                    <SelectValue placeholder="Staff" />
-                  </SelectTrigger>
-                  <SelectContent className="rounded-2xl shadow-2xl">
-                    {staffMembers.map((s) => (
-                      <SelectItem
-                        key={s.userId}
-                        value={s.userId}
-                        className="text-xs font-bold uppercase"
-                      >
-                        {s.User.name} — {s.designation}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400 dark:text-muted-foreground">
-                  Details
+                <Label className="text-[9px] font-black uppercase tracking-wider text-gray-400 dark:text-muted-foreground pl-1">
+                  Diagnostics Notes / Resolution Details
                 </Label>
                 <Textarea
-                  placeholder="Notes"
+                  placeholder="Document resolution findings or rejection reasons here..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="min-h-[80px] text-xs font-medium rounded-xl border-gray-100 dark:border-border resize-none focus:ring-indigo-300"
+                  className="min-h-[100px] text-xs font-medium rounded-2xl border-gray-100 dark:border-border bg-gray-50 focus:bg-white dark:bg-card resize-none p-4"
                 />
               </div>
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  onClick={() => handleUpdate("RESOLVED")}
-                  disabled={updateMutation.isPending}
-                  className="h-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-wider shadow-lg shadow-emerald-600/20"
-                >
-                  <CheckCircle className="h-3.5 w-3.5 mr-1.5" /> Resolve
-                </Button>
-                <Button
-                  onClick={() => handleUpdate("IN_PROGRESS")}
-                  disabled={updateMutation.isPending}
-                  variant="outline"
-                  className="h-10 rounded-xl border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-[10px] font-black uppercase tracking-wider"
-                >
-                  <Zap className="h-3.5 w-3.5 mr-1.5" /> Assign
-                </Button>
+              <div className="flex gap-2.5">
+                {complaint.status === "PENDING" && (
+                  <Button
+                    onClick={() => handleUpdate("IN_PROGRESS")}
+                    disabled={updateMutation.isPending}
+                    className="flex-1 h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase tracking-widest shadow-md transition-all active:scale-[0.98]"
+                  >
+                    <Zap className="h-3.5 w-3.5 mr-1.5" /> Start Processing
+                  </Button>
+                )}
+                {complaint.status === "IN_PROGRESS" && (
+                  <Button
+                    onClick={() => handleUpdate("RESOLVED")}
+                    disabled={updateMutation.isPending || !notes.trim()}
+                    className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-widest shadow-md transition-all active:scale-[0.98] disabled:opacity-50"
+                  >
+                    <CheckCircle className="h-3.5 w-3.5 mr-1.5" /> Resolve Issue
+                  </Button>
+                )}
                 <Button
                   onClick={() => handleUpdate("REJECTED")}
                   disabled={updateMutation.isPending}
                   variant="outline"
-                  className="h-10 rounded-xl border-rose-200 text-rose-500 hover:bg-rose-50 text-[10px] font-black uppercase tracking-wider"
+                  className="h-12 rounded-xl border-rose-200 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/10 text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98]"
                 >
-                  <XCircle className="h-3.5 w-3.5 mr-1.5" /> Reject
+                  <XCircle className="h-3.5 w-3.5 mr-1.5" /> Drop Ticket
                 </Button>
               </div>
+              {!notes.trim() && complaint.status === "IN_PROGRESS" && (
+                <p className="text-[8px] text-center uppercase tracking-widest text-gray-400 font-bold">Documentation required to resolve</p>
+              )}
             </div>
           )}
 
           {/* Chat Thread */}
-          <div className="space-y-4 pt-2 border-t border-gray-100 dark:border-border">
-            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
-              Chat
+          <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-border/50">
+            <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground pl-1">
+              Discussion Feed
             </p>
-            <div className="space-y-3 max-h-[240px] overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
               {complaint.comments?.length > 0 ? (
                 complaint.comments.map((c) => {
-                  const isAdmin =
-                    c.User.role !== "RESIDENT" && c.User.role !== "GUEST";
+                  const isStaffMember = ["ADMIN", "WARDEN", "STAFF"].includes(c.User.role);
                   return (
                     <div
                       key={c.id}
-                      className={`flex gap-2.5 ${isAdmin ? "flex-row-reverse" : ""}`}
+                      className={`flex gap-2.5 ${isStaffMember ? "flex-row-reverse" : ""}`}
                     >
                       <div
-                        className={`h-7 w-7 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${isAdmin ? "bg-indigo-600 text-white" : "bg-gray-100 text-gray-600 dark:text-muted-foreground"}`}
+                        className={`h-8 w-8 rounded-xl flex items-center justify-center text-[10px] font-black shrink-0 ${isStaffMember ? "bg-black text-white" : "bg-gray-100 text-gray-600 dark:text-muted-foreground border dark:border-border"}`}
                       >
                         {c.User.name?.charAt(0)}
                       </div>
                       <div
-                        className={`p-3 rounded-2xl max-w-[78%] ${isAdmin ? "bg-indigo-600 text-white rounded-tr-none" : "bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border rounded-tl-none"}`}
+                        className={`p-4 rounded-[1.5rem] max-w-[80%] shadow-sm ${isStaffMember ? "bg-black text-white rounded-tr-none" : "bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border rounded-tl-none"}`}
                       >
-                        <p
-                          className={`text-[8px] font-black uppercase tracking-widest mb-1 ${isAdmin ? "text-white/60" : "text-gray-400 dark:text-muted-foreground"}`}
-                        >
-                          {c.User.name} ·{" "}
-                          {new Date(c.createdAt).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </p>
-                        <p className="text-xs font-medium leading-relaxed">
+                        <div className={`flex items-center gap-2 mb-1.5 ${isStaffMember ? "flex-row-reverse text-indigo-300" : "text-gray-400 dark:text-muted-foreground"}`}>
+                          <span className="text-[8px] font-black uppercase tracking-widest">{c.User.name}</span>
+                          <span className="text-[8px] opacity-40 italic">
+                            {new Date(c.createdAt).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                        <p className="text-xs font-semibold leading-relaxed">
                           {c.message}
                         </p>
                       </div>
@@ -355,15 +344,16 @@ const ComplaintDetailDialog = ({
                   );
                 })
               ) : (
-                <div className="text-center py-8 text-gray-400 dark:text-muted-foreground text-xs font-bold uppercase tracking-widest">
-                  Clear
+                <div className="text-center py-10 opacity-30 select-none">
+                  <MessageSquare className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">Silent Frequency</p>
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pt-2">
               <Input
-                placeholder="Reply..."
-                className="rounded-xl border-gray-100 dark:border-border text-xs font-medium"
+                placeholder="Transmit message..."
+                className="h-11 rounded-xl border-gray-100 dark:border-border bg-gray-50 focus:bg-white text-[10px] font-black uppercase tracking-widest italic"
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={(e) => {
@@ -377,9 +367,9 @@ const ComplaintDetailDialog = ({
                 size="icon"
                 onClick={handleSendComment}
                 disabled={addCommentMutation.isPending || !newComment.trim()}
-                className="h-9 w-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 shrink-0 shadow-lg shadow-indigo-600/20"
+                className="h-11 w-11 rounded-xl bg-black hover:bg-gray-800 shrink-0 shadow-lg"
               >
-                <Send className="h-3.5 w-3.5 text-white" />
+                <Send className="h-4 w-4 text-white" />
               </Button>
             </div>
           </div>
@@ -793,9 +783,15 @@ const ComplaintsPage = () => {
                           {complaint.Hostel?.name ?? "N/A"}
                         </span>
                       </div>
-                      <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest px-0.5">
-                        {complaint.category}
-                      </span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
+                          {complaint.category}
+                        </span>
+                        <span className="h-1 w-1 rounded-full bg-gray-200" />
+                        <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
+                          {complaint.User_Complaint_assignedToIdToUser?.name || "Auto-Assigned"}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Date + Priority inline panel */}

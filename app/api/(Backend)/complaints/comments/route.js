@@ -10,13 +10,14 @@ export async function POST(request) {
 
     try {
         const body = await request.json();
-        const { complaintId, userId, message } = body;
+        const { complaintId, message } = body;
+        const activeUserId = guard.user.id || guard.user.userId;
 
-        if (!complaintId || !userId || !message) {
+        if (!complaintId || !activeUserId || !message) {
             return errorResponse("Missing required fields", 400);
         }
 
-        const comment = await complaintServices.addComment({ complaintId, userId, message });
+        const comment = await complaintServices.addComment({ complaintId, userId: activeUserId, message });
         return successResponse({ data: comment });
     } catch (error) {
         return errorResponse(error.message, 500);

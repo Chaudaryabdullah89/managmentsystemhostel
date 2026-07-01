@@ -1,3 +1,10 @@
+import { vi } from "vitest";
+
+vi.mock("next/cache", () => ({
+  revalidateTag: vi.fn(),
+  unstable_cache: (fn) => fn,
+}));
+
 import { getSystemSettings, getPermissionsForRole } from "../lib/permissions";
 import { prisma } from "../lib/prisma";
 import { revalidateTag } from "next/cache";
