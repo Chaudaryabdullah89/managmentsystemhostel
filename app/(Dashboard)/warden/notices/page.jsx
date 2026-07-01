@@ -72,6 +72,7 @@ import {
   useUpdateNotice,
   useDeleteNotice,
 } from "@/hooks/useNotices";
+import { useHostel } from "@/hooks/usehostel";
 import useAuthStore from "@/hooks/Authstate";
 import { format, formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -211,6 +212,9 @@ const NoticePage = () => {
     isLoading,
     isError,
   } = useNotices({ hostelId: hostelId ?? "" });
+
+  const { data: hostelsData } = useHostel();
+  const hostels = hostelsData?.data || [];
 
   const createNotice = useCreateNotice();
   const updateNotice = useUpdateNotice();
@@ -799,6 +803,33 @@ const NoticePage = () => {
                 className="rounded-xl border-slate-200 dark:border-border text-sm font-medium resize-none"
               />
             </div>
+
+            {/* Target Hostel - Admins Only */}
+            {isAdmin && (
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Target Hostel
+                </Label>
+                <Select
+                  value={formData.hostelId || "all"}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, hostelId: v === "all" ? null : v })
+                  }
+                >
+                  <SelectTrigger className="h-11 rounded-xl border-slate-200 dark:border-border text-sm">
+                    <SelectValue placeholder="Select Hostel" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">📢 All Hostels (Global Notice)</SelectItem>
+                    {hostels.map((h) => (
+                      <SelectItem key={h.id} value={h.id}>
+                        🏢 {h.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* Category + Priority */}
             <div className="grid grid-cols-2 gap-4">
