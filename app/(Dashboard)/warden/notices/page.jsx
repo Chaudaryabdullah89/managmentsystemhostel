@@ -3,7 +3,7 @@ import React, { useState, useMemo } from "react";
 
 const WhatsAppIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
-    <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.277l-.582 2.128 2.185-.573c.963.524 1.887.834 3.146.834 3.18 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.766-5.768-5.766zm3.43 8.213c-.149.25-1.042.493-1.428.52-.387.027-.755.127-2.203-.453-1.85-.74-3.003-2.618-3.096-2.743-.092-.124-.805-.97-1.014-1.85-.21-.88.192-1.34.357-1.503.165-.162.357-.202.476-.202s.239.006.342.012c.11.006.257-.024.403.328.162.392.553 1.35.602 1.45.049.1.082.217.016.35-.067.132-.1.216-.2.333-.1.117-.21.262-.3.35-.1.1-.205.21-.088.41.118.2.524.863 1.127 1.4 1.83 1.63 2.19 1.693 2.372 1.745.182.053.29-.02.4-.148.11-.128.47-.547.595-.733.125-.187.25-.157.42-.093.17.063 1.08.51 1.265.603.184.093.308.139.354.219.046.08.046.463-.103.713zM12 .003C5.373.003 0 5.377 0 12c0 2.102.542 4.154 1.578 5.98L0 24l6.194-1.624c1.763.96 3.742 1.47 5.804 1.472 6.623 0 12-5.373 12-11.999 0-3.203-1.246-6.216-3.514-8.48A11.92 11.92 0 0 0 12 .003z"/>
+    <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.277l-.582 2.128 2.185-.573c.963.524 1.887.834 3.146.834 3.18 0 5.767-2.587 5.768-5.766 0-3.18-2.587-5.766-5.768-5.766zm3.43 8.213c-.149.25-1.042.493-1.428.52-.387.027-.755.127-2.203-.453-1.85-.74-3.003-2.618-3.096-2.743-.092-.124-.805-.97-1.014-1.85-.21-.88.192-1.34.357-1.503.165-.162.357-.202.476-.202s.239.006.342.012c.11.006.257-.024.403.328.162.392.553 1.35.602 1.45.049.1.082.217.016.35-.067.132-.1.216-.2.333-.1.117-.21.262-.3.35-.1.1-.205.21-.088.41.118.2.524.863 1.127 1.4 1.83 1.63 2.19 1.693 2.372 1.745.182.053.29-.02.4-.148.11-.128.47-.547.595-.733.125-.187.25-.157.42-.093.17.063 1.08.51 1.265.603.184.093.308.139.354.219.046.08.046.463-.103.713zM12 .003C5.373.003 0 5.377 0 12c0 2.102.542 4.154 1.578 5.98L0 24l6.194-1.624c1.763.96 3.742 1.47 5.804 1.472 6.623 0 12-5.373 12-11.999 0-3.203-1.246-6.216-3.514-8.48A11.92 11.92 0 0 0 12 .003z" />
   </svg>
 );
 import {
@@ -78,15 +78,39 @@ import { toast } from "sonner";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const CATEGORIES = ["GENERAL", "MAINTENANCE", "MESS", "SAFETY", "EVENTS", "RULES", "FEES"];
+const CATEGORIES = [
+  "GENERAL",
+  "MAINTENANCE",
+  "MESS",
+  "SAFETY",
+  "EVENTS",
+  "RULES",
+  "FEES",
+];
 const PRIORITIES = ["LOW", "NORMAL", "HIGH", "URGENT"];
 const TARGET_ROLES = ["GUEST", "WARDEN", "STAFF", "ADMIN"];
 
 const PRIORITY_CONFIG = {
-  LOW: { label: "Low", color: "bg-slate-100 text-slate-600 border-slate-200", dot: "bg-slate-400" },
-  NORMAL: { label: "Normal", color: "bg-blue-50 text-blue-700 border-blue-100", dot: "bg-blue-500" },
-  HIGH: { label: "High", color: "bg-amber-50 text-amber-700 border-amber-100", dot: "bg-amber-500" },
-  URGENT: { label: "Urgent", color: "bg-rose-50 text-rose-700 border-rose-100", dot: "bg-rose-500 animate-pulse" },
+  LOW: {
+    label: "Low",
+    color: "bg-slate-100 text-slate-600 border-slate-200",
+    dot: "bg-slate-400",
+  },
+  NORMAL: {
+    label: "Normal",
+    color: "bg-blue-50 text-blue-700 border-blue-100",
+    dot: "bg-blue-500",
+  },
+  HIGH: {
+    label: "High",
+    color: "bg-amber-50 text-amber-700 border-amber-100",
+    dot: "bg-amber-500",
+  },
+  URGENT: {
+    label: "Urgent",
+    color: "bg-rose-50 text-rose-700 border-rose-100",
+    dot: "bg-rose-500 animate-pulse",
+  },
 };
 
 const CATEGORY_CONFIG = {
@@ -119,7 +143,11 @@ const NoticePage = () => {
 
   const hostelId = authUser?.hostelId || null;
 
-  const { data: notices = [], isLoading, isError } = useNotices({ hostelId: hostelId ?? "" });
+  const {
+    data: notices = [],
+    isLoading,
+    isError,
+  } = useNotices({ hostelId: hostelId ?? "" });
 
   const createNotice = useCreateNotice();
   const updateNotice = useUpdateNotice();
@@ -144,8 +172,10 @@ const NoticePage = () => {
         !searchQuery ||
         n.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         n.content?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesPriority = filterPriority === "ALL" || n.priority === filterPriority;
-      const matchesCategory = filterCategory === "ALL" || n.category === filterCategory;
+      const matchesPriority =
+        filterPriority === "ALL" || n.priority === filterPriority;
+      const matchesCategory =
+        filterCategory === "ALL" || n.category === filterCategory;
       return matchesSearch && matchesPriority && matchesCategory;
     });
   }, [notices, searchQuery, filterPriority, filterCategory]);
@@ -191,8 +221,11 @@ const NoticePage = () => {
 
   const getWhatsAppShareUrl = (notice) => {
     if (!notice) return "";
-    const hostelName = notice.hostel?.name || (notice.hostelId ? "Assigned Hostel" : "All Hostels");
-    const senderName = notice.author?.name || authUser?.name || "Hostel Management";
+    const hostelName =
+      notice.hostel?.name ||
+      (notice.hostelId ? "Assigned Hostel" : "All Hostels");
+    const senderName =
+      notice.author?.name || authUser?.name || "Hostel Management";
     const signTime = format(new Date(notice.createdAt || Date.now()), "PPP p");
 
     const text = `📢 *Notice: ${notice.title}*\n\n${notice.content}\n\n━━━━━━━━━━━━━━━━━━━━\n🏢 *Hostel:* ${hostelName}\n✍️ *Sender:* ${senderName}\n🕒 *Signed At:* ${signTime}`;
@@ -201,8 +234,11 @@ const NoticePage = () => {
 
   const handleCopyNoticeText = (notice) => {
     if (!notice) return;
-    const hostelName = notice.hostel?.name || (notice.hostelId ? "Assigned Hostel" : "All Hostels");
-    const senderName = notice.author?.name || authUser?.name || "Hostel Management";
+    const hostelName =
+      notice.hostel?.name ||
+      (notice.hostelId ? "Assigned Hostel" : "All Hostels");
+    const senderName =
+      notice.author?.name || authUser?.name || "Hostel Management";
     const signTime = format(new Date(notice.createdAt || Date.now()), "PPP p");
 
     const text = `📢 *Notice: ${notice.title}*\n\n${notice.content}\n\n━━━━━━━━━━━━━━━━━━━━\n🏢 *Hostel:* ${hostelName}\n✍️ *Sender:* ${senderName}\n🕒 *Signed At:* ${signTime}`;
@@ -218,7 +254,9 @@ const NoticePage = () => {
       ...formData,
       authorId: authUser?.id,
       hostelId: formData.hostelId || null,
-      expiresAt: formData.expiresAt ? new Date(formData.expiresAt).toISOString() : null,
+      expiresAt: formData.expiresAt
+        ? new Date(formData.expiresAt).toISOString()
+        : null,
     };
 
     try {
@@ -268,7 +306,9 @@ const NoticePage = () => {
       <div className="group bg-white dark:bg-card border border-slate-100 dark:border-border rounded-2xl p-5 hover:shadow-md transition-all duration-300 hover:border-slate-200">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-4 flex-1 min-w-0">
-            <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${catConf.color}`}>
+            <div
+              className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${catConf.color}`}
+            >
               <CatIcon className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0">
@@ -297,7 +337,9 @@ const NoticePage = () => {
               <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-3 text-[10px] text-slate-400 font-medium">
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  {formatDistanceToNow(new Date(notice.createdAt), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(notice.createdAt), {
+                    addSuffix: true,
+                  })}
                 </span>
                 {notice.hostelId ? (
                   <span className="flex items-center gap-1 text-amber-600">
@@ -308,12 +350,13 @@ const NoticePage = () => {
                     <Globe className="h-3 w-3" /> Global
                   </span>
                 )}
-                {Array.isArray(notice.targetRoles) && notice.targetRoles.length > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Users className="h-3 w-3" />
-                    {notice.targetRoles.join(", ")}
-                  </span>
-                )}
+                {Array.isArray(notice.targetRoles) &&
+                  notice.targetRoles.length > 0 && (
+                    <span className="flex items-center gap-1">
+                      <Users className="h-3 w-3" />
+                      {notice.targetRoles.join(", ")}
+                    </span>
+                  )}
                 {notice.expiresAt && (
                   <span className="text-rose-400 flex items-center gap-1">
                     <AlertTriangle className="h-3 w-3" />
@@ -358,11 +401,14 @@ const NoticePage = () => {
                     Delete Notice?
                   </AlertDialogTitle>
                   <AlertDialogDescription className="text-xs">
-                    This will permanently remove <strong>"{notice.title}"</strong> from the board.
+                    This will permanently remove{" "}
+                    <strong>"{notice.title}"</strong> from the board.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel className="rounded-xl text-xs">Cancel</AlertDialogCancel>
+                  <AlertDialogCancel className="rounded-xl text-xs">
+                    Cancel
+                  </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={() => handleDelete(notice.id)}
                     className="bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold"
@@ -382,7 +428,6 @@ const NoticePage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-background pb-20 font-sans tracking-tight">
-
       {/* ── Header ── */}
       <div className="bg-white dark:bg-card border-b border-slate-100 dark:border-border sticky top-0 z-40 h-16">
         <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
@@ -411,7 +456,6 @@ const NoticePage = () => {
       </div>
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
-
         {/* ── Metrics Row ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
@@ -425,19 +469,24 @@ const NoticePage = () => {
               label: "Urgent",
               value: urgentCount,
               icon: AlertTriangle,
-              color: urgentCount > 0
-                ? "text-rose-600 bg-rose-50 border-rose-100"
-                : "text-slate-400 bg-slate-50 border-slate-100",
+              color:
+                urgentCount > 0
+                  ? "text-rose-600 bg-rose-50 border-rose-100"
+                  : "text-slate-400 bg-slate-50 border-slate-100",
             },
             {
               label: "Pinned",
-              value: Array.isArray(notices) ? notices.filter((n) => n.isPinned).length : 0,
+              value: Array.isArray(notices)
+                ? notices.filter((n) => n.isPinned).length
+                : 0,
               icon: Pin,
               color: "text-amber-600 bg-amber-50 border-amber-100",
             },
             {
               label: "Global Notices",
-              value: Array.isArray(notices) ? notices.filter((n) => !n.hostelId).length : 0,
+              value: Array.isArray(notices)
+                ? notices.filter((n) => !n.hostelId).length
+                : 0,
               icon: Globe,
               color: "text-blue-600 bg-blue-50 border-blue-100",
             },
@@ -446,7 +495,9 @@ const NoticePage = () => {
               key={i}
               className="bg-white dark:bg-card border border-slate-100 dark:border-border rounded-2xl p-5 flex items-center gap-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] hover:shadow-md transition-all"
             >
-              <div className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 border ${stat.color}`}>
+              <div
+                className={`h-11 w-11 rounded-xl flex items-center justify-center shrink-0 border ${stat.color}`}
+              >
                 <stat.icon className="h-5 w-5" />
               </div>
               <div>
@@ -479,7 +530,9 @@ const NoticePage = () => {
             <SelectContent>
               <SelectItem value="ALL">All Priorities</SelectItem>
               {PRIORITIES.map((p) => (
-                <SelectItem key={p} value={p}>{p}</SelectItem>
+                <SelectItem key={p} value={p}>
+                  {p}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -490,7 +543,9 @@ const NoticePage = () => {
             <SelectContent>
               <SelectItem value="ALL">All Categories</SelectItem>
               {CATEGORIES.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -500,7 +555,10 @@ const NoticePage = () => {
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white dark:bg-card border border-slate-100 dark:border-border rounded-2xl p-5 animate-pulse">
+              <div
+                key={i}
+                className="bg-white dark:bg-card border border-slate-100 dark:border-border rounded-2xl p-5 animate-pulse"
+              >
                 <div className="flex gap-4">
                   <div className="h-10 w-10 rounded-xl bg-slate-100 shrink-0" />
                   <div className="flex-1 space-y-3">
@@ -516,8 +574,12 @@ const NoticePage = () => {
         ) : isError ? (
           <div className="text-center py-16 bg-white dark:bg-card border border-slate-100 rounded-2xl">
             <AlertTriangle className="h-10 w-10 text-rose-400 mx-auto mb-3" />
-            <p className="text-sm font-bold text-slate-900 dark:text-foreground">Failed to load notices</p>
-            <p className="text-xs text-slate-400 mt-1">Check your network and try again.</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-foreground">
+              Failed to load notices
+            </p>
+            <p className="text-xs text-slate-400 mt-1">
+              Check your network and try again.
+            </p>
           </div>
         ) : filteredNotices.length === 0 ? (
           <div className="text-center py-16 bg-white dark:bg-card border border-dashed border-slate-200 dark:border-border rounded-2xl">
@@ -525,23 +587,29 @@ const NoticePage = () => {
               <Pin className="h-8 w-8 text-slate-300 rotate-45" />
             </div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-foreground uppercase tracking-wider">
-              {searchQuery || filterPriority !== "ALL" || filterCategory !== "ALL"
+              {searchQuery ||
+              filterPriority !== "ALL" ||
+              filterCategory !== "ALL"
                 ? "No notices match your search"
                 : "No notices posted yet"}
             </h3>
             <p className="text-xs text-slate-400 mt-1.5 mb-6">
-              {searchQuery || filterPriority !== "ALL" || filterCategory !== "ALL"
+              {searchQuery ||
+              filterPriority !== "ALL" ||
+              filterCategory !== "ALL"
                 ? "Try adjusting your filters"
-                : "Click \"Post Notice\" to publish the first announcement."}
+                : 'Click "Post Notice" to publish the first announcement.'}
             </p>
-            {!searchQuery && filterPriority === "ALL" && filterCategory === "ALL" && (
-              <Button
-                onClick={openCreate}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 px-6 font-bold text-xs uppercase tracking-wider"
-              >
-                <Plus className="h-4 w-4 mr-2" /> Post First Notice
-              </Button>
-            )}
+            {!searchQuery &&
+              filterPriority === "ALL" &&
+              filterCategory === "ALL" && (
+                <Button
+                  onClick={openCreate}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-10 px-6 font-bold text-xs uppercase tracking-wider"
+                >
+                  <Plus className="h-4 w-4 mr-2" /> Post First Notice
+                </Button>
+              )}
           </div>
         ) : (
           <div className="space-y-8">
@@ -585,7 +653,10 @@ const NoticePage = () => {
         open={showForm}
         onOpenChange={(open) => {
           setShowForm(open);
-          if (!open) { setEditingNotice(null); setFormData(EMPTY_FORM); }
+          if (!open) {
+            setEditingNotice(null);
+            setFormData(EMPTY_FORM);
+          }
         }}
       >
         <DialogContent className="max-w-lg rounded-2xl p-0 overflow-hidden border-none shadow-2xl bg-white dark:bg-card">
@@ -600,7 +671,9 @@ const NoticePage = () => {
                 {editingNotice ? "Edit Notice" : "Post Notice"}
               </DialogTitle>
               <DialogDescription className="text-indigo-200/80 text-[10px] uppercase tracking-widest mt-1">
-                {editingNotice ? "Update the announcement details" : "Publish a new announcement to residents and staff"}
+                {editingNotice
+                  ? "Update the announcement details"
+                  : "Publish a new announcement to residents and staff"}
               </DialogDescription>
             </div>
           </div>
@@ -613,7 +686,9 @@ const NoticePage = () => {
               </Label>
               <Input
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 placeholder="Notice title..."
                 className="rounded-xl h-11 border-slate-200 dark:border-border text-sm font-medium"
               />
@@ -626,7 +701,9 @@ const NoticePage = () => {
               </Label>
               <Textarea
                 value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, content: e.target.value })
+                }
                 placeholder="Announcement details..."
                 rows={4}
                 className="rounded-xl border-slate-200 dark:border-border text-sm font-medium resize-none"
@@ -636,27 +713,45 @@ const NoticePage = () => {
             {/* Category + Priority */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Category</Label>
-                <Select value={formData.category} onValueChange={(v) => setFormData({ ...formData, category: v })}>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Category
+                </Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, category: v })
+                  }
+                >
                   <SelectTrigger className="h-11 rounded-xl border-slate-200 dark:border-border text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Priority</Label>
-                <Select value={formData.priority} onValueChange={(v) => setFormData({ ...formData, priority: v })}>
+                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Priority
+                </Label>
+                <Select
+                  value={formData.priority}
+                  onValueChange={(v) =>
+                    setFormData({ ...formData, priority: v })
+                  }
+                >
                   <SelectTrigger className="h-11 rounded-xl border-slate-200 dark:border-border text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {PRIORITIES.map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                      <SelectItem key={p} value={p}>
+                        {p}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -676,10 +771,11 @@ const NoticePage = () => {
                       key={role}
                       type="button"
                       onClick={() => toggleRole(role)}
-                      className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all ${selected
-                        ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                        : "bg-white text-slate-500 border-slate-200 hover:border-indigo-300"
-                        }`}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border transition-all ${
+                        selected
+                          ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                          : "bg-white text-slate-500 border-slate-200 hover:border-indigo-300"
+                      }`}
                     >
                       {role}
                     </button>
@@ -696,7 +792,9 @@ const NoticePage = () => {
               <Input
                 type="datetime-local"
                 value={formData.expiresAt}
-                onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, expiresAt: e.target.value })
+                }
                 className="rounded-xl h-11 border-slate-200 dark:border-border text-sm"
               />
             </div>
@@ -711,14 +809,18 @@ const NoticePage = () => {
                   <input
                     type="checkbox"
                     checked={formData.sendEmail}
-                    onChange={(e) => setFormData({ ...formData, sendEmail: e.target.checked })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, sendEmail: e.target.checked })
+                    }
                     className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600 h-4 w-4"
                   />
                   <div>
                     <p className="text-xs font-bold text-slate-900 dark:text-foreground flex items-center gap-1">
                       <Bell className="h-3 w-3 text-indigo-500" /> Email
                     </p>
-                    <p className="text-[9px] text-slate-400 mt-0.5">Alert residents.</p>
+                    <p className="text-[9px] text-slate-400 mt-0.5">
+                      Alert residents.
+                    </p>
                   </div>
                 </label>
 
@@ -726,14 +828,22 @@ const NoticePage = () => {
                   <input
                     type="checkbox"
                     checked={formData.broadcastWhatsApp}
-                    onChange={(e) => setFormData({ ...formData, broadcastWhatsApp: e.target.checked })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        broadcastWhatsApp: e.target.checked,
+                      })
+                    }
                     className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-600 h-4 w-4"
                   />
                   <div>
                     <p className="text-xs font-bold text-slate-900 dark:text-foreground flex items-center gap-1">
-                      <WhatsAppIcon className="h-3 w-3 text-emerald-500" /> WhatsApp
+                      <WhatsAppIcon className="h-3 w-3 text-emerald-500" />{" "}
+                      WhatsApp
                     </p>
-                    <p className="text-[9px] text-slate-400 mt-0.5">Share in group.</p>
+                    <p className="text-[9px] text-slate-400 mt-0.5">
+                      Share in group.
+                    </p>
                   </div>
                 </label>
               </div>
@@ -744,14 +854,18 @@ const NoticePage = () => {
               <input
                 type="checkbox"
                 checked={formData.isPinned}
-                onChange={(e) => setFormData({ ...formData, isPinned: e.target.checked })}
+                onChange={(e) =>
+                  setFormData({ ...formData, isPinned: e.target.checked })
+                }
                 className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600"
               />
               <div>
                 <p className="text-xs font-bold text-slate-900 dark:text-foreground flex items-center gap-1.5">
                   <Pin className="h-3.5 w-3.5 text-amber-500" /> Pin this notice
                 </p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Pinned notices appear at the top of the board.</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  Pinned notices appear at the top of the board.
+                </p>
               </div>
             </label>
           </div>
@@ -767,7 +881,11 @@ const NoticePage = () => {
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   {editingNotice ? "Saving..." : "Publishing..."}
                 </>
-              ) : editingNotice ? "Save Changes" : "Publish Notice"}
+              ) : editingNotice ? (
+                "Save Changes"
+              ) : (
+                "Publish Notice"
+              )}
             </Button>
           </div>
         </DialogContent>
@@ -799,16 +917,31 @@ const NoticePage = () => {
 
           <div className="p-6 space-y-4">
             <div className="bg-slate-50 dark:bg-muted p-4 rounded-xl border border-slate-100 dark:border-border font-sans">
-              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">Message Preview</p>
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Message Preview
+              </p>
               <div className="text-xs text-slate-700 dark:text-muted-foreground whitespace-pre-wrap font-mono bg-white dark:bg-card p-3 rounded-lg border border-slate-200/60 dark:border-border max-h-48 overflow-y-auto leading-relaxed">
                 {broadcastNotice && (
                   <>
                     📢 *Notice: {broadcastNotice.title}*{"\n\n"}
-                    {broadcastNotice.content}{"\n\n"}
+                    {broadcastNotice.content}
+                    {"\n\n"}
                     ━━━━━━━━━━━━━━━━━━━━{"\n"}
-                    🏢 *Hostel:* {broadcastNotice.hostel?.name || (broadcastNotice.hostelId ? "Assigned Hostel" : "All Hostels")}{"\n"}
-                    ✍️ *Sender:* {broadcastNotice.author?.name || authUser?.name || "Hostel Management"}{"\n"}
-                    🕒 *Signed At:* {format(new Date(broadcastNotice.createdAt || Date.now()), "PPP p")}
+                    🏢 *Hostel:*{" "}
+                    {broadcastNotice.hostel?.name ||
+                      (broadcastNotice.hostelId
+                        ? "Assigned Hostel"
+                        : "All Hostels")}
+                    {"\n"}
+                    {broadcastNotice.author?.name ||
+                      authUser?.name ||
+                      "Hostel Management"}
+                    {"\n"}
+                    🕒 *Signed At:*{" "}
+                    {format(
+                      new Date(broadcastNotice.createdAt || Date.now()),
+                      "PPP p",
+                    )}
                   </>
                 )}
               </div>
