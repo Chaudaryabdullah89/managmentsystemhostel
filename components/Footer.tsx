@@ -9,6 +9,8 @@ export const Footer = () => {
     const currentYear = new Date().getFullYear();
     const pathname = usePathname();
     const isAdmin = pathname?.startsWith("/admin");
+    const isWarden = pathname?.startsWith("/warden");
+    const showLegalLinks = !isAdmin && !isWarden;
     const { companyName } = useBranding();
 
     return (
@@ -21,8 +23,12 @@ export const Footer = () => {
                         &copy; {currentYear} {companyName}. All rights reserved.
                     </p>
                     <div className="flex flex-row gap-4 items-center text-sm text-gray-600 dark:text-muted-foreground">
-                        <Link href="/privacy-policy" className="hover:text-gray-900 dark:hover:text-foreground transition-colors">Privacy Policy</Link>
-                        <Link href="/terms-of-service" className="hover:text-gray-900 dark:hover:text-foreground transition-colors">Terms of Service</Link>
+                        {showLegalLinks && (
+                            <>
+                                <Link href="/privacy-policy" className="hover:text-gray-900 dark:hover:text-foreground transition-colors">Privacy Policy</Link>
+                                <Link href="/terms-of-service" className="hover:text-gray-900 dark:hover:text-foreground transition-colors">Terms of Service</Link>
+                            </>
+                        )}
                         {isAdmin && (
                             <Link
                                 href="/admin/system-health"
