@@ -16,9 +16,23 @@ export async function POST(request: NextRequest) {
     const { email, password } = data;
 
     // ── Basic input validation ────────────────────────────────────────────
-    if (!email || typeof email !== "string" || !email.includes("@")) {
-        return errorResponse("A valid email is required.", 400);
+    if (!email || typeof email !== "string" || email.trim() === "") {
+        return errorResponse("Email, CNIC or Phone is required.", 400);
     }
+
+    const identifier = email.trim();
+    if (identifier.includes("@")) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(identifier)) {
+            return errorResponse("Please enter a valid email address.", 400);
+        }
+    } else {
+        const clean = identifier.replace(/\D/g, "");
+        if (clean.length !== 13 && clean.length !== 11) {
+            return errorResponse("Please enter a valid email, 13-digit CNIC, or 11-digit phone number.", 400);
+        }
+    }
+
     if (!password || typeof password !== "string" || password.length < 1) {
         return errorResponse("Password is required.", 400);
     }

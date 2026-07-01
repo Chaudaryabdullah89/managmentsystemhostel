@@ -142,10 +142,28 @@ export default class AuthService {
         try {
             const { email, password, ipAddress, userAgent } = data;
 
+            const trimmedInput = email.trim();
+            const cleanDigits = trimmedInput.replace(/\D/g, "");
 
-            const user = await prisma.user.findUnique({
+            let formattedCnic = "";
+            if (cleanDigits.length === 13) {
+                formattedCnic = `${cleanDigits.slice(0, 5)}-${cleanDigits.slice(5, 12)}-${cleanDigits.slice(12)}`;
+            }
+
+            let formattedPhone = "";
+            if (cleanDigits.length === 11) {
+                formattedPhone = `${cleanDigits.slice(0, 4)}-${cleanDigits.slice(4)}`;
+            }
+
+            const user = await prisma.user.findFirst({
                 where: {
-                    email: email
+                    OR: [
+                        { email: trimmedInput.toLowerCase() },
+                        { cnic: trimmedInput },
+                        ...(formattedCnic ? [{ cnic: formattedCnic }] : []),
+                        { phone: trimmedInput },
+                        ...(formattedPhone ? [{ phone: formattedPhone }] : [])
+                    ]
                 }
             });
 

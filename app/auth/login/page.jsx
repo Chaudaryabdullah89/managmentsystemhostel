@@ -15,6 +15,7 @@ import {
   KeyRound,
   RefreshCw,
   ShieldCheck,
+  Phone,
 } from "lucide-react";
 import { toast } from "sonner";
 import useAuthStore from "@/hooks/Authstate";
@@ -26,7 +27,10 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
-  const [branding, setBranding] = useState({ companyName: "Hostel Management", companyShortName: "HMS" });
+  const [branding, setBranding] = useState({
+    companyName: "Hostel Management",
+    companyShortName: "HMS",
+  });
 
   const [requires2FA, setRequires2FA] = useState(false);
   const [twoFactorMethod, setTwoFactorMethod] = useState("TOTP");
@@ -41,12 +45,14 @@ export default function LoginPage() {
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("reason") === "expired") {
-      setError("Your session has expired or was terminated. Please login again.");
+      setError(
+        "Your session has expired or was terminated. Please login again.",
+      );
     }
 
     fetch("/api/settings/public")
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (data.success && (data.data || data.settings || data.companyName)) {
           setBranding(data.data || data.settings || data);
         }
@@ -63,7 +69,8 @@ export default function LoginPage() {
     let redirectPath = "/admin/dashboard";
     if (role === "WARDEN") redirectPath = "/warden";
     else if (role === "STAFF") redirectPath = "/staff/dashboard";
-    else if (role === "RESIDENT" || role === "GUEST") redirectPath = "/guest/dashboard";
+    else if (role === "RESIDENT" || role === "GUEST")
+      redirectPath = "/guest/dashboard";
     setTimeout(() => router.push(redirectPath), 400);
   };
 
@@ -79,28 +86,37 @@ export default function LoginPage() {
         body: JSON.stringify({ email: formData.email || undefined }),
       });
       const optData = await optRes.json();
-      if (!optRes.ok) throw new Error(optData.message || "Could not start passkey login.");
+      if (!optRes.ok)
+        throw new Error(optData.message || "Could not start passkey login.");
 
       // 2. Prompt browser passkey UI
       const { startAuthentication } = await import("@simplewebauthn/browser");
-      const credential = await startAuthentication({ optionsJSON: optData.options });
+      const credential = await startAuthentication({
+        optionsJSON: optData.options,
+      });
 
       // 3. Verify on server and get session
       const verRes = await fetch("/api/auth/passkey/login-verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential, challengeKey: optData.challengeKey }),
+        body: JSON.stringify({
+          credential,
+          challengeKey: optData.challengeKey,
+        }),
         credentials: "include",
       });
       const verData = await verRes.json();
-      if (!verRes.ok) throw new Error(verData.message || "Passkey verification failed.");
+      if (!verRes.ok)
+        throw new Error(verData.message || "Passkey verification failed.");
 
       handleRedirect(verData);
     } catch (err) {
       if (err.name === "NotAllowedError") {
         setError("Passkey prompt was cancelled or timed out.");
       } else {
-        setError(err.message || "Passkey sign-in failed. Try your password instead.");
+        setError(
+          err.message || "Passkey sign-in failed. Try your password instead.",
+        );
       }
     } finally {
       setPasskeyDirectLoading(false);
@@ -110,7 +126,7 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.email || !formData.password) {
-      setError("Please enter your email and password.");
+      setError("Please enter your email, CNIC or phone, and password.");
       return;
     }
     setError("");
@@ -168,7 +184,6 @@ export default function LoginPage() {
     }
   };
 
-
   const handle2FASubmit = async (e) => {
     e.preventDefault();
     if (!otp || otp.length < 6) {
@@ -210,20 +225,28 @@ export default function LoginPage() {
   const getMethodTitle = () => {
     if (useBackupCode) return "Use Backup Code";
     switch (twoFactorMethod) {
-      case "TOTP": return "Authenticator App";
-      case "EMAIL": return "Email Verification";
-      case "BACKUP_CODES": return "Backup Code";
-      default: return "2-Step Verification";
+      case "TOTP":
+        return "Authenticator App";
+      case "EMAIL":
+        return "Email Verification";
+      case "BACKUP_CODES":
+        return "Backup Code";
+      default:
+        return "2-Step Verification";
     }
   };
 
   const getMethodDescription = () => {
     if (useBackupCode) return "Enter one of your 8-character backup codes";
     switch (twoFactorMethod) {
-      case "TOTP": return "Enter the 6-digit code from your authenticator app";
-      case "EMAIL": return "Enter the 6-digit code sent to your email";
-      case "BACKUP_CODES": return "Enter one of your backup codes";
-      default: return "Enter your verification code";
+      case "TOTP":
+        return "Enter the 6-digit code from your authenticator app";
+      case "EMAIL":
+        return "Enter the 6-digit code sent to your email";
+      case "BACKUP_CODES":
+        return "Enter one of your backup codes";
+      default:
+        return "Enter your verification code";
     }
   };
 
@@ -269,7 +292,9 @@ export default function LoginPage() {
           {requires2FA ? (
             <div>
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">{getMethodTitle()}</h2>
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                  {getMethodTitle()}
+                </h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                   {getMethodDescription()}
                 </p>
@@ -278,76 +303,89 @@ export default function LoginPage() {
               {error && (
                 <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 flex items-start gap-3 animate-in fade-in">
                   <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-900 dark:text-red-200">{error}</p>
+                  <p className="text-sm text-red-900 dark:text-red-200">
+                    {error}
+                  </p>
                 </div>
               )}
 
-
-                <form onSubmit={handle2FASubmit} className="space-y-5">
-                  {/* Email OTP header */}
-                  {twoFactorMethod === "EMAIL" && !useBackupCode && (
-                    <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-xl p-4 text-center">
-                      <Mail className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white">Code sent to your email</p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">Check your inbox for the verification code</p>
-                    </div>
-                  )}
-
-                  <div>
-                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      {useBackupCode ? "Backup Code" : "Verification Code"}
-                    </label>
-                    <div className="relative mt-2">
-                      {useBackupCode ? (
-                        <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      ) : (
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                      )}
-                      <input
-                        type="text"
-                        placeholder={useBackupCode ? "8-character code" : "000000"}
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value)}
-                        maxLength={useBackupCode ? 8 : 6}
-                        className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 dark:bg-muted/30 border border-slate-200 dark:border-border text-lg font-bold text-center tracking-[0.4em] dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-normal"
-                      />
-                    </div>
+              <form onSubmit={handle2FASubmit} className="space-y-5">
+                {/* Email OTP header */}
+                {twoFactorMethod === "EMAIL" && !useBackupCode && (
+                  <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-xl p-4 text-center">
+                    <Mail className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                      Code sent to your email
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                      Check your inbox for the verification code
+                    </p>
                   </div>
+                )}
 
-                  <button
-                    type="submit"
-                    disabled={verifying2FA}
-                    className="w-full h-12 mt-4 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
-                  >
-                    {verifying2FA ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    {useBackupCode ? "Backup Code" : "Verification Code"}
+                  </label>
+                  <div className="relative mt-2">
+                    {useBackupCode ? (
+                      <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     ) : (
-                      <>
-                        Verify &amp; Sign In <ArrowRight className="h-4 w-4" />
-                      </>
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     )}
-                  </button>
+                    <input
+                      type="text"
+                      placeholder={
+                        useBackupCode ? "8-character code" : "000000"
+                      }
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      maxLength={useBackupCode ? 8 : 6}
+                      className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 dark:bg-muted/30 border border-slate-200 dark:border-border text-lg font-bold text-center tracking-[0.4em] dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 placeholder:tracking-normal placeholder:font-normal"
+                    />
+                  </div>
+                </div>
 
-                  {/* Resend Email OTP */}
-                  {twoFactorMethod === "EMAIL" && !useBackupCode && (
-                    <button
-                      type="button"
-                      onClick={() => sendEmailOTP()}
-                      disabled={emailSending}
-                      className="w-full text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-center font-medium flex items-center justify-center gap-1"
-                    >
-                      <RefreshCw className={`h-3 w-3 ${emailSending ? "animate-spin" : ""}`} />
-                      {emailSending ? "Sending..." : "Resend Code"}
-                    </button>
+                <button
+                  type="submit"
+                  disabled={verifying2FA}
+                  className="w-full h-12 mt-4 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-sm font-semibold hover:bg-slate-800 dark:hover:bg-slate-200 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2"
+                >
+                  {verifying2FA ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      Verify &amp; Sign In <ArrowRight className="h-4 w-4" />
+                    </>
                   )}
-                </form>
+                </button>
+
+                {/* Resend Email OTP */}
+                {twoFactorMethod === "EMAIL" && !useBackupCode && (
+                  <button
+                    type="button"
+                    onClick={() => sendEmailOTP()}
+                    disabled={emailSending}
+                    className="w-full text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-center font-medium flex items-center justify-center gap-1"
+                  >
+                    <RefreshCw
+                      className={`h-3 w-3 ${emailSending ? "animate-spin" : ""}`}
+                    />
+                    {emailSending ? "Sending..." : "Resend Code"}
+                  </button>
+                )}
+              </form>
 
               {/* Toggle Backup Code / Back */}
               <div className="mt-4 space-y-2">
                 {!useBackupCode && twoFactorMethod !== "BACKUP_CODES" && (
                   <button
                     type="button"
-                    onClick={() => { setUseBackupCode(true); setOtp(""); setError(""); }}
+                    onClick={() => {
+                      setUseBackupCode(true);
+                      setOtp("");
+                      setError("");
+                    }}
                     className="w-full text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 text-center font-medium flex items-center justify-center gap-1"
                   >
                     <KeyRound className="h-3 w-3" /> Use a backup code instead
@@ -356,10 +394,20 @@ export default function LoginPage() {
                 {useBackupCode && (
                   <button
                     type="button"
-                    onClick={() => { setUseBackupCode(false); setOtp(""); setError(""); }}
+                    onClick={() => {
+                      setUseBackupCode(false);
+                      setOtp("");
+                      setError("");
+                    }}
                     className="w-full text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 text-center font-medium"
                   >
-                    ← Back to {twoFactorMethod === "TOTP" ? "authenticator" : twoFactorMethod === "EMAIL" ? "email" : "passkey"} verification
+                    ← Back to{" "}
+                    {twoFactorMethod === "TOTP"
+                      ? "authenticator"
+                      : twoFactorMethod === "EMAIL"
+                        ? "email"
+                        : "passkey"}{" "}
+                    verification
                   </button>
                 )}
                 <button
@@ -374,7 +422,9 @@ export default function LoginPage() {
           ) : (
             <div>
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Sign In</h2>
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                  Sign In
+                </h2>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                   Enter your credentials to continue
                 </p>
@@ -383,7 +433,9 @@ export default function LoginPage() {
               {error && (
                 <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 flex items-start gap-3 animate-in fade-in">
                   <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-900 dark:text-red-200">{error}</p>
+                  <p className="text-sm text-red-900 dark:text-red-200">
+                    {error}
+                  </p>
                 </div>
               )}
 
@@ -408,21 +460,31 @@ export default function LoginPage() {
               {/* Divider */}
               <div className="flex items-center gap-3 mb-5">
                 <div className="flex-1 h-px bg-slate-200 dark:bg-border" />
-                <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">or sign in with password</span>
+                <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">
+                  or sign in with password
+                </span>
                 <div className="flex-1 h-px bg-slate-200 dark:bg-border" />
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Email */}
+                {/* Email, CNIC or Phone */}
                 <div>
                   <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    Email Address
+                    Email, CNIC or Phone
                   </label>
                   <div className="relative mt-2">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    {formData.email && !formData.email.includes("@") ? (
+                      formData.email.replace(/\D/g, "").length <= 11 ? (
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 transition-all duration-300" />
+                      ) : (
+                        <Fingerprint className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 transition-all duration-300" />
+                      )
+                    ) : (
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 transition-all duration-300" />
+                    )}
                     <input
-                      type="email"
-                      placeholder="you@gmail.com"
+                      type="text"
+                      placeholder="you@gmail.com, CNIC or Phone"
                       value={formData.email}
                       onChange={(e) =>
                         setFormData((p) => ({ ...p, email: e.target.value }))
@@ -438,12 +500,6 @@ export default function LoginPage() {
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
                       Password
                     </label>
-                    <Link
-                      href="/auth/forgot-password"
-                      className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-                    >
-                      Forgot password?
-                    </Link>
                   </div>
 
                   <div className="relative mt-2">
