@@ -50,7 +50,7 @@ import {
 import useAuthStore from "@/hooks/Authstate";
 import { useExpenses, useExpenseStats, useCreateExpense, useUpdateExpenseStatus, useDeleteExpense, useUpdateExpenseFields } from "@/hooks/useExpenses";
 import { useHostel } from "@/hooks/usehostel";
-import { format, startOfMonth, endOfMonth } from "date-fns";
+import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { toast } from "sonner";
 import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
 import jsPDF from "jspdf";
@@ -64,7 +64,9 @@ import Link from "next/link";
  */
 export default function CategoryExpensePage({ category, backHref, isAdmin = false }) {
     const { user } = useAuthStore();
-    const [activeTab, setActiveTab] = useState("current");
+    const [datePreset, setDatePreset] = useState("this-month");
+    const [customStartDate, setCustomStartDate] = useState("");
+    const [customEndDate, setCustomEndDate] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
     const [selectedExpense, setSelectedExpense] = useState(null);
@@ -102,14 +104,46 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
         category: category.key,
     };
 
-    console.log(`[Frontend] Fetching Category Expenses:`, { ...BASE_PARAMS, activeTab, user: !!user });
+    const dateParams = useMemo(() => {
+        const now = new Date();
+        switch (datePreset) {
+            case "this-month":
+                return {
+                    startDate: format(startOfMonth(now), 'yyyy-MM-dd'),
+                    endDate: format(endOfMonth(now), 'yyyy-MM-dd'),
+                };
+            case "last-month":
+                const lastMonth = subMonths(now, 1);
+                return {
+                    startDate: format(startOfMonth(lastMonth), 'yyyy-MM-dd'),
+                    endDate: format(endOfMonth(lastMonth), 'yyyy-MM-dd'),
+                };
+            case "last-3-months":
+                return {
+                    startDate: format(startOfMonth(subMonths(now, 2)), 'yyyy-MM-dd'),
+                    endDate: format(endOfMonth(now), 'yyyy-MM-dd'),
+                };
+            case "this-year":
+                return {
+                    startDate: format(new Date(now.getFullYear(), 0, 1), 'yyyy-MM-dd'),
+                    endDate: format(new Date(now.getFullYear(), 11, 31), 'yyyy-MM-dd'),
+                };
+            case "custom":
+                return {
+                    startDate: customStartDate || undefined,
+                    endDate: customEndDate || undefined,
+                };
+            case "all":
+            default:
+                return {};
+        }
+    }, [datePreset, customStartDate, customEndDate]);
+
+    console.log(`[Frontend] Fetching Category Expenses:`, { ...BASE_PARAMS, datePreset, ...dateParams, user: !!user });
 
     const { data: expenses, isLoading: expensesLoading } = useExpenses({
         ...BASE_PARAMS,
-        ...(activeTab === "current" && {
-            startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
-            endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd'),
-        })
+        ...dateParams,
     });
 
     const { data: hostelsData } = useHostel();
@@ -322,7 +356,14 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
             doc.text(`${category.label.toUpperCase()} EXPENSE REPORT`, doc.internal.pageSize.width / 2, 18, { align: "center" });
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
-            doc.text(`${activeTab === 'current' ? currentMonthLabel : 'All History'} | ${filteredExpenses.length} Records Found`, doc.internal.pageSize.width / 2, 26, { align: "center" });
+            let dateRangeLabel = "All Time";
+            if (datePreset === "this-month") dateRangeLabel = currentMonthLabel;
+            else if (datePreset === "last-month") dateRangeLabel = format(subMonths(new Date(), 1), 'MMMM yyyy');
+            else if (datePreset === "last-3-months") dateRangeLabel = "Last 3 Months";
+            else if (datePreset === "this-year") dateRangeLabel = `Year ${new Date().getFullYear()}`;
+            else if (datePreset === "custom") dateRangeLabel = `${customStartDate || "Start"} to ${customEndDate || "End"}`;
+
+            doc.text(`${dateRangeLabel} | ${filteredExpenses.length} Records Found`, doc.internal.pageSize.width / 2, 26, { align: "center" });
 
             doc.setTextColor(100, 116, 139); // Slate-500
             doc.setFontSize(9);
@@ -505,7 +546,7 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                             onClick={() => {
                                 setFilterStatus("all");
                                 setSearchQuery("");
-                                setActiveTab("current");
+                                setDatePreset("this-month");
                             }}
                         >
                             Today Workflow
@@ -513,24 +554,73 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                     </div>
                 )}
 
-                {/* Tabs & Content */}
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                {/* Date Filter & Content */}
+                <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <TabsList className="bg-white border border-gray-100 p-1 rounded-xl h-11 shadow-sm w-full sm:w-auto">
-                            <TabsTrigger value="current" className="h-full px-6 rounded-lg font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all">
-                                <Zap className="h-3.5 w-3.5 mr-2" /> Current Ledger
-                            </TabsTrigger>
-                            <TabsTrigger value="history" className="h-full px-6 rounded-lg font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-blue-600 data-[state=active]:text-white transition-all">
-                                <History className="h-3.5 w-3.5 mr-2" /> Full History
-                            </TabsTrigger>
-                        </TabsList>
+                        <div className="flex flex-wrap items-center gap-2 p-1 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-x-auto scrollbar-hide w-full sm:w-auto">
+                            {[
+                                { id: "this-month", label: "This Month" },
+                                { id: "last-month", label: "Last Month" },
+                                { id: "last-3-months", label: "Last 3 Months" },
+                                { id: "this-year", label: "This Year" },
+                                { id: "all", label: "All Time" },
+                                { id: "custom", label: "Custom Range" },
+                            ].map((preset) => (
+                                <Button
+                                    key={preset.id}
+                                    variant="ghost"
+                                    onClick={() => setDatePreset(preset.id)}
+                                    className={`h-9 px-4 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all ${
+                                        datePreset === preset.id
+                                            ? "bg-blue-600 text-white hover:bg-blue-700 hover:text-white shadow-md shadow-blue-100"
+                                            : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                                    }`}
+                                >
+                                    {preset.label}
+                                </Button>
+                            ))}
+                        </div>
 
                         <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-white border border-gray-100 px-4 py-2.5 rounded-xl shadow-sm self-end sm:self-auto">
                             Found <span className="text-blue-600">{filteredExpenses.length}</span> Records
                         </div>
                     </div>
 
-                    <TabsContent value={activeTab} className="space-y-3 outline-none animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    {/* Custom Date Picker Fields */}
+                    {datePreset === "custom" && (
+                        <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm flex flex-wrap items-center gap-4 animate-in slide-in-from-top duration-200">
+                            <div className="flex flex-col gap-1.5 min-w-[150px]">
+                                <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">Start Date</Label>
+                                <Input
+                                    type="date"
+                                    value={customStartDate}
+                                    onChange={(e) => setCustomStartDate(e.target.value)}
+                                    className="h-10 rounded-xl border-gray-100 bg-gray-50 text-xs font-bold"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1.5 min-w-[150px]">
+                                <Label className="text-[9px] font-bold text-gray-400 uppercase tracking-widest ml-1">End Date</Label>
+                                <Input
+                                    type="date"
+                                    value={customEndDate}
+                                    onChange={(e) => setCustomEndDate(e.target.value)}
+                                    className="h-10 rounded-xl border-gray-100 bg-gray-50 text-xs font-bold"
+                                />
+                            </div>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setCustomStartDate("");
+                                    setCustomEndDate("");
+                                }}
+                                className="h-10 px-4 rounded-xl border-rose-100 text-rose-600 text-[10px] font-bold uppercase tracking-wider self-end"
+                            >
+                                Reset Custom
+                            </Button>
+                        </div>
+                    )}
+
+                    <div className="space-y-3 outline-none">
                         {filteredExpenses.length === 0 ? (
                             <div className="bg-white border-2 border-dashed border-gray-100 rounded-[3rem] p-16 md:p-32 text-center">
                                 <div className="h-20 w-20 rounded-[2rem] bg-gray-50 flex items-center justify-center mx-auto mb-6">
@@ -542,7 +632,7 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                 </p>
                                 <Button
                                     variant="outline"
-                                    onClick={() => { setFilterHostel('all'); setFilterStatus('all'); setSearchQuery(''); }}
+                                    onClick={() => { setFilterHostel('all'); setFilterStatus('all'); setSearchQuery(''); setDatePreset('this-month'); }}
                                     className="mt-8 rounded-xl h-11 px-8 font-bold uppercase text-[10px] tracking-widest hover:bg-gray-50 border-gray-100 text-gray-500"
                                 >
                                     Reset Filters
@@ -586,19 +676,19 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                                 <Badge variant="outline" className="text-[8px] font-mono border-gray-100 text-gray-400 px-1.5 py-0 h-4">EXP-{expense.id.slice(-5).toUpperCase()}</Badge>
                                             </div>
                                             <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5">
-                                                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1">
+                                                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1">
                                                     <Building2 className="h-2.5 w-2.5" />
                                                     {expense.Hostel?.name}
                                                 </span>
                                                 <div className="h-1 w-1 rounded-full bg-gray-200" />
-                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                                                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1">
                                                     <Calendar className="h-2.5 w-2.5" />
                                                     {format(new Date(expense.date), 'dd MMM yyyy')}
                                                 </span>
                                                 {expense.User_Expense_submittedByIdToUser?.name && (
                                                     <>
                                                         <div className="h-1 w-1 rounded-full bg-gray-200" />
-                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1">
+                                                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wide flex items-center gap-1">
                                                             <User className="h-2.5 w-2.5" />
                                                             {expense.User_Expense_submittedByIdToUser.name}
                                                         </span>
@@ -635,8 +725,7 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                             editingId === expense.id ? (
                                                 <div className="flex items-center gap-1">
                                                     <Button
-                                                        size="icon"
-                                                        className="h-8 w-8 rounded-lg bg-emerald-600 hover:bg-emerald-700"
+                                                        className="h-8 w-8 rounded-lg bg-emerald-600 hover:bg-emerald-700 p-0 flex items-center justify-center"
                                                         onClick={(e) => saveInlineEdit(expense.id, e)}
                                                         disabled={updateExpenseFields.isPending}
                                                     >
@@ -644,8 +733,7 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                                     </Button>
                                                     <Button
                                                         variant="outline"
-                                                        size="icon"
-                                                        className="h-8 w-8 rounded-lg border-gray-200"
+                                                        className="h-8 w-8 rounded-lg border-gray-200 p-0 flex items-center justify-center"
                                                         onClick={cancelInlineEdit}
                                                     >
                                                         <X className="h-3.5 w-3.5" />
@@ -654,8 +742,7 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                             ) : (
                                                 <Button
                                                     variant="outline"
-                                                    size="icon"
-                                                    className="h-8 w-8 rounded-lg border-gray-200"
+                                                    className="h-8 w-8 rounded-lg border-gray-200 p-0 flex items-center justify-center"
                                                     onClick={(e) => startInlineEdit(expense, e)}
                                                 >
                                                     <Pencil className="h-3.5 w-3.5" />
@@ -669,8 +756,8 @@ export default function CategoryExpensePage({ category, backHref, isAdmin = fals
                                 </div>
                             ))
                         )}
-                    </TabsContent>
-                </Tabs>
+                    </div>
+                </div>
             </main>
 
             {/* Add Expense — Consistent Dialog Style */}

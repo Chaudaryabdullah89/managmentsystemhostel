@@ -2,14 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
 import { isServiceEnabled } from "@/lib/permissions";
+import { requireRoles } from "@/lib/apiAuth";
 
 const LATE_FEE_AMOUNT = 500; // Fixed late fee amount. Could be moved to SystemSettings in the future.
 
 export async function GET(request: NextRequest) {
     // ── 1. Secure the Cron Route ─────────────────────────────────────────
     const authHeader = request.headers.get("authorization");
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-        return errorResponse("Unauthorized cron trigger", 401);
+    const isCronSecretValid = process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`;
+
+    if (!isCronSecretValid) {
+        const guard = await requireRoles(['ADMIN', 'WARDEN']);
+        if (!guard.ok) {
+            return errorResponse("Unauthorized: Admin/Warden session or valid CRON_SECRET required", 401);
+        }
     }
 
     // ── 2. Check System Settings ─────────────────────────────────────────
