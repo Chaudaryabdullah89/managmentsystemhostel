@@ -35,7 +35,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -143,10 +143,14 @@ const ComplaintDetailDialog = ({
   );
 
   return (
-    <DialogContent className="max-w-2xl p-0 overflow-hidden border-none rounded-[2.5rem] shadow-2xl bg-white dark:bg-card">
-      <div>
+    <DialogContent className="max-w-2xl p-0 overflow-hidden border-none rounded-[2.5rem] shadow-2xl bg-white dark:bg-card flex flex-col max-h-[85vh]">
+      <DialogTitle className="sr-only">{complaint.title}</DialogTitle>
+      <DialogDescription className="sr-only">
+        Details and comments for complaint: {complaint.title}
+      </DialogDescription>
+      <div className="flex flex-col flex-1 overflow-hidden">
         {/* Modal Header */}
-        <div className="p-8 border-b border-gray-50 dark:border-border/50 flex items-center gap-4 bg-gray-50/50 dark:bg-muted/5">
+        <div className="p-8 border-b border-gray-50 dark:border-border/50 flex items-center gap-4 bg-gray-50/50 dark:bg-muted/5 shrink-0">
           <div
             className={`h-12 w-12 rounded-2xl flex items-center justify-center text-white shadow-lg ${getRibbonColor(complaint.status)}`}
           >
@@ -161,7 +165,7 @@ const ComplaintDetailDialog = ({
               &nbsp;·&nbsp; {complaint.category}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mr-8">
             <Badge
               variant="outline"
               className={`${getPriorityStyle(complaint.priority)} px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest border`}
@@ -177,7 +181,7 @@ const ComplaintDetailDialog = ({
           </div>
         </div>
 
-        <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+        <div className="p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
           {/* Meta Grid */}
           <div className="grid grid-cols-2 gap-4">
             {[

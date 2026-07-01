@@ -42,12 +42,17 @@ export default function LoginPage() {
   // True when the top-level "Sign in with Passkey" button is running
   const [passkeyDirectLoading, setPasskeyDirectLoading] = useState(false);
 
+  const [infoMessage, setInfoMessage] = useState("");
+
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("reason") === "expired") {
+    const reason = params.get("reason");
+    if (reason === "expired") {
       setError(
         "Your session has expired or was terminated. Please login again.",
       );
+    } else if (reason === "no-session") {
+      setInfoMessage("Please log in to access that page.");
     }
 
     fetch("/api/settings/public")
@@ -65,13 +70,25 @@ export default function LoginPage() {
       setUser({ ...data.User, id: data.User.id });
     }
     toast.success("Welcome back!");
+
+    // Honor ?redirect= deep-link from middleware
+    const params = new URLSearchParams(window.location.search);
+    const redirectTo = params.get("redirect");
+
     const role = data.User?.role;
-    let redirectPath = "/admin/dashboard";
-    if (role === "WARDEN") redirectPath = "/warden";
-    else if (role === "STAFF") redirectPath = "/staff/dashboard";
+    let defaultPath = "/admin/dashboard";
+    if (role === "WARDEN") defaultPath = "/warden";
+    else if (role === "STAFF") defaultPath = "/staff/dashboard";
     else if (role === "RESIDENT" || role === "GUEST")
-      redirectPath = "/guest/dashboard";
-    setTimeout(() => router.push(redirectPath), 400);
+      defaultPath = "/guest/dashboard";
+
+    // Only use redirectTo if it belongs to the user's own role area to avoid XSS/open-redirect
+    const safeRedirect =
+      redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+        ? redirectTo
+        : defaultPath;
+
+    setTimeout(() => router.push(safeRedirect), 400);
   };
 
   // ── Passwordless passkey login (no password needed) ────────────────────────
@@ -435,6 +452,15 @@ export default function LoginPage() {
                   <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                   <p className="text-sm text-red-900 dark:text-red-200">
                     {error}
+                  </p>
+                </div>
+              )}
+
+              {infoMessage && !error && (
+                <div className="mb-6 p-4 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 flex items-start gap-3 animate-in fade-in">
+                  <ShieldCheck className="h-5 w-5 text-indigo-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-indigo-900 dark:text-indigo-200">
+                    {infoMessage}
                   </p>
                 </div>
               )}

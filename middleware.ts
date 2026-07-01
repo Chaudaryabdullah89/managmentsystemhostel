@@ -41,6 +41,7 @@ export async function middleware(request: NextRequest) {
         pathname.startsWith('/api') ||
         pathname.startsWith('/static') ||
         pathname.startsWith('/auth') ||
+        pathname.startsWith('/redirecting') ||
         pathname.includes('.')
     ) {
         return NextResponse.next({
@@ -65,7 +66,10 @@ export async function middleware(request: NextRequest) {
     const token = request.cookies.get('token')?.value;
 
     if (!token) {
-        return NextResponse.redirect(new URL('/auth/login', request.url));
+        const loginUrl = new URL('/auth/login', request.url);
+        loginUrl.searchParams.set('reason', 'no-session');
+        loginUrl.searchParams.set('redirect', pathname);
+        return NextResponse.redirect(loginUrl);
     }
 
     // 3️⃣ Verify JWT
@@ -108,7 +112,7 @@ export async function middleware(request: NextRequest) {
     const allowedRoles = routePermissions[matchedRoute];
 
     if (!allowedRoles.includes(userRole)) {
-        // Redirect to correct dashboard instead of a generic auth page
+        // Redirect to correct dashboard via the /redirecting trampoline
         const roleDashboardMap: Record<string, string> = {
             ADMIN: '/admin/dashboard',
             WARDEN: '/warden',
@@ -117,10 +121,14 @@ export async function middleware(request: NextRequest) {
             RESIDENT: '/guest/dashboard',
         };
 
-        const redirectPath =
-            roleDashboardMap[userRole] || '/auth/login';
+        const dashboardPath = roleDashboardMap[userRole] || '/auth/login';
 
-        return NextResponse.redirect(new URL(redirectPath, request.url));
+        const trampoline = new URL('/redirecting', request.url);
+        trampoline.searchParams.set('to', dashboardPath);
+        trampoline.searchParams.set('reason', 'access-denied');
+        trampoline.searchParams.set('from', pathname);
+
+        return NextResponse.redirect(trampoline);
     }
 
     return NextResponse.next({

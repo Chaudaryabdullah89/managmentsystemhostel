@@ -70,9 +70,14 @@ function PageContent({
 
   if (isAuthLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[40vh]">
-        <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
-          Loading session...
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 animate-in fade-in duration-500">
+        {/* Dual-ring spinner */}
+        <div className="relative h-10 w-10">
+          <div className="absolute inset-0 rounded-full border-[3px] border-indigo-100" />
+          <div className="absolute inset-0 rounded-full border-[3px] border-indigo-600 border-t-transparent animate-spin" />
+        </div>
+        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+          Loading…
         </p>
       </div>
     )

@@ -195,9 +195,25 @@ async function main() {
             data: { managerId: warden.id }
         });
 
+        // Create Warden Salaries (WardenPayments)
+        await prisma.wardenPayment.create({
+            data: {
+                id: randomUUID(),
+                wardenId: warden.id,
+                amount: 45000,
+                basicSalary: 45000,
+                month: 'June 2026',
+                paymentMethod: 'BANK_TRANSFER',
+                paymentDate: new Date('2026-06-30'),
+                notes: 'Warden salary for June 2026',
+                status: 'PAID',
+                type: 'WARDEN_SALARY'
+            }
+        });
+
         wardens.push(warden);
     }
-    console.log('✅ Wardens created and assigned.');
+    console.log('✅ Wardens created, assigned and salaries seeded.');
 
     // 5. Create Rooms
     console.log('🚪 Creating Rooms...');
@@ -357,6 +373,7 @@ async function main() {
 
     for (let i = 0; i < realStaff.length; i++) {
         const hostel = hostels[i % hostels.length];
+        const staffProfileId = randomUUID();
         const staffUser = await prisma.user.create({
             data: {
                 id: randomUUID(),
@@ -369,7 +386,7 @@ async function main() {
                 updatedAt: new Date(),
                 StaffProfile: {
                     create: {
-                        id: randomUUID(),
+                        id: staffProfileId,
                         designation: realStaff[i].designation,
                         department: 'Operations',
                         shift: realStaff[i].shift,
@@ -384,7 +401,7 @@ async function main() {
         await prisma.salary.create({
             data: {
                 id: randomUUID(),
-                staffProfileId: staffUser.id, // linked via staff user ID
+                staffProfileId: staffProfileId, // linked via StaffProfile ID
                 month: 'June 2026',
                 amount: realStaff[i].salary,
                 basicSalary: realStaff[i].salary,
@@ -482,8 +499,8 @@ async function main() {
     const expenseTemplates = [
         { title: 'LESCO Commercial Power Bill - June 2026', amount: 45000, category: 'UTILITY_BILL', desc: 'Electricity consumption bill for Johar Town campus.' },
         { title: 'Sui Northern Gas Bill - June 2026', amount: 15000, category: 'UTILITY_BILL', desc: 'Gas bill for the main mess kitchens.' },
-        { title: 'Groceries Purchase Metro Cash & Carry', amount: 62000, category: 'MESS_EXPENSE', desc: 'Weekly bulk shopping of rice, cooking oil, chicken, and spices.' },
-        { title: 'Second Floor Geyser Repair & Plumbing', amount: 8000, category: 'REPAIR_MAINTENANCE', desc: 'Replacement of pressure release valve and input pipe joints.' }
+        { title: 'Groceries Purchase Metro Cash & Carry', amount: 62000, category: 'MESS', desc: 'Weekly bulk shopping of rice, cooking oil, chicken, and spices.' },
+        { title: 'Second Floor Geyser Repair & Plumbing', amount: 8000, category: 'MAINTENANCE', desc: 'Replacement of pressure release valve and input pipe joints.' }
     ];
 
     for (let i = 0; i < expenseTemplates.length; i++) {
