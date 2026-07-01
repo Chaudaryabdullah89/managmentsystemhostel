@@ -60,7 +60,7 @@ export async function GET(request) {
 
         // 1. Process Revenue (Payments)
         payments.forEach(p => {
-            const amount = p.amount || 0;
+            const amount = p.amount ? Number(p.amount) : 0;
             totalRevenue += amount;
 
             // Type breakdown
@@ -82,7 +82,7 @@ export async function GET(request) {
 
         // 2. Process Expenses
         expenses.forEach(e => {
-            const amount = e.amount || 0;
+            const amount = e.amount ? Number(e.amount) : 0;
             totalExpenses += amount;
 
             // Category breakdown
