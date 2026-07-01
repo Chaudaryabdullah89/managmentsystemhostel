@@ -813,14 +813,19 @@ const NoticePage = () => {
                 <Select
                   value={formData.hostelId || "all"}
                   onValueChange={(v) =>
-                    setFormData({ ...formData, hostelId: v === "all" ? null : v })
+                    setFormData({
+                      ...formData,
+                      hostelId: v === "all" ? null : v,
+                    })
                   }
                 >
                   <SelectTrigger className="h-11 rounded-xl border-slate-200 dark:border-border text-sm">
                     <SelectValue placeholder="Select Hostel" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">📢 All Hostels (Global Notice)</SelectItem>
+                    <SelectItem value="all">
+                      📢 All Hostels (Global Notice)
+                    </SelectItem>
                     {hostels.map((h) => (
                       <SelectItem key={h.id} value={h.id}>
                         🏢 {h.name}
@@ -1048,17 +1053,17 @@ const NoticePage = () => {
                     {broadcastNotice.content}
                     {"\n\n"}
                     ━━━━━━━━━━━━━━━━━━━━{"\n"}
-                    🏢 *Hostel:*{" "}
+                    🏢{" "}
                     {broadcastNotice.hostel?.name ||
                       (broadcastNotice.hostelId
                         ? "Assigned Hostel"
                         : "All Hostels")}
-                    {"\n"}
+                    ✍️ {"\n"}
                     {broadcastNotice.author?.name ||
                       authUser?.name ||
                       "Hostel Management"}
                     {"\n"}
-                    🕒 *Signed At:*{" "}
+                    🕒{" "}
                     {format(
                       new Date(broadcastNotice.createdAt || Date.now()),
                       "PPP p",
