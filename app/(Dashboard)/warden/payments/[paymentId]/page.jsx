@@ -34,6 +34,7 @@ import {
   Loader2,
   CheckCircle,
   Settings,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -68,6 +69,24 @@ const PaymentApprovalDetailPage = () => {
   const updatePayment = useUpdatePayment();
   const [rejectionReason, setRejectionReason] = useState("");
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [isSendingNotification, setIsSendingNotification] = useState(false);
+
+  const handleSendNotification = async () => {
+    setIsSendingNotification(true);
+    try {
+      const res = await fetch(`/api/payments/${paymentId}/notify`, { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        toast.success("Notification email sent successfully!");
+      } else {
+        toast.error(data.error || "Failed to send notification.");
+      }
+    } catch {
+      toast.error("An error occurred while sending the notification.");
+    } finally {
+      setIsSendingNotification(false);
+    }
+  };
 
   const handleAction = async (status) => {
     try {
@@ -725,6 +744,20 @@ const PaymentApprovalDetailPage = () => {
             >
               <XCircle className="h-4 w-4" />
               Reject
+            </Button>
+            {/* Manual Notification Trigger */}
+            <Button
+              variant="outline"
+              className="w-full h-11 border-indigo-100 text-indigo-600 hover:bg-indigo-50 font-bold text-[10px] uppercase tracking-widest rounded-xl flex items-center gap-2 transition-all"
+              onClick={handleSendNotification}
+              disabled={isSendingNotification || !payment.User?.email}
+            >
+              {isSendingNotification ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Bell className="h-4 w-4" />
+              )}
+              Send Email Notification
             </Button>
           </div>
         </div>

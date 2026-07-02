@@ -4,20 +4,33 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { ChevronDown, X, Save, ArrowLeft, Building2, ShieldCheck, MapPin, Badge, Info, Sparkle } from "lucide-react"
-import Link from 'next/link'
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+    Save,
+    ArrowLeft,
+    Building2,
+    ShieldCheck,
+    MapPin,
+    Coins,
+    Sparkle,
+    Users,
+    Check,
+    X,
+    Loader2,
+    Utensils,
+    Shirt
+} from "lucide-react"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { CreateHostel } from '../../../../../hooks/usehostel'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { Badge } from "@/components/ui/badge"
 
 const CreateHostelPage = () => {
     const router = useRouter();
@@ -28,47 +41,47 @@ const CreateHostelPage = () => {
     const [contact, setContact] = useState('');
     const [email, setEmail] = useState('');
     const [floors, setFloors] = useState('');
-    const [mess, setMess] = useState('');
-    const [laundry, setLaundry] = useState('');
+    const [mess, setMess] = useState('No');
+    const [laundry, setLaundry] = useState('No');
     const [city, setCity] = useState('');
     const [state, setState] = useState('Pakistan');
     const [zip, setZip] = useState('');
     const [street, setStreet] = useState('');
     const [completeAddress, setCompleteAddress] = useState('');
-    const [country, setCountry] = useState('');
+    const [country, setCountry] = useState('Pakistan');
     const [description, setDescription] = useState('');
-    const [status, setStatus] = useState('');
+    const [status, setStatus] = useState('ACTIVE');
     const [rooms, setRooms] = useState('');
-    const [type, setType] = useState('');
+    const [type, setType] = useState('BOYS');
     const [pricePerNight, setpricepernight] = useState('')
     const [montlypayment, setmontlypayment] = useState('')
     const [cleaningInterval, setCleaningInterval] = useState('24')
     const [laundryInterval, setLaundryInterval] = useState('48')
-    const { mutate, isPending: createhostelloading, error: createhostelerror } = CreateHostel();
+    const { mutate, isPending: createhostelloading } = CreateHostel();
 
     const handleCreateHostel = () => {
-        if (!hostelname || !status || !type) {
-            toast.error("Please fill in all required fields.");
+        if (!hostelname || !city) {
+            toast.error("Hostel name and city are required.");
             return;
         }
         mutate({
             hostelname,
             contact,
             email,
-            floors,
+            floors: parseInt(floors) || 0,
             mess,
             laundry,
             city,
             state,
             zip,
-            pricePerNight,
-            montlypayment,
+            pricePerNight: parseFloat(pricePerNight) || 0,
+            montlypayment: parseFloat(montlypayment) || 0,
             street,
             completeAddress,
             country,
             description,
             status: status.toUpperCase(),
-            rooms: rooms || 0,
+            rooms: parseInt(rooms) || 0,
             warden: asssignedwarden,
             type: type.toUpperCase(),
             cleaningInterval: parseInt(cleaningInterval) || 24,
@@ -100,7 +113,7 @@ const CreateHostelPage = () => {
     }, [])
 
     const toggleExpensePermission = async (wardenId, currentStatus, e) => {
-        e.stopPropagation(); // Prevent dropdown from closing or selecting the warden
+        e.stopPropagation();
         try {
             const response = await fetch(`/api/users/profile/${wardenId}/update`, {
                 method: "PUT",
@@ -112,7 +125,6 @@ const CreateHostelPage = () => {
                 setWardenList(prev => prev.map(w =>
                     w.id === wardenId ? { ...w, canManageExpenses: !currentStatus } : w
                 ));
-                // Also update the selected wardens state if this warden is selected
                 setwarden(prev => prev.map(w =>
                     w.id === wardenId ? { ...w, canManageExpenses: !currentStatus } : w
                 ));
@@ -125,268 +137,386 @@ const CreateHostelPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-background">
-            {/* Slim Premium Header */}
-            <div className="bg-white dark:bg-card border-b sticky top-0 z-40 h-16">
-                <div className="max-w-5xl mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" onClick={() => router.back()} className="rounded-full hover:bg-gray-100">
+        <div className="min-h-screen bg-slate-50/50 dark:bg-background font-sans pb-24">
+            {/* Sticky Header */}
+            <div className="bg-white dark:bg-card border-b border-slate-200/80 dark:border-border sticky top-0 z-40 shadow-xs">
+                <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => router.back()}
+                            className="rounded-xl hover:bg-slate-100 dark:hover:bg-muted/10 h-9 w-9 shrink-0 text-slate-600 dark:text-muted-foreground"
+                        >
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
-                        <div className="h-6 w-px bg-gray-200" />
-                        <div className="flex flex-col">
-                            <h1 className="text-xl font-bold tracking-tight text-primary">Add New Hostel</h1>
-                            <p className="text-sm text-muted-foreground">Fill in the details below</p>
+                        <div className="h-5 w-px bg-slate-200 dark:bg-border hidden sm:block" />
+                        <div className="flex flex-col min-w-0">
+                            <h1 className="text-base sm:text-lg font-bold text-slate-900 dark:text-foreground tracking-tight truncate">
+                                Add New Hostel
+                            </h1>
+                            <p className="text-xs text-slate-500 dark:text-muted-foreground truncate">
+                                Property Management • Register new hostel branch in property registry
+                            </p>
                         </div>
                     </div>
-                    <Button
-                        className="bg-blue-600 hover:bg-blue-700 text-white h-9 px-6 rounded-xl font-bold text-[11px] uppercase tracking-wider shadow-sm gap-2"
-                        onClick={handleCreateHostel}
-                        disabled={createhostelloading}
-                    >
-                        {createhostelloading ? "Processing..." : "Save Hostel"}
-                        {!createhostelloading && <Save className="h-4 w-4" />}
-                    </Button>
+
+                    <div className="flex items-center gap-3">
+                        <Button
+                            variant="ghost"
+                            onClick={() => router.back()}
+                            className="h-9 px-4 rounded-xl text-xs font-semibold text-slate-600 dark:text-muted-foreground hover:bg-slate-100 dark:hover:bg-muted/10 hidden sm:flex"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 px-5 rounded-xl text-xs font-semibold shadow-sm gap-2 transition-all active:scale-95"
+                            onClick={handleCreateHostel}
+                            disabled={createhostelloading}
+                        >
+                            {createhostelloading ? (
+                                <>
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    <span>Processing...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-3.5 w-3.5" />
+                                    <span>Save Hostel</span>
+                                </>
+                            )}
+                        </Button>
+                    </div>
                 </div>
             </div>
 
-            <div className="max-w-5xl mx-auto px-6 py-10">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Primary Form Area */}
+            {/* Content Container */}
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Primary Left Columns */}
                     <div className="lg:col-span-2 space-y-6">
-                        <Card className="border border-gray-100 dark:border-border shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white dark:bg-card">
-                            <CardHeader className="px-8 pt-8 pb-4">
-                                <CardTitle className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-gray-400 dark:text-muted-foreground">
-                                    <Building2 className="h-4 w-4 text-blue-500" />
-                                    Hostel Details
+                        {/* Property Identity Card */}
+                        <Card className="border border-slate-200/80 dark:border-border shadow-xs bg-white dark:bg-card rounded-2xl overflow-hidden">
+                            <CardHeader className="border-b border-slate-100 dark:border-border bg-slate-50/50 dark:bg-muted/10 px-6 py-4">
+                                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-900 dark:text-foreground">
+                                    <Building2 className="h-4 w-4 text-indigo-600" />
+                                    Property Identity & Classification
                                 </CardTitle>
+                                <CardDescription className="text-xs text-slate-500">
+                                    Hostel title, gender designation, and building dimensions.
+                                </CardDescription>
                             </CardHeader>
-                            <CardContent className="px-8 pb-8 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <CardContent className="p-6 space-y-5">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">Hostel Name *</Label>
+                                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Hostel Branch Name *</Label>
                                         <Input
-                                            placeholder="e.g. Paramount Manor"
-                                            className="h-11 bg-white dark:bg-card border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground placeholder:text-gray-300 focus:ring-1 focus:ring-black"
+                                            placeholder="e.g. Executive Boys Hostel"
+                                            className="h-10 bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-600"
                                             value={hostelname}
                                             onChange={(e) => setHostelName(e.target.value)}
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">Hostel Type *</Label>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-gray-900 dark:text-foreground">
-                                                    <span>{type || 'Select Type'}</span>
-                                                    <ChevronDown className="h-4 w-4 opacity-40" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent className="w-[300px] rounded-2xl border-gray-100 dark:border-border shadow-xl">
-                                                <DropdownMenuItem onClick={() => setType('BOYS')} className="p-3 font-bold text-xs uppercase tracking-wider rounded-xl">BOYS HOSTEL</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setType('GIRLS')} className="p-3 font-bold text-xs uppercase tracking-wider rounded-xl">GIRLS HOSTEL</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Gender Type *</Label>
+                                        <Select value={type} onValueChange={setType}>
+                                            <SelectTrigger className="h-10 w-full bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-600">
+                                                <SelectValue placeholder="Select type" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border-slate-200">
+                                                <SelectItem value="BOYS">BOYS RESIDENCE</SelectItem>
+                                                <SelectItem value="GIRLS">GIRLS RESIDENCE</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 pt-2">
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">Assigned Wardens *</Label>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-gray-900 dark:text-foreground">
-                                                    <span className="truncate">{warden.length > 0 ? `${warden.length} Selected` : "Select Wardens"}</span>
-                                                    <ChevronDown className="h-4 w-4 opacity-40" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent className="w-[350px] rounded-2xl border-gray-100 dark:border-border shadow-xl p-2">
-                                                <DropdownMenuLabel className="text-[10px] font-bold uppercase tracking-widest text-gray-400 dark:text-muted-foreground mb-2">Available Wardens</DropdownMenuLabel>
-                                                <DropdownMenuSeparator />
-                                                {wardenlist.map((w, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 rounded-xl cursor-pointer"
-                                                        onClick={(e) => {
-                                                            const isChecked = warden.some(existing => existing.id === w.id);
-                                                            if (!isChecked) {
-                                                                setwarden(prev => [...prev, w]);
-                                                                setassignedwarden(prev => [...prev, w.id]);
-                                                            } else {
-                                                                setwarden(prev => prev.filter(existing => existing.id !== w.id));
-                                                                setassignedwarden(prev => prev.filter(id => id !== w.id));
-                                                            }
-                                                        }}
-                                                    >
-                                                        <div className="flex flex-col">
-                                                            <span className="text-xs font-bold text-gray-700 dark:text-foreground">{w.name}</span>
-                                                            <div className="flex items-center mt-1">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    className="h-3 w-3 rounded border-gray-300 text-blue-600 focus:ring-blue-600 mr-2 cursor-pointer"
-                                                                    checked={w.canManageExpenses || false}
-                                                                    onChange={(e) => toggleExpensePermission(w.id, w.canManageExpenses, e)}
-                                                                />
-                                                                <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest whitespace-nowrap">
-                                                                    Expenses: {w.canManageExpenses ? "Allowed" : "Restricted"}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                        <div className={`h-5 w-5 rounded-md border border-gray-200 dark:border-border flex items-center justify-center ${warden.some(existing => existing.id === w.id) ? 'bg-black border-black' : 'bg-white dark:bg-card'}`}>
-                                                            {warden.some(existing => existing.id === w.id) && <X className="h-3 w-3 text-white" />}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                        <div className="flex flex-wrap gap-2 pt-2">
-                                            {warden.map((w, index) => (
-                                                <Badge key={index} className="bg-gray-50 dark:bg-muted/10 text-gray-900 dark:text-foreground border border-gray-100 dark:border-border hover:bg-gray-100 rounded-lg py-1 px-3 gap-2 font-bold text-[10px]">
-                                                    {w.name}
-                                                    <X className="h-3 w-3 cursor-pointer text-gray-400 dark:text-muted-foreground hover:text-black" onClick={() => {
-                                                        setwarden(prev => prev.filter(item => item.id !== w.id))
-                                                        setassignedwarden(prev => prev.filter(id => id !== w.id))
-                                                    }} />
-                                                </Badge>
-                                            ))}
-                                        </div>
+                                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Operational Status *</Label>
+                                        <Select value={status} onValueChange={setStatus}>
+                                            <SelectTrigger className="h-10 w-full bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-600">
+                                                <SelectValue placeholder="Status" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border-slate-200">
+                                                <SelectItem value="ACTIVE">🟢 ACTIVE</SelectItem>
+                                                <SelectItem value="INACTIVE">🔴 INACTIVE</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">Status *</Label>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="outline" className="w-full h-11 justify-between rounded-xl border-gray-100 dark:border-border bg-white dark:bg-card font-bold text-gray-900 dark:text-foreground">
-                                                    <span>{status || 'Select Status'}</span>
-                                                    <ChevronDown className="h-4 w-4 opacity-40" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent className="w-[300px] rounded-2xl border-gray-100 dark:border-border shadow-xl">
-                                                <DropdownMenuItem onClick={() => setStatus('Active')} className="p-3 font-bold text-xs uppercase tracking-wider rounded-xl">ACTIVE</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => setStatus('Inactive')} className="p-3 font-bold text-xs uppercase tracking-wider rounded-xl">INACTIVE</DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Total Floors</Label>
+                                        <Input
+                                            type="number"
+                                            value={floors}
+                                            onChange={(e) => setFloors(e.target.value)}
+                                            placeholder="3"
+                                            className="h-10 bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Room Count</Label>
+                                        <Input
+                                            type="number"
+                                            value={rooms}
+                                            onChange={(e) => setRooms(e.target.value)}
+                                            placeholder="20"
+                                            className="h-10 bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                        />
                                     </div>
                                 </div>
                             </CardContent>
                         </Card>
 
-                        <Card className="border border-gray-100 dark:border-border shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] bg-white dark:bg-card">
-                            <CardHeader className="px-8 pt-8 pb-4">
-                                <CardTitle className="text-sm font-bold flex items-center gap-2 uppercase tracking-wider text-gray-400 dark:text-muted-foreground">
-                                    <MapPin className="h-4 w-4 text-emerald-500" />
-                                    Location Details
+                        {/* Staff & Wardens Selection */}
+                        <Card className="border border-slate-200/80 dark:border-border shadow-xs bg-white dark:bg-card rounded-2xl overflow-hidden">
+                            <CardHeader className="border-b border-slate-100 dark:border-border bg-slate-50/50 dark:bg-muted/10 px-6 py-4">
+                                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-900 dark:text-foreground">
+                                    <Users className="h-4 w-4 text-indigo-600" />
+                                    Assigned Property Wardens & Staff
                                 </CardTitle>
+                                <CardDescription className="text-xs text-slate-500">
+                                    Grant hostel branch management authority to registered wardens.
+                                </CardDescription>
                             </CardHeader>
-                            <CardContent className="px-8 pb-8 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <CardContent className="p-6 space-y-4">
+                                {warden.length > 0 && (
                                     <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">Street / Sector</Label>
-                                        <Input placeholder="e.g. Sector H-12, Street 4" className="h-11 bg-white dark:bg-card border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground" value={street} onChange={(e) => setStreet(e.target.value)} />
+                                        <Label className="text-xs font-medium text-slate-500">Assigned Wardens</Label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {warden.map((w) => (
+                                                <Badge
+                                                    key={w.id}
+                                                    className="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-xl px-3 py-1 text-xs font-medium flex items-center gap-2"
+                                                >
+                                                    <span>{w.name}</span>
+                                                    <X
+                                                        className="h-3.5 w-3.5 cursor-pointer hover:text-indigo-900 transition-colors"
+                                                        onClick={() => {
+                                                            setwarden(prev => prev.filter(item => item.id !== w.id));
+                                                            setassignedwarden(prev => prev.filter(id => id !== w.id));
+                                                        }}
+                                                    />
+                                                </Badge>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">City</Label>
-                                        <Input placeholder="Islamabad" className="h-11 bg-white dark:bg-card border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground" value={city} onChange={(e) => setCity(e.target.value)} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">State / Region</Label>
-                                        <Input className="h-11 bg-white dark:bg-card border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground" value={state} onChange={(e) => setState(e.target.value)} />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">Postal Code</Label>
-                                        <Input placeholder="44000" className="h-11 bg-white dark:bg-card border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground" value={zip} onChange={(e) => setZip(e.target.value)} />
+                                )}
+
+                                <div className="space-y-2 pt-2">
+                                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Select Wardens to Assign</Label>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-52 overflow-y-auto pr-1">
+                                        {wardenlist.map((w) => {
+                                            const isAssigned = warden.some(existing => existing.id === w.id);
+                                            return (
+                                                <div
+                                                    key={w.id}
+                                                    onClick={() => {
+                                                        if (!isAssigned) {
+                                                            setwarden(prev => [...prev, w]);
+                                                            setassignedwarden(prev => [...prev, w.id]);
+                                                        } else {
+                                                            setwarden(prev => prev.filter(item => item.id !== w.id));
+                                                            setassignedwarden(prev => prev.filter(id => id !== w.id));
+                                                        }
+                                                    }}
+                                                    className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${isAssigned ? 'bg-indigo-50/60 border-indigo-200 text-indigo-900 dark:bg-indigo-950/40 dark:border-indigo-800' : 'bg-slate-50/50 border-slate-200/80 text-slate-700 dark:bg-muted/10 dark:border-border hover:bg-slate-100'}`}
+                                                >
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className="text-xs font-semibold truncate">{w.name}</span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => toggleExpensePermission(w.id, w.canManageExpenses, e)}
+                                                            className="text-[11px] text-slate-500 hover:text-indigo-600 text-left mt-0.5 font-medium underline"
+                                                        >
+                                                            Expense Mgmt: {w.canManageExpenses ? "Allowed" : "Restricted"}
+                                                        </button>
+                                                    </div>
+                                                    <div className={`h-5 w-5 rounded-lg border flex items-center justify-center shrink-0 ${isAssigned ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-300 bg-white'}`}>
+                                                        {isAssigned && <Check className="h-3 w-3" />}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label className="text-[11px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">Complete Formatted Address</Label>
-                                    <Input placeholder="Full identifiable location..." className="h-11 bg-white dark:bg-card border-gray-100 dark:border-border rounded-xl font-bold text-gray-900 dark:text-foreground" value={completeAddress} onChange={(e) => setCompleteAddress(e.target.value)} />
+                            </CardContent>
+                        </Card>
+
+                        {/* Location Details */}
+                        <Card className="border border-slate-200/80 dark:border-border shadow-xs bg-white dark:bg-card rounded-2xl overflow-hidden">
+                            <CardHeader className="border-b border-slate-100 dark:border-border bg-slate-50/50 dark:bg-muted/10 px-6 py-4">
+                                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-900 dark:text-foreground">
+                                    <MapPin className="h-4 w-4 text-emerald-600" />
+                                    Contact & Location Details
+                                </CardTitle>
+                                <CardDescription className="text-xs text-slate-500">
+                                    Public phone, email, street address, and city location.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-6 space-y-5">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Phone Contact</Label>
+                                        <Input
+                                            value={contact}
+                                            onChange={(e) => setContact(e.target.value)}
+                                            placeholder="+92 300 1234567"
+                                            className="h-10 bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Property Email</Label>
+                                        <Input
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="contact@hostel.com"
+                                            className="h-10 bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Street Address</Label>
+                                        <Input
+                                            value={street}
+                                            onChange={(e) => setStreet(e.target.value)}
+                                            placeholder="Street 4, Sector G-9"
+                                            className="h-10 bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">City *</Label>
+                                        <Input
+                                            value={city}
+                                            onChange={(e) => setCity(e.target.value)}
+                                            placeholder="Islamabad"
+                                            className="h-10 bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2 pt-2">
+                                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Complete Address</Label>
+                                    <Textarea
+                                        rows={3}
+                                        value={completeAddress}
+                                        onChange={(e) => setCompleteAddress(e.target.value)}
+                                        placeholder="Full formatted address for invoices..."
+                                        className="bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-600 resize-none"
+                                    />
                                 </div>
                             </CardContent>
                         </Card>
                     </div>
 
-                    {/* Sidebar: Financials & Capacity */}
+                    {/* Right Column: Financials & Facilities */}
                     <div className="space-y-6">
-                        <Card className="border border-gray-100 dark:border-border shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)] bg-white dark:bg-card overflow-hidden">
-                            <CardHeader className="bg-gray-50 dark:bg-background border-b border-gray-100 dark:border-border px-6 py-5 text-center">
-                                <CardTitle className="text-xs font-black text-gray-900 dark:text-foreground tracking-widest uppercase">Pricing & Details</CardTitle>
-                            </CardHeader>
-                            <div className="p-6 space-y-5">
-                                <div className="space-y-1.5 flex flex-col">
-                                    <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center">Monthly Rent (PKR)</Label>
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 dark:text-muted-foreground">PKR</span>
-                                        <Input type="number" className="pl-14 h-12 bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border rounded-2xl font-black text-lg text-center" value={montlypayment} onChange={(e) => setmontlypayment(e.target.value)} />
-                                    </div>
-                                </div>
-                                <div className="space-y-1.5 flex flex-col">
-                                    <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center">Price Per Night (PKR)</Label>
-                                    <div className="relative">
-                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-gray-400 dark:text-muted-foreground">PKR</span>
-                                        <Input type="number" className="pl-14 h-12 bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border rounded-2xl font-black text-lg text-center" value={pricePerNight} onChange={(e) => setpricepernight(e.target.value)} />
-                                    </div>
-                                </div>
-                                <div className="space-y-1.5 flex flex-col">
-                                    <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest text-center">Number of Floors</Label>
-                                    <Input type="number" className="h-12 bg-gray-50 dark:bg-muted/10 border-gray-100 dark:border-border rounded-2xl font-black text-lg text-center" value={floors} onChange={(e) => setFloors(e.target.value)} />
-                                </div>
-                            </div>
-                        </Card>
-
-                        {/* Audit & extra details */}
-                        <Card className="border border-gray-200 dark:border-border bg-white dark:bg-card shadow-sm overflow-hidden">
-                            <CardHeader className="px-6 pt-6 pb-3 border-b border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10/60 flex items-center justify-between">
-                                <CardTitle className="text-[10px] font-bold text-gray-600 dark:text-muted-foreground uppercase tracking-[0.18em] flex items-center gap-2">
-                                    <ShieldCheck className="h-4 w-4 text-indigo-500" />
-                                    Hostel audit & details
+                        <Card className="border border-slate-200/80 dark:border-border shadow-xs bg-white dark:bg-card rounded-2xl overflow-hidden">
+                            <CardHeader className="border-b border-slate-100 dark:border-border bg-slate-50/50 dark:bg-muted/10 px-6 py-4">
+                                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-900 dark:text-foreground">
+                                    <Coins className="h-4 w-4 text-emerald-600" />
+                                    Commercial Pricing Base
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="p-6 space-y-6">
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest flex items-center justify-between">
-                                        Description
-                                        <span className="text-[9px] font-medium text-gray-400 dark:text-muted-foreground normal-case tracking-normal">
-                                            Optional notes for internal use
-                                        </span>
-                                    </Label>
-                                    <Textarea
-                                        className="bg-gray-50 dark:bg-muted/10 border-gray-200 dark:border-border text-xs font-medium min-h-[140px] rounded-xl focus:border-indigo-400 focus:ring-indigo-400/40"
-                                        placeholder="Add details about the hostel, building condition, nearby landmarks, or any special notes."
-                                        value={description}
-                                        onChange={(e) => setDescription(e.target.value)}
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4 py-4 border-t border-gray-100 dark:border-border">
-                                    <div className="space-y-1.5">
-                                        <Label className="text-[9px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest">Cleaning (hrs)</Label>
+                            <CardContent className="p-6 space-y-4">
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Monthly Rent Base (PKR/month)</Label>
+                                    <div className="relative">
+                                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">PKR</span>
                                         <Input
                                             type="number"
-                                            className="bg-gray-50 dark:bg-muted/10 border-gray-200 dark:border-border h-10 rounded-xl text-xs font-medium focus:border-indigo-400 focus:ring-indigo-400/40"
-                                            value={cleaningInterval}
-                                            onChange={(e) => setCleaningInterval(e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <Label className="text-[9px] font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest">Laundry (hrs)</Label>
-                                        <Input
-                                            type="number"
-                                            className="bg-gray-50 dark:bg-muted/10 border-gray-200 dark:border-border h-10 rounded-xl text-xs font-medium focus:border-indigo-400 focus:ring-indigo-400/40"
-                                            value={laundryInterval}
-                                            onChange={(e) => setLaundryInterval(e.target.value)}
+                                            placeholder="15000"
+                                            value={montlypayment}
+                                            onChange={(e) => setmontlypayment(e.target.value)}
+                                            className="pl-12 h-10 bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-semibold focus-visible:ring-2 focus-visible:ring-indigo-600"
                                         />
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2 pt-1">
-                                    <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                                    <span className="text-[10px] font-medium text-gray-500 dark:text-muted-foreground uppercase tracking-widest">
-                                        Basic security checks in place
-                                    </span>
+
+                                <div className="space-y-1.5">
+                                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">Per Night Rate (PKR/night)</Label>
+                                    <div className="relative">
+                                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">PKR</span>
+                                        <Input
+                                            type="number"
+                                            placeholder="1200"
+                                            value={pricePerNight}
+                                            onChange={(e) => setpricepernight(e.target.value)}
+                                            className="pl-12 h-10 bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-600"
+                                        />
+                                    </div>
                                 </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border border-slate-200/80 dark:border-border shadow-xs bg-white dark:bg-card rounded-2xl overflow-hidden">
+                            <CardHeader className="border-b border-slate-100 dark:border-border bg-slate-50/50 dark:bg-muted/10 px-6 py-4">
+                                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-900 dark:text-foreground">
+                                    <Sparkle className="h-4 w-4 text-indigo-600" />
+                                    Facilities & Services
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6 space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                            <Utensils className="h-3.5 w-3.5 text-amber-500" />
+                                            Mess Service
+                                        </Label>
+                                        <Select value={mess} onValueChange={setMess}>
+                                            <SelectTrigger className="h-10 w-full bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-600">
+                                                <SelectValue placeholder="Mess" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border-slate-200">
+                                                <SelectItem value="Yes">Yes (Available)</SelectItem>
+                                                <SelectItem value="No">No (Not Provided)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                                            <Shirt className="h-3.5 w-3.5 text-blue-500" />
+                                            Laundry Service
+                                        </Label>
+                                        <Select value={laundry} onValueChange={setLaundry}>
+                                            <SelectTrigger className="h-10 w-full bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus:ring-2 focus:ring-indigo-600">
+                                                <SelectValue placeholder="Laundry" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border-slate-200">
+                                                <SelectItem value="Yes">Yes (Available)</SelectItem>
+                                                <SelectItem value="No">No (Not Provided)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border border-slate-200/80 dark:border-border shadow-xs bg-white dark:bg-card rounded-2xl overflow-hidden">
+                            <CardHeader className="border-b border-slate-100 dark:border-border bg-slate-50/50 dark:bg-muted/10 px-6 py-4">
+                                <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-900 dark:text-foreground">
+                                    <ShieldCheck className="h-4 w-4 text-slate-600" />
+                                    Internal Audit Notes
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6 space-y-4">
+                                <Textarea
+                                    rows={4}
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    placeholder="Building description, rules, or internal notes..."
+                                    className="bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-600 resize-none"
+                                />
                             </CardContent>
                         </Card>
                     </div>
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default CreateHostelPage
+export default CreateHostelPage;

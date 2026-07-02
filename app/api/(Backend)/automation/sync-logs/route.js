@@ -8,9 +8,15 @@ export async function POST(request) {
     if (!auth.success) return errorResponse(auth.error, auth.status);
 
     try {
-        const results = await new RoomServices().syncAutomationLogs();
+        // ?force=true skips interval check and logs immediately for all occupied rooms
+        const { searchParams } = new URL(request.url);
+        const force = searchParams.get('force') === 'true';
+
+        const results = await new RoomServices().syncAutomationLogs({ force });
         return NextResponse.json({
-            message: "Automation sync completed",
+            message: force
+                ? `Force sync: ${results.cleaning} cleaning & ${results.laundry} laundry logs created`
+                : "Automation sync completed",
             data: results,
             success: true
         });
@@ -18,6 +24,7 @@ export async function POST(request) {
         console.error("Automation Route Error:", error);
         return NextResponse.json({
             error: "Failed to run automation sync",
+            message: error.message,
             success: false
         }, { status: 500 });
     }

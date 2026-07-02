@@ -106,15 +106,25 @@ export default class RoomServices {
         }
     }
 
-    async syncAutomationLogs() {
+    async syncAutomationLogs(options: { force?: boolean } = {}) {
         try {
+            const { force = false } = options;
+
             const rooms = await prisma.room.findMany({
                 include: {
                     Hostel: {
                         select: {
                             id: true,
-                            name: true
+                            name: true,
                         }
+                    },
+                    // For laundry: only log for rooms with active bookings
+                    Booking: {
+                        where: {
+                            status: { in: ['CONFIRMED', 'CHECKED_IN'] }
+                        },
+                        select: { id: true },
+                        take: 1,
                     }
                 }
             });
@@ -125,22 +135,22 @@ export default class RoomServices {
             for (const room of rooms) {
                 const hostel = room.Hostel;
 
-                // Effective Intervals (Room level wins, then fallback defaults)
+                // Room-level intervals only (Hostel model has no interval fields)
                 const effectiveCleaningInterval = room.cleaningInterval || 24;
                 const effectiveLaundryInterval = room.laundryInterval || 48;
 
-                // Check Cleaning
+                // ── Cleaning (all rooms) ──────────────────────────────────
                 const lastCleaning = room.lastCleaningAt || room.createdAt;
                 const hoursSinceCleaning = (now.getTime() - new Date(lastCleaning).getTime()) / (1000 * 60 * 60);
 
-                if (hoursSinceCleaning >= effectiveCleaningInterval) {
+                if (force || hoursSinceCleaning >= effectiveCleaningInterval) {
                     await prisma.$transaction([
                         prisma.cleaningLog.create({
                             data: {
                                 roomId: room.id,
                                 hostelId: room.hostelId,
                                 status: "COMPLETED",
-                                notes: "Cleaning (Auto-logged)",
+                                notes: force ? "Cleaning (Manual Sync)" : "Cleaning (Auto-logged)",
                                 performedAt: now
                             }
                         }),
@@ -152,18 +162,21 @@ export default class RoomServices {
                     results.cleaning++;
                 }
 
-                // Check Laundry
+                // ── Laundry (occupied rooms only) ─────────────────────────
+                const hasActiveBooking = room.Booking.length > 0;
+                if (!hasActiveBooking) continue;
+
                 const lastLaundry = room.lastLaundryAt || room.createdAt;
                 const hoursSinceLaundry = (now.getTime() - new Date(lastLaundry).getTime()) / (1000 * 60 * 60);
 
-                if (hoursSinceLaundry >= effectiveLaundryInterval) {
+                if (force || hoursSinceLaundry >= effectiveLaundryInterval) {
                     await prisma.$transaction([
                         prisma.laundryLog.create({
                             data: {
                                 roomId: room.id,
                                 hostelId: room.hostelId,
                                 status: "COMPLETED",
-                                notes: "Laundry (Auto-logged)",
+                                notes: force ? "Laundry (Manual Sync)" : "Laundry (Auto-logged)",
                                 receivedAt: now,
                                 itemsCount: 0
                             }
@@ -176,6 +189,7 @@ export default class RoomServices {
                     results.laundry++;
                 }
             }
+
             if (results.cleaning > 0 || results.laundry > 0) {
                 await invalidatePattern('rooms:*');
             }
@@ -185,6 +199,7 @@ export default class RoomServices {
             throw error;
         }
     }
+
 
     async updateRoom(data: RoomUpdateData) {
         try {
@@ -216,6 +231,17 @@ export default class RoomServices {
 
     async deleteRoom(id: string) {
         try {
+            const activeBookings = await prisma.booking.count({
+                where: {
+                    roomId: id,
+                    status: { in: ['CONFIRMED', 'CHECKED_IN', 'PENDING'] }
+                }
+            });
+
+            if (activeBookings > 0) {
+                throw new Error("Cannot delete room with active resident bookings. Please check out or transfer residents first.");
+            }
+
             const room = await prisma.room.delete({
                 where: { id }
             });
@@ -284,81 +310,127 @@ export default class RoomServices {
     }
 
     async getSingleRoomByHostelId(hostelId: string, roomid: string) {
-        const cacheKey = `rooms:single:${hostelId}:${roomid}`;
+        const cacheKey = `rooms:single:${hostelId || 'any'}:${roomid}`;
         const cached = await getCache<any>(cacheKey);
         if (cached) return cached;
 
         try {
-            // Strictly match by roomid and (hostelId or hostel Name)
-            // No fallback to just roomid to prevent data leakage between hostels
-            const room = await prisma.room.findFirst({
-                where: {
-                    id: roomid,
-                    OR: [
-                        { hostelId: hostelId },
-                        { Hostel: { name: decodeURIComponent(hostelId) } }
-                    ]
-                },
-                include: {
-                    Booking: {
-                        where: {
-                            status: {
-                                in: ['CONFIRMED', 'COMPLETED', 'CHECKED_IN']
-                            }
-                        },
-                        select: {
-                            id: true,
-                            checkIn: true,
-                            checkOut: true,
-                            status: true,
-                            totalAmount: true,
-                            User: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    email: true,
-                                    phone: true,
-                                    role: true
+            let room = null;
+            if (hostelId && hostelId !== 'undefined') {
+                room = await prisma.room.findFirst({
+                    where: {
+                        id: roomid,
+                        OR: [
+                            { hostelId: hostelId },
+                            { Hostel: { name: decodeURIComponent(hostelId) } }
+                        ]
+                    },
+                    include: {
+                        Booking: {
+                            where: {
+                                status: {
+                                    in: ['CONFIRMED', 'COMPLETED', 'CHECKED_IN']
+                                }
+                            },
+                            select: {
+                                id: true,
+                                checkIn: true,
+                                checkOut: true,
+                                status: true,
+                                totalAmount: true,
+                                User: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        email: true,
+                                        phone: true,
+                                        role: true
+                                    }
                                 }
                             }
+                        },
+                        Hostel: {
+                            select: {
+                                id: true,
+                                name: true,
+                                type: true,
+                                city: true
+                            }
+                        },
+                        CleaningLog: {
+                            orderBy: { performedAt: 'desc' },
+                            take: 10
+                        },
+                        LaundryLog: {
+                            orderBy: { receivedAt: 'desc' },
+                            take: 10
                         }
-                    },
-                    Hostel: {
-                        select: {
-                            id: true,
-                            name: true,
-                            type: true,
-                            city: true
-                        }
-                    },
-                    CleaningLog: {
-                        orderBy: { performedAt: 'desc' },
-                        take: 10
-                    },
-                    LaundryLog: {
-                        orderBy: { receivedAt: 'desc' },
-                        take: 10
                     }
-                }
-            }) as any;
+                }) as any;
+            }
+
+            if (!room && roomid) {
+                room = await prisma.room.findUnique({
+                    where: { id: roomid },
+                    include: {
+                        Booking: {
+                            where: {
+                                status: {
+                                    in: ['CONFIRMED', 'COMPLETED', 'CHECKED_IN']
+                                }
+                            },
+                            select: {
+                                id: true,
+                                checkIn: true,
+                                checkOut: true,
+                                status: true,
+                                totalAmount: true,
+                                User: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        email: true,
+                                        phone: true,
+                                        role: true
+                                    }
+                                }
+                            }
+                        },
+                        Hostel: {
+                            select: {
+                                id: true,
+                                name: true,
+                                type: true,
+                                city: true
+                            }
+                        },
+                        CleaningLog: {
+                            orderBy: { performedAt: 'desc' },
+                            take: 10
+                        },
+                        LaundryLog: {
+                            orderBy: { receivedAt: 'desc' },
+                            take: 10
+                        }
+                    }
+                }) as any;
+            }
 
             if (room) {
                 // Derive a simple currentGuests array for the UI
-                room.currentGuests = room.Booking.map((b: any) => ({
-                    id: b.User.id,
+                room.currentGuests = (room.Booking || []).map((b: any) => ({
+                    id: b.User?.id,
                     bookingId: b.id,
-                    name: b.User.name,
-                    contact: b.User.phone || b.User.email,
-                    checkInDate: new Date(b.checkIn).toLocaleDateString(),
+                    name: b.User?.name,
+                    contact: b.User?.phone || b.User?.email,
+                    checkInDate: b.checkIn ? new Date(b.checkIn).toLocaleDateString() : '',
                     rentStatus: "Paid"
                 }));
 
                 room.monthlyrent = room.montlyrent || room.price || 0;
-            }
-
-            if (room) {
                 await setCache(cacheKey, room, 300);
             }
+
             return room;
         } catch (error) {
             console.error("Error fetching single room by hostel id:", error);

@@ -35,20 +35,27 @@ export async function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-pathname", pathname);
 
-    // 1️⃣ Skip public paths
-    if (
-        pathname.startsWith('/_next') ||
-        pathname.startsWith('/api') ||
-        pathname.startsWith('/static') ||
-        pathname.startsWith('/auth') ||
-        pathname.startsWith('/redirecting') ||
-        pathname.includes('.')
-    ) {
-        return NextResponse.next({
-            request: {
-                headers: requestHeaders,
-            },
-        });
+    // ── API Route Logging ──────────────────────────────────────────
+    // Log every API call (method + path). Errors are logged by apiResponse.
+    // Auth events are logged by apiAuth. This covers the request entry point.
+    if (pathname.startsWith('/api')) {
+        const isDev = process.env.NODE_ENV !== 'production';
+        const ENABLE_PROD_LOGS = process.env.ENABLE_API_LOGS === 'true';
+        if (isDev || ENABLE_PROD_LOGS) {
+            const mc: Record<string, string> = {
+                GET: '\x1b[36m', POST: '\x1b[32m', PATCH: '\x1b[33m',
+                PUT: '\x1b[33m', DELETE: '\x1b[31m',
+            };
+            const method = request.method.toUpperCase();
+            const color  = mc[method] || '\x1b[37m';
+            const ts     = new Date().toTimeString().slice(0, 8);
+            const url    = new URL(request.url);
+            const qs     = url.search || '';
+            console.log(
+                `\x1b[90m${ts}\x1b[0m \x1b[1m${color}${method.padEnd(6)}\x1b[0m \x1b[37m${pathname}${qs}\x1b[0m`
+            );
+        }
+        return NextResponse.next({ request: { headers: requestHeaders } });
     }
 
     const matchedRoute = matchProtectedRoute(pathname);

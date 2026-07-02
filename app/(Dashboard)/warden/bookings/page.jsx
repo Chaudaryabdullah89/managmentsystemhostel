@@ -64,6 +64,7 @@ import {
 import { useHostel } from "@/hooks/usehostel";
 import { useRoom } from "@/hooks/useRoom";
 import { Skeleton } from "@/components/ui/skeleton";
+import RoomTransferDialog from "@/components/RoomTransferDialog";
 import { toast } from "sonner";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { QueryKeys } from "@/lib/queryclient";
@@ -265,6 +266,47 @@ const GlobalBookingsPage = () => {
     searchQuery: "",
   });
 
+  const exportMatchingCount = bookings.filter((b) => {
+    const passStatus =
+      exportConfig.status === "All" || b.status === exportConfig.status;
+    const passHostel =
+      exportConfig.hostelId === "All" ||
+      b.Room?.Hostel?.name === exportConfig.hostelId;
+    const passRoom =
+      exportConfig.roomId === "All" || b.roomId === exportConfig.roomId;
+    const passRole =
+      exportConfig.role === "All" || b.User?.role === exportConfig.role;
+
+    let passDate = true;
+    if (exportConfig.dateFrom) {
+      passDate =
+        passDate && new Date(b.checkIn) >= new Date(exportConfig.dateFrom);
+    }
+    if (exportConfig.dateTo) {
+      const toDate = new Date(exportConfig.dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      passDate = passDate && new Date(b.checkIn) <= toDate;
+    }
+
+    let passSearch = true;
+    if (exportConfig.searchQuery) {
+      const q = exportConfig.searchQuery.toLowerCase();
+      passSearch =
+        b.User?.name?.toLowerCase()?.includes(q) ||
+        b.User?.cnic?.toLowerCase()?.includes(q) ||
+        b.Room?.roomNumber?.toLowerCase()?.includes(q);
+    }
+
+    return (
+      passStatus &&
+      passHostel &&
+      passRoom &&
+      passDate &&
+      passSearch &&
+      passRole
+    );
+  }).length;
+
   const handleExportPoliceVerification = async () => {
     setIsExporting(true);
 
@@ -312,9 +354,6 @@ const GlobalBookingsPage = () => {
         passRole
       );
     });
-
-    // Setup mock delay for animation
-    await new Promise((resolve) => setTimeout(resolve, 2500));
 
     try {
       const doc = new jsPDF("landscape");
@@ -937,13 +976,11 @@ const GlobalBookingsPage = () => {
                   </div>
 
                   <div className="flex items-center gap-2 w-full xl:w-auto justify-end pt-3 md:pt-0 border-t md:border-none border-gray-50">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-9 w-9 rounded-full hover:bg-gray-50 dark:hover:bg-muted/5 dark:bg-muted/10 text-gray-400 dark:text-muted-foreground hidden sm:flex"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
+                    {!["CANCELLED", "CHECKED_OUT", "COMPLETED"].includes(booking.status) && (
+                      <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                        <RoomTransferDialog booking={booking} />
+                      </div>
+                    )}
                     <Button className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[9px] uppercase tracking-wider shadow-sm flex items-center gap-2 group/btn w-full sm:w-auto justify-center">
                       View
                       <ChevronRight className="h-3.5 w-3.5 group-hover/btn:translate-x-1 transition-transform" />
@@ -1022,29 +1059,35 @@ const GlobalBookingsPage = () => {
 
       {/* Export Wizard Dialog */}
       <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
-        <DialogContent className="sm:max-w-md rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl">
-          <div className="bg-indigo-600 p-8 text-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-white dark:bg-card/10 skew-x-12 translate-x-20" />
-            <div className="mx-auto h-16 w-16 bg-white dark:bg-card/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/20 mb-4 rotate-3">
-              <ShieldCheck className="h-8 w-8 text-white stroke-[1.5]" />
-            </div>
-            <h2 className="text-xl font-black text-white uppercase tracking-tight relative z-10">
-              Export
-            </h2>
-            <p className="text-indigo-100 text-[11px] font-bold uppercase tracking-widest mt-1 relative z-10">
-              PDF REPORT
-            </p>
+        <DialogContent className="sm:max-w-xl md:max-w-2xl rounded-[2.5rem] p-0 overflow-hidden border-none shadow-2xl bg-white dark:bg-card">
+          <div className="bg-slate-900 text-white p-6 md:p-8 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+            <DialogHeader className="relative z-10 text-left space-y-1">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-black uppercase tracking-tight text-white">
+                    Tenant Verification PDF Report
+                  </DialogTitle>
+                  <DialogDescription className="text-[10px] font-bold uppercase tracking-widest text-indigo-200">
+                    Official police & resident directory report generator
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
           </div>
 
-          <div className="p-8 space-y-6 bg-white dark:bg-card overflow-y-auto max-h-[60vh]">
+          <div className="p-6 md:p-8 space-y-6 bg-white dark:bg-card max-h-[70vh] overflow-y-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {isAdmin && (
-                <div className="space-y-2">
-                  <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">
-                    Select Hostel
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">
+                    Hostel Branch
                   </Label>
                   <select
-                    className="w-full h-12 rounded-xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border px-4 text-sm font-bold text-gray-700 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    className="w-full h-11 rounded-xl bg-gray-50 dark:bg-muted/20 border border-gray-200 dark:border-border px-3 font-bold text-xs uppercase text-gray-900 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     value={exportConfig.hostelId}
                     onChange={(e) =>
                       setExportConfig((prev) => ({
@@ -1053,7 +1096,7 @@ const GlobalBookingsPage = () => {
                       }))
                     }
                   >
-                    <option value="All">All</option>
+                    <option value="All">All Hostel Branches</option>
                     {hostels.map((h) => (
                       <option key={h.id} value={h.name}>
                         {h.name}
@@ -1063,12 +1106,12 @@ const GlobalBookingsPage = () => {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">
-                  Select Room
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">
+                  Target Room
                 </Label>
                 <select
-                  className="w-full h-12 rounded-xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border px-4 text-sm font-bold text-gray-700 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full h-11 rounded-xl bg-gray-50 dark:bg-muted/20 border border-gray-200 dark:border-border px-3 font-bold text-xs uppercase text-gray-900 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   value={exportConfig.roomId}
                   onChange={(e) =>
                     setExportConfig((prev) => ({
@@ -1077,7 +1120,7 @@ const GlobalBookingsPage = () => {
                     }))
                   }
                 >
-                  <option value="All">All</option>
+                  <option value="All">All Rooms</option>
                   {rooms
                     .filter(
                       (r) =>
@@ -1092,12 +1135,12 @@ const GlobalBookingsPage = () => {
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">
                   Booking Status
                 </Label>
                 <select
-                  className="w-full h-12 rounded-xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border px-4 text-sm font-bold text-gray-700 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full h-11 rounded-xl bg-gray-50 dark:bg-muted/20 border border-gray-200 dark:border-border px-3 font-bold text-xs uppercase text-gray-900 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   value={exportConfig.status}
                   onChange={(e) =>
                     setExportConfig((prev) => ({
@@ -1106,20 +1149,20 @@ const GlobalBookingsPage = () => {
                     }))
                   }
                 >
-                  <option value="All">All</option>
-                  <option value="CHECKED_IN">Checked In</option>
+                  <option value="All">All Statuses</option>
+                  <option value="CHECKED_IN">Checked In (Active)</option>
                   <option value="CONFIRMED">Confirmed</option>
-                  <option value="PENDING">Pending</option>
-                  <option value="CHECKED_OUT">Checked Out</option>
+                  <option value="PENDING">Pending Approval</option>
+                  <option value="CHECKED_OUT">Checked Out (Past)</option>
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">
-                  Type (Role)
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">
+                  Resident Category
                 </Label>
                 <select
-                  className="w-full h-12 rounded-xl bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border px-4 text-sm font-bold text-gray-700 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  className="w-full h-11 rounded-xl bg-gray-50 dark:bg-muted/20 border border-gray-200 dark:border-border px-3 font-bold text-xs uppercase text-gray-900 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   value={exportConfig.role}
                   onChange={(e) =>
                     setExportConfig((prev) => ({
@@ -1128,19 +1171,19 @@ const GlobalBookingsPage = () => {
                     }))
                   }
                 >
-                  <option value="All">All</option>
+                  <option value="All">All Categories</option>
                   <option value="RESIDENT">Resident</option>
                   <option value="GUEST">Guest</option>
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">
-                  From Date
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">
+                  From Check-in Date
                 </Label>
                 <Input
                   type="date"
-                  className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold"
+                  className="h-11 rounded-xl border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/20 font-bold text-xs"
                   value={exportConfig.dateFrom}
                   onChange={(e) =>
                     setExportConfig((prev) => ({
@@ -1151,13 +1194,13 @@ const GlobalBookingsPage = () => {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">
-                  To Date
+              <div className="space-y-1.5">
+                <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">
+                  To Check-in Date
                 </Label>
                 <Input
                   type="date"
-                  className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold"
+                  className="h-11 rounded-xl border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/20 font-bold text-xs"
                   value={exportConfig.dateTo}
                   onChange={(e) =>
                     setExportConfig((prev) => ({
@@ -1169,13 +1212,13 @@ const GlobalBookingsPage = () => {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest ml-1">
-                Search Keyword (Name/CNIC/Room)
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">
+                Search Keyword Filter (Name / CNIC / Room)
               </Label>
               <Input
-                placeholder="Filter records by name or ID..."
-                className="h-12 rounded-xl border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/10 font-bold"
+                placeholder="Filter matching records by resident name, CNIC, or room #"
+                className="h-11 rounded-xl border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/20 font-bold text-xs"
                 value={exportConfig.searchQuery}
                 onChange={(e) =>
                   setExportConfig((prev) => ({
@@ -1186,37 +1229,64 @@ const GlobalBookingsPage = () => {
               />
             </div>
 
-            <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 flex gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-500 shrink-0" />
-              <p className="text-[10px] text-amber-700 font-medium leading-relaxed italic">
-                Select required filters to generate the final directory report.
-              </p>
+            <div className="flex items-center justify-between p-4 bg-indigo-50/50 dark:bg-muted/20 rounded-2xl border border-indigo-100 dark:border-border">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-black text-xs">
+                  {exportMatchingCount}
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase text-gray-900 dark:text-foreground">
+                    {exportMatchingCount} Matching Records Found
+                  </p>
+                  <p className="text-[9px] font-bold uppercase text-gray-400">
+                    Will be compiled into the PDF report table
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                className="h-8 text-[9px] font-black uppercase tracking-wider text-gray-500 hover:text-rose-600"
+                onClick={() =>
+                  setExportConfig({
+                    hostelId: "All",
+                    status: "All",
+                    roomId: "All",
+                    role: "All",
+                    dateFrom: "",
+                    dateTo: "",
+                    searchQuery: "",
+                  })
+                }
+              >
+                Reset Filters
+              </Button>
             </div>
           </div>
 
-          <div className="p-6 bg-gray-50 dark:bg-muted/10 border-t border-gray-100 dark:border-border flex gap-3 justify-end">
+          <div className="p-5 bg-gray-50 dark:bg-muted/10 border-t border-gray-100 dark:border-border flex items-center justify-between">
             <Button
               variant="ghost"
-              className="h-12 px-6 rounded-xl font-bold text-[10px] uppercase tracking-widest text-gray-500 dark:text-muted-foreground hover:bg-gray-100"
+              className="h-10 px-5 rounded-xl font-bold text-[10px] uppercase tracking-widest text-gray-500 hover:bg-gray-100"
               onClick={() => setIsExportDialogOpen(false)}
               disabled={isExporting}
             >
               Cancel
             </Button>
             <Button
-              className="h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2"
+              className="h-10 px-6 rounded-xl bg-slate-900 hover:bg-black text-white font-black text-[10px] uppercase tracking-wider shadow-md transition-all flex items-center gap-2"
               onClick={handleExportPoliceVerification}
-              disabled={isExporting}
+              disabled={isExporting || exportMatchingCount === 0}
             >
               {isExporting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Exporting...
+                  Generating PDF...
                 </>
               ) : (
                 <>
                   <FileText className="h-4 w-4" />
-                  Generate PDF
+                  Download PDF Report ({exportMatchingCount})
                 </>
               )}
             </Button>

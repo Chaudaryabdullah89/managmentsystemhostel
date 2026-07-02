@@ -154,9 +154,21 @@ export async function POST(request) {
             canManageExpenses, canManageMess, canManageGeneral, canManageUtilities, canManageMaintenance, canManageSalaries
         } = body;
 
-        // Check if user exists
-        const existing = await prisma.user.findUnique({ where: { email } });
-        if (existing) return errorResponse("Email already registered", 400, { error: "Email already registered" });
+        // Check if user exists by Email, Phone, or CNIC
+        if (email) {
+            const existingEmail = await prisma.user.findUnique({ where: { email } });
+            if (existingEmail) return errorResponse("Email address is already registered with another user.", 400, { error: "Email address is already registered" });
+        }
+
+        if (phone?.trim()) {
+            const existingPhone = await prisma.user.findFirst({ where: { phone: phone.trim() } });
+            if (existingPhone) return errorResponse("Phone number is already registered with another user.", 400, { error: "Phone number is already registered" });
+        }
+
+        if (cnic?.trim()) {
+            const existingCnic = await prisma.user.findFirst({ where: { cnic: cnic.trim() } });
+            if (existingCnic) return errorResponse("CNIC / Identity number is already registered with another user.", 400, { error: "CNIC / Identity number is already registered" });
+        }
 
         // Security: never use a predictable default password.
         // If admin didn't provide one, generate a cryptographically random temp password.

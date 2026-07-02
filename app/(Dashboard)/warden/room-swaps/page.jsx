@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import {
     ChevronLeft, Sparkles, Clock, CheckCircle, XCircle, AlertCircle,
     Search, Filter, User, Calendar, Home, Phone, Building2,
-    Check, X, Loader2, RefreshCw, ArrowLeftRight, Inbox, HelpCircle
+    Check, X, Loader2, RefreshCw, ArrowLeftRight, Inbox, HelpCircle, Plus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ import {
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ListPageSkeleton } from "@/components/ui/skeletons";
+import InitiateRoomSwapModal from "@/components/admin/InitiateRoomSwapModal";
 
 const StatusBadge = ({ status }) => {
     const s = status?.toUpperCase();
@@ -60,6 +61,7 @@ const WardenRoomSwapPage = () => {
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
     const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
+    const [isInitiateModalOpen, setIsInitiateModalOpen] = useState(false);
     const [isActionPending, setIsActionPending] = useState(false);
 
     const fetchRequests = async () => {
@@ -143,7 +145,7 @@ const WardenRoomSwapPage = () => {
                         </Button>
                         <div className="h-6 w-px bg-slate-100 dark:bg-border" />
                         <div className="flex items-center gap-3">
-                            <div className="h-2 w-2 rounded-full bg-violet-650 animate-pulse" />
+                            <div className="h-2 w-2 rounded-full bg-violet-600 animate-pulse" />
                             <div className="flex flex-col">
                                 <h1 className="text-base font-bold tracking-tight uppercase">Hostel Room Swaps</h1>
                                 <div className="flex items-center gap-2">
@@ -155,9 +157,18 @@ const WardenRoomSwapPage = () => {
                             </div>
                         </div>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={fetchRequests} className="rounded-xl h-9 w-9 hover:bg-gray-100 dark:hover:bg-sidebar-accent">
-                        <RefreshCw className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />
-                    </Button>
+
+                    <div className="flex items-center gap-3">
+                        <Button
+                            onClick={() => setIsInitiateModalOpen(true)}
+                            className="h-9 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider shadow-sm shadow-indigo-600/20 transition-all active:scale-95"
+                        >
+                            <Plus className="h-3.5 w-3.5 mr-1.5" /> Initiate Room Swap
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={fetchRequests} className="rounded-xl h-9 w-9 hover:bg-gray-100 dark:hover:bg-sidebar-accent">
+                            <RefreshCw className="h-4 w-4 text-gray-400 dark:text-muted-foreground" />
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -312,12 +323,25 @@ const WardenRoomSwapPage = () => {
                             <Inbox className="h-8 w-8 text-gray-300 dark:text-muted-foreground" />
                         </div>
                         <h3 className="text-base font-bold text-gray-900 dark:text-foreground uppercase tracking-tight">No Requests Found</h3>
-                        <p className="text-gray-400 dark:text-muted-foreground font-bold text-[10px] uppercase tracking-widest mt-2">
+                        <p className="text-gray-400 dark:text-muted-foreground font-bold text-[10px] uppercase tracking-widest mt-2 mb-4">
                             There are no room swap requests matching the filters for your hostel.
                         </p>
+                        <Button
+                            onClick={() => setIsInitiateModalOpen(true)}
+                            className="h-10 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] uppercase tracking-wider"
+                        >
+                            <Plus className="h-3.5 w-3.5 mr-1.5" /> Initiate First Swap
+                        </Button>
                     </div>
                 )}
             </main>
+
+            {/* Initiate Room Swap Modal */}
+            <InitiateRoomSwapModal
+                open={isInitiateModalOpen}
+                onOpenChange={setIsInitiateModalOpen}
+                onSuccess={fetchRequests}
+            />
 
             {/* Reject Confirmation Dialog */}
             <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>

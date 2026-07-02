@@ -124,7 +124,7 @@ export async function PUT(request) {
 
   try {
     const body = await request.json();
-    const { id, status, resolutionNotes, assignedToId } = body;
+    const { id, status, resolutionNotes, assignedToId, priority } = body;
 
     // Security: If warden, verify complaint belongs to their hostel
     if (auth.user.role === "WARDEN") {
@@ -159,6 +159,7 @@ export async function PUT(request) {
       status,
       resolutionNotes,
       assignedToId,
+      priority,
     );
     return successResponse({ data: complaint });
   } catch (error) {

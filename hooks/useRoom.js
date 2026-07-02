@@ -235,16 +235,27 @@ export function useUpdateLaundryLog() {
 export function useSyncAutomation() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async () => {
-            const response = await fetch('/api/automation/sync-logs', { method: 'POST' });
+        mutationFn: async ({ force = false } = {}) => {
+            const url = force
+                ? '/api/automation/sync-logs?force=true'
+                : '/api/automation/sync-logs';
+            const response = await fetch(url, { method: 'POST' });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.message || 'Sync failed');
+            }
             return response.json();
         },
         onSuccess: (data) => {
             queryClient.invalidateQueries({ queryKey: [QueryKeys.Rooms] });
             queryClient.invalidateQueries({ queryKey: ["warden", "logs"] });
+            queryClient.invalidateQueries({ queryKey: ["warden", "services", "due"] });
             if (data.data && (data.data.cleaning > 0 || data.data.laundry > 0)) {
-                toast.success(`Automation Sync: ${data.data.cleaning} cleaning & ${data.data.laundry} laundry logs generated.`);
+                toast.success(`Sync: ${data.data.cleaning} cleaning & ${data.data.laundry} laundry logs created`);
             }
+        },
+        onError: (err) => {
+            toast.error(err.message || 'Automation sync failed');
         }
     });
 }

@@ -132,6 +132,25 @@ const RoomsContent = () => {
         toast.success("Refreshed");
     };
 
+    const handleQuickStatusUpdate = async (roomId, newStatus) => {
+        try {
+            const response = await fetch('/api/rooms/editroom', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: roomId, status: newStatus })
+            });
+            const data = await response.json();
+            if (data.success) {
+                toast.success(`Status set to ${newStatus}`);
+                queryClient.invalidateQueries({ queryKey: QueryKeys.Roombyhostelid(hostelId) });
+            } else {
+                toast.error(data.error || "Failed to update status");
+            }
+        } catch (err) {
+            toast.error("Failed to update status");
+        }
+    };
+
     const handleExportExcel = () => {
         if (!filteredRooms.length) {
             toast.error("No rooms to export");
@@ -388,6 +407,19 @@ const RoomsContent = () => {
                                                 <DropdownMenuItem className="p-2.5 gap-2.5 rounded-lg font-black text-[10px] uppercase tracking-wider text-gray-600 dark:text-muted-foreground cursor-pointer" onClick={() => router.push(`/warden/rooms/${room.id}/maintenance`)}>
                                                     <Wrench className="h-3.5 w-3.5" /> Maintenance
                                                 </DropdownMenuItem>
+                                                <DropdownMenuSeparator />
+                                                <DropdownMenuLabel className="text-[8px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest px-2 py-1">Set Status</DropdownMenuLabel>
+                                                {['AVAILABLE', 'OCCUPIED', 'MAINTENANCE', 'CLEANING'].map((st) => (
+                                                    <DropdownMenuItem
+                                                        key={st}
+                                                        disabled={room.status === st}
+                                                        className="p-2 gap-2 rounded-lg font-bold text-[9px] uppercase tracking-wider cursor-pointer"
+                                                        onClick={() => handleQuickStatusUpdate(room.id, st)}
+                                                    >
+                                                        <div className={`h-2 w-2 rounded-full ${st === 'AVAILABLE' ? 'bg-emerald-500' : st === 'OCCUPIED' ? 'bg-blue-600' : st === 'MAINTENANCE' ? 'bg-amber-500' : 'bg-purple-500'}`} />
+                                                        {st}
+                                                    </DropdownMenuItem>
+                                                ))}
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem className="p-2.5 gap-2.5 rounded-lg font-black text-[10px] uppercase tracking-wider text-rose-500 focus:bg-rose-50 focus:text-rose-600 cursor-pointer" onSelect={(e) => e.preventDefault()}>
                                                     <AlertDialog>

@@ -35,7 +35,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogTrigger, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -157,7 +163,7 @@ const ComplaintDetailDialog = ({
             <MessageSquare className="h-5 w-5" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-black text-gray-900 dark:text-foreground uppercase tracking-tight truncate italic">
+            <h3 className="text-lg font-black text-gray-900 dark:text-foreground uppercase tracking-tight truncate ">
               {complaint.title}
             </h3>
             <p className="text-[9px] font-black text-gray-400 dark:text-muted-foreground uppercase tracking-widest mt-1">
@@ -233,12 +239,16 @@ const ComplaintDetailDialog = ({
           {/* Handler Info */}
           <div className="flex items-center gap-3 p-4 bg-indigo-50/30 dark:bg-indigo-950/10 rounded-2xl border border-indigo-100/50 dark:border-indigo-900/20">
             <div className="h-9 w-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xs font-black">
-              {complaint.User_Complaint_assignedToIdToUser?.name?.charAt(0) || "W"}
+              {complaint.User_Complaint_assignedToIdToUser?.name?.charAt(0) ||
+                "W"}
             </div>
             <div>
-              <p className="text-[8px] font-black uppercase tracking-widest text-indigo-400">Assigned Handler</p>
+              <p className="text-[8px] font-black uppercase tracking-widest text-indigo-400">
+                Assigned Handler
+              </p>
               <p className="text-xs font-bold text-gray-900 dark:text-foreground">
-                {complaint.User_Complaint_assignedToIdToUser?.name || "Auto-Assigned to Warden"}
+                {complaint.User_Complaint_assignedToIdToUser?.name ||
+                  "Auto-Assigned to Warden"}
               </p>
             </div>
           </div>
@@ -259,7 +269,8 @@ const ComplaintDetailDialog = ({
           )}
 
           {/* Action Controls */}
-          {(complaint.status === "PENDING" || complaint.status === "IN_PROGRESS") && (
+          {(complaint.status === "PENDING" ||
+            complaint.status === "IN_PROGRESS") && (
             <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-border/50">
               <p className="text-[9px] font-black uppercase tracking-widest text-gray-400 dark:text-muted-foreground">
                 Resolution Input
@@ -304,7 +315,9 @@ const ComplaintDetailDialog = ({
                 </Button>
               </div>
               {!notes.trim() && complaint.status === "IN_PROGRESS" && (
-                <p className="text-[8px] text-center uppercase tracking-widest text-gray-400 font-bold">Documentation required to resolve</p>
+                <p className="text-[8px] text-center uppercase tracking-widest text-gray-400 font-bold">
+                  Documentation required to resolve
+                </p>
               )}
             </div>
           )}
@@ -317,7 +330,9 @@ const ComplaintDetailDialog = ({
             <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
               {complaint.comments?.length > 0 ? (
                 complaint.comments.map((c) => {
-                  const isStaffMember = ["ADMIN", "WARDEN", "STAFF"].includes(c.User.role);
+                  const isStaffMember = ["ADMIN", "WARDEN", "STAFF"].includes(
+                    c.User.role,
+                  );
                   return (
                     <div
                       key={c.id}
@@ -331,8 +346,12 @@ const ComplaintDetailDialog = ({
                       <div
                         className={`p-4 rounded-[1.5rem] max-w-[80%] shadow-sm ${isStaffMember ? "bg-black text-white rounded-tr-none" : "bg-gray-50 dark:bg-muted/10 border border-gray-100 dark:border-border rounded-tl-none"}`}
                       >
-                        <div className={`flex items-center gap-2 mb-1.5 ${isStaffMember ? "flex-row-reverse text-indigo-300" : "text-gray-400 dark:text-muted-foreground"}`}>
-                          <span className="text-[8px] font-black uppercase tracking-widest">{c.User.name}</span>
+                        <div
+                          className={`flex items-center gap-2 mb-1.5 ${isStaffMember ? "flex-row-reverse text-indigo-300" : "text-gray-400 dark:text-muted-foreground"}`}
+                        >
+                          <span className="text-[8px] font-black uppercase tracking-widest">
+                            {c.User.name}
+                          </span>
                           <span className="text-[8px] opacity-40 italic">
                             {new Date(c.createdAt).toLocaleTimeString([], {
                               hour: "2-digit",
@@ -350,14 +369,16 @@ const ComplaintDetailDialog = ({
               ) : (
                 <div className="text-center py-10 opacity-30 select-none">
                   <MessageSquare className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">Silent Frequency</p>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-gray-400">
+                    Silent Frequency
+                  </p>
                 </div>
               )}
             </div>
             <div className="flex items-center gap-2 pt-2">
               <Input
                 placeholder="Transmit message..."
-                className="h-11 rounded-xl border-gray-100 dark:border-border bg-gray-50 focus:bg-white text-[10px] font-black uppercase tracking-widest italic"
+                className="h-11 rounded-xl border-gray-100 dark:border-border bg-gray-50 focus:bg-white text-[10px] font-bold uppercase "
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={(e) => {
@@ -793,7 +814,8 @@ const ComplaintsPage = () => {
                         </span>
                         <span className="h-1 w-1 rounded-full bg-gray-200" />
                         <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
-                          {complaint.User_Complaint_assignedToIdToUser?.name || "Auto-Assigned"}
+                          {complaint.User_Complaint_assignedToIdToUser?.name ||
+                            "Auto-Assigned"}
                         </span>
                       </div>
                     </div>

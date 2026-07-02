@@ -62,8 +62,8 @@ export const useWardenLogs = (userId, type) => {
 
 export const useWardenDueServices = (userId) => {
     return useQuery({
-
         gcTime: 10 * 60 * 1000,
+        staleTime: 0, // always re-fetch on mount / refetch calls
         queryKey: ["warden", "services", "due", userId],
         queryFn: async () => {
             const response = await fetch(`/api/warden/services/due?userId=${userId}`);

@@ -45,18 +45,24 @@ export async function GET(req) {
     // 1. Check authorization: Allow either valid Vercel Cron Secret OR manual admin trigger
     const authHeader = req.headers.get('authorization');
     const isCronSecretValid = process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`;
+    let isAdminManualTrigger = false;
 
     if (!isCronSecretValid) {
         const auth = await checkRole(["ADMIN"]);
         if (!auth.success) {
             return NextResponse.json({ success: false, message: "Unauthorized. Admin access or valid CRON_SECRET required." }, { status: 401 });
         }
+        // Admin manually triggered — always force-run regardless of time window
+        isAdminManualTrigger = true;
     }
 
     try {
         const now = new Date();
         const { searchParams } = new URL(req.url);
-        const force = searchParams.get("force") === "true";
+        const forceParam = searchParams.get("force") === "true";
+
+        // When called by admin manually (not via cron secret), always force-run
+        const force = forceParam || isAdminManualTrigger;
 
         const runCleaningNow = force || isWithinRunWindow(now, CLEANING_HOUR, CLEANING_MINUTE, DEFAULT_TIMEZONE, DEFAULT_WINDOW_MINUTES);
         const runLaundryNow = force || isWithinRunWindow(now, LAUNDRY_HOUR, LAUNDRY_MINUTE, DEFAULT_TIMEZONE, DEFAULT_WINDOW_MINUTES);
@@ -75,6 +81,7 @@ export async function GET(req) {
                 },
             });
         }
+
 
         // 1. Fetch all hostels with their specific service intervals
         const hostels = await prisma.hostel.findMany({
@@ -102,79 +109,67 @@ export async function GET(req) {
         for (const hostel of hostels) {
             for (const room of hostel.Room) {
                 report.roomsProcessed++;
-                // Prefer room-level service timing (set while creating/editing room).
-                // Fallback to hostel-level defaults and then hard defaults.
-                const cleaningInterval = room.cleaningInterval || hostel.cleaningInterval || 24;
-                const laundryInterval = room.laundryInterval || hostel.laundryInterval || 48;
 
-                // --- CLEANING CYCLE LOGIC ---
+                // Room-level intervals only — Hostel model has no cleaningInterval/laundryInterval fields
+                const cleaningInterval = room.cleaningInterval || 24;
+                const laundryInterval = room.laundryInterval || 48;
+
+                // --- CLEANING CYCLE LOGIC (all rooms) ---
                 if (runCleaningNow) {
-                    let shouldLogCleaning = false;
-                    if (!room.lastCleaningAt) {
-                        shouldLogCleaning = true;
-                    } else {
-                        const hoursSinceLastCleaning = (now - new Date(room.lastCleaningAt)) / (1000 * 60 * 60);
-                        if (hoursSinceLastCleaning >= cleaningInterval) {
-                            shouldLogCleaning = true;
-                        }
-                    }
+                    const lastCleaningAt = room.lastCleaningAt;
+                    const shouldLogCleaning = !lastCleaningAt
+                        || (now - new Date(lastCleaningAt)) / (1000 * 60 * 60) >= cleaningInterval;
 
                     if (shouldLogCleaning) {
-                        await prisma.cleaningLog.create({
-                            data: {
-                                id: crypto.randomUUID(),
-                                roomId: room.id,
-                                hostelId: hostel.id,
-                                status: "PENDING",
-                                notes: `Automated hygiene check triggered by room cycle (${cleaningInterval}h).`,
-                                performedAt: now,
-                                createdAt: now
-                            }
-                        });
-
-                        await prisma.room.update({
-                            where: { id: room.id },
-                            data: { lastCleaningAt: now }
-                        });
+                        await prisma.$transaction([
+                            prisma.cleaningLog.create({
+                                data: {
+                                    roomId: room.id,
+                                    hostelId: hostel.id,
+                                    status: "PENDING",
+                                    notes: `Automated hygiene check (${cleaningInterval}h cycle).`,
+                                    performedAt: now,
+                                }
+                            }),
+                            prisma.room.update({
+                                where: { id: room.id },
+                                data: { lastCleaningAt: now }
+                            })
+                        ]);
                         report.cleaningLogsCreated++;
                     }
                 }
 
-                // --- LAUNDRY CYCLE LOGIC (Only for occupied rooms) ---
+                // --- LAUNDRY CYCLE LOGIC (occupied rooms only) ---
                 const activeBooking = room.Booking[0];
                 if (activeBooking && runLaundryNow) {
-                    let shouldLogLaundry = false;
-                    if (!room.lastLaundryAt) {
-                        shouldLogLaundry = true;
-                    } else {
-                        const hoursSinceLastLaundry = (now - new Date(room.lastLaundryAt)) / (1000 * 60 * 60);
-                        if (hoursSinceLastLaundry >= laundryInterval) {
-                            shouldLogLaundry = true;
-                        }
-                    }
+                    const lastLaundryAt = room.lastLaundryAt;
+                    const shouldLogLaundry = !lastLaundryAt
+                        || (now - new Date(lastLaundryAt)) / (1000 * 60 * 60) >= laundryInterval;
 
                     if (shouldLogLaundry) {
-                        await prisma.laundryLog.create({
-                            data: {
-                                id: crypto.randomUUID(),
-                                roomId: room.id,
-                                hostelId: hostel.id,
-                                status: "COMPLETED",
-                                notes: `Automated laundry protocol initiated by room cycle (${laundryInterval}h).`,
-                                receivedAt: now,
-                                createdAt: now
-                            }
-                        });
-
-                        await prisma.room.update({
-                            where: { id: room.id },
-                            data: { lastLaundryAt: now }
-                        });
+                        await prisma.$transaction([
+                            prisma.laundryLog.create({
+                                data: {
+                                    roomId: room.id,
+                                    hostelId: hostel.id,
+                                    status: "COMPLETED",
+                                    notes: `Automated laundry protocol (${laundryInterval}h cycle).`,
+                                    receivedAt: now,
+                                    itemsCount: 0,
+                                }
+                            }),
+                            prisma.room.update({
+                                where: { id: room.id },
+                                data: { lastLaundryAt: now }
+                            })
+                        ]);
                         report.laundryLogsCreated++;
                     }
                 }
             }
         }
+
 
         return NextResponse.json({
             success: true,

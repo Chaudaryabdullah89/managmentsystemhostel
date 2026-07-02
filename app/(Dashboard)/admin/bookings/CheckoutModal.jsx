@@ -17,7 +17,8 @@ import {
     AlertCircle,
     Wallet,
     TrendingDown,
-    ShieldCheck
+    ShieldCheck,
+    AlertTriangle
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -28,11 +29,20 @@ export default function CheckoutModal({ booking, wardenId, children, onComplete 
     const [open, setOpen] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const [refundSecurity, setRefundSecurity] = useState(true);
+    const [confirmUnpaidCheckout, setConfirmUnpaidCheckout] = useState(false);
     const queryClient = useQueryClient();
 
     const securityAmount = booking?.securityDeposit || 0;
 
+    // Check if resident has uncleared/pending dues
+    const isPaymentPaid = booking?.paymentStatus === "PAID" || booking?.latestPayment?.status === "PAID";
+    const hasUnpaidDues = !isPaymentPaid;
+
     const handleCheckout = async () => {
+        if (hasUnpaidDues && !confirmUnpaidCheckout) {
+            return toast.error("Please confirm checking out resident with uncleared dues");
+        }
+
         setIsPending(true);
         try {
             // 1. Update Booking Status to CHECKED_OUT
@@ -105,7 +115,7 @@ export default function CheckoutModal({ booking, wardenId, children, onComplete 
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className="max-w-[420px] p-0 border-0 shadow-2xl rounded-[1.5rem] bg-white overflow-hidden">
+            <DialogContent className="max-w-[440px] p-0 border-0 shadow-2xl rounded-[1.5rem] bg-white overflow-hidden">
                 <DialogHeader className="p-8 bg-slate-900 text-white flex flex-row items-center gap-4 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-32 h-full bg-white/[0.05] skew-x-[30deg] translate-x-10" />
                     <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-md shrink-0 border border-white/20">
@@ -119,11 +129,35 @@ export default function CheckoutModal({ booking, wardenId, children, onComplete 
                     </div>
                 </DialogHeader>
 
-                <div className="p-8 space-y-6">
+                <div className="p-8 space-y-5">
                     <div className="flex flex-col gap-1">
                         <h3 className="text-sm font-bold text-slate-900 uppercase">{booking?.User?.name}</h3>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Room {booking?.Room?.roomNumber} • {booking?.Room?.Hostel?.name}</p>
                     </div>
+
+                    {/* UNPAID DUES WARNING BANNER */}
+                    {hasUnpaidDues && (
+                        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 space-y-3">
+                            <div className="flex items-center gap-2 text-rose-700 font-black text-xs uppercase">
+                                <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
+                                Warning: Uncleared Dues!
+                            </div>
+                            <p className="text-[10px] font-bold text-rose-800 leading-relaxed uppercase">
+                                Resident has uncleared/pending payment dues (Status: {booking?.paymentStatus || booking?.latestPayment?.status || "UNPAID"}).
+                            </p>
+                            <div className="flex items-center space-x-2.5 pt-1 border-t border-rose-200/80">
+                                <Checkbox
+                                    id="confirmUnpaid"
+                                    checked={confirmUnpaidCheckout}
+                                    onCheckedChange={setConfirmUnpaidCheckout}
+                                    className="data-[state=checked]:bg-rose-600 data-[state=checked]:border-rose-600"
+                                />
+                                <label htmlFor="confirmUnpaid" className="text-[10px] font-black text-rose-900 uppercase cursor-pointer">
+                                    I confirm checking out with uncleared dues
+                                </label>
+                            </div>
+                        </div>
+                    )}
 
                     {securityAmount > 0 ? (
                         <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5 space-y-4">
@@ -163,9 +197,9 @@ export default function CheckoutModal({ booking, wardenId, children, onComplete 
                         </div>
                     )}
 
-                    <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 flex items-start gap-3">
-                        <AlertCircle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" />
-                        <p className="text-[10px] font-medium text-rose-900 leading-relaxed uppercase">
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex items-start gap-3">
+                        <AlertCircle className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
+                        <p className="text-[10px] font-medium text-slate-600 leading-relaxed uppercase">
                             Checking out will release the room for new bookings. This action cannot be undone.
                         </p>
                     </div>
@@ -173,8 +207,12 @@ export default function CheckoutModal({ booking, wardenId, children, onComplete 
                     <DialogFooter className="flex-col sm:flex-col gap-3">
                         <Button
                             onClick={handleCheckout}
-                            disabled={isPending}
-                            className="w-full h-12 bg-slate-900 hover:bg-black text-white rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                            disabled={isPending || (hasUnpaidDues && !confirmUnpaidCheckout)}
+                            className={`w-full h-12 rounded-xl font-bold text-[10px] uppercase tracking-widest shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 ${
+                                hasUnpaidDues && !confirmUnpaidCheckout
+                                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                                    : "bg-slate-900 hover:bg-black text-white"
+                            }`}
                         >
                             {isPending ? (
                                 <Loader2 className="h-4 w-4 animate-spin text-white" />

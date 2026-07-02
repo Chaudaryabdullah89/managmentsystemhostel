@@ -69,11 +69,11 @@ export function useCreateComplaint() {
 export function useUpdateComplaint() {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: async ({ id, status, resolutionNotes, assignedToId }: { id: string, status?: string, resolutionNotes?: string, assignedToId?: string }) => {
+        mutationFn: async ({ id, status, resolutionNotes, assignedToId, priority }: { id: string, status?: string, resolutionNotes?: string, assignedToId?: string, priority?: string }) => {
             const response = await fetch("/api/complaints", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id, status, resolutionNotes, assignedToId }),
+                body: JSON.stringify({ id, status, resolutionNotes, assignedToId, priority }),
             });
             const data = await response.json();
             if (!data.success) throw new Error(data.error);

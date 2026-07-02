@@ -5,38 +5,59 @@ import { errorResponse, successResponse } from "@/lib/apiResponse";
 export async function POST(request) {
     const guard = await requireAuth();
     if (!guard.ok) return guard.response;
-    const userId = guard.user?.id || guard.user?.userId || guard.user?.sub;
+    const authUser = guard.user;
+    const authUserId = authUser?.id || authUser?.userId || authUser?.sub;
+    const role = authUser?.role;
 
     try {
-        const { toRoomId, reason } = await request.json();
+        const body = await request.json();
+        const { toRoomId, reason, userId: inputUserId, autoApprove } = body;
 
         if (!toRoomId || !reason) {
             return errorResponse("Missing required fields: toRoomId, reason", 400);
         }
 
-        // Find resident's active room from bookings
+        // Target resident ID: Admins and Wardens can specify target user
+        let targetUserId = authUserId;
+        if ((role === 'ADMIN' || role === 'WARDEN') && inputUserId) {
+            targetUserId = inputUserId;
+        }
+
+        // Find resident's active booking
         const activeBooking = await prisma.booking.findFirst({
             where: {
-                userId,
+                userId: targetUserId,
                 status: { in: ['CONFIRMED', 'CHECKED_IN'] }
             },
-            select: { roomId: true }
+            select: { id: true, roomId: true, Room: { select: { hostelId: true } } }
         });
 
         if (!activeBooking) {
-            return errorResponse("No active residency booking found. You must be checked-in to request a room swap.", 400);
+            return errorResponse("No active residency booking found for this user.", 400);
+        }
+
+        // Warden security check: warden can only swap within their hostel
+        if (role === 'WARDEN') {
+            const wardenProfile = await prisma.user.findUnique({
+                where: { id: authUserId },
+                select: { hostelId: true }
+            });
+            const wardenHostelId = wardenProfile?.hostelId;
+            if (wardenHostelId && activeBooking.Room?.hostelId !== wardenHostelId) {
+                return errorResponse("Security Alert: You can only initiate swaps for residents in your hostel.", 403);
+            }
         }
 
         const fromRoomId = activeBooking.roomId;
 
         if (fromRoomId === toRoomId) {
-            return errorResponse("Destination room cannot be the same as your current room.", 400);
+            return errorResponse("Destination room cannot be the same as current room.", 400);
         }
 
         // Verify target room exists
         const targetRoom = await prisma.room.findUnique({
             where: { id: toRoomId },
-            select: { status: true, capacity: true, Booking: { where: { status: { in: ['CONFIRMED', 'CHECKED_IN'] } } } }
+            select: { id: true, status: true, capacity: true, Booking: { where: { status: { in: ['CONFIRMED', 'CHECKED_IN'] } } } }
         });
 
         if (!targetRoom) {
@@ -47,25 +68,73 @@ export async function POST(request) {
             return errorResponse("Target room is at full capacity.", 400);
         }
 
-        // Create room swap request
+        const formattedReason = (role === 'ADMIN' || role === 'WARDEN') && !reason.startsWith("[DIRECT_TRANSFER]")
+            ? `[DIRECT_TRANSFER] ${reason}`
+            : reason;
+
+        // Direct Execution (Auto Approve) by Admin/Warden
+        if ((role === 'ADMIN' || role === 'WARDEN') && autoApprove) {
+            const result = await prisma.$transaction(async (tx) => {
+                // 1. Create swap request record as APPROVED
+                const swapReq = await tx.roomSwapRequest.create({
+                    data: {
+                        userId: targetUserId,
+                        fromRoomId,
+                        toRoomId,
+                        reason: formattedReason,
+                        status: "APPROVED"
+                    }
+                });
+
+                // 2. Update booking to point to new room
+                await tx.booking.update({
+                    where: { id: activeBooking.id },
+                    data: { roomId: toRoomId }
+                });
+
+                // 3. Adjust target room status
+                const newTargetCount = targetRoom.Booking.length + 1;
+                if (newTargetCount >= targetRoom.capacity) {
+                    await tx.room.update({
+                        where: { id: toRoomId },
+                        data: { status: 'OCCUPIED' }
+                    });
+                }
+
+                // 4. Set old room to AVAILABLE
+                await tx.room.update({
+                    where: { id: fromRoomId },
+                    data: { status: 'AVAILABLE' }
+                });
+
+                return swapReq;
+            });
+
+            return successResponse({
+                message: "Room swap executed successfully.",
+                swapRequest: result
+            });
+        }
+
+        // Pending Request path
         const swapRequest = await prisma.roomSwapRequest.create({
             data: {
-                userId,
+                userId: targetUserId,
                 fromRoomId,
                 toRoomId,
-                reason,
+                reason: formattedReason,
                 status: "PENDING"
             }
         });
 
         return successResponse({
-            message: "Room swap request submitted successfully",
+            message: "Room swap request submitted successfully.",
             swapRequest
         });
 
     } catch (error) {
         console.error("POST /api/guest/room-swap error:", error);
-        return errorResponse("Failed to submit room swap request", 500);
+        return errorResponse("Failed to process room swap request", 500);
     }
 }
 
@@ -144,7 +213,6 @@ export async function PUT(request) {
     const guard = await requireAuth();
     if (!guard.ok) return guard.response;
     const role = guard.user?.role;
-    const wardenId = guard.user?.id || guard.user?.userId || guard.user?.sub;
 
     if (role !== 'ADMIN' && role !== 'WARDEN') {
         return errorResponse("Forbidden", 403);
@@ -180,7 +248,6 @@ export async function PUT(request) {
 
         // APPROVED path: Execute swap inside a prisma transaction
         const result = await prisma.$transaction(async (tx) => {
-            // Find active booking for the user in the 'fromRoom'
             const activeBooking = await tx.booking.findFirst({
                 where: {
                     userId: swapReq.userId,
@@ -193,7 +260,6 @@ export async function PUT(request) {
                 throw new Error("Active booking for target user not found. User might have checked out.");
             }
 
-            // Verify target room capacity once more in transaction
             const targetRoomBookings = await tx.booking.count({
                 where: {
                     roomId: swapReq.toRoomId,
@@ -205,13 +271,11 @@ export async function PUT(request) {
                 throw new Error("Target room has since filled up.");
             }
 
-            // 1. Update active booking to point to target room
             await tx.booking.update({
                 where: { id: activeBooking.id },
                 data: { roomId: swapReq.toRoomId }
             });
 
-            // 2. Adjust target room occupancy status if full
             const finalTargetRoomBookings = targetRoomBookings + 1;
             if (finalTargetRoomBookings >= swapReq.ToRoom.capacity) {
                 await tx.room.update({
@@ -220,13 +284,11 @@ export async function PUT(request) {
                 });
             }
 
-            // 3. Set fromRoom status to AVAILABLE since one person left
             await tx.room.update({
                 where: { id: swapReq.fromRoomId },
                 data: { status: 'AVAILABLE' }
             });
 
-            // 4. Update swap request status
             return await tx.roomSwapRequest.update({
                 where: { id: requestId },
                 data: { status: 'APPROVED' }

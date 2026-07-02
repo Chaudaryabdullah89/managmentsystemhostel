@@ -55,7 +55,8 @@ const WardenLaundryPage = () => {
     });
 
     useEffect(() => {
-        syncAutomation.mutate();
+        // On mount: run normal interval-based sync (don't force)
+        syncAutomation.mutate({ force: false });
     }, []);
 
     const handleCreate = async (roomId) => {
@@ -82,13 +83,13 @@ const WardenLaundryPage = () => {
     };
 
     const handleSync = async () => {
-        const promise = syncAutomation.mutateAsync();
+        const promise = syncAutomation.mutateAsync({ force: true });
         toast.promise(promise, {
-            loading: 'Synchronizing records...',
-            success: 'Registry updated',
+            loading: 'Forcing sync for all occupied rooms...',
+            success: (data) => data?.message || 'Registry updated',
             error: 'Sync failed'
         });
-        await promise;
+        await promise.catch(() => {});
         refetchDue();
         refetchLogs();
     };
