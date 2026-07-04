@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         }
 
         // ── Set httpOnly cookie server-side for XSS protection ─────────────
-        const nextResponse = successResponse({
+        const nextResponse = await successResponse({
             message: response.message,
             User: response.User,
         });

@@ -1,20 +1,19 @@
 /**
- * RAG: Retrieval Augmented Generation.
- * 1. Detect user intent from the message.
- * 2. Fetch only relevant DB data for that user.
- * 3. Return structured context for the AI (no full DB dump).
- *
- * Benefits: less hallucination, faster, cheaper, safer.
+ * RAG: Retrieval Augmented Generation Engine for HostelAI 2.0
+ * 1. Intent recognition (English & Roman Urdu).
+ * 2. Role-scoped data fetching.
+ * 3. Structured RAG context construction.
  */
 
 import prisma from '@/lib/prisma';
 
 export const INTENT_KEYWORDS: Record<string, string[]> = {
-  payment: ['payment', 'pay', 'rent', 'bill', 'bills', 'invoice', 'dues', 'pending', 'unpaid', 'paid', 'amount', 'pkr', 'rupees'],
-  complaint: ['complaint', 'complaints', 'issue', 'problem', 'report', 'resolution', 'status'],
-  booking: ['booking', 'book', 'room', 'check-in', 'check-out', 'reservation', 'stay'],
-  hostel: ['hostel', 'hostels', 'amenities', 'mess', 'menu', 'laundry', 'address'],
-  notice: ['notice', 'notices', 'announcement', 'news'],
+  payment: ['payment', 'pay', 'rent', 'bill', 'bills', 'invoice', 'dues', 'pending', 'unpaid', 'paid', 'amount', 'pkr', 'rupees', 'paisa', 'paise', 'baza', 'fee', 'charge'],
+  complaint: ['complaint', 'complaints', 'issue', 'problem', 'report', 'resolution', 'status', 'shikayat', 'masla', 'kharaab', 'kharab', 'broken', 'repair', 'bijli', 'wifi', 'paani', 'fan', 'ac'],
+  booking: ['booking', 'book', 'room', 'check-in', 'check-out', 'reservation', 'stay', 'kamra', 'bed', 'shift'],
+  mess: ['mess', 'food', 'menu', 'lunch', 'dinner', 'breakfast', 'khana', 'nashta', 'roti', 'daal', 'chawal', 'eat'],
+  hostel: ['hostel', 'hostels', 'amenities', 'laundry', 'address', 'rules', 'warden', 'manager'],
+  notice: ['notice', 'notices', 'announcement', 'news', 'update', 'bulletin'],
 };
 
 export function detectIntent(message: string): string[] {
@@ -31,123 +30,182 @@ export interface RAGContextSummary {
   pendingPayments?: number;
   pendingAmount?: number;
   openComplaints?: number;
+  occupancyRate?: number;
 }
 
 export interface RAGContext {
   intents: string[];
   summary: RAGContextSummary;
+  user?: any;
   payments?: any[];
   complaints?: any[];
   bookings?: any[];
+  messMenu?: any[];
   notices?: any[];
   hostels?: any[];
   error?: string;
 }
 
 /**
- * Fetch only the data relevant to the user's question.
- * @param {string} userId - Logged-in user id
- * @param {string} role - User role (ADMIN, WARDEN, RESIDENT, etc.)
- * @param {string} message - User message (used for intent)
- * @returns {Promise<RAGContext>} Structured context object for the model
+ * Fetch live DB context tailored to the user's account and stay for Groq AI RAG context.
  */
 export async function getRelevantContext(userId: string, role: string, message: string): Promise<RAGContext> {
   const intents = detectIntent(message);
   const context: RAGContext = { intents, summary: {} };
 
   try {
-    if (intents.includes('payment')) {
-      const payments = await prisma.payment.findMany({
-          where: { userId },
-          orderBy: { date: 'desc' },
-          take: 15,
+    // 1. Fetch User Profile + Assigned Room + Hostel Details
+    const userProfile = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+        hostelId: true,
+        Hostel_User_hostelIdToHostel: {
           select: {
-            amount: true,
-            date: true,
-            dueDate: true,
-            type: true,
-            status: true,
-            notes: true,
-          },
-      });
-      context.payments = payments;
-      const pending = payments.filter((p) => p.status === 'PENDING' || p.status === 'OVERDUE');
-      context.summary.pendingPayments = pending.length;
-      context.summary.pendingAmount = pending.reduce((s, p) => s + Number(p.amount), 0);
-    }
-
-    if (intents.includes('complaint')) {
-      const complaints = await prisma.complaint.findMany({
-          where: { userId },
-          orderBy: { createdAt: 'desc' },
-          take: 10,
-          select: {
-            title: true,
-            category: true,
-            status: true,
-            priority: true,
-            createdAt: true,
-            resolutionNotes: true,
-          },
-      });
-      context.complaints = complaints;
-      context.summary.openComplaints = complaints.filter((c) => c.status !== 'RESOLVED').length;
-    }
-
-    if (intents.includes('booking')) {
-      const bookings = await prisma.booking.findMany({
-          where: { userId },
-          orderBy: { createdAt: 'desc' },
-          take: 10,
-          select: {
-            status: true,
-            checkIn: true,
-            checkOut: true,
-            totalAmount: true,
-            roomId: true,
-            Room: {
-              select: {
-                roomNumber: true,
-                type: true,
-                Hostel: { select: { name: true } },
-              },
-            },
-          },
-      });
-      context.bookings = bookings.map((b) => ({
-        status: b.status,
-        checkIn: b.checkIn,
-        checkOut: b.checkOut,
-        totalAmount: b.totalAmount,
-        room: b.Room?.roomNumber,
-        hostel: b.Room?.Hostel?.name,
-      }));
-    }
-
-    if (intents.includes('notice')) {
-      const notices = await prisma.notice.findMany({
-          orderBy: { createdAt: 'desc' },
-          take: 5,
-          select: { title: true, content: true, priority: true, createdAt: true },
-      });
-      context.notices = notices;
-    }
-
-    if (intents.includes('hostel') || intents.includes('general')) {
-      const hostels = await prisma.hostel.findMany({
-          take: 5,
-          select: {
+            id: true,
             name: true,
             address: true,
             city: true,
-            status: true,
-            montlyrent: true,
+            phone: true,
             messavailable: true,
             laundaryavailable: true,
+          }
+        },
+        Booking: {
+          where: { status: { in: ['CONFIRMED', 'CHECKED_IN'] } },
+          take: 1,
+          select: {
+            id: true,
+            checkIn: true,
+            status: true,
+            securityDeposit: true,
+            Room: {
+              select: {
+                id: true,
+                roomNumber: true,
+                floor: true,
+                type: true,
+                capacity: true,
+                montlyrent: true,
+                amenities: true,
+                hostelId: true,
+                Hostel: {
+                  select: {
+                    name: true,
+                    address: true,
+                    city: true,
+                    phone: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    if (userProfile) {
+      const activeBooking = userProfile.Booking?.[0];
+      const hostelObj = userProfile.Hostel_User_hostelIdToHostel || activeBooking?.Room?.Hostel;
+      const roomObj = activeBooking?.Room;
+
+      let roommates: string[] = [];
+      if (roomObj?.id) {
+        const otherBookings = await prisma.booking.findMany({
+          where: {
+            roomId: roomObj.id,
+            userId: { not: userId },
+            status: { in: ['CONFIRMED', 'CHECKED_IN'] }
           },
-      });
-      context.hostels = hostels;
+          select: { User: { select: { name: true } } }
+        });
+        roommates = otherBookings.map(b => b.User.name);
+      }
+
+      const effectiveRent = Number(roomObj?.montlyrent || activeBooking?.securityDeposit || 15000);
+
+      context.user = {
+        name: userProfile.name,
+        email: userProfile.email,
+        role: userProfile.role,
+        hostelName: hostelObj?.name || "Hostel Property",
+        hostelAddress: (hostelObj as any)?.address || (hostelObj as any)?.city || null,
+        roomNumber: roomObj?.roomNumber || "Unassigned",
+        floor: roomObj?.floor || 0,
+        roomType: roomObj?.type || "Standard",
+        roomCapacity: roomObj?.capacity || 1,
+        roomAmenities: roomObj?.amenities || ["WiFi", "Electricity", "Water"],
+        roommates: roommates.length > 0 ? roommates : ["No roommates assigned"],
+        monthlyRent: effectiveRent,
+        securityDeposit: Number(activeBooking?.securityDeposit || 0),
+        checkInDate: activeBooking?.checkIn || null,
+        hostelPhone: (hostelObj as any)?.phone || null,
+      };
     }
+
+    // 2. Fetch Payments Summary & Dues
+    const payments = await prisma.payment.findMany({
+      where: role === 'ADMIN' ? {} : { userId },
+      orderBy: { date: 'desc' },
+      take: 10,
+      select: {
+        id: true,
+        amount: true,
+        date: true,
+        dueDate: true,
+        type: true,
+        status: true,
+        notes: true,
+        month: true,
+        year: true,
+      },
+    });
+    context.payments = payments;
+    const pending = payments.filter((p) => p.status === 'PENDING' || p.status === 'OVERDUE');
+    context.summary.pendingPayments = pending.length;
+    context.summary.pendingAmount = pending.reduce((s, p) => s + Number(p.amount), 0);
+
+    // 3. Fetch Recent Complaints & Ticket Statuses
+    const complaints = await prisma.complaint.findMany({
+      where: role === 'ADMIN' ? {} : { userId },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        status: true,
+        priority: true,
+        createdAt: true,
+        resolutionNotes: true,
+      },
+    });
+    context.complaints = complaints;
+    context.summary.openComplaints = complaints.filter((c) => c.status !== 'RESOLVED').length;
+
+    // 4. Fetch Mess Menu (if hostel assigned)
+    const effectiveHostelId = userProfile?.hostelId || userProfile?.Booking?.[0]?.Room?.hostelId;
+    if (effectiveHostelId) {
+      const menu = await prisma.messMenu.findMany({
+        where: { hostelId: effectiveHostelId },
+        take: 7,
+      });
+      context.messMenu = menu;
+    }
+
+    // 5. Fetch Active Notices
+    const notices = await prisma.notice.findMany({
+      where: effectiveHostelId ? { hostelId: effectiveHostelId } : {},
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: { title: true, content: true, priority: true, createdAt: true },
+    });
+    context.notices = notices;
+
   } catch (err: any) {
     context.error = err.message;
   }
@@ -155,9 +213,8 @@ export async function getRelevantContext(userId: string, role: string, message: 
   return context;
 }
 
-export const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant for a hostel management system in Pakistan.
-Answer in a clear, concise way. Use the provided Context (JSON) to answer; do not invent data.
-If the user asks about payments or rent, use only the payments data in context.
-If they ask about complaints, use only the complaints data.
-For amounts, use PKR and the exact numbers from context.
-You can respond in English or Roman Urdu if the user writes in Roman Urdu.`;
+export const DEFAULT_SYSTEM_PROMPT = `You are HostelAI, an intelligent, polite, and executive AI Assistant for a top-tier Hostel Management System in Pakistan.
+You assist Residents, Wardens, and Admins with live DB data.
+- For amounts, express in PKR (e.g. PKR 12,000).
+- If the user asks in Roman Urdu (e.g., "Mera rent kitna hai?"), respond in warm, fluent Roman Urdu.
+- Be concise, helpful, and structured using markdown bullet points.`;

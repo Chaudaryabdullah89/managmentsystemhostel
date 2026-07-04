@@ -31,13 +31,67 @@ function matchProtectedRoute(pathname: string) {
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
+    // Detect and handle maintenance mode bypass URL query parameters
+    const bypassParam = request.nextUrl.searchParams.get('bypassMaintenance');
+    if (bypassParam) {
+        try {
+            const verifyUrl = new URL(`/api/settings/maintenance-verify?token=${bypassParam}`, request.url);
+            const res = await fetch(verifyUrl.toString());
+            const data = await res.json();
+            // successResponse() spreads payload flat: { success, valid, role }  (no nested .data)
+            if (res.ok && data.success && data.valid) {
+                // Token is valid! Set dynamic bypass cookie and redirect to clean pathname
+                const response = NextResponse.redirect(new URL(request.nextUrl.pathname, request.url));
+                response.cookies.set({
+                    name: 'bypass_maintenance',
+                    value: bypassParam,
+                    maxAge: 24 * 60 * 60, // 24 hours
+                    path: '/',
+                    sameSite: 'strict',
+                    secure: process.env.NODE_ENV === "production"
+                });
+                return response;
+            }
+        } catch (e) {
+            console.error("[Middleware] Maintenance bypass verification error:", e);
+        }
+    }
+
+
+    // ── Check existing bypass_maintenance cookie ───────────────────────────────
+    // Skip this check for API and static routes to avoid recursive fetch loops.
+    const bypassCookie = request.cookies.get('bypass_maintenance')?.value;
+    if (bypassCookie && !pathname.startsWith('/api') && !pathname.startsWith('/_next')) {
+        try {
+            const verifyUrl = new URL(`/api/settings/maintenance-verify?token=${bypassCookie}`, request.url);
+            const res = await fetch(verifyUrl.toString());
+            const data = await res.json();
+            // successResponse() spreads payload flat: { success, valid, role }  (no nested .data)
+            if (res.ok && data.success && data.valid) {
+                const requestHeaders = new Headers(request.headers);
+                requestHeaders.set("x-pathname", pathname);
+                requestHeaders.set("x-request-start", Date.now().toString());
+                requestHeaders.set("x-bypass-role", data.role); // "WARDEN" or "GUEST"
+                console.log(`[Middleware] bypass GRANTED for ${pathname} → role=${data.role}`);
+                return NextResponse.next({ request: { headers: requestHeaders } });
+            } else {
+                console.log(`[Middleware] bypass DENIED for ${pathname}`, JSON.stringify(data));
+            }
+        } catch (e) {
+            console.error("[Middleware] Bypass cookie verification error:", e);
+        }
+    }
+
+
+
+
     // Pass the current pathname to server components
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-pathname", pathname);
+    requestHeaders.set("x-request-start", Date.now().toString());
 
     // ── API Route Logging ──────────────────────────────────────────
-    // Log every API call (method + path). Errors are logged by apiResponse.
-    // Auth events are logged by apiAuth. This covers the request entry point.
+    // Matcher now INCLUDES /api routes so this fires on every API call.
     if (pathname.startsWith('/api')) {
         const isDev = process.env.NODE_ENV !== 'production';
         const ENABLE_PROD_LOGS = process.env.ENABLE_API_LOGS === 'true';
@@ -47,12 +101,12 @@ export async function middleware(request: NextRequest) {
                 PUT: '\x1b[33m', DELETE: '\x1b[31m',
             };
             const method = request.method.toUpperCase();
-            const color  = mc[method] || '\x1b[37m';
-            const ts     = new Date().toTimeString().slice(0, 8);
-            const url    = new URL(request.url);
-            const qs     = url.search || '';
+            const color = mc[method] || '\x1b[37m';
+            const ts = new Date().toTimeString().slice(0, 8);
+            const url = new URL(request.url);
+            const qs = url.search || '';
             console.log(
-                `\x1b[90m${ts}\x1b[0m \x1b[1m${color}${method.padEnd(6)}\x1b[0m \x1b[37m${pathname}${qs}\x1b[0m`
+                `\x1b[90m${ts}\x1b[0m \x1b[1m${color}▶ ${method.padEnd(6)}\x1b[0m \x1b[37m${pathname}${qs}\x1b[0m`
             );
         }
         return NextResponse.next({ request: { headers: requestHeaders } });
@@ -60,8 +114,33 @@ export async function middleware(request: NextRequest) {
 
     const matchedRoute = matchProtectedRoute(pathname);
 
-    // If route is not protected → allow
+    // If route is not protected → allow (but check if user is on /auth while already logged in)
     if (!matchedRoute) {
+        // ── Auth-page redirect for already-logged-in users ─────────────────
+        if (pathname.startsWith('/auth')) {
+            const token = request.cookies.get('token')?.value;
+            if (token && process.env.JWT_SECRET) {
+                try {
+                    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+                    const { payload } = await jwtVerify(token, secret);
+                    const role = typeof payload.role === 'string' ? payload.role.toUpperCase() : null;
+                    if (role) {
+                        const roleDashboardMap: Record<string, string> = {
+                            ADMIN: '/admin/dashboard',
+                            WARDEN: '/warden',
+                            STAFF: '/staff/dashboard',
+                            GUEST: '/guest/dashboard',
+                            RESIDENT: '/guest/dashboard',
+                        };
+                        const dest = roleDashboardMap[role] || '/';
+                        return NextResponse.redirect(new URL(dest, request.url));
+                    }
+                } catch {
+                    // Token invalid/expired — let them through to the auth page normally
+                }
+            }
+        }
+
         return NextResponse.next({
             request: {
                 headers: requestHeaders,
@@ -146,10 +225,15 @@ export async function middleware(request: NextRequest) {
 }
 
 // ===============================
-// Matcher
+// Matcher — NOW INCLUDES /api routes
 // ===============================
 export const config = {
     matcher: [
-        '/((?!api|_next/static|_next/image|favicon.ico).*)',
+        /*
+         * Match EVERY path except Next.js internals and static assets.
+         * This includes /api/** routes so API logging works correctly.
+         * Previously the matcher excluded /api which broke API logging.
+         */
+        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|ttf|otf)$).*)',
     ],
 };

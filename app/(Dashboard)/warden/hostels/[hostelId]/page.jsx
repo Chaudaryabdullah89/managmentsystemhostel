@@ -24,6 +24,7 @@ import {
   Calendar,
   Phone,
   MessageSquare,
+  Mail,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -431,6 +432,14 @@ const HostelOverviewPage = () => {
                   color: "text-purple-500",
                   bg: "bg-purple-50",
                   link: "/warden/complaints",
+                },
+                {
+                  title: "Email Settings",
+                  sub: "Hostel SMTP configuration",
+                  icon: Mail,
+                  color: "text-indigo-500",
+                  bg: "bg-indigo-50",
+                  link: `/warden/hostels/${hostelId}/email-settings`,
                 },
               ].map((node, i) => (
                 <div

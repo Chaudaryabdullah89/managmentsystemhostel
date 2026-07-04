@@ -193,3 +193,19 @@ export function useDeleteUser() {
         },
     });
 }
+
+export function useUserAiHistory(userId) {
+    return useQuery({
+        queryKey: ['users', 'ai-chat', userId],
+        queryFn: async () => {
+            if (!userId) return [];
+            const response = await fetch(`/api/ai-assistant?userId=${userId}&limit=100`);
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error || "Failed to fetch AI chat history");
+            return data.messages || [];
+        },
+        enabled: !!userId,
+        gcTime: 5 * 60 * 1000,
+    });
+}
+

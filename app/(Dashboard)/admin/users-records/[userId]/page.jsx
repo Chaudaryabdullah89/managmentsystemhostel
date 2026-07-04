@@ -111,6 +111,7 @@ import { useCreatePayment } from "@/hooks/usePayment";
 import { useReports } from "@/hooks/useReports";
 import { OccupancyDonutChart } from "@/components/ui/Charts";
 import SalarySlip from "@/components/SalarySlip";
+import UserAiChatHistory from "@/components/admin/UserAiChatHistory";
 
 const ROLE_CONFIG = {
   ADMIN: {
@@ -1094,6 +1095,13 @@ const UserDetailsPage = () => {
                   >
                     Security
                   </TabsTrigger>
+                  <TabsTrigger
+                    value="ai-chat"
+                    className="h-full px-5 rounded-xl font-bold text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 data-[state=active]:bg-white dark:data-[state=active]:bg-card data-[state=active]:text-indigo-600 dark:data-[state=active]:text-indigo-400 data-[state=active]:shadow-xs transition-all flex items-center gap-1.5"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
+                    AI Chat History
+                  </TabsTrigger>
                 </TabsList>
               </div>
 
@@ -1156,17 +1164,22 @@ const UserDetailsPage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                   {/* Left: Interactive Activity Stream Feed (7 Cols) */}
                   <Card className="lg:col-span-7 rounded-3xl bg-white dark:bg-card p-6 border border-gray-100 dark:border-border shadow-2xs space-y-4">
-                    <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-border/60">
+                    <div className="flex items-center justify-between pb-3.5 border-b border-gray-100 dark:border-border/60">
                       <div className="flex items-center gap-2.5">
-                        <div className="h-8 w-8 rounded-xl bg-slate-100 dark:bg-muted text-slate-700 dark:text-slate-300 flex items-center justify-center">
-                          <History className="h-4 w-4" />
+                        <div className="h-9 w-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100 dark:border-indigo-900/50">
+                          <History className="h-4.5 w-4.5" />
                         </div>
                         <div>
-                          <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground">
-                            Activity Timeline Stream
-                          </h3>
-                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">
-                            Click item to open details
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground">
+                              Activity Timeline Stream
+                            </h3>
+                            <Badge className="bg-slate-100 dark:bg-muted text-slate-700 dark:text-slate-300 border-slate-200 dark:border-border text-[9px] font-extrabold px-2 py-0.5">
+                              {activityFeed.length} Events
+                            </Badge>
+                          </div>
+                          <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
+                            Click any item below to inspect detailed log
                           </p>
                         </div>
                       </div>
@@ -1212,17 +1225,17 @@ const UserDetailsPage = () => {
                       </Button>
                     </div>
 
-                    {/* Interactive Timeline Item Cards */}
-                    {activityFeed.length === 0 ? (
-                      <div className="py-12 text-center border-2 border-dashed border-gray-100 dark:border-border/60 rounded-2xl">
-                        <Clock className="h-8 w-8 text-gray-300 dark:text-muted-foreground mx-auto mb-2" />
-                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
-                          No activity events logged
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2.5">
-                        {activityFeed.map((event, idx) => {
+                    {/* Scrollable Timeline Stream Box */}
+                    <div className="max-h-[440px] overflow-y-auto pr-1.5 space-y-2.5 scrollbar-thin scrollbar-thumb-indigo-200 dark:scrollbar-thumb-slate-700">
+                      {activityFeed.length === 0 ? (
+                        <div className="py-12 text-center border-2 border-dashed border-gray-100 dark:border-border/60 rounded-2xl">
+                          <Clock className="h-8 w-8 text-gray-300 dark:text-muted-foreground mx-auto mb-2" />
+                          <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+                            No activity events logged
+                          </p>
+                        </div>
+                      ) : (
+                        activityFeed.map((event, idx) => {
                           const EventIcon = event.icon || History;
                           return (
                             <div
@@ -1231,44 +1244,44 @@ const UserDetailsPage = () => {
                                 setSelectedActivityEvent(event);
                                 setIsActivityDialogOpen(true);
                               }}
-                              className="group flex items-start gap-3.5 p-3.5 rounded-2xl bg-gray-50/70 dark:bg-muted/20 border border-gray-100 dark:border-border/50 hover:bg-white dark:hover:bg-card hover:border-gray-200 dark:hover:border-border hover:shadow-xs transition-all cursor-pointer"
+                              className="group flex items-start gap-3.5 p-3.5 rounded-2xl bg-slate-50/80 dark:bg-muted/20 border border-slate-100 dark:border-border/50 hover:bg-white dark:hover:bg-card hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-2xs transition-all cursor-pointer"
                             >
                               <div
-                                className={`mt-0.5 h-9 w-9 rounded-xl ${event.bgColor} ${event.color} flex items-center justify-center shrink-0 border border-current/10`}
+                                className={`mt-0.5 h-9 w-9 rounded-xl ${event.bgColor || "bg-indigo-50 text-indigo-600"} ${event.color || "text-indigo-600"} flex items-center justify-center shrink-0 border border-current/10 shadow-2xs`}
                               >
                                 <EventIcon className="h-4 w-4" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
-                                  <h4 className="text-xs font-black text-gray-900 dark:text-foreground group-hover:text-slate-900 dark:group-hover:text-white transition-colors truncate">
+                                  <h4 className="text-xs font-bold text-slate-900 dark:text-foreground group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">
                                     {event.title}
                                   </h4>
-                                  <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground shrink-0">
+                                  <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 shrink-0">
                                     {event.date && !isNaN(event.date.getTime())
                                       ? format(event.date, "MMM dd, HH:mm")
                                       : "—"}
                                   </span>
                                 </div>
-                                <p className="text-xs text-gray-500 dark:text-muted-foreground mt-0.5 line-clamp-1">
+                                <p className="text-xs text-slate-500 dark:text-muted-foreground mt-0.5 line-clamp-1">
                                   {event.description}
                                 </p>
                                 <div className="mt-2 flex items-center justify-between">
                                   <Badge
                                     variant="outline"
-                                    className="rounded-md text-[8px] font-black uppercase tracking-wider px-2 py-0.5 border-gray-200 dark:border-border"
+                                    className="rounded-md text-[8px] font-black uppercase tracking-wider px-2 py-0.5 border-slate-200 dark:border-border bg-white dark:bg-muted/40"
                                   >
                                     {event.status}
                                   </Badge>
-                                  <span className="text-[9px] font-bold text-slate-700 dark:text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
-                                    Details <ChevronRight className="h-3 w-3" />
+                                  <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+                                    View details <ChevronRight className="h-3 w-3" />
                                   </span>
                                 </div>
                               </div>
                             </div>
                           );
-                        })}
-                      </div>
-                    )}
+                        })
+                      )}
+                    </div>
                   </Card>
 
                   {/* Right: Warden Overview or Quick Action Panel (5 Cols) */}
@@ -1802,57 +1815,100 @@ const UserDetailsPage = () => {
                 value="complaints"
                 className="m-0 animate-in fade-in-50 duration-300"
               >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {userDetails?.complaints?.map((c) => (
-                    <Card
-                      key={c.id}
-                      onClick={() => {
-                        setSelectedComplaint(c);
-                        setIsComplaintDialogOpen(true);
-                      }}
-                      className="rounded-3xl bg-white dark:bg-card p-6 border border-gray-100 dark:border-border shadow-2xs space-y-4 hover:shadow-xs hover:border-gray-200 dark:hover:border-border transition-all group cursor-pointer"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="h-9 w-9 rounded-xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center text-amber-600">
-                          <AlertCircle className="h-4 w-4" />
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className="rounded-lg px-2 py-0.5 font-bold text-[8px] uppercase tracking-wider text-gray-500 border-gray-200"
-                        >
-                          {c.status}
-                        </Badge>
+                <Card className="rounded-3xl bg-white dark:bg-card p-6 border border-gray-100 dark:border-border shadow-2xs space-y-4">
+                  <div className="flex items-center justify-between pb-3.5 border-b border-gray-100 dark:border-border/60">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-9 w-9 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-900/50">
+                        <AlertCircle className="h-4.5 w-4.5" />
                       </div>
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-black text-gray-900 dark:text-foreground uppercase tracking-tight group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
-                          {c.title}
-                        </h4>
-                        <p className="text-xs text-gray-500 dark:text-muted-foreground line-clamp-2 leading-relaxed italic">
-                          "{c.description}"
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-xs font-black uppercase tracking-widest text-gray-900 dark:text-foreground">
+                            Filed Reports & Maintenance Tickets
+                          </h3>
+                          <Badge className="bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-200 text-[9px] font-extrabold px-2 py-0.5">
+                            {userDetails?.complaints?.length || 0} Reports
+                          </Badge>
+                        </div>
+                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
+                          Click any complaint ticket to inspect status and resolution logs
                         </p>
                       </div>
-                      <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-border/60">
-                        <span className="text-[9px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-wider">
-                          {c.createdAt
-                            ? format(new Date(c.createdAt), "MMM dd, yyyy")
-                            : "—"}
-                        </span>
-                        <span className="text-[9px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                          View Details <ChevronRight className="h-3 w-3" />
-                        </span>
-                      </div>
-                    </Card>
-                  ))}
-                  {(!userDetails?.complaints ||
-                    userDetails.complaints.length === 0) && (
-                    <div className="md:col-span-2 h-52 flex flex-col items-center justify-center bg-white dark:bg-card rounded-3xl border border-dashed border-gray-200 dark:border-border">
-                      <MessageSquare className="h-9 w-9 text-gray-300 dark:text-muted-foreground mb-2" />
-                      <p className="text-[10px] font-bold text-gray-400 dark:text-muted-foreground uppercase tracking-widest">
-                        No filed reports found
-                      </p>
                     </div>
-                  )}
-                </div>
+                  </div>
+
+                  {/* Scrollable Container Box for Reports */}
+                  <div className="max-h-[460px] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-amber-200 dark:scrollbar-thumb-slate-700">
+                    {!userDetails?.complaints || userDetails.complaints.length === 0 ? (
+                      <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-gray-100 dark:border-border/60 rounded-2xl">
+                        <MessageSquare className="h-8 w-8 text-gray-300 dark:text-muted-foreground mb-2" />
+                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">
+                          No filed reports or tickets found
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        {userDetails.complaints.map((c) => (
+                          <div
+                            key={c.id}
+                            onClick={() => {
+                              setSelectedComplaint(c);
+                              setIsComplaintDialogOpen(true);
+                            }}
+                            className="group flex flex-col justify-between p-4 rounded-2xl bg-slate-50/80 dark:bg-muted/20 border border-slate-100 dark:border-border/50 hover:bg-white dark:hover:bg-card hover:border-amber-200 dark:hover:border-amber-800 hover:shadow-2xs transition-all cursor-pointer space-y-3"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <div className="h-7 w-7 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
+                                  <AlertCircle className="h-3.5 w-3.5" />
+                                </div>
+                                {c.category && (
+                                  <Badge className="bg-slate-200/70 dark:bg-muted text-slate-700 dark:text-slate-300 border-none text-[8px] font-extrabold uppercase px-2 py-0.5">
+                                    {c.category}
+                                  </Badge>
+                                )}
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className={`rounded-md px-2 py-0.5 font-extrabold text-[8px] uppercase tracking-wider ${
+                                  c.status === "RESOLVED"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : c.status === "IN_PROGRESS"
+                                    ? "bg-blue-50 text-blue-700 border-blue-200"
+                                    : c.status === "REJECTED"
+                                    ? "bg-rose-50 text-rose-700 border-rose-200"
+                                    : "bg-amber-50 text-amber-700 border-amber-200"
+                                }`}
+                              >
+                                {c.status}
+                              </Badge>
+                            </div>
+
+                            <div className="space-y-1">
+                              <h4 className="text-xs font-bold text-slate-900 dark:text-foreground group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors line-clamp-1">
+                                {c.title}
+                              </h4>
+                              <p className="text-xs text-slate-500 dark:text-muted-foreground line-clamp-2 leading-relaxed italic">
+                                "{c.description}"
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2.5 border-t border-slate-200/50 dark:border-border/40">
+                              <span className="text-[10px] font-medium text-slate-400 font-mono">
+                                {c.createdAt
+                                  ? format(new Date(c.createdAt), "MMM dd, yyyy")
+                                  : "—"}
+                              </span>
+                              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+                                View Details <ChevronRight className="h-3 w-3" />
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </Card>
               </TabsContent>
 
               {/* SECURITY & SESSIONS TAB */}
@@ -2019,6 +2075,14 @@ const UserDetailsPage = () => {
                     </TableBody>
                   </Table>
                 </Card>
+              </TabsContent>
+
+              {/* AI CHAT HISTORY TAB */}
+              <TabsContent
+                value="ai-chat"
+                className="m-0 space-y-6 animate-in fade-in-50 duration-300"
+              >
+                <UserAiChatHistory userId={user.id} userName={user.name} />
               </TabsContent>
             </Tabs>
           </div>

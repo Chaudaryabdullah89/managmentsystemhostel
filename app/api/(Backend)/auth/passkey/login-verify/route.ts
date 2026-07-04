@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        const nextResponse = successResponse({
+        const nextResponse = await successResponse({
             message: "Signed in with passkey",
             User: {
                 id: user.id,

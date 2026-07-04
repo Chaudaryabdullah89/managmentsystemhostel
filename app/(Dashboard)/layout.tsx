@@ -6,7 +6,7 @@ import { Footer } from "@/components/Footer"
 import { useEffect, useState } from "react"
 import useAuthStore, { checkAuth } from "@/hooks/Authstate"
 import { useBookings } from "@/hooks/useBooking"
-import { AlertCircle, ShieldAlert, Home, LayoutList, LayoutDashboard } from "lucide-react"
+import { AlertCircle, ShieldAlert, Home, LayoutList, LayoutDashboard, Wrench } from "lucide-react"
 import HeaderNotices from "@/components/Dashboard/HeaderNotices"
 import AiAssistant from "@/components/Dashboard/AiAssistant"
 import { usePathname } from "next/navigation"
@@ -78,6 +78,24 @@ function PageContent({
         </div>
         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.2em]">
           Loading…
+        </p>
+      </div>
+    )
+  }
+
+  // Client-Side Maintenance Guard: Intercept transitions and block non-admins immediately if active
+  const hasBypassCookie = typeof window !== 'undefined' && document.cookie.includes('bypass_maintenance=');
+  if (sysSettings.maintenanceMode === true && normalizedRole !== "ADMIN" && !hasBypassCookie) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-white dark:bg-card rounded-3xl border border-gray-100 dark:border-border shadow-sm transition-all animate-in fade-in zoom-in duration-300">
+        <div className="w-20 h-20 bg-orange-50 dark:bg-orange-950/20 rounded-full flex items-center justify-center mb-6">
+          <Wrench className="w-10 h-10 text-orange-500 animate-pulse" />
+        </div>
+        <h2 className="text-2xl font-black text-gray-900 dark:text-foreground tracking-tight">
+          System Under Maintenance
+        </h2>
+        <p className="text-gray-500 dark:text-muted-foreground mt-2 max-w-sm mx-auto text-sm leading-relaxed">
+          {sysSettings.maintenanceMessage || "Our systems are currently undergoing scheduled maintenance to improve your experience. Thank you for your patience."}
         </p>
       </div>
     )

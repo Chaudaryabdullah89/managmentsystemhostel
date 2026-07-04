@@ -103,6 +103,7 @@ import useAuthStore from "@/hooks/Authstate";
 import { format, isValid } from "date-fns";
 import { toast } from "sonner";
 import { DetailPageSkeleton } from "@/components/ui/skeletons";
+import UserAiChatHistory from "@/components/admin/UserAiChatHistory";
 import ActivityFeed from "@/components/admin/ActivityFeed";
 import { generateInvoice } from "@/lib/utils/invoice-generator";
 import UnifiedReceipt from "@/components/receipt/UnifiedReceipt";
@@ -808,6 +809,13 @@ const ResidentDetailContent = () => {
                 >
                   Full Profile
                 </TabsTrigger>
+                <TabsTrigger
+                  value="ai-chat"
+                  className="h-full px-8 rounded-xl font-bold text-[10px] uppercase tracking-widest data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition-all flex items-center gap-1.5"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  AI Chat History
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent
@@ -1142,6 +1150,14 @@ const ResidentDetailContent = () => {
                     )}
                   </Card>
                 </div>
+              </TabsContent>
+
+              {/* AI CHAT HISTORY TAB */}
+              <TabsContent
+                value="ai-chat"
+                className="m-0 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500"
+              >
+                <UserAiChatHistory userId={user.id} userName={user.name} />
               </TabsContent>
             </Tabs>
           </div>

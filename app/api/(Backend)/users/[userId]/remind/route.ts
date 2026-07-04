@@ -7,6 +7,7 @@ import { sendEmail } from "@/lib/utils/sendmail";
 import { buildEmailTemplate } from "@/lib/utils/emailTemplates";
 import { getBranding } from "@/lib/permissions";
 import { apiLogger } from "@/lib/apiLogger";
+import { withLogger } from "@/lib/withLogger";
 
 /**
  * POST /api/users/[userId]/remind
@@ -22,10 +23,12 @@ import { apiLogger } from "@/lib/apiLogger";
  *   type:         "RENT_DUE" | "GENERAL" | "WARNING" | "URGENT" (optional, default "GENERAL")
  * }
  */
-export async function POST(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
+export const POST = withLogger(async (request: NextRequest, { params }: { params: Promise<{ userId: string }> }, log) => {
+    log.step("Auth check — ADMIN or WARDEN required");
     const guard = await requireRoles(['ADMIN', 'WARDEN']);
     if (!guard.ok) return guard.response;
     const auth = { user: guard.user };
+    log.info("Auth passed", { role: auth.user.role });
 
     try {
         const { userId } = await params;
@@ -37,6 +40,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         }
 
         // Fetch user with their hostel info
+        log.step(`Looking up user ${userId}`);
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: {
@@ -56,6 +60,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         if (auth.user.role === 'WARDEN') {
             let wardenHostelId = auth.user.hostelId;
             if (!wardenHostelId) {
+                log.step("hostelId missing in JWT — fetching from DB");
                 const warden = await prisma.user.findUnique({
                     where: { id: auth.user.userId || auth.user.id },
                     select: { hostelId: true }
@@ -66,6 +71,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
                 return errorResponse("Access Denied: User belongs to a different hostel branch.", 403);
             }
         }
+
+        log.info(`Sending reminder to ${user.name}`, { email: user.email, type, sendWhatsApp });
 
         const branding = await getBranding();
         const hostelName = user.Hostel_User_hostelIdToHostel?.name || branding.companyName;
@@ -121,8 +128,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             try {
                 await sendEmail({ to: user.email, subject, html });
                 results.email = "sent";
+                log.ok(`Email sent to ${user.name} <${user.email}>`);
                 apiLogger.info(`[Reminder] Email sent to ${user.name} <${user.email}>`);
             } catch (emailErr) {
+                log.fail(`Email failed to ${user.email}`, emailErr);
                 apiLogger.error(`[Reminder] Email failed to ${user.email}`, emailErr);
                 results.email = "failed";
             }
@@ -165,13 +174,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             return errorResponse("Reminder could not be delivered via any channel.", 502, { results });
         }
 
+        log.ok(`Reminder dispatched`, results);
         return successResponse({
             message: "Reminder dispatched.",
             recipient: { name: user.name, email: user.email, phone: user.phone },
             results,
         });
     } catch (error: any) {
+        log.fail("Unexpected error", error);
         apiLogger.error("[Reminder] Unexpected error", error);
         return errorResponse(error.message, 500);
     }
-}
+});

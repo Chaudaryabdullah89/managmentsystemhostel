@@ -142,3 +142,22 @@ export const useUserDetailedProfile = (id: string) => {
     });
     return { data, isLoading, error, refetch, isFetching };
 };
+
+export const useUserAiHistory = (userId: string) => {
+    const { data, isLoading, error, refetch, isRefetching } = useQuery({
+        queryKey: ["userAiHistory", userId],
+        queryFn: async () => {
+            if (!userId) return [];
+            const response = await fetch(`/api/ai-assistant?userId=${userId}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch user AI chat history");
+            }
+            const json = await response.json();
+            return json.messages || [];
+        },
+        enabled: !!userId,
+        gcTime: 10 * 60 * 1000,
+    });
+    return { data, isLoading, error, refetch, isRefetching };
+};
+

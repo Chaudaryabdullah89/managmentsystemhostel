@@ -1,7 +1,7 @@
 import React from 'react';
 import { getSystemSettings } from '@/lib/permissions';
 import { checkRole } from '@/lib/checkRole';
-import { headers } from 'next/headers';
+import { headers, cookies } from 'next/headers';
 import { Wrench } from 'lucide-react';
 
 export default async function MaintenanceWrapper({ children }) {
@@ -10,6 +10,22 @@ export default async function MaintenanceWrapper({ children }) {
   // Quick exit if maintenance is not active
   if (!settings.maintenanceMode) {
     return <>{children}</>;
+  }
+
+  // Allow users with a valid bypass token cookie to access the system
+  const cookieStore = await cookies();
+  const bypassCookie = cookieStore.get('bypass_maintenance')?.value;
+  if (bypassCookie && settings) {
+    if (bypassCookie === settings.maintenanceWardenToken || bypassCookie === settings.maintenanceGuestToken) {
+      return (
+        <>
+          <div className="bg-amber-600 text-white text-[10px] font-black text-center py-1 z-50 relative uppercase tracking-widest">
+            ⚠️ Bypassing Maintenance Mode (Bypass Link Session Active)
+          </div>
+          {children}
+        </>
+      );
+    }
   }
 
   // Allow admins to bypass maintenance mode
@@ -26,10 +42,10 @@ export default async function MaintenanceWrapper({ children }) {
     );
   }
 
-  // Check if we are on an authentication page (allow access so admins/users can access auth forms)
+  // Allow authentication routes and trampoline redirects to load
   const headersList = await headers();
-  const currentPath = headersList.get('x-pathname') || headersList.get('x-invoke-path') || headersList.get('referer') || "";
-  if (currentPath.includes("/auth") || currentPath.includes("/auth/")) {
+  const currentPath = headersList.get('x-pathname') || "";
+  if (currentPath.startsWith("/auth") || currentPath === "/redirecting") {
      return <>{children}</>;
   }
 

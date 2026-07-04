@@ -6,16 +6,19 @@ import { requireRoles } from "@/lib/apiAuth";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
 import { getBranding } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+import { withLogger } from "@/lib/withLogger";
 
 const paymentServices = new PaymentServices();
 
-export async function POST(request, { params }) {
+export const POST = withLogger(async (request, { params }, log) => {
+    log.step("Auth check — ADMIN or WARDEN required");
     const guard = await requireRoles(['ADMIN', 'WARDEN']);
     if (!guard.ok) return guard.response;
     const auth = { user: guard.user };
 
     try {
         const { paymentId } = await params;
+        log.step(`Fetching payment ${paymentId}`);
         const payment = await paymentServices.getPaymentById(paymentId);
         if (!payment) return errorResponse("Payment record not found", 404);
 
@@ -23,6 +26,7 @@ export async function POST(request, { params }) {
         if (auth.user.role === 'WARDEN') {
             let wardenHostelId = auth.user.hostelId;
             if (!wardenHostelId) {
+                log.step("hostelId missing in JWT — fetching from DB");
                 const wardenProfile = await prisma.user.findUnique({
                     where: { id: auth.user.userId || auth.user.id },
                     select: { hostelId: true }
@@ -40,6 +44,7 @@ export async function POST(request, { params }) {
             return errorResponse("User has no email address configured.", 400);
         }
 
+        log.step(`Sending payment notification email to ${userEmail}`);
         const branding = await getBranding();
         const hostelName = payment.Booking?.Room?.Hostel?.name || payment.User?.Hostel_User_hostelIdToHostel?.name || "Hostel Branch";
         
@@ -62,8 +67,10 @@ export async function POST(request, { params }) {
             }),
         });
 
+        log.ok(`Notification email sent to ${userEmail}`);
         return successResponse({ message: "Notification email sent successfully." });
     } catch (error) {
+        log.fail("Email notification failed", error);
         return errorResponse(error.message, 500);
     }
-}
+});

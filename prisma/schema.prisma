@@ -27,6 +27,8 @@ model Booking {
 
   @@index([userId])
   @@index([roomId])
+  @@index([userId, status])
+  @@index([roomId, status])
 }
 
 model Complaint {
@@ -54,6 +56,8 @@ model Complaint {
   @@index([userId])
   @@index([hostelId])
   @@index([assignedToId])
+  @@index([hostelId, status])
+  @@index([userId, status])
 }
 
 model Expense {
@@ -111,6 +115,12 @@ model Hostel {
   totalRooms                  Int?            @default(0)
   wardens                     String[]
   zip                         String?
+  smtpHost                    String?
+  smtpPort                    Int?
+  smtpSecure                  Boolean         @default(false)
+  smtpUser                    String?
+  smtpPass                    String?
+  smtpSender                  String?
   cleaningLogs                CleaningLog[]
   Complaint                   Complaint[]
   Expense                     Expense[]
@@ -198,6 +208,8 @@ model Payment {
 
   @@index([userId])
   @@index([bookingId])
+  @@index([userId, status])
+  @@index([status, date])
 }
 
 model ResidentProfile {
@@ -412,12 +424,21 @@ model ResetPassword {
 }
 
 model ChatMessage {
-  id        String   @id @default(cuid())
-  userId    String
-  role      String
-  content   String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  id          String   @id @default(cuid())
+  userId      String
+  role        String
+  content     String
+  cardType    String?
+  cardData    Json?
+  suggestions String[] @default([])
+  feedback    String?
+  isRead      Boolean  @default(false)
+  isProactive Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([userId, isRead])
 }
 
 model CleaningLog {
@@ -660,8 +681,10 @@ model SystemSettings {
   id String @id @default("global")
 
   // Maintenance
-  maintenanceMode    Boolean @default(false)
-  maintenanceMessage String?
+  maintenanceMode        Boolean @default(false)
+  maintenanceMessage     String?
+  maintenanceWardenToken String?
+  maintenanceGuestToken  String?
 
   // Core Application Services
   enableLaundry             Boolean @default(true)
@@ -688,6 +711,20 @@ model SystemSettings {
   // Branding
   companyName      String? @default("Hostel Management System")
   companyShortName String? @default("HMS")
+  companyFavicon   String? @default("/favicon.ico")
+
+  // AI Config
+  aiModel        String? @default("llama-3.3-70b-versatile")
+  aiTemperature  Float?  @default(0.5)
+  aiSystemPrompt String?
+
+  // SMTP Configuration
+  smtpHost   String?  @default("smtp.gmail.com")
+  smtpPort   Int?     @default(587)
+  smtpSecure Boolean  @default(false)
+  smtpUser   String?
+  smtpPass   String?
+  smtpSender String?
 
   lastCronRun DateTime?
   updatedAt   DateTime  @updatedAt
@@ -761,3 +798,16 @@ model BillingLog {
   createdAt   DateTime @default(now())
 }
 
+model AiFeedback {
+  id         String   @id @default(cuid())
+  userId     String
+  messageId  String
+  feedback   String   // "POSITIVE" | "NEGATIVE"
+  context    String?  // original user message
+  reply      String?  // original bot reply
+  improved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([messageId])
+}

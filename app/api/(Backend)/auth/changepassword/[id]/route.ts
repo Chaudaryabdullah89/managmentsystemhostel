@@ -59,7 +59,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     await prisma.user.update({ where: { id }, data: { password: hashedPassword } });
 
     // Handle session invalidation based on logoutAll flag
-    const response = successResponse({ message: "Password updated successfully." }, 200);
+    const response = await successResponse({ message: "Password updated successfully." }, 200);
 
     if (logoutAll) {
         await prisma.session.updateMany({
