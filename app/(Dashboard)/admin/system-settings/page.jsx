@@ -154,6 +154,7 @@ const DEFAULT_SETTINGS = {
   companyName: "Hostel Management System",
   companyShortName: "HMS",
   companyFavicon: "/favicon.ico",
+  oneBillPrefix: "100123",
   aiModel: "llama-3.3-70b-versatile",
   aiTemperature: 0.5,
   aiSystemPrompt: "",
@@ -1172,6 +1173,33 @@ export default function SystemSettingsPage() {
                     placeholder="https://res.cloudinary.com/… or /favicon.ico"
                   />
                 </div>
+              </div>
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            title="1Bill Invoice Settings"
+            subtitle="Configure payment and invoice generation prefixes for guest and resident online payments."
+            icon={Sliders}
+            iconColor="text-indigo-600"
+            iconBg="bg-indigo-50 dark:bg-indigo-950/40"
+          >
+            <div className="space-y-5 py-4">
+              <div>
+                <label className="text-xs font-bold text-gray-500 dark:text-muted-foreground uppercase tracking-widest pl-1">
+                  Global 1Bill Merchant Prefix (6-8 Digits)
+                </label>
+                <input
+                  type="text"
+                  maxLength={8}
+                  value={settings.oneBillPrefix || ""}
+                  onChange={(e) => set("oneBillPrefix", e.target.value.replace(/\D/g, ""))}
+                  className="mt-1.5 w-full h-11 px-4 text-sm rounded-xl border border-gray-100 dark:border-border bg-gray-50 dark:bg-muted/20 text-gray-800 dark:text-foreground focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:bg-white dark:focus:bg-card transition-all font-mono"
+                  placeholder="e.g. 100123"
+                />
+                <p className="text-[10px] text-gray-400 dark:text-muted-foreground mt-1.5 pl-1">
+                  The merchant billing prefix assigned by 1Link. This is prefixed to all automatically generated 18-digit online payment invoices.
+                </p>
               </div>
             </div>
           </SectionCard>

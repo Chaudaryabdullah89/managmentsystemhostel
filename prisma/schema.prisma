@@ -121,6 +121,7 @@ model Hostel {
   smtpUser                    String?
   smtpPass                    String?
   smtpSender                  String?
+  oneBillPrefix               String?
   cleaningLogs                CleaningLog[]
   Complaint                   Complaint[]
   Expense                     Expense[]
@@ -200,6 +201,7 @@ model Payment {
   month         String?
   year          Int?
   uid           String?         @unique
+  oneBillInvoiceId String?      @unique
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   Booking       Booking?        @relation(fields: [bookingId], references: [id])
@@ -712,6 +714,7 @@ model SystemSettings {
   companyName      String? @default("Hostel Management System")
   companyShortName String? @default("HMS")
   companyFavicon   String? @default("/favicon.ico")
+  oneBillPrefix    String? @default("100123")
 
   // AI Config
   aiModel        String? @default("llama-3.3-70b-versatile")
@@ -810,4 +813,29 @@ model AiFeedback {
 
   @@index([userId])
   @@index([messageId])
+}
+
+model SecurityLog {
+  id          String   @id @default(cuid())
+  ip          String
+  event       String   // e.g. "SQL_INJECTION", "FAILED_LOGIN", "XSS_ATTEMPT", "SCAN"
+  severity    String   // "LOW", "MEDIUM", "HIGH", "CRITICAL"
+  description String
+  userAgent   String?
+  userId      String?
+  createdAt   DateTime @default(now())
+
+  @@index([ip])
+  @@index([severity])
+  @@index([createdAt])
+}
+
+model BlockedIp {
+  id        String    @id @default(cuid())
+  ip        String    @unique
+  reason    String
+  expiresAt DateTime? // null = permanent block
+  createdAt DateTime  @default(now())
+
+  @@index([ip])
 }

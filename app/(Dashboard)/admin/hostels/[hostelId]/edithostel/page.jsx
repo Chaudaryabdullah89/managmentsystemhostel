@@ -75,6 +75,7 @@ const EditHostelForm = () => {
   const [completeAddress, setCompleteAddress] = useState("");
   const [cleaningInterval, setCleaningInterval] = useState("24");
   const [laundryInterval, setLaundryInterval] = useState("48");
+  const [oneBillPrefix, setOneBillPrefix] = useState("");
 
   const { mutate, isPending: editingpending } = UpdateHostel();
 
@@ -106,6 +107,7 @@ const EditHostelForm = () => {
       type: type ? type.toUpperCase() : "BOYS",
       cleaningInterval: parseInt(cleaningInterval) || 24,
       laundryInterval: parseInt(laundryInterval) || 48,
+      oneBillPrefix: oneBillPrefix,
     };
     mutate(data);
   };
@@ -205,6 +207,7 @@ const EditHostelForm = () => {
           setWardens(data.wardens || []);
           setCleaningInterval(data.cleaningInterval?.toString() || "24");
           setLaundryInterval(data.laundryInterval?.toString() || "48");
+          setOneBillPrefix(data.oneBillPrefix || "");
         }
       } catch (error) {
         console.error("Error fetching hostel:", error);
@@ -305,7 +308,7 @@ const EditHostelForm = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">
                       Hostel Branch Name *
@@ -330,6 +333,18 @@ const EditHostelForm = () => {
                         <SelectItem value="GIRLS">GIRLS RESIDENCE</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                      1Bill Prefix (6-8 Digits)
+                    </Label>
+                    <Input
+                      maxLength={8}
+                      value={oneBillPrefix}
+                      onChange={(e) => setOneBillPrefix(e.target.value.replace(/\D/g, ""))}
+                      placeholder="e.g. 100123"
+                      className="h-10 bg-slate-50/50 dark:bg-muted/10 border-slate-200 dark:border-border rounded-xl text-sm font-medium focus-visible:ring-2 focus-visible:ring-indigo-600 font-mono"
+                    />
                   </div>
                 </div>
 

@@ -16,6 +16,7 @@ import {
     Megaphone,
     Wallet,
     ShieldCheck,
+    ShieldAlert,
     Activity,
     Sparkles,
     Wrench,
@@ -100,8 +101,8 @@ export const NAVIGATION_GROUPS: Record<string, NavGroup[]> = {
             title: "System",
             icon: Settings,
             items: [
-                { title: "Settings", url: "/admin/system-settings", icon: ShieldCheck, role: "admin" },
-                { title: "Profile",  url: "/admin/profile",         icon: User,        role: "admin" },
+                { title: "Settings", url: "/admin/system-settings", icon: ShieldCheck,  role: "admin" },
+                { title: "Profile",  url: "/admin/profile",          icon: User,         role: "admin" },
             ],
         },
     ],

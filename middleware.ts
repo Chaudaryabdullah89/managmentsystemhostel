@@ -31,6 +31,90 @@ function matchProtectedRoute(pathname: string) {
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
+    // ── IDS: Skip security scan on internal API security routes (avoid loops) ──
+    const isSecurityRoute = pathname.startsWith('/api/admin/security/');
+
+    if (!isSecurityRoute) {
+        // ── IDS Threat Detection: SQLi, XSS, Path Traversal ──────────────────
+        const searchStr = request.nextUrl.search;
+        const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+            || request.headers.get("x-real-ip")
+            || "0.0.0.0";
+        const userAgent = request.headers.get("user-agent") || "";
+
+        const SQL_PATTERNS = [
+            /UNION\s+SELECT/i, /SELECT\s+.+\s+FROM/i, /INSERT\s+INTO/i,
+            /UPDATE\s+.+\s+SET/i, /DELETE\s+FROM/i, /DROP\s+TABLE/i,
+            /OR\s+['"]?\d+['"]?\s*=\s*['"]?\d+/i,
+        ];
+        const XSS_PATTERNS = [
+            /<script[\s\S]*?>[\s\S]*?<\/script>/gi,
+            /javascript\s*:/i, /onerror\s*=/i, /onload\s*=/i, /onclick\s*=/i,
+        ];
+        const PATH_PATTERNS = [
+            /\.\.\//,
+            /\/etc\/passwd/i,
+            /win\.ini/i,
+            /\/proc\/self\//i,
+        ];
+
+        let decodedTarget = `${pathname}${searchStr}`;
+        try {
+            decodedTarget = decodeURIComponent(decodedTarget.replace(/\+/g, " "));
+        } catch (_) {}
+
+        let threatType: string | null = null;
+
+        if (SQL_PATTERNS.some(r => r.test(decodedTarget)))      threatType = "SQL_INJECTION";
+        else if (XSS_PATTERNS.some(r => r.test(decodedTarget))) threatType = "XSS_ATTEMPT";
+        else if (PATH_PATTERNS.some(r => r.test(decodedTarget))) threatType = "PATH_TRAVERSAL";
+
+        if (threatType) {
+            // Fire-and-forget: log + auto-block the IP in the background
+            fetch(new URL('/api/admin/security/report-threat', request.url).toString(), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ip: clientIp,
+                    event: threatType,
+                    severity: "HIGH",
+                    description: `Malicious payload detected — Type: ${threatType} | Path: ${pathname}${searchStr}`,
+                    userAgent
+                })
+            }).catch(() => {});
+
+            const html = `<!DOCTYPE html><html><head><title>Blocked</title>
+            <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:#1e293b;border:1px solid #334155;border-radius:20px;padding:48px;text-align:center;max-width:480px;width:90%}.shield{font-size:56px;margin-bottom:24px}.title{color:#f1f5f9;font-size:22px;font-weight:800;margin-bottom:12px}.msg{color:#94a3b8;font-size:13px;line-height:1.7;margin-bottom:24px}.ip{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px 14px;font-family:monospace;font-size:12px;color:#64748b;display:inline-block;margin-bottom:28px}.badge{display:inline-block;background:#dc2626;color:white;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 12px;border-radius:100px}</style>
+            </head><body><div class="card"><div class="shield">🛡️</div><h1 class="title">Request Blocked</h1><p class="msg">Your request matched a known attack signature and was blocked by the Application Security Shield. This incident has been logged and your IP has been flagged for review.</p><div class="ip">Flagged IP: ${clientIp}</div><br/><div class="badge">Hostel Portal · Security IDS</div></div></body></html>`;
+
+            return new NextResponse(html, {
+                status: 403,
+                headers: { 'Content-Type': 'text/html' }
+            });
+        }
+
+        // ── IDS: Check if this IP is on the block list ────────────────────────
+        try {
+            const checkUrl = new URL(`/api/admin/security/check-ip?ip=${encodeURIComponent(clientIp)}`, request.url);
+            const ipCheckRes = await fetch(checkUrl.toString());
+            if (ipCheckRes.ok) {
+                const ipData = await ipCheckRes.json();
+                if (ipData.blocked) {
+                    const html = `<!DOCTYPE html><html><head><title>Access Denied</title>
+                    <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:#1e293b;border:1px solid #334155;border-radius:20px;padding:48px;text-align:center;max-width:480px;width:90%}.shield{font-size:56px;margin-bottom:24px}.title{color:#f1f5f9;font-size:22px;font-weight:800;margin-bottom:12px}.msg{color:#94a3b8;font-size:13px;line-height:1.7;margin-bottom:24px}.ip{background:#0f172a;border:1px solid #334155;border-radius:8px;padding:8px 14px;font-family:monospace;font-size:12px;color:#64748b;display:inline-block;margin-bottom:28px}.badge{display:inline-block;background:#7c3aed;color:white;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:4px 12px;border-radius:100px}</style>
+                    </head><body><div class="card"><div class="shield">🔒</div><h1 class="title">Access Denied</h1><p class="msg">Your IP address has been blocked by the system administrator. If you believe this is an error, please contact support.</p><div class="ip">${clientIp}</div><br/><div class="badge">Hostel Portal · Access Control</div></div></body></html>`;
+
+                    return new NextResponse(html, {
+                        status: 403,
+                        headers: { 'Content-Type': 'text/html' }
+                    });
+                }
+            }
+        } catch (_) {
+            // Don't block the request if the IP check API is unreachable
+        }
+    }
+
     // Detect and handle maintenance mode bypass URL query parameters
     const bypassParam = request.nextUrl.searchParams.get('bypassMaintenance');
     if (bypassParam) {

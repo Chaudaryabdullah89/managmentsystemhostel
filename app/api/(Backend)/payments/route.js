@@ -77,7 +77,6 @@ export async function POST(request) {
                 where: {
                     role: { in: ["ADMIN", "WARDEN"] },
                     isActive: true,
-                    email: { not: null },
                     // Targeted Notifications: Admin sees all, Wardens see only their hostel
                     OR: [
                         { role: "ADMIN" },
