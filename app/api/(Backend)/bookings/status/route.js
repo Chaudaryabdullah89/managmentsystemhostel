@@ -74,6 +74,24 @@ export async function PUT(request) {
                     }),
                 }).catch(err => console.error("[Email] Booking status email failed:", err));
             }
+
+            // Trigger real-time push notification to resident
+            if (fullBooking && fullBooking.userId) {
+                try {
+                    const { sendPushNotificationToUser } = require("@/lib/utils/pushNotifications");
+                    const hName = fullBooking.Room?.Hostel?.name || "Hostel";
+                    const rNum = fullBooking.Room?.roomNumber || "assigned room";
+                    await sendPushNotificationToUser(
+                        fullBooking.userId,
+                        "📅 Booking Status Update",
+                        `Your booking at ${hName} (Room ${rNum}) has been updated to ${status}.`,
+                        "notices",
+                        auth.user.id || auth.user.userId
+                    );
+                } catch (pushErr) {
+                    console.error("[Push Notification] Failed to send booking update:", pushErr.message);
+                }
+            }
         } catch (emailErr) {
             console.error("[Email] Error fetching booking for status email:", emailErr);
         }

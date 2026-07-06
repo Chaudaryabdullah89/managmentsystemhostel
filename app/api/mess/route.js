@@ -82,6 +82,60 @@ export async function POST(req) {
             }
         });
 
+        // Trigger real-time push notification to all residents of this hostel
+        try {
+            const recipients = await prisma.user.findMany({
+                where: {
+                    hostelId: hostelId,
+                    pushToken: { not: null }
+                },
+                select: { id: true, pushToken: true }
+            });
+
+            const tokens = recipients.map(r => r.pushToken).filter(Boolean);
+
+            if (tokens.length > 0) {
+                const chunkSize = 100;
+                const notifTitle = `🍽️ Mess Menu Update: ${dayOfWeek}`;
+                const notifBody = `The mess menu for ${dayOfWeek} has been updated. Breakfast: ${breakfast || "N/A"}, Lunch: ${lunch || "N/A"}, Dinner: ${dinner || "N/A"}.`;
+
+                for (let i = 0; i < tokens.length; i += chunkSize) {
+                    const chunk = tokens.slice(i, i + chunkSize);
+                    const expoMessages = chunk.map(token => ({
+                        to: token,
+                        sound: "default",
+                        title: notifTitle,
+                        body: notifBody.length > 150 ? notifBody.substring(0, 150) + "..." : notifBody,
+                        data: { 
+                            title: notifTitle, 
+                            body: notifBody,
+                            screen: "mess"
+                        }
+                    }));
+
+                    await fetch("https://exp.host/--/api/v2/push/send", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(expoMessages)
+                    });
+                }
+
+                // Log in database MobileNotification logs for notice board compatibility
+                await prisma.mobileNotification.create({
+                    data: {
+                        title: notifTitle,
+                        body: notifBody,
+                        targetType: "hostel",
+                        targetHostelId: hostelId,
+                        recipientCount: tokens.length,
+                        sentById: auth.user.id || auth.user.userId
+                    }
+                });
+            }
+        } catch (pushErr) {
+            console.error("[Push Notification] Failed to broadcast mess update:", pushErr.message);
+        }
+
         return NextResponse.json({ success: true, data: messMenu });
     } catch (error) {
         console.error("Error creating/updating mess menu:", error);

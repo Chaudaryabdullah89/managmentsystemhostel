@@ -23,7 +23,7 @@ export async function GET() {
         const viewerRole = userProfile?.role;
 
         // Fetch bookings, payments, complaints, and notices in parallel on the server
-        const [bookings, payments, complaints, notices] = await Promise.all([
+        const [bookings, payments, complaints, notices, mobileNotifications] = await Promise.all([
             // 1. Bookings
             prisma.booking.findMany({
                 where: { userId },
@@ -140,15 +140,69 @@ export async function GET() {
                     }
                 },
                 orderBy: { createdAt: 'desc' },
-                take: 5
+                take: 10
+            }),
+
+            // 5. Mobile Notifications
+            prisma.mobileNotification.findMany({
+                where: {
+                    OR: [
+                        { targetType: "all" },
+                        {
+                            AND: [
+                                { targetType: { in: ["hostel", "hostel_role"] } },
+                                { targetHostelId: hostelId }
+                            ]
+                        },
+                        {
+                            AND: [
+                                { targetType: { in: ["role", "hostel_role"] } },
+                                { targetRole: viewerRole }
+                            ]
+                        },
+                        {
+                            AND: [
+                                { targetType: "specific_users" },
+                                { body: { contains: userProfile?.name || "", mode: "insensitive" } }
+                            ]
+                        }
+                    ]
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    body: true,
+                    createdAt: true,
+                    sentBy: {
+                        select: { name: true, role: true, image: true }
+                    }
+                },
+                orderBy: { createdAt: 'desc' },
+                take: 10
             })
         ]);
 
+        // Map mobile notifications to Notice structure and merge them
+        const mappedMobileNotifs = (mobileNotifications || []).map(mn => ({
+            id: mn.id,
+            title: mn.title,
+            content: mn.body,
+            priority: "MEDIUM",
+            category: "ALERT",
+            createdAt: mn.createdAt,
+            author: mn.sentBy
+        }));
+
+        const mergedNotices = [...notices, ...mappedMobileNotifs].sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+
         return successResponse({
+            hostelId,
             bookings,
             payments,
             complaints,
-            notices
+            notices: mergedNotices
         });
 
     } catch (error) {

@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
         const nextResponse = await successResponse({
             message: response.message,
             User: response.User,
+            token: response.token,
         });
 
         nextResponse.cookies.set("token", response.token!, {

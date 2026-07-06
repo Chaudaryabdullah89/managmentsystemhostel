@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { jwtVerify } from 'jose';
 
 export interface CheckRoleResponse {
@@ -24,7 +24,16 @@ export async function checkRole(allowedRoles: string[] = []): Promise<CheckRoleR
     }
 
     const cookieStore = await cookies();
-    const token = cookieStore.get('token')?.value;
+    let token = cookieStore.get('token')?.value;
+
+    // Fallback to Authorization Header for React Native / mobile client requests
+    if (!token) {
+        const headerStore = await headers();
+        const authHeader = headerStore.get('authorization');
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            token = authHeader.substring(7).trim();
+        }
+    }
 
     if (!token) {
         return { success: false, error: 'Unauthorized', status: 401 };

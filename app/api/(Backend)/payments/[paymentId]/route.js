@@ -252,17 +252,38 @@ export async function PATCH(request, { params }) {
             });
 
             if (normalizedStatus === "PAID" || normalizedStatus === "REJECTED") {
+                const isPaid = normalizedStatus === "PAID";
                 await createInAppNotification({
-                    title: normalizedStatus === "PAID" ? "Payment approved" : "Payment rejected",
-                    content: normalizedStatus === "PAID"
+                    title: isPaid ? "Payment approved" : "Payment rejected",
+                    content: isPaid
                         ? "Your submitted payment has been approved."
                         : "Your submitted payment was rejected. Please review details and resubmit if needed.",
-                    priority: normalizedStatus === "REJECTED" ? "HIGH" : "MEDIUM",
+                    priority: isPaid ? "MEDIUM" : "HIGH",
                     category: "PAYMENT",
                     targetRoles: existingPayment.User?.role ? [existingPayment.User.role] : ["RESIDENT", "GUEST"],
                     hostelId: existingPayment.Booking?.Room?.hostelId || null,
                     actorId: auth.user?.id || auth.user?.userId || auth.user?.sub || null,
                 });
+
+                // Trigger real-time push notification to resident
+                try {
+                    const { sendPushNotificationToUser } = require("@/lib/utils/pushNotifications");
+                    const refInfo = payment.uid ? ` (Ref: ${payment.uid})` : "";
+                    const notifTitle = isPaid ? "✅ Payment Approved" : "❌ Payment Rejected";
+                    const notifBody = isPaid
+                        ? `Your pending payment${refInfo} of PKR ${Number(payment.amount).toLocaleString()} has been approved.`
+                        : `Your payment${refInfo} of PKR ${Number(payment.amount).toLocaleString()} was rejected. Please review details.`;
+                    
+                    await sendPushNotificationToUser(
+                        existingPayment.userId,
+                        notifTitle,
+                        notifBody,
+                        "payments",
+                        auth.user?.id || auth.user?.userId || auth.user?.sub || null
+                    );
+                } catch (pushErr) {
+                    console.error("[Push Notification] Failed to send payment update:", pushErr.message);
+                }
             }
         }
 

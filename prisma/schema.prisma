@@ -136,6 +136,7 @@ model Hostel {
   Maintenance                 Maintenance[]
   messFeedback                MessFeedback[]
   inventoryItems              InventoryItem[]
+  MobileNotification          MobileNotification[]
 }
 
 model MessMenu {
@@ -174,6 +175,24 @@ model Notice {
 
   @@index([authorId])
   @@index([hostelId])
+}
+
+model MobileNotification {
+  id              String   @id @default(cuid())
+  title           String
+  body            String
+  targetType      String   // "all" | "hostel" | "role" | "hostel_role" | "specific_users"
+  targetHostelId  String?
+  targetRole      String?
+  recipientCount  Int      @default(0)
+  sentById        String
+  createdAt       DateTime @default(now())
+
+  sentBy          User     @relation("SentMobileNotifications", fields: [sentById], references: [id], onDelete: Cascade)
+  hostel          Hostel?  @relation(fields: [targetHostelId], references: [id], onDelete: SetNull)
+
+  @@index([sentById])
+  @@index([targetHostelId])
 }
 
 model OtpVerification {
@@ -324,6 +343,7 @@ model User {
   phone                                  String?
   role                                   UserRole           @default(GUEST)
   address                                String?
+  pushToken                              String?
   lastLogin                              DateTime?
   city                                   String?
   hostelId                               String?
@@ -361,6 +381,7 @@ model User {
   createdTasks                           StaffTask[]        @relation("Task_CreatedBy")
   taskComments                           TaskComment[]
   Hostel_User_hostelIdToHostel           Hostel?            @relation("User_hostelIdToHostel", fields: [hostelId], references: [id])
+  sentMobileNotifications                MobileNotification[] @relation("SentMobileNotifications")
   WardenPayment                          WardenPayment[]
   Maintenance_assignedToIdToUser         Maintenance[]      @relation("Maintenance_assignedToIdToUser")
   Maintenance_userIdToUser               Maintenance[]      @relation("Maintenance_userIdToUser")

@@ -31,6 +31,21 @@ function matchProtectedRoute(pathname: string) {
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
+    // ── Global CORS Preflight Handler ─────────────────────────────────────────
+    // React Native / Expo sends OPTIONS before every cross-origin request.
+    // Without this, ALL API routes return 404 on preflight and block the mobile app.
+    if (request.method === 'OPTIONS') {
+        return new NextResponse(null, {
+            status: 204,
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+                'Access-Control-Max-Age': '86400', // cache preflight for 24h
+            },
+        });
+    }
+
     // ── IDS: Skip security scan on internal API security routes (avoid loops) ──
     const isSecurityRoute = pathname.startsWith('/api/admin/security/');
 
@@ -193,8 +208,15 @@ export async function middleware(request: NextRequest) {
                 `\x1b[90m${ts}\x1b[0m \x1b[1m${color}▶ ${method.padEnd(6)}\x1b[0m \x1b[37m${pathname}${qs}\x1b[0m`
             );
         }
-        return NextResponse.next({ request: { headers: requestHeaders } });
+
+        const apiResponse = NextResponse.next({ request: { headers: requestHeaders } });
+        // Add CORS headers so mobile clients can read API responses
+        apiResponse.headers.set('Access-Control-Allow-Origin', '*');
+        apiResponse.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+        apiResponse.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+        return apiResponse;
     }
+
 
     const matchedRoute = matchProtectedRoute(pathname);
 

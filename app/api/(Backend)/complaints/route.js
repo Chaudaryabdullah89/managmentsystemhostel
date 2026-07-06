@@ -161,6 +161,23 @@ export async function PUT(request) {
       assignedToId,
       priority,
     );
+
+    // Trigger real-time push notification to resident
+    if (complaint && complaint.userId) {
+      try {
+        const { sendPushNotificationToUser } = require("@/lib/utils/pushNotifications");
+        await sendPushNotificationToUser(
+          complaint.userId,
+          "🔧 Complaint Update",
+          `Update on your complaint [${complaint.category || "General"} - "${complaint.title}"]: Status is now ${status}.`,
+          "support",
+          auth.user.id || auth.user.userId
+        );
+      } catch (pushErr) {
+        console.error("[Push Notification] Failed to send update:", pushErr.message);
+      }
+    }
+
     return successResponse({ data: complaint });
   } catch (error) {
     console.error("API Error in Complaints PUT:", error);

@@ -100,6 +100,42 @@ export async function sendEmail({ to, bcc, subject, html, hostelId: explicitHost
             }
         }
 
+        // ── Mobile Push Notification Interception ─────────────────────────────
+        try {
+            let cleanEmail = to.trim();
+            const match = to.match(/<([^>]+)>/);
+            if (match) {
+                cleanEmail = match[1].trim();
+            }
+            const recipientUser = await prisma.user.findUnique({
+                where: { email: cleanEmail },
+                select: { pushToken: true }
+            });
+
+            if (recipientUser?.pushToken) {
+                // Strip HTML tags for clean notification description text
+                const cleanBody = html
+                    .replace(/<[^>]*>/g, " ")
+                    .replace(/\s+/g, " ")
+                    .trim();
+
+                await fetch("https://exp.host/--/api/v2/push/send", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        to: recipientUser.pushToken,
+                        sound: "default",
+                        title: subject,
+                        body: cleanBody.length > 120 ? cleanBody.substring(0, 120) + "..." : cleanBody,
+                        data: { subject, cleanBody }
+                    })
+                });
+                console.log(`[Push Notification] Dispatched to ${cleanEmail}`);
+            }
+        } catch (pushErr: any) {
+            console.warn("[Push Notification] Failed to send:", pushErr.message);
+        }
+
         // SMTP credentials missing => never attempt to send.
         if (!isConfigured) {
             console.warn("[Mailer] Missing SMTP configuration. Skipping email.");

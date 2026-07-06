@@ -4,6 +4,17 @@ import { NextRequest } from "next/server";
 import { rateLimiter } from "@/lib/rateLimit";
 import { errorResponse, successResponse } from "@/lib/apiResponse";
 
+const CORS_HEADERS = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// ── Handle CORS preflight from mobile app ────────────────────────────────────
+export async function OPTIONS() {
+    return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+
 export async function POST(request: NextRequest) {
     // ── Rate Limit: 10 attempts per 15 minutes per IP ────────────────────
     const rateLimitCheck = await rateLimiter(request, 10, 15 * 60 * 1000);
@@ -57,10 +68,12 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // ── Set httpOnly cookie server-side for XSS protection ─────────────
+        // ── Set httpOnly cookie server-side for XSS protection (web) ──────────
         const nextResponse = await successResponse({
             message: response.message,
             User: response.User,
+            // Also return token in body so React Native can store it in SecureStore
+            token: response.token,
         });
 
         nextResponse.cookies.set("token", response.token!, {
@@ -70,6 +83,9 @@ export async function POST(request: NextRequest) {
             maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
             path: "/",
         });
+
+        // Add CORS headers to allow mobile clients
+        Object.entries(CORS_HEADERS).forEach(([k, v]) => nextResponse.headers.set(k, v));
 
         return nextResponse;
     } catch (error: any) {

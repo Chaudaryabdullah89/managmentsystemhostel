@@ -169,6 +169,26 @@ export async function POST(request) {
             }
         }
 
+        // Trigger real-time push notification to resident when an invoice is created for them by Admin/Warden
+        if (data.userId && data.userId !== currentUserId) {
+            try {
+                const { sendPushNotificationToUser } = require("@/lib/utils/pushNotifications");
+                const monthName = data.month || new Date().toLocaleString("en-PK", { month: "long" });
+                const notifTitle = `⚠️ New Payment Invoice: ${monthName}`;
+                const notifBody = `A new ${data.type || "payment"} invoice of PKR ${Number(data.amount).toLocaleString()} has been generated for ${monthName}. Please clear your dues.`;
+                
+                await sendPushNotificationToUser(
+                    data.userId,
+                    notifTitle,
+                    notifBody,
+                    "payments",
+                    currentUserId
+                );
+            } catch (pushErr) {
+                console.error("[Push Notification] Failed to send payment invoice created notification:", pushErr.message);
+            }
+        }
+
         return successResponse({ payment });
     } catch (error) {
         return errorResponse(error.message, 500, { error: error.message });

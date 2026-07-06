@@ -22,6 +22,7 @@ import {
     Wrench,
     BarChart3,
     Settings,
+    Smartphone,
     type LucideIcon,
 } from "lucide-react";
 
@@ -69,6 +70,7 @@ export const NAVIGATION_GROUPS: Record<string, NavGroup[]> = {
                 { title: "Complaints",   url: "/admin/complaints", icon: MessageSquare, role: "admin", permissionKey: "manage_complaints", featureKey: "enableComplaintsSystem" },
                 { title: "Notice Board", url: "/admin/notices",    icon: Megaphone,     role: "admin", permissionKey: "manage_notices",    featureKey: "enableNoticeBoard" },
                 { title: "Mess Menu",    url: "/admin/mess",       icon: Utensils,      role: "admin", permissionKey: "manage_mess",       featureKey: "enableMess" },
+                { title: "Mobile Push",   url: "/admin/mobile-notifications", icon: Smartphone, role: "admin", permissionKey: "manage_notices" },
             ],
         },
         {
@@ -134,6 +136,7 @@ export const NAVIGATION_GROUPS: Record<string, NavGroup[]> = {
                 { title: "Complaints",   url: "/warden/complaints", icon: MessageSquare, role: "warden", permissionKey: "manage_complaints", featureKey: "enableComplaintsSystem" },
                 { title: "Notice Board", url: "/warden/notices",    icon: Megaphone,     role: "warden", permissionKey: "manage_notices",    featureKey: "enableNoticeBoard" },
                 { title: "Mess Menu",    url: "/warden/mess",       icon: Utensils,      role: "warden", permissionKey: "manage_mess",       featureKey: "enableMess" },
+                { title: "Mobile Push",   url: "/warden/mobile-notifications", icon: Smartphone, role: "warden", permissionKey: "manage_notices" },
             ],
         },
         {
