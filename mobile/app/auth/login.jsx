@@ -13,18 +13,38 @@ import {
   StatusBar,
 } from "react-native";
 import * as SecureStore from "../../lib/storage";
-import * as LocalAuthentication from "expo-local-authentication";
 import { router } from "expo-router";
 import api from "../../lib/api";
 import { colors, spacing, borderRadius, shadows } from "../../lib/theme";
+import { Building, Mail, Lock, Eye, EyeOff, ShieldCheck, Globe } from "lucide-react-native";
+import { useQuery } from "@tanstack/react-query";
+import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const { data: branding } = useQuery({
+    queryKey: ["branding_public_settings"],
+    queryFn: async () => {
+      try {
+        const res = await api.get("/api/settings/public");
+        return res.data?.data || res.data?.settings || res.data || {};
+      } catch (err) {
+        console.error("[Branding Fetch] Error:", err.message);
+        return {};
+      }
+    },
+    staleTime: 1000 * 60 * 30,
+  });
 
   // Two-Factor Authentication states
   const [requires2FA, setRequires2FA] = useState(false);
@@ -32,31 +52,6 @@ export default function Login() {
   const [twoFactorMethod, setTwoFactorMethod] = useState("");
   const [twoFactorOtp, setTwoFactorOtp] = useState("");
   const [twoFactorOtpFocused, setTwoFactorOtpFocused] = useState(false);
-
-  // Check if biometric authentication is available on device
-  useEffect(() => {
-    async function checkBiometrics() {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-      setBiometricAvailable(hasHardware && isEnrolled);
-    }
-    checkBiometrics();
-  }, []);
-
-  // Auto-prompt biometric login on launch if already registered
-  useEffect(() => {
-    async function autoBiometric() {
-      const savedToken = await SecureStore.getItemAsync("user_token");
-      const savedRole = await SecureStore.getItemAsync("user_role");
-      if (savedToken && savedRole && biometricAvailable) {
-        const timer = setTimeout(() => {
-          handleBiometricLogin();
-        }, 800);
-        return () => clearTimeout(timer);
-      }
-    }
-    autoBiometric();
-  }, [biometricAvailable]);
 
   const sendEmailOTP = async (token) => {
     try {
@@ -95,10 +90,8 @@ export default function Login() {
         await SecureStore.setItemAsync("user_role", user.role);
 
         const role = user.role.toUpperCase();
-        if (role === "ADMIN") {
-          router.replace("/(admin)/home");
-        } else if (role === "WARDEN") {
-          router.replace("/(warden)/home");
+        if (role === "ADMIN" || role === "WARDEN") {
+          router.replace("/auth/restricted");
         } else if (role === "STAFF") {
           router.replace("/(staff)/home");
         } else {
@@ -136,10 +129,8 @@ export default function Login() {
         await SecureStore.setItemAsync("user_role", user.role);
 
         const role = user.role.toUpperCase();
-        if (role === "ADMIN") {
-          router.replace("/(admin)/home");
-        } else if (role === "WARDEN") {
-          router.replace("/(warden)/home");
+        if (role === "ADMIN" || role === "WARDEN") {
+          router.replace("/auth/restricted");
         } else if (role === "STAFF") {
           router.replace("/(staff)/home");
         } else {
@@ -156,31 +147,71 @@ export default function Login() {
     }
   };
 
-  const handleBiometricLogin = async () => {
-    const savedToken = await SecureStore.getItemAsync("user_token");
-    const savedRole = await SecureStore.getItemAsync("user_role");
-
-    if (!savedToken || !savedRole) {
-      Alert.alert("Password Required", "Please sign in with password first to enroll biometrics.");
-      return;
-    }
-
-    const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: "Unlock Portal Access",
-      fallbackLabel: "Use password",
-    });
-
-    if (result.success) {
-      const role = savedRole.toUpperCase();
-      if (role === "ADMIN") {
-        router.replace("/(admin)/home");
-      } else if (role === "WARDEN") {
-        router.replace("/(warden)/home");
-      } else if (role === "STAFF") {
-        router.replace("/(staff)/home");
-      } else {
-        router.replace("/(resident)/home");
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    try {
+      const clientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
+      if (!clientId || clientId.includes("your_google_client_id_here")) {
+        Alert.alert(
+          "Configuration Required ⚙️",
+          "Please configure EXPO_PUBLIC_GOOGLE_CLIENT_ID in your mobile/app/.env file."
+        );
+        setGoogleLoading(false);
+        return;
       }
+
+      // Determine redirect URI for Google Console.
+      // If we are running in local dev and baseURL points to localhost or an IP, we use http://localhost:3000/api/auth/google/callback.
+      // If we are in production, we use the production callback url.
+      const backendOrigin = api.defaults.baseURL.replace(/\/$/, "");
+      const callbackUrl = `${backendOrigin}/api/auth/google/callback`;
+
+      // Create the redirect URL back to the mobile app
+      const mobileRedirectUrl = Linking.createURL("auth/login");
+
+      // Construct Google OAuth URL with response_type=code (authorization code flow)
+      const authUrl = "https://accounts.google.com/o/oauth2/v2/auth?" +
+        `client_id=${encodeURIComponent(clientId)}` +
+        `&redirect_uri=${encodeURIComponent(callbackUrl)}` +
+        `&response_type=code` +
+        `&scope=${encodeURIComponent("openid email profile")}` +
+        `&state=${encodeURIComponent(mobileRedirectUrl)}` + 
+        `&prompt=select_account`;
+
+      console.log("[Google Login] Initiating OAuth Session:", { authUrl, mobileRedirectUrl });
+
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, mobileRedirectUrl);
+
+      if (result.type === "success" && result.url) {
+        console.log("[Google Login] Redirected back with URL:", result.url);
+
+        // Parse token and user info returned in the query parameters from the backend redirect
+        const parsed = Linking.parse(result.url);
+        const { token, userRole } = parsed.queryParams || {};
+
+        if (token && userRole) {
+          await SecureStore.setItemAsync("user_token", token);
+          await SecureStore.setItemAsync("user_role", userRole);
+
+          const role = userRole.toUpperCase();
+          if (role === "ADMIN" || role === "WARDEN") {
+            router.replace("/auth/restricted");
+          } else if (role === "STAFF") {
+            router.replace("/(staff)/home");
+          } else {
+            router.replace("/(resident)/home");
+          }
+        } else {
+          Alert.alert("Authentication Failed", "Failed to retrieve session token from Google Sign-In.");
+        }
+      } else {
+        console.log("[Google Login] Flow cancelled or closed by user:", result.type);
+      }
+    } catch (err) {
+      console.error("[Google Login] Error:", err);
+      Alert.alert("Google Sign-In Error", err.message || "An unexpected error occurred.");
+    } finally {
+      setGoogleLoading(false);
     }
   };
 
@@ -189,43 +220,47 @@ export default function Login() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
       <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
         <View style={styles.header}>
           <View style={styles.shieldWrapper}>
-            <Text style={styles.shieldIcon}>🛡️</Text>
+            <Building size={32} color="#4F46E5" />
           </View>
-          <Text style={styles.title}>HMS Portal</Text>
+          <Text style={styles.title}>{branding?.companyName || "Hostel Portal"}</Text>
           <Text style={styles.subtitle}>Sign in to your residency dashboard</Text>
         </View>
 
         {/* Conditional render: 2FA Verification Form vs Password Login Form */}
         {requires2FA ? (
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Two-Factor Security</Text>
-            <Text style={styles.sectionSubtitle}>
-              {twoFactorMethod === "EMAIL"
-                ? "Enter the 6-digit code sent to your registered email address."
-                : "Enter the code from your Authenticator app (TOTP)."}
-            </Text>
+            <View style={styles.formHeader}>
+              <ShieldCheck size={20} color="#16A34A" style={{ marginBottom: 6 }} />
+              <Text style={styles.sectionTitle}>Two-Factor Security</Text>
+              <Text style={styles.sectionSubtitle}>
+                {twoFactorMethod === "EMAIL"
+                  ? "Enter the 6-digit code sent to your registered email address."
+                  : "Enter the code from your Authenticator app (TOTP)."}
+              </Text>
+            </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>SECURITY CODE</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  styles.otpInput,
-                  twoFactorOtpFocused && styles.inputFocused
-                ]}
-                onFocus={() => setTwoFactorOtpFocused(true)}
-                onBlur={() => setTwoFactorOtpFocused(false)}
-                placeholder="000000"
-                placeholderTextColor={colors.textPlaceholder}
-                keyboardType="number-pad"
-                maxLength={6}
-                value={twoFactorOtp}
-                onChangeText={setTwoFactorOtp}
-              />
+              <View style={[
+                styles.inputWrapper,
+                twoFactorOtpFocused && styles.inputWrapperFocused
+              ]}>
+                <TextInput
+                  style={[styles.inputField, styles.otpInput]}
+                  onFocus={() => setTwoFactorOtpFocused(true)}
+                  onBlur={() => setTwoFactorOtpFocused(false)}
+                  placeholder="000000"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="number-pad"
+                  maxLength={6}
+                  value={twoFactorOtp}
+                  onChangeText={setTwoFactorOtp}
+                />
+              </View>
             </View>
 
             <TouchableOpacity
@@ -235,7 +270,7 @@ export default function Login() {
               activeOpacity={0.8}
             >
               {loading ? (
-                <ActivityIndicator color={colors.white} size="small" />
+                <ActivityIndicator color="#FFF" size="small" />
               ) : (
                 <Text style={styles.loginButtonText}>Verify & Unlock</Text>
               )}
@@ -266,37 +301,46 @@ export default function Login() {
           <View style={styles.card}>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>EMAIL ADDRESS / USERNAME</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  emailFocused && styles.inputFocused
-                ]}
-                onFocus={() => setEmailFocused(true)}
-                onBlur={() => setEmailFocused(false)}
-                placeholder="e.g. resident@hms.com"
-                placeholderTextColor={colors.textPlaceholder}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-              />
+              <View style={[
+                styles.inputWrapper,
+                emailFocused && styles.inputWrapperFocused
+              ]}>
+                <Mail size={18} color={emailFocused ? "#4F46E5" : "#94A3B8"} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.inputField}
+                  onFocus={() => setEmailFocused(true)}
+                  onBlur={() => setEmailFocused(false)}
+                  placeholder="e.g. resident@hms.com"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  value={email}
+                  onChangeText={setEmail}
+                />
+              </View>
             </View>
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>PASSWORD</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  passwordFocused && styles.inputFocused
-                ]}
-                onFocus={() => setPasswordFocused(true)}
-                onBlur={() => setPasswordFocused(false)}
-                placeholder="Enter your security password"
-                placeholderTextColor={colors.textPlaceholder}
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-              />
+              <View style={[
+                styles.inputWrapper,
+                passwordFocused && styles.inputWrapperFocused
+              ]}>
+                <Lock size={18} color={passwordFocused ? "#4F46E5" : "#94A3B8"} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.inputField}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
+                  placeholder="Enter your security password"
+                  placeholderTextColor="#94A3B8"
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
+                  {showPassword ? <EyeOff size={16} color="#94A3B8" /> : <Eye size={16} color="#94A3B8" />}
+                </TouchableOpacity>
+              </View>
             </View>
 
             <TouchableOpacity
@@ -306,30 +350,13 @@ export default function Login() {
               activeOpacity={0.8}
             >
               {loading ? (
-                <ActivityIndicator color={colors.white} size="small" />
+                <ActivityIndicator color="#FFF" size="small" />
               ) : (
                 <Text style={styles.loginButtonText}>Sign In</Text>
               )}
             </TouchableOpacity>
 
-            {biometricAvailable && (
-              <TouchableOpacity
-                style={styles.bioButton}
-                onPress={handleBiometricLogin}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.bioIcon}>👤</Text>
-                <Text style={styles.bioButtonText}>Unlock with Touch ID / Face ID</Text>
-              </TouchableOpacity>
-            )}
 
-            <View style={styles.footerLinks}>
-              <TouchableOpacity onPress={() => router.push("/auth/register")} activeOpacity={0.6}>
-                <Text style={styles.registerText}>
-                  Don't have an account? <Text style={styles.registerLinkText}>Apply Now</Text>
-                </Text>
-              </TouchableOpacity>
-            </View>
           </View>
         )}
       </ScrollView>
@@ -410,29 +437,47 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginBottom: spacing.xs + 2,
   },
-  input: {
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1.5,
     borderColor: colors.border,
     borderRadius: borderRadius.medium,
     height: 52,
     paddingHorizontal: spacing.lg,
-    fontSize: 15,
-    color: colors.textPrimary,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: "#F8FAFC",
   },
-  inputFocused: {
-    borderColor: colors.primary,
-    backgroundColor: colors.surface,
+  inputWrapperFocused: {
+    borderColor: "#4F46E5",
+    backgroundColor: colors.white,
+  },
+  inputIcon: {
+    marginRight: spacing.md,
+  },
+  inputField: {
+    flex: 1,
+    height: "100%",
+    fontSize: 14,
+    color: colors.textPrimary,
+    fontWeight: "600",
+  },
+  eyeBtn: {
+    padding: spacing.xs,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  formHeader: {
+    alignItems: "center",
+    marginBottom: spacing.lg,
   },
   otpInput: {
     textAlign: "center",
     fontSize: 22,
     fontWeight: "800",
     letterSpacing: 6,
-    height: 56,
   },
   loginButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: "#4F46E5",
     borderRadius: borderRadius.medium,
     height: 52,
     alignItems: "center",
@@ -446,27 +491,27 @@ const styles = StyleSheet.create({
   loginButtonText: {
     color: colors.white,
     fontSize: 15,
-    fontWeight: "700",
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   bioButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1.5,
-    borderColor: colors.border,
+    borderColor: "#E2E8F0",
     borderRadius: borderRadius.medium,
     height: 50,
     marginTop: spacing.md,
-    backgroundColor: colors.surface,
-  },
-  bioIcon: {
-    fontSize: 18,
-    marginRight: spacing.sm,
+    backgroundColor: colors.white,
   },
   bioButtonText: {
-    color: colors.textPrimary,
+    color: "#4F46E5",
     fontSize: 13,
-    fontWeight: "600",
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
   resendBtn: {
     alignItems: "center",
@@ -474,9 +519,9 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   resendText: {
-    color: colors.primary,
+    color: "#4F46E5",
     fontSize: 13,
-    fontWeight: "700",
+    fontWeight: "800",
   },
   backBtn: {
     alignItems: "center",
@@ -486,19 +531,6 @@ const styles = StyleSheet.create({
   backText: {
     color: colors.textSecondary,
     fontSize: 12,
-    fontWeight: "600",
-  },
-  footerLinks: {
-    alignItems: "center",
-    marginTop: spacing.xl,
-  },
-  registerText: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    fontWeight: "500",
-  },
-  registerLinkText: {
-    color: colors.primary,
     fontWeight: "700",
   },
 });

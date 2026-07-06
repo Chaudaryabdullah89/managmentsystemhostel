@@ -89,6 +89,19 @@ export default function WardenHome() {
     },
   });
 
+  const { data: branding } = useQuery({
+    queryKey: ["branding_public_settings"],
+    queryFn: async () => {
+      try {
+        const res = await api.get("/api/settings/public");
+        return res.data?.data || res.data?.settings || res.data || {};
+      } catch (err) {
+        return {};
+      }
+    },
+    staleTime: 1000 * 60 * 30,
+  });
+
   const stats = {
     residents: data?.stats?.totalResidents || 0,
     emptyBeds: (data?.stats?.occupancy?.total || 0) - (data?.stats?.occupancy?.occupied || 0),
@@ -105,7 +118,7 @@ export default function WardenHome() {
       refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refetch} />}
     >
       <View style={styles.headerSection}>
-        <Text style={styles.welcomeText}>HMS WARDEN OVERVIEW</Text>
+        <Text style={styles.welcomeText}>{(branding?.companyShortName || "HMS").toUpperCase()} WARDEN OVERVIEW</Text>
         <Text style={styles.subtext}>Manage your branch operations</Text>
       </View>
 

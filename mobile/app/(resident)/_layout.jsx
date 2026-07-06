@@ -3,29 +3,40 @@ import { Home, BedDouble, UtensilsCrossed, CreditCard, User } from 'lucide-react
 import React, { useEffect } from 'react';
 import { colors } from '../../lib/theme';
 import { registerForPushNotificationsAsync } from '../../lib/notifications';
-import * as Notifications from 'expo-notifications';
 
 export default function ResidentTabsLayout() {
   useEffect(() => {
-    registerForPushNotificationsAsync();
+    let subscription = null;
 
-    // Listen to notification clicks (tap events)
-    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-      const data = response.notification.request.content.data;
-      const screen = data?.screen;
+    try {
+      const Notifications = require('expo-notifications');
+      
+      registerForPushNotificationsAsync();
 
-      if (screen === "payments") {
-        router.push("/(resident)/payments");
-      } else if (screen === "mess") {
-        router.push("/(resident)/mess");
-      } else if (screen === "support") {
-        router.push({ pathname: "/(resident)/home", params: { openModal: "support" } });
-      } else {
-        router.push({ pathname: "/(resident)/home", params: { openModal: "notices" } });
+      // Listen to notification clicks (tap events)
+      subscription = Notifications.addNotificationResponseReceivedListener(response => {
+        const data = response.notification.request.content.data;
+        const screen = data?.screen;
+
+        if (screen === "payments") {
+          router.push("/(resident)/payments");
+        } else if (screen === "mess") {
+          router.push("/(resident)/mess");
+        } else if (screen === "support") {
+          router.push({ pathname: "/(resident)/home", params: { openModal: "support" } });
+        } else {
+          router.push({ pathname: "/(resident)/home", params: { openModal: "notices" } });
+        }
+      });
+    } catch (err) {
+      console.warn("[Notifications] Client is running in Expo Go; push notification listeners skipped.", err.message);
+    }
+
+    return () => {
+      if (subscription && typeof subscription.remove === "function") {
+        subscription.remove();
       }
-    });
-
-    return () => subscription.remove();
+    };
   }, []);
 
   return (

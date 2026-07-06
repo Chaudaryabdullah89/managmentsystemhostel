@@ -913,6 +913,20 @@ export default function Home() {
     },
   });
 
+  const { data: branding } = useQuery({
+    queryKey: ["branding_public_settings"],
+    queryFn: async () => {
+      try {
+        const res = await api.get("/api/settings/public");
+        return res.data?.data || res.data?.settings || res.data || {};
+      } catch (err) {
+        console.error("[Branding Fetch] Error:", err.message);
+        return {};
+      }
+    },
+    staleTime: 1000 * 60 * 30, // 30 minutes cache
+  });
+
   const userProfile = data?.me || data?.user;
   const bookings = data?.bookings || data?.data?.bookings || [];
   const payments = data?.payments || data?.data?.payments || data?.data || [];
@@ -983,7 +997,7 @@ export default function Home() {
     ? {
         number: activeBooking.Room.roomNumber,
         floor: activeBooking.Room.floor,
-        hostelName: activeBooking.Room.Hostel?.name || "HMS Hostel",
+        hostelName: activeBooking.Room.Hostel?.name || (branding?.companyShortName ? branding.companyShortName + " Hostel" : "HMS Hostel"),
       }
     : null;
 
@@ -1523,7 +1537,7 @@ function BookingsModal({ visible, onClose }) {
                       <View style={styles.hostelRow}>
                         <Building size={12} color="#64748B" style={{ marginRight: 4 }} />
                         <Text style={styles.hostelName}>
-                          {b.hostel?.name || "HMS Hostel"}
+                          {b.hostel?.name || (branding?.companyShortName ? branding.companyShortName + " Hostel" : "HMS Hostel")}
                         </Text>
                       </View>
                     </View>

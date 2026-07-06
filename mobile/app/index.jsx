@@ -17,10 +17,8 @@ export default function Trampoline() {
 
         // Map role to respective mobile layout stack
         const formattedRole = role.toUpperCase();
-        if (formattedRole === 'ADMIN') {
-          router.replace('/(admin)/home'); 
-        } else if (formattedRole === 'WARDEN') {
-          router.replace('/(warden)/home');
+        if (formattedRole === 'ADMIN' || formattedRole === 'WARDEN') {
+          router.replace('/auth/restricted'); 
         } else if (formattedRole === 'STAFF') {
           router.replace('/(staff)/home');
         } else {

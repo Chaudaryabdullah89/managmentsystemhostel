@@ -14,6 +14,7 @@ import {
   Animated,
   Image,
   Share,
+  Modal,
 } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -237,26 +238,110 @@ export default function Profile() {
     }
   };
 
-  // Enable/Disable 2FA
-  const { mutate: toggle2FA, isPending: toggling2FA } = useMutation({
-    mutationFn: async () => {
-      const isEnabled = profile?.basic?.twoFactorEnabled;
-      if (isEnabled) {
-        return api.post("/api/auth/2fa/disable");
-      } else {
-        // Simple TOTP initialization for TOTP default
-        const setupRes = await api.post("/api/auth/2fa/setup", { method: "TOTP" });
-        return api.post("/api/auth/2fa/verify", { otp: "000000", method: "TOTP", verifySetup: true });
+  // 2FA Setup states
+  const [setup2FAMethod, setSetup2FAMethod] = useState(null); // 'TOTP' | 'EMAIL' | 'BACKUP_CODES' | null
+  const [twoFactorOtp, setTwoFactorOtp] = useState("");
+  const [twoFactorSecret, setTwoFactorSecret] = useState("");
+  const [backupCodes, setBackupCodes] = useState([]);
+  const [backupCodesSaved, setBackupCodesSaved] = useState(false);
+  const [setup2FALoading, setSetup2FALoading] = useState(false);
+  const [show2FASetupModal, setShow2FASetupModal] = useState(false);
+
+  // Start 2FA setup process
+  const handleEnable2FAInit = async (method) => {
+    setSetup2FAMethod(method);
+    setTwoFactorOtp("");
+    setTwoFactorSecret("");
+    setBackupCodes([]);
+    setBackupCodesSaved(false);
+    setSetup2FALoading(true);
+    setShow2FASetupModal(true);
+
+    try {
+      const res = await api.post("/api/auth/2fa/setup", { method });
+      if (method === "TOTP") {
+        setTwoFactorSecret(res.data.secret || "");
+      } else if (method === "BACKUP_CODES") {
+        setBackupCodes(res.data.codes || []);
+      } else if (method === "EMAIL") {
+        Alert.alert("Code Sent", "A verification code has been sent to your email address.");
       }
-    },
-    onSuccess: () => {
-      Alert.alert("2FA Updated", "Two-Factor Authentication status has been updated.");
+    } catch (err) {
+      Alert.alert("Setup Error", err.response?.data?.message || "Could not initialize 2FA setup.");
+      setShow2FASetupModal(false);
+      setSetup2FAMethod(null);
+    } finally {
+      setSetup2FALoading(false);
+    }
+  };
+
+  // Verify and finalize 2FA setup
+  const handleVerify2FASetup = async () => {
+    if (setup2FAMethod === "BACKUP_CODES") {
+      if (!backupCodesSaved) {
+        Alert.alert("Action Required", "Please confirm that you have securely saved your backup codes first.");
+        return;
+      }
+      setSetup2FALoading(true);
+      try {
+        await api.post("/api/auth/2fa/verify", { otp: "confirmed", method: "BACKUP_CODES" });
+        Alert.alert("2FA Enabled", "Backup Codes two-factor authentication is now active.");
+        setShow2FASetupModal(false);
+        setSetup2FAMethod(null);
+        refetch();
+      } catch (err) {
+        Alert.alert("Verification Failed", err.response?.data?.message || "Could not activate 2FA.");
+      } finally {
+        setSetup2FALoading(false);
+      }
+      return;
+    }
+
+    if (!twoFactorOtp.trim() || twoFactorOtp.length < 6) {
+      Alert.alert("Invalid Code", "Please enter the 6-digit verification code.");
+      return;
+    }
+
+    setSetup2FALoading(true);
+    try {
+      await api.post("/api/auth/2fa/verify", {
+        otp: twoFactorOtp.trim(),
+        method: setup2FAMethod,
+      });
+      Alert.alert("2FA Configured ✅", "Two-Factor authentication has been successfully set up and is now active.");
+      setShow2FASetupModal(false);
+      setSetup2FAMethod(null);
       refetch();
-    },
-    onError: (err) => {
-      Alert.alert("Failed", err.response?.data?.message || "Failed to update 2FA status.");
-    },
-  });
+    } catch (err) {
+      Alert.alert("Verification Failed", err.response?.data?.message || "Invalid setup verification code.");
+    } finally {
+      setSetup2FALoading(false);
+    }
+  };
+
+  // Disable 2FA
+  const handleDisable2FA = async () => {
+    Alert.alert(
+      "Disable 2FA?",
+      "This will remove the verification check. Your account will be less secure.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Disable",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await api.post("/api/auth/2fa/disable");
+              Alert.alert("2FA Disabled", "Two-Factor authentication is now inactive.");
+              refetch();
+            } catch (err) {
+              Alert.alert("Error", err.response?.data?.message || "Failed to disable 2FA.");
+            }
+          }
+        }
+      ]
+    );
+  };
 
   // Share digital ID pass details
   const handleShareId = async () => {
@@ -721,38 +806,118 @@ export default function Profile() {
               </View>
             </View>
 
-            {/* 2FA Security Switch */}
+
+
+            {/* Multi-Method Two-Factor Authentication (2FA) */}
             <View style={styles.securityFormCard}>
               <View style={styles.formHeaderRow}>
                 <ShieldCheck size={16} color="#16A34A" style={{ marginRight: 6 }} />
-                <Text style={styles.formTitle}>Two-Factor Security (2FA)</Text>
+                <Text style={styles.formTitle}>Multi-Factor Authentication (2FA)</Text>
               </View>
               
               <Text style={styles.securityNote}>
-                Adds an extra layer of protection to your residency account logs. Requires a prompt verification code upon login.
+                Protect your account details with a secondary validation prompt when signing in.
               </Text>
 
               <View style={styles.toggleRow}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.toggleLabel}>2FA Status</Text>
-                  <Text style={[styles.toggleStatus, { color: userData.twoFactorEnabled ? "#16A34A" : "#94A3B8" }]}>
-                    {userData.twoFactorEnabled ? "Active & Protected" : "Not Configured / Inactive"}
+                  <Text style={styles.toggleLabel}>Current Status</Text>
+                  <Text style={[styles.toggleStatus, { color: profile?.basic?.twoFactorEnabled ? "#16A34A" : "#94A3B8" }]}>
+                    {profile?.basic?.twoFactorEnabled 
+                      ? `Active via ${profile.basic.twoFactorMethod === "TOTP" ? "Authenticator App" : profile.basic.twoFactorMethod === "EMAIL" ? "Email OTP" : "Backup Codes"}` 
+                      : "Not Configured / Inactive"}
                   </Text>
                 </View>
-                <TouchableOpacity
-                  style={[styles.statusToggleBtn, { backgroundColor: userData.twoFactorEnabled ? "#FEF2F2" : "#ECFDF5" }]}
-                  onPress={() => toggle2FA()}
-                  disabled={toggling2FA}
-                  activeOpacity={0.8}
-                >
-                  {toggling2FA ? (
-                    <ActivityIndicator size="small" color={userData.twoFactorEnabled ? "#EF4444" : "#10B981"} />
-                  ) : (
-                    <Text style={[styles.statusToggleBtnText, { color: userData.twoFactorEnabled ? "#EF4444" : "#10B981" }]}>
-                      {userData.twoFactorEnabled ? "Disable" : "Enable"}
-                    </Text>
+                {profile?.basic?.twoFactorEnabled && (
+                  <TouchableOpacity
+                    style={[styles.statusToggleBtn, { backgroundColor: "#FEF2F2" }]}
+                    onPress={handleDisable2FA}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={[styles.statusToggleBtnText, { color: "#EF4444" }]}>Disable 2FA</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* Grid or list of 2FA options */}
+              <View style={{ gap: spacing.md, marginTop: spacing.md }}>
+                {/* Option 1: Authenticator App */}
+                <View style={[
+                  styles.mfaOptionRow,
+                  profile?.basic?.twoFactorEnabled && profile?.basic?.twoFactorMethod === "TOTP" && styles.mfaOptionRowActive
+                ]}>
+                  <View style={styles.mfaOptionLeft}>
+                    <View style={[styles.mfaIconBox, { backgroundColor: "#EEF2FF" }]}>
+                      <Key size={14} color="#4F46E5" />
+                    </View>
+                    <View>
+                      <Text style={styles.mfaOptionTitle}>Authenticator App</Text>
+                      <Text style={styles.mfaOptionDesc}>Google Authenticator or Authy</Text>
+                    </View>
+                  </View>
+                  {!(profile?.basic?.twoFactorEnabled && profile?.basic?.twoFactorMethod === "TOTP") && (
+                    <TouchableOpacity
+                      style={styles.mfaActionBtn}
+                      onPress={() => handleEnable2FAInit("TOTP")}
+                    >
+                      <Text style={styles.mfaActionBtnText}>
+                        {profile?.basic?.twoFactorEnabled ? "Switch" : "Setup"}
+                      </Text>
+                    </TouchableOpacity>
                   )}
-                </TouchableOpacity>
+                </View>
+
+                {/* Option 2: Email OTP */}
+                <View style={[
+                  styles.mfaOptionRow,
+                  profile?.basic?.twoFactorEnabled && profile?.basic?.twoFactorMethod === "EMAIL" && styles.mfaOptionRowActive
+                ]}>
+                  <View style={styles.mfaOptionLeft}>
+                    <View style={[styles.mfaIconBox, { backgroundColor: "#E0F2FE" }]}>
+                      <Mail size={14} color="#0284C7" />
+                    </View>
+                    <View>
+                      <Text style={styles.mfaOptionTitle}>Email Verification Code</Text>
+                      <Text style={styles.mfaOptionDesc}>One-time code to your registered email</Text>
+                    </View>
+                  </View>
+                  {!(profile?.basic?.twoFactorEnabled && profile?.basic?.twoFactorMethod === "EMAIL") && (
+                    <TouchableOpacity
+                      style={styles.mfaActionBtn}
+                      onPress={() => handleEnable2FAInit("EMAIL")}
+                    >
+                      <Text style={styles.mfaActionBtnText}>
+                        {profile?.basic?.twoFactorEnabled ? "Switch" : "Setup"}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* Option 3: Backup Codes */}
+                <View style={[
+                  styles.mfaOptionRow,
+                  profile?.basic?.twoFactorEnabled && profile?.basic?.twoFactorMethod === "BACKUP_CODES" && styles.mfaOptionRowActive
+                ]}>
+                  <View style={styles.mfaOptionLeft}>
+                    <View style={[styles.mfaIconBox, { backgroundColor: "#FEF3C7" }]}>
+                      <ShieldCheck size={14} color="#D97706" />
+                    </View>
+                    <View>
+                      <Text style={styles.mfaOptionTitle}>Emergency Backup Codes</Text>
+                      <Text style={styles.mfaOptionDesc}>Pre-generated one-time recovery keys</Text>
+                    </View>
+                  </View>
+                  {!(profile?.basic?.twoFactorEnabled && profile?.basic?.twoFactorMethod === "BACKUP_CODES") && (
+                    <TouchableOpacity
+                      style={styles.mfaActionBtn}
+                      onPress={() => handleEnable2FAInit("BACKUP_CODES")}
+                    >
+                      <Text style={styles.mfaActionBtnText}>
+                        {profile?.basic?.twoFactorEnabled ? "Switch" : "Setup"}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
               </View>
             </View>
           </View>
@@ -845,6 +1010,119 @@ export default function Profile() {
           </View>
         )}
       </ScrollView>
+
+      {/* 2FA Setup Interactive Modal Dialog */}
+      <Modal
+        visible={show2FASetupModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShow2FASetupModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeaderRow}>
+              <Text style={styles.modalHeaderTitle}>
+                Setup 2FA: {setup2FAMethod === "TOTP" ? "Authenticator App" : setup2FAMethod === "EMAIL" ? "Email Code" : "Backup Codes"}
+              </Text>
+              <TouchableOpacity onPress={() => setShow2FASetupModal(false)} style={styles.modalCloseIcon}>
+                <X size={20} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={styles.modalBodyScroll} style={{ maxHeight: 400 }}>
+              {setup2FALoading ? (
+                <View style={styles.modalLoadingBox}>
+                  <ActivityIndicator size="large" color="#4F46E5" />
+                  <Text style={styles.modalLoadingText}>Loading configuration...</Text>
+                </View>
+              ) : (
+                <View style={{ gap: spacing.md }}>
+                  {/* TOTP Instructions */}
+                  {setup2FAMethod === "TOTP" && (
+                    <View style={{ gap: spacing.sm }}>
+                      <Text style={styles.modalInstructions}>
+                        Copy this secret configuration key and add it manually to your Authenticator app (Google Authenticator, Authy, or Duo Mobile):
+                      </Text>
+                      <View style={styles.secretKeyBox}>
+                        <Text style={styles.secretKeyText} selectable={true}>{twoFactorSecret}</Text>
+                      </View>
+                      <Text style={styles.modalInstructions}>
+                        Once added, enter the 6-digit OTP code below to verify and activate:
+                      </Text>
+                      <TextInput
+                        style={styles.modalOtpInput}
+                        placeholder="Enter 6-digit code"
+                        placeholderTextColor="#94A3B8"
+                        keyboardType="number-pad"
+                        maxLength={6}
+                        value={twoFactorOtp}
+                        onChangeText={setTwoFactorOtp}
+                      />
+                    </View>
+                  )}
+
+                  {/* EMAIL Instructions */}
+                  {setup2FAMethod === "EMAIL" && (
+                    <View style={{ gap: spacing.sm }}>
+                      <Text style={styles.modalInstructions}>
+                        We have sent a verification code to your registered email address ({profile?.basic?.email}).
+                      </Text>
+                      <Text style={styles.modalInstructions}>
+                        Please enter the 6-digit verification code below:
+                      </Text>
+                      <TextInput
+                        style={styles.modalOtpInput}
+                        placeholder="Enter 6-digit code"
+                        placeholderTextColor="#94A3B8"
+                        keyboardType="number-pad"
+                        maxLength={6}
+                        value={twoFactorOtp}
+                        onChangeText={setTwoFactorOtp}
+                      />
+                    </View>
+                  )}
+
+                  {/* BACKUP CODES Instructions */}
+                  {setup2FAMethod === "BACKUP_CODES" && (
+                    <View style={{ gap: spacing.sm }}>
+                      <Text style={styles.modalInstructions}>
+                        Save these emergency backup recovery codes in a safe place. Each code can be used only once to bypass sign-in checks:
+                      </Text>
+                      <View style={styles.backupCodesList}>
+                        {backupCodes.map((code, idx) => (
+                          <Text key={idx} style={styles.backupCodeItem} selectable={true}>{code}</Text>
+                        ))}
+                      </View>
+                      <TouchableOpacity
+                        style={styles.confirmCheckboxRow}
+                        onPress={() => setBackupCodesSaved(!backupCodesSaved)}
+                        activeOpacity={0.8}
+                      >
+                        <View style={[styles.checkbox, backupCodesSaved && styles.checkboxChecked]}>
+                          {backupCodesSaved && <Text style={styles.checkboxTick}>✓</Text>}
+                        </View>
+                        <Text style={styles.checkboxLabel}>I have copied and saved these backup recovery codes.</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              )}
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              <TouchableOpacity
+                style={[styles.modalVerifyBtn, setup2FALoading && { opacity: 0.6 }]}
+                onPress={handleVerify2FASetup}
+                disabled={setup2FALoading}
+              >
+                <Text style={styles.modalVerifyBtnText}>
+                  {setup2FAMethod === "BACKUP_CODES" ? "Activate Backup Codes" : "Verify & Enable"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -1450,5 +1728,232 @@ const styles = StyleSheet.create({
     lineHeight: 14,
     fontWeight: "600",
     paddingHorizontal: spacing.lg,
+  },
+
+  /* MFA / Biometrics Styles */
+  unavailableRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F1F5F9",
+    borderRadius: borderRadius.medium,
+    padding: spacing.md,
+    marginTop: spacing.sm,
+  },
+  unavailableText: {
+    fontSize: 10,
+    color: "#64748B",
+    fontWeight: "750",
+    flex: 1,
+  },
+  mfaOptionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: spacing.md,
+    borderRadius: borderRadius.medium,
+    borderWidth: 1.5,
+    borderColor: "#E2E8F0",
+    backgroundColor: colors.white,
+  },
+  mfaOptionRowActive: {
+    borderColor: "#10B981",
+    backgroundColor: "#ECFDF5",
+  },
+  mfaOptionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  mfaIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mfaOptionTitle: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#1E293B",
+  },
+  mfaOptionDesc: {
+    fontSize: 9,
+    fontWeight: "600",
+    color: "#64748B",
+    marginTop: 1,
+  },
+  mfaActionBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: "#D8D8D8",
+    ...shadows.premium,
+  },
+  mfaActionBtnText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#1E293B",
+    textTransform: "uppercase",
+  },
+  
+  /* Modal Overlay Styles */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: spacing.xl,
+  },
+  modalContent: {
+    backgroundColor: colors.white,
+    borderRadius: borderRadius.large,
+    width: "100%",
+    padding: spacing.xl,
+    ...shadows.premium,
+    elevation: 5,
+  },
+  modalHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F5F9",
+    paddingBottom: spacing.md,
+    marginBottom: spacing.md,
+  },
+  modalHeaderTitle: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: "#1E293B",
+  },
+  modalCloseIcon: {
+    padding: 4,
+  },
+  modalBodyScroll: {
+    paddingVertical: spacing.xs,
+  },
+  modalLoadingBox: {
+    padding: spacing.giant,
+    alignItems: "center",
+    gap: spacing.md,
+  },
+  modalLoadingText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#64748B",
+  },
+  modalInstructions: {
+    fontSize: 11,
+    color: "#475569",
+    lineHeight: 16,
+    fontWeight: "655",
+  },
+  secretKeyBox: {
+    backgroundColor: "#F8FAFC",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: borderRadius.medium,
+    padding: spacing.md,
+    marginVertical: spacing.xs,
+    alignItems: "center",
+  },
+  secretKeyText: {
+    fontSize: 14,
+    fontWeight: "900",
+    color: "#4F46E5",
+    letterSpacing: 1.5,
+    fontFamily: Platform.OS === "ios" ? "Courier" : "monospace",
+  },
+  modalOtpInput: {
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    borderRadius: borderRadius.medium,
+    padding: spacing.md,
+    fontSize: 16,
+    fontWeight: "800",
+    textAlign: "center",
+    color: "#1E293B",
+    marginVertical: spacing.xs,
+    backgroundColor: "#F8FAFC",
+  },
+  backupCodesList: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    backgroundColor: "#F8FAFC",
+    padding: spacing.md,
+    borderRadius: borderRadius.medium,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    marginVertical: spacing.xs,
+    justifyContent: "space-between",
+  },
+  backupCodeItem: {
+    width: "48%",
+    fontSize: 12,
+    fontWeight: "900",
+    color: "#334155",
+    backgroundColor: colors.white,
+    padding: 6,
+    textAlign: "center",
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    fontFamily: Platform.OS === "ios" ? "Courier" : "monospace",
+  },
+  confirmCheckboxRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    marginTop: spacing.md,
+    paddingVertical: 4,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 1.5,
+    borderColor: "#CBD5E1",
+    borderRadius: 4,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.white,
+  },
+  checkboxChecked: {
+    backgroundColor: "#4F46E5",
+    borderColor: "#4F46E5",
+  },
+  checkboxTick: {
+    color: colors.white,
+    fontSize: 11,
+    fontWeight: "900",
+  },
+  checkboxLabel: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: "#475569",
+    flex: 1,
+  },
+  modalFooter: {
+    borderTopWidth: 1,
+    borderTopColor: "#F1F5F9",
+    paddingTop: spacing.md,
+    marginTop: spacing.md,
+  },
+  modalVerifyBtn: {
+    backgroundColor: "#4F46E5",
+    borderRadius: borderRadius.medium,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalVerifyBtnText: {
+    color: colors.white,
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase",
   },
 });

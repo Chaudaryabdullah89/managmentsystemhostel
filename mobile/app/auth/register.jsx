@@ -1,246 +1,100 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StatusBar
-} from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
 import { router } from 'expo-router';
-import api from '../../lib/api';
+import { Building, ShieldAlert } from 'lucide-react-native';
 import { colors, spacing, borderRadius, shadows } from '../../lib/theme';
 
 export default function Register() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [nameFocused, setNameFocused] = useState(false);
-  const [emailFocused, setEmailFocused] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
-
-  const handleRegister = async () => {
-    if (!name.trim() || !email.trim() || !password.trim()) {
-      Alert.alert('Required Fields', 'Please fill in all registration fields');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Mobile registration via PUT /api/auth/mobile-login
-      const res = await api.put('/api/auth/mobile-login', {
-        name: name.trim(),
-        email: email.trim(),
-        password,
-        phone: phone?.trim() || '0000-0000000',
-      });
-
-      if (res.data.success) {
-        // Registration returns a token, store it and navigate
-        if (res.data.token && res.data.User) {
-          const { token, User: user } = res.data;
-          await SecureStore.setItemAsync('user_token', token);
-          await SecureStore.setItemAsync('user_role', user.role);
-          Alert.alert('Registration Successful', 'Welcome! Your account has been created.', [
-            { text: 'OK', onPress: () => router.replace('/(resident)/home') }
-          ]);
-        } else {
-          Alert.alert('Failed to Apply', 'Invalid response format from server.');
-        }
-      } else {
-        Alert.alert('Failed to Apply', res.data.message || 'Unable to register profile.');
-      }
-    } catch (err) {
-      const errMsg = err.response?.data?.message || 'Server connection error';
-      Alert.alert('Application Failed', errMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-    >
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
-      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <Text style={styles.title}>Apply Profile</Text>
-          <Text style={styles.subtitle}>Submit details for hostel allocation</Text>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
+      <View style={styles.content}>
+        <View style={styles.iconWrapper}>
+          <ShieldAlert size={40} color="#EF4444" />
         </View>
-
-        <View style={styles.card}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>FULL NAME</Text>
-            <TextInput
-              style={[
-                styles.input,
-                nameFocused && styles.inputFocused
-              ]}
-              onFocus={() => setNameFocused(true)}
-              onBlur={() => setNameFocused(false)}
-              placeholder="e.g. Bilal Shah"
-              placeholderTextColor={colors.textPlaceholder}
-              value={name}
-              onChangeText={setName}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>EMAIL ADDRESS</Text>
-            <TextInput
-              style={[
-                styles.input,
-                emailFocused && styles.inputFocused
-              ]}
-              onFocus={() => setEmailFocused(true)}
-              onBlur={() => setEmailFocused(false)}
-              placeholder="e.g. bilal@example.com"
-              placeholderTextColor={colors.textPlaceholder}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>CHOOSE PASSWORD</Text>
-            <TextInput
-              style={[
-                styles.input,
-                passwordFocused && styles.inputFocused
-              ]}
-              onFocus={() => setPasswordFocused(true)}
-              onBlur={() => setPasswordFocused(false)}
-              placeholder="Min. 8 characters suggested"
-              placeholderTextColor={colors.textPlaceholder}
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
-          </View>
-
-          <TouchableOpacity 
-            style={[styles.registerButton, loading && styles.registerButtonDisabled]} 
-            onPress={handleRegister} 
-            disabled={loading}
-            activeOpacity={0.8}
-          >
-            {loading ? (
-              <ActivityIndicator color={colors.white} size="small" />
-            ) : (
-              <Text style={styles.registerButtonText}>Apply Profile</Text>
-            )}
-          </TouchableOpacity>
-
-          <View style={styles.footerLinks}>
-            <TouchableOpacity onPress={() => router.push('/auth/login')} activeOpacity={0.6}>
-              <Text style={styles.loginText}>
-                Already have an account? <Text style={styles.loginLinkText}>Sign In</Text>
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        <Text style={styles.title}>Registration Closed</Text>
+        <Text style={styles.subtitle}>
+          Mobile application profile registration has been disabled. Accounts can only be provisioned and assigned by the Hostel Administration.
+        </Text>
+        <Text style={styles.note}>
+          Please contact your warden or hostel management desk to obtain your sign in credentials.
+        </Text>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => router.replace('/auth/login')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.backBtnText}>Return to Sign In</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
-  },
-  scrollContainer: {
-    flexGrow: 1,
+    backgroundColor: '#F8FAFC',
     justifyContent: 'center',
-    paddingHorizontal: spacing.xxl,
-    paddingVertical: spacing.giant,
-  },
-  header: {
     alignItems: 'center',
-    marginBottom: spacing.giant,
+    padding: spacing.xl,
   },
-  title: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-    fontWeight: '500',
-  },
-  card: {
-    backgroundColor: colors.surface,
+  content: {
+    backgroundColor: colors.white,
     borderRadius: borderRadius.large,
-    padding: spacing.xxl,
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadows.premiumHover,
+    padding: spacing.xl * 1.5,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    ...shadows.premium,
+    width: '100%',
+    maxWidth: 340,
   },
-  inputGroup: {
+  iconWrapper: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#FEF2F2',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: spacing.lg,
   },
-  label: {
+  title: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#1E293B',
+    marginBottom: spacing.sm,
+  },
+  subtitle: {
+    fontSize: 12,
+    color: '#475569',
+    textAlign: 'center',
+    lineHeight: 18,
+    fontWeight: '600',
+    marginBottom: spacing.md,
+  },
+  note: {
     fontSize: 10,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    letterSpacing: 1,
-    marginBottom: spacing.xs + 2,
+    color: '#94A3B8',
+    textAlign: 'center',
+    lineHeight: 14,
+    fontWeight: '500',
+    marginBottom: spacing.xl,
   },
-  input: {
-    borderWidth: 1.5,
-    borderColor: colors.border,
+  backBtn: {
+    backgroundColor: '#4F46E5',
     borderRadius: borderRadius.medium,
-    height: 52,
-    paddingHorizontal: spacing.lg,
-    fontSize: 15,
-    color: colors.textPrimary,
-    backgroundColor: '#F8F9FA',
-  },
-  inputFocused: {
-    borderColor: colors.primary,
-    backgroundColor: colors.surface,
-  },
-  registerButton: {
-    backgroundColor: colors.primary,
-    borderRadius: borderRadius.medium,
-    height: 52,
-    alignItems: 'center',
+    height: 48,
+    width: '100%',
     justifyContent: 'center',
-    marginTop: spacing.sm,
+    alignItems: 'center',
     ...shadows.premium,
   },
-  registerButtonDisabled: {
-    opacity: 0.6,
-  },
-  registerButtonText: {
+  backBtnText: {
     color: colors.white,
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  footerLinks: {
-    alignItems: 'center',
-    marginTop: spacing.xl,
-  },
-  loginText: {
     fontSize: 13,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  loginLinkText: {
-    color: colors.primary,
-    fontWeight: '700',
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 });
