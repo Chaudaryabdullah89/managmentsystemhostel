@@ -1,11 +1,11 @@
 export const dynamic = 'force-dynamic';
-import { requireAuth } from '@/lib/apiAuth';
+import { requireRoles } from '@/lib/apiAuth';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { errorResponse } from '@/lib/apiResponse';
 
 export async function GET(req) {
-    const auth = await requireAuth();
+    const auth = await requireRoles(['ADMIN']);
     if (!auth.success) return errorResponse(auth.error, auth.status);
 
     try {

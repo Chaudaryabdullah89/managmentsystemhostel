@@ -31,7 +31,7 @@ export default function MaintenanceOverviewPage() {
 
     return (
         <div className="p-8 max-w-6xl mx-auto space-y-8">
-            <SectionHeader title="Hostel Maintenance Overview" backHref="/admin/users-records" />
+            <SectionHeader title="Hostel Maintenance Overview" backHref="/admin/dashboard" />
             <MaintenanceFilter onFilter={handleFilter} />
             <Card className="shadow-sm border border-gray-100 dark:border-border rounded-[2rem]">
                 <CardHeader className="bg-gray-50 dark:bg-muted/10 rounded-t-[2rem] p-6">
@@ -62,9 +62,15 @@ export default function MaintenanceOverviewPage() {
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="px-6 py-4">
-                                        <Link href={`/admin/maintenances/${m.id}`}>
-                                            <Button variant="outline" size="sm" className="h-8 px-3 rounded-xl">View</Button>
-                                        </Link>
+                                        {m.hostelId && m.roomId ? (
+                                            <Link href={`/admin/hostels/${m.hostelId}/room-details/room/${m.roomId}/maintenance`}>
+                                                <Button variant="outline" size="sm" className="h-8 px-3 rounded-xl">View</Button>
+                                            </Link>
+                                        ) : (
+                                            <Button variant="outline" size="sm" disabled className="h-8 px-3 rounded-xl opacity-50" title="No room associated with this ticket">
+                                                View
+                                            </Button>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}

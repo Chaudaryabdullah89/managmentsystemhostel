@@ -97,7 +97,7 @@ const RoomsContent = ({ params: paramsPromise }) => {
     const [isDeleting, setIsDeleting] = useState(null)
 
     const user = useAuthStore((state) => state.user);
-    const isAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
+    const isAdmin = user?.role === 'ADMIN';
     const isWarden = user?.role === 'WARDEN';
 
     useEffect(() => {

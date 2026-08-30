@@ -316,6 +316,9 @@ GEMINI_API_KEY="your-google-gemini-api-key"
 
 # Optional: Analytics
 NEXT_PUBLIC_ANALYTICS_ID="your-vercel-analytics-id"
+
+# Internal Security (IDS self-reporting)
+INTERNAL_API_SECRET="another-random-32-character-string"
 ```
 
 #### 6. **Setup Database**
@@ -375,6 +378,9 @@ npm run test
 - `OLLAMA_BASE_URL`: Local Ollama server URL (optional)
 - `OLLAMA_MODEL`: Model name (e.g., "mistral", "llama2")
 - `GEMINI_API_KEY`: Google Generative AI API key (optional)
+
+### Internal Security
+- `INTERNAL_API_SECRET`: Shared secret the edge middleware attaches (as `x-internal-secret`) when it self-reports detected threats to `/api/admin/security/report-threat`. Without it, that endpoint only trusts the IP it is actually called from, so an external caller can't get an arbitrary IP auto-blocked.
 
 ---
 

@@ -5,7 +5,7 @@ import WardenServices from "@/lib/services/wardenservices/wardenservices";
 const wardenServices = new WardenServices();
 
 export async function GET(request) {
-    const auth = await checkRole(['ADMIN', 'SUPERADMIN']);
+    const auth = await checkRole(['ADMIN']);
     if (!auth.success) return NextResponse.json({ success: false, message: auth.error }, { status: auth.status });
 
     try {

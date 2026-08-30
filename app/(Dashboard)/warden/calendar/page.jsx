@@ -559,6 +559,7 @@ export default function CalendarPage({ showHostelSelector = false }) {
     monthlyRent: 0,
     securityDeposit: 0,
     status: "CHECKED_IN",
+    markPaid: true,
     userId: "",
   });
 
@@ -582,6 +583,14 @@ export default function CalendarPage({ showHostelSelector = false }) {
   const [selectedHostelId, setSelectedHostelId] = useState(user?.hostelId ?? "");
   const { data: hostelsData } = useHostel();
   const hostels = hostelsData?.data ?? [];
+
+  // Admins land on the calendar without a hostel bound to their account. Rather than
+  // making them pick one every visit, default to the first hostel in the list once it loads.
+  useEffect(() => {
+    if (isAdmin && showHostelSelector && !selectedHostelId && hostels.length > 0) {
+      setSelectedHostelId(hostels[0].id);
+    }
+  }, [isAdmin, showHostelSelector, selectedHostelId, hostels]);
 
   const hostelId = isAdmin && showHostelSelector
     ? selectedHostelId
@@ -662,8 +671,8 @@ export default function CalendarPage({ showHostelSelector = false }) {
           securityDeposit: Number(quickBookingForm.securityDeposit || 0),
           totalAmount: Number(quickBookingForm.monthlyRent || 0) + Number(quickBookingForm.securityDeposit || 0),
           status: quickBookingForm.status,
-          paymentStatus: "PAID",
-          paymentMethod: "CASH",
+          paymentStatus: quickBookingForm.markPaid ? "PAID" : "PENDING",
+          paymentMethod: quickBookingForm.markPaid ? "CASH" : undefined,
         }),
       });
 
@@ -1194,11 +1203,44 @@ export default function CalendarPage({ showHostelSelector = false }) {
         {viewMode === "timeline" && (
           <div className="bg-white dark:bg-card border border-gray-100 dark:border-border rounded-3xl shadow-2xs overflow-hidden">
             {!hostelId ? (
-              <div className="flex flex-col items-center justify-center py-24 gap-3">
+              <div className="flex flex-col items-center justify-center py-24 gap-4">
                 <Building2 className="h-10 w-10 text-gray-300" />
-                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
-                  {isAdmin ? "Select a hostel branch to view live calendar" : "No hostel assigned"}
-                </p>
+                {isAdmin && showHostelSelector && hostels.length === 0 ? (
+                  <>
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                      No hostels have been created yet
+                    </p>
+                    <Button
+                      onClick={() => router.push("/admin/hostels/createhostel")}
+                      className="h-9 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-black uppercase tracking-wider gap-1.5"
+                    >
+                      <Plus className="h-3.5 w-3.5" /> Create Your First Hostel
+                    </Button>
+                  </>
+                ) : isAdmin && showHostelSelector ? (
+                  <>
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                      Select a hostel branch to view its live calendar
+                    </p>
+                    <Select value={selectedHostelId} onValueChange={setSelectedHostelId}>
+                      <SelectTrigger className="h-10 px-4 rounded-xl border-gray-200 dark:border-border bg-white dark:bg-card text-xs font-bold uppercase tracking-wider w-64">
+                        <Building2 className="h-3.5 w-3.5 mr-1.5 text-gray-400" />
+                        <SelectValue placeholder="Select hostel..." />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {hostels.map((h) => (
+                          <SelectItem key={h.id} value={h.id} className="text-xs font-bold uppercase tracking-wider">
+                            {h.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                ) : (
+                  <p className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                    No hostel assigned to your account
+                  </p>
+                )}
               </div>
             ) : isLoading ? (
               <div className="flex items-center justify-center py-24 gap-3">
@@ -1367,6 +1409,7 @@ export default function CalendarPage({ showHostelSelector = false }) {
                                           monthlyRent: room.monthlyrent || room.montlyrent || room.price || 0,
                                           securityDeposit: 0,
                                           status: "CHECKED_IN",
+                                          markPaid: true,
                                           userId: "",
                                         });
                                         setIsQuickBookingOpen(true);
@@ -1432,7 +1475,7 @@ export default function CalendarPage({ showHostelSelector = false }) {
               </div>
 
               <div className="space-y-3">
-                {rooms
+                {filteredRooms
                   .flatMap((r) =>
                     (r.bookings || []).map((b) => ({ ...b, roomNumber: r.roomNumber }))
                   )
@@ -1495,7 +1538,7 @@ export default function CalendarPage({ showHostelSelector = false }) {
               </div>
 
               <div className="space-y-3">
-                {rooms
+                {filteredRooms
                   .flatMap((r) =>
                     (r.bookings || []).map((b) => ({ ...b, roomNumber: r.roomNumber }))
                   )
@@ -1558,7 +1601,7 @@ export default function CalendarPage({ showHostelSelector = false }) {
               </div>
 
               <div className="space-y-3">
-                {rooms
+                {filteredRooms
                   .flatMap((r) =>
                     (r.bookings || []).map((b) => ({ ...b, roomNumber: r.roomNumber }))
                   )
@@ -1621,7 +1664,7 @@ export default function CalendarPage({ showHostelSelector = false }) {
               </div>
 
               <div className="space-y-3">
-                {rooms
+                {filteredRooms
                   .flatMap((r) =>
                     (r.bookings || []).map((b) => ({ ...b, roomNumber: r.roomNumber }))
                   )
@@ -1949,6 +1992,38 @@ export default function CalendarPage({ showHostelSelector = false }) {
                   onChange={(e) => setQuickBookingForm((p) => ({ ...p, securityDeposit: e.target.value }))}
                   className="h-10 rounded-xl border-gray-200 font-bold text-xs"
                 />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  Booking Status
+                </Label>
+                <Select
+                  value={quickBookingForm.status}
+                  onValueChange={(v) => setQuickBookingForm((p) => ({ ...p, status: v }))}
+                >
+                  <SelectTrigger className="h-10 rounded-xl border-gray-200 dark:border-border font-bold text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="PENDING" className="text-xs font-bold">Pending Approval</SelectItem>
+                    <SelectItem value="CONFIRMED" className="text-xs font-bold">Confirmed (Not Arrived)</SelectItem>
+                    <SelectItem value="CHECKED_IN" className="text-xs font-bold">Checked In Now</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2 md:col-span-2 pt-1">
+                <input
+                  id="quick-booking-mark-paid"
+                  type="checkbox"
+                  checked={quickBookingForm.markPaid}
+                  onChange={(e) => setQuickBookingForm((p) => ({ ...p, markPaid: e.target.checked }))}
+                  className="h-4 w-4 rounded border-gray-300 accent-slate-900"
+                />
+                <Label htmlFor="quick-booking-mark-paid" className="text-[10px] font-bold uppercase tracking-wider text-gray-500 cursor-pointer">
+                  Mark rent as collected now (Cash) — leave unchecked to record as pending payment
+                </Label>
               </div>
             </div>
 

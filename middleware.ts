@@ -85,10 +85,18 @@ export async function middleware(request: NextRequest) {
         else if (PATH_PATTERNS.some(r => r.test(decodedTarget))) threatType = "PATH_TRAVERSAL";
 
         if (threatType) {
-            // Fire-and-forget: log + auto-block the IP in the background
+            // Fire-and-forget: log + auto-block the IP in the background.
+            // x-internal-secret proves this call is genuinely coming from our own middleware
+            // (which computed clientIp from the ORIGINAL visitor's request) — without it, the
+            // report-threat route refuses to trust a caller-supplied ip and falls back to
+            // reporting the caller's own IP, so an external caller can't get an arbitrary IP blocked.
+            const internalHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (process.env.INTERNAL_API_SECRET) {
+                internalHeaders['x-internal-secret'] = process.env.INTERNAL_API_SECRET;
+            }
             fetch(new URL('/api/admin/security/report-threat', request.url).toString(), {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: internalHeaders,
                 body: JSON.stringify({
                     ip: clientIp,
                     event: threatType,

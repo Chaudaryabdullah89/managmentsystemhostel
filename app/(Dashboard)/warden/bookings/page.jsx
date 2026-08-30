@@ -101,7 +101,7 @@ const GlobalBookingsPage = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
+  const isAdmin = user?.role === "ADMIN";
   const isWarden = user?.role === "WARDEN";
 
   const {

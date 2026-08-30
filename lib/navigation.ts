@@ -23,6 +23,11 @@ import {
     BarChart3,
     Settings,
     Smartphone,
+    Monitor,
+    BadgeCheck,
+    UserCog,
+    CalendarX2,
+    ClipboardList,
     type LucideIcon,
 } from "lucide-react";
 
@@ -71,6 +76,9 @@ export const NAVIGATION_GROUPS: Record<string, NavGroup[]> = {
                 { title: "Notice Board", url: "/admin/notices",    icon: Megaphone,     role: "admin", permissionKey: "manage_notices",    featureKey: "enableNoticeBoard" },
                 { title: "Mess Menu",    url: "/admin/mess",       icon: Utensils,      role: "admin", permissionKey: "manage_mess",       featureKey: "enableMess" },
                 { title: "Mobile Push",   url: "/admin/mobile-notifications", icon: Smartphone, role: "admin", permissionKey: "manage_notices" },
+                { title: "Maintenance Overview", url: "/admin/maintenances/overview", icon: Wrench, role: "admin", permissionKey: "manage_maintenance" },
+                { title: "Service Tracking", url: "/admin/services", icon: ClipboardList, role: "admin", permissionKey: "manage_maintenance" },
+                { title: "Leave Requests", url: "/admin/leaves", icon: CalendarX2, role: "admin" },
             ],
         },
         {
@@ -78,6 +86,7 @@ export const NAVIGATION_GROUPS: Record<string, NavGroup[]> = {
             icon: CreditCard,
             items: [
                 { title: "Payments",          url: "/admin/payments",       icon: CreditCard, role: "admin", permissionKey: "manage_payments", featureKey: "enablePaymentProcessing" },
+                { title: "Payment Approvals", url: "/admin/payment-approvals", icon: BadgeCheck, role: "admin", permissionKey: "manage_payments" },
                 { title: "Salaries (Staff)",  url: "/admin/salaries",       icon: DollarSign, role: "admin", permissionKey: "manage_salaries" },
                 { title: "Salaries (Warden)", url: "/admin/warden-salaries",icon: Users,      role: "admin", permissionKey: "manage_salaries" },
                 { title: "Expenses",          url: "/admin/expenses",       icon: Wallet,     role: "admin", permissionKey: "manage_expenses" },
@@ -89,6 +98,7 @@ export const NAVIGATION_GROUPS: Record<string, NavGroup[]> = {
             icon: Users,
             items: [
                 { title: "Users Records", url: "/admin/users-records", icon: Users, role: "admin", permissionKey: "manage_users" },
+                { title: "Staff", url: "/admin/staff", icon: UserCog, role: "admin", permissionKey: "manage_users" },
             ],
         },
         {
@@ -103,6 +113,9 @@ export const NAVIGATION_GROUPS: Record<string, NavGroup[]> = {
             title: "System",
             icon: Settings,
             items: [
+                { title: "Security", url: "/admin/security", icon: ShieldAlert, role: "admin" },
+                { title: "Sessions", url: "/admin/sessions/global", icon: Monitor, role: "admin" },
+                { title: "System Health", url: "/admin/system-health", icon: Activity, role: "admin" },
                 { title: "Settings", url: "/admin/system-settings", icon: ShieldCheck,  role: "admin" },
                 { title: "Profile",  url: "/admin/profile",          icon: User,         role: "admin" },
             ],
