@@ -113,7 +113,7 @@ const GlobalBookingsPage = () => {
   const { mutate: deleteBooking, isPending: isDeleting } = useDeleteBooking();
   const syncAutomation = useSyncAutomation();
   const user = useAuthStore((state) => state.user);
-  const isAdmin = user?.role === "ADMIN" || user?.role === "SUPERADMIN";
+  const isAdmin = user?.role === "ADMIN";
   const isWarden = user?.role === "WARDEN";
   const { companyName } = useBranding();
 

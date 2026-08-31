@@ -27,6 +27,12 @@ export async function GET() {
     }
 }
 
+function getActorIp(request) {
+    return request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+        || request.headers.get("x-real-ip")
+        || "0.0.0.0";
+}
+
 export async function POST(request) {
     const guard = await requireRoles(["ADMIN"]);
     if (!guard.ok) return guard.response;
@@ -38,18 +44,19 @@ export async function POST(request) {
             return errorResponse("IP address is required", 400);
         }
 
-        const expiresAt = durationHours 
+        const expiresAt = durationHours
             ? new Date(Date.now() + parseFloat(durationHours) * 60 * 60 * 1000)
             : null; // null represents permanent
 
         const block = await securityServices.blockIp(ip, reason || "Manual Admin block", expiresAt);
-        
-        // Log the action to SecurityLogs
+
+        // Log the action to SecurityLogs, attributed to the acting admin (not a hardcoded IP)
         await securityServices.logIncident({
-            ip: "127.0.0.1",
+            ip: getActorIp(request),
             event: "IP_MANUALLY_BLOCKED",
             severity: "LOW",
-            description: `Admin manually blocked IP: ${ip}. Reason: ${reason || "None"}. Expires: ${expiresAt || "Permanent"}`
+            description: `Admin ${guard.user?.name || guard.user?.email || guard.user?.id} manually blocked IP: ${ip}. Reason: ${reason || "None"}. Expires: ${expiresAt || "Permanent"}`,
+            userId: guard.user?.id || null
         });
 
         return successResponse({ success: true, block });
@@ -73,12 +80,13 @@ export async function DELETE(request) {
 
         await securityServices.unblockIp(ip);
 
-        // Log the action to SecurityLogs
+        // Log the action to SecurityLogs, attributed to the acting admin (not a hardcoded IP)
         await securityServices.logIncident({
-            ip: "127.0.0.1",
+            ip: getActorIp(request),
             event: "IP_MANUALLY_UNBLOCKED",
             severity: "LOW",
-            description: `Admin manually unblocked IP: ${ip}`
+            description: `Admin ${guard.user?.name || guard.user?.email || guard.user?.id} manually unblocked IP: ${ip}`,
+            userId: guard.user?.id || null
         });
 
         return successResponse({ success: true, message: `IP ${ip} unblocked successfully` });
